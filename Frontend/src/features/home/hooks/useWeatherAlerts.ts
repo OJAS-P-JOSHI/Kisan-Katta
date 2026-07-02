@@ -11,18 +11,20 @@ type State = {
 
 export type UseWeatherAlertsReturn = State & { refresh: () => Promise<void> };
 
-export function useWeatherAlerts(): UseWeatherAlertsReturn {
-  const [state, setState] = useState<State>({ data: null, loading: true, error: null });
+/** `district` comes from the authenticated farmer's profile; pass `undefined` while it loads. */
+export function useWeatherAlerts(district: string | undefined): UseWeatherAlertsReturn {
+  const [state, setState] = useState<State>({ data: null, loading: !!district, error: null });
 
   const refresh = useCallback(async (): Promise<void> => {
+    if (!district) return;
     setState((s) => ({ data: s.data, loading: s.data === null, error: null }));
     try {
-      const data = await getWeatherAlerts();
+      const data = await getWeatherAlerts(district);
       setState({ data, loading: false, error: null });
     } catch {
       setState((s) => ({ ...s, loading: false, error: 'Unable to load weather alerts' }));
     }
-  }, []);
+  }, [district]);
 
   useEffect(() => {
     refresh();

@@ -10,23 +10,25 @@ export type UseForecastReturn = {
   refresh: () => Promise<void>;
 };
 
-export function useForecast(): UseForecastReturn {
+/** `district` comes from the authenticated farmer's profile; pass `undefined` while it loads. */
+export function useForecast(district: string | undefined): UseForecastReturn {
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!district);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async (): Promise<void> => {
+    if (!district) return;
     setError(null);
     setLoading(true);
     try {
-      const data = await getForecast();
+      const data = await getForecast(district);
       setForecast(data);
     } catch {
       setError('Unable to load forecast');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [district]);
 
   useEffect(() => {
     refresh();

@@ -1,11 +1,31 @@
-import type { ID } from '@/types';
+import type { SupportedLanguage } from '@/constants';
 
-export type UserRole = 'farmer' | 'buyer' | 'trader';
+/**
+ * Profile domain DTOs that exactly mirror the backend responses
+ * (`Backend/backend/src/modules/profile/profile.types.ts`). Note the backend
+ * uses the US spelling `favoriteCrops`.
+ */
 
-export type UserProfile = {
-  id: ID;
+export type CreateProfileBody = {
   name: string;
-  phone: string;
-  location: string;
-  role: UserRole;
+  district: string;
+  taluka: string;
+  village: string;
+  favoriteCrops: string[];
+  language: SupportedLanguage;
+};
+
+export type UpdateProfileBody = Partial<CreateProfileBody>;
+
+/** POST /api/v1/profile, GET /api/v1/profile/me, PUT /api/v1/profile/me */
+export type ProfileResponseDTO = {
+  userId: string;
+  name: string;
+  district: string;
+  taluka: string;
+  village: string;
+  favoriteCrops: string[];
+  language: SupportedLanguage;
+  createdAt: string;
+  updatedAt: string;
 };

@@ -7,12 +7,14 @@ import { radius, spacing, useAppTheme } from '@/theme';
 
 import { getGreeting } from '../weather.utils';
 
-/** Temporary placeholder until authentication and profile modules are implemented. */
-const FARMER_NAME = 'Rajesh Patil';
-const VILLAGE = 'Lasalgaon';
-const DISTRICT = 'Nashik';
+export type DashboardHeaderProps = {
+  /** Farmer's name from the authenticated profile (`GET /api/v1/profile/me`). */
+  name: string;
+  /** `"village, district"`, or `undefined` while the profile is loading. */
+  location?: string;
+};
 
-export const DashboardHeader = memo(function DashboardHeader() {
+export const DashboardHeader = memo(function DashboardHeader({ name, location }: DashboardHeaderProps) {
   const theme = useAppTheme();
   const greeting = getGreeting();
 
@@ -23,14 +25,16 @@ export const DashboardHeader = memo(function DashboardHeader() {
           {greeting},
         </Text>
         <Text variant="titleLarge" style={{ color: theme.colors.primary, fontWeight: '700' }}>
-          {FARMER_NAME}
+          {name}
         </Text>
-        <View style={styles.locationRow}>
-          <MaterialCommunityIcons name="map-marker" size={14} color={theme.colors.onSurfaceVariant} />
-          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-            {VILLAGE}, {DISTRICT}
-          </Text>
-        </View>
+        {!!location && (
+          <View style={styles.locationRow}>
+            <MaterialCommunityIcons name="map-marker" size={14} color={theme.colors.onSurfaceVariant} />
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              {location}
+            </Text>
+          </View>
+        )}
       </View>
       <View style={[styles.avatar, { backgroundColor: theme.colors.primaryContainer }]}>
         <MaterialCommunityIcons name="sprout" size={30} color={theme.colors.primary} />

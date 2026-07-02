@@ -5,6 +5,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
+import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 import { radius, spacing, useAppTheme } from '@/theme';
 
 import { useCurrentWeather } from './hooks/useCurrentWeather';
@@ -53,21 +54,24 @@ export default function HomeScreen() {
   const theme = useAppTheme();
   const [refreshing, setRefreshing] = useState(false);
 
+  const { data: profile, refresh: refreshProfile } = useMyProfile();
+  const district = profile?.district;
+
   const { data: weather, loading: weatherLoading, error: weatherError, refresh: refreshWeather } =
-    useCurrentWeather();
+    useCurrentWeather(district);
   const { data: forecast, loading: forecastLoading, error: forecastError, refresh: refreshForecast } =
-    useForecast();
+    useForecast(district);
   const { data: alerts, loading: alertsLoading, error: alertsError, refresh: refreshAlerts } =
-    useWeatherAlerts();
+    useWeatherAlerts(district);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refreshWeather(), refreshForecast(), refreshAlerts()]);
+      await Promise.all([refreshProfile(), refreshWeather(), refreshForecast(), refreshAlerts()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshWeather, refreshForecast, refreshAlerts]);
+  }, [refreshProfile, refreshWeather, refreshForecast, refreshAlerts]);
 
   const todayRainChance =
     forecast.length > 0 ? forecast[0].dailyChanceOfRain : undefined;
@@ -86,7 +90,10 @@ export default function HomeScreen() {
         />
       }
     >
-      <DashboardHeader />
+      <DashboardHeader
+        name={profile?.name ?? 'Farmer'}
+        location={profile ? `${profile.village}, ${profile.district}` : undefined}
+      />
 
       <SectionHeader icon="weather-partly-cloudy" title={strings.home.weatherTitle} />
 

@@ -16,31 +16,27 @@ const ENDPOINTS = {
 } as const;
 
 /**
- * Temporary hardcoded district until user profile / location selection is implemented.
- * Replace with the authenticated farmer's district once the profile module exists.
- *
- * The district is embedded directly in each URL string so the query string is a
- * visible literal in the source — unambiguous regardless of Metro bundler cache.
+ * Every weather request is scoped to the authenticated farmer's district
+ * (from `GET /api/v1/profile/me`). Callers (see `useCurrentWeather`,
+ * `useForecast`, `useWeatherAlerts`) must supply it — there is no default.
  */
-const DEFAULT_DISTRICT = 'Pune';
-
-export const getCurrentWeather = async (): Promise<CurrentWeather> => {
+export const getCurrentWeather = async (district: string): Promise<CurrentWeather> => {
   const { data } = await api.get<CurrentWeatherApiResponse>(
-    `${ENDPOINTS.current}?district=${DEFAULT_DISTRICT}`,
+    `${ENDPOINTS.current}?district=${encodeURIComponent(district)}`,
   );
   return data.data;
 };
 
-export const getForecast = async (): Promise<ForecastDay[]> => {
+export const getForecast = async (district: string): Promise<ForecastDay[]> => {
   const { data } = await api.get<ForecastApiResponse>(
-    `${ENDPOINTS.forecast}?district=${DEFAULT_DISTRICT}&days=7`,
+    `${ENDPOINTS.forecast}?district=${encodeURIComponent(district)}&days=7`,
   );
   return data.data ?? [];
 };
 
-export const getWeatherAlerts = async (): Promise<WeatherAlert[]> => {
+export const getWeatherAlerts = async (district: string): Promise<WeatherAlert[]> => {
   const { data } = await api.get<AlertsApiResponse>(
-    `${ENDPOINTS.alerts}?district=${DEFAULT_DISTRICT}`,
+    `${ENDPOINTS.alerts}?district=${encodeURIComponent(district)}`,
   );
   return data.data.alerts;
 };
