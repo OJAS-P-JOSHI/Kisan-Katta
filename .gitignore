@@ -1,0 +1,32 @@
+# Node modules
+**/node_modules
+
+# Environment files
+**/.env
+**/.env.*
+
+# Expo
+**/.expo
+
+# Build
+**/build
+**/dist
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode
+
+# Android
+**/android/app/build
+
+# iOS
+**/ios/build
+
+# Misc
+coverage
