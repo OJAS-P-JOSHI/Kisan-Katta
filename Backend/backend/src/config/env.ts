@@ -8,6 +8,10 @@ interface EnvConfig {
   nodeEnv: "development" | "production" | "test";
   corsOrigin: string;
   weatherApiKey: string;
+  mongodbUri: string;
+  jwtSecret: string;
+  jwtExpiresIn: string;
+  otpExpiryMinutes: number;
 }
 
 // Centralized, typed access to environment variables with sane defaults.
@@ -23,6 +27,10 @@ export const env: EnvConfig = {
   nodeEnv: (process.env.NODE_ENV as EnvConfig["nodeEnv"]) || "development",
   corsOrigin: process.env.CORS_ORIGIN || "*",
   weatherApiKey: process.env.WEATHER_API_KEY || "",
+  mongodbUri: process.env.MONGODB_URI || "mongodb://localhost:27017/kisan-katta",
+  jwtSecret: process.env.JWT_SECRET || "changeme",
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "30d",
+  otpExpiryMinutes: Number(process.env.OTP_EXPIRY_MINUTES) || 5,
 };
 
 export const isProduction = (): boolean => env.nodeEnv === "production";

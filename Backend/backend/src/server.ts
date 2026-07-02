@@ -1,6 +1,7 @@
 import os from "os";
 import { createApp } from "./app";
 import { env } from "./config/env";
+import { connectDatabase } from "./config/database";
 
 const app = createApp();
 
@@ -22,32 +23,48 @@ const getLanAddresses = (): string[] => {
   return addresses;
 };
 
-const server = app.listen(env.port, env.host, () => {
-  // eslint-disable-next-line no-console
-  console.log(`🚀 Server running on http://localhost:${env.port} [${env.nodeEnv}]`);
+// Connect to MongoDB before accepting HTTP traffic.
+// process.exit(1) is called if the DB is unreachable so the orchestrator
+// (Docker, PM2, k8s) can restart the container rather than serving 500s.
+const startServer = async (): Promise<void> => {
+  await connectDatabase();
 
-  // Only relevant when bound to all interfaces; a deliberately restricted
-  // HOST (e.g. 127.0.0.1) means LAN access isn't expected.
-  if (env.host === "0.0.0.0") {
-    const lanAddresses = getLanAddresses();
-    lanAddresses.forEach((address) => {
-      // eslint-disable-next-line no-console
-      console.log(`   LAN (physical devices): http://${address}:${env.port}`);
-    });
+  const server = app.listen(env.port, env.host, () => {
     // eslint-disable-next-line no-console
-    console.log(`   Android emulator:        http://10.0.2.2:${env.port}`);
-  }
-});
+    console.log(`Server running on: http://localhost:${env.port}`);
 
-// Fail fast and visibly on unhandled issues instead of running in a broken state.
-process.on("unhandledRejection", (reason) => {
-  // eslint-disable-next-line no-console
-  console.error("Unhandled Rejection:", reason);
-  server.close(() => process.exit(1));
-});
+    // Only relevant when bound to all interfaces; a deliberately restricted
+    // HOST (e.g. 127.0.0.1) means LAN access isn't expected.
+    if (env.host === "0.0.0.0") {
+      const lanAddresses = getLanAddresses();
+      lanAddresses.forEach((address) => {
+        // eslint-disable-next-line no-console
+        console.log(`LAN: http://${address}:${env.port}`);
+      });
+      // eslint-disable-next-line no-console
+      console.log(`Android emulator: http://10.0.2.2:${env.port}`);
+    }
 
-process.on("uncaughtException", (error) => {
+    // eslint-disable-next-line no-console
+    console.log(`Environment: ${env.nodeEnv}`);
+  });
+
+  // Fail fast and visibly on unhandled issues instead of running in a broken state.
+  process.on("unhandledRejection", (reason) => {
+    // eslint-disable-next-line no-console
+    console.error("Unhandled Rejection:", reason);
+    server.close(() => process.exit(1));
+  });
+
+  process.on("uncaughtException", (error) => {
+    // eslint-disable-next-line no-console
+    console.error("Uncaught Exception:", error);
+    server.close(() => process.exit(1));
+  });
+};
+
+startServer().catch((error: unknown) => {
   // eslint-disable-next-line no-console
-  console.error("Uncaught Exception:", error);
-  server.close(() => process.exit(1));
+  console.error("Server failed to start:", error);
+  process.exit(1);
 });
