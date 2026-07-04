@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { elevation, radius, spacing, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
 import type { WeatherAlert } from '../weather.types';
@@ -69,9 +69,10 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 
   if (error && alerts === null) {
     return (
-      <Card mode="elevated" style={styles.card}>
+      <Card mode="elevated" style={[styles.card, elevation.soft]}>
         <Card.Content style={styles.row}>
-          <Text variant="bodySmall" style={{ color: theme.colors.error, flex: 1 }}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={20} color={theme.colors.error} />
+          <Text variant="bodyMedium" style={{ color: theme.colors.error, flex: 1 }}>
             {error}
           </Text>
           <Button compact mode="text" onPress={onRetry}>
@@ -84,14 +85,19 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 
   if (!alerts || alerts.length === 0) {
     return (
-      <Card mode="elevated" style={[styles.card, { backgroundColor: theme.colors.primaryContainer }]}>
+      <Card
+        mode="elevated"
+        style={[styles.card, elevation.soft, { backgroundColor: theme.colors.primaryContainer }]}
+      >
         <Card.Content style={styles.noAlertRow}>
-          <MaterialCommunityIcons name="check-circle" size={24} color={theme.colors.primary} />
+          <View style={[styles.noAlertIcon, { backgroundColor: theme.colors.surface }]}>
+            <MaterialCommunityIcons name="check-circle-outline" size={26} color={theme.colors.primary} />
+          </View>
           <View style={styles.noAlertText}>
-            <Text variant="titleSmall" style={{ color: theme.colors.onPrimaryContainer, fontWeight: '700' }}>
+            <Text variant="titleSmall" style={{ color: theme.colors.onPrimaryContainer, fontWeight: '600' }}>
               No active weather alerts
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer }}>
+            <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.9 }}>
               Sky is clear – good time to work outdoors
             </Text>
           </View>
@@ -101,11 +107,17 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
   }
 
   return (
-    <Card mode="elevated" style={styles.card}>
+    <Card mode="elevated" style={[styles.card, elevation.card]}>
       <Card.Content>
-        <Text variant="titleSmall" style={[styles.alertsTitle, { color: theme.colors.onSurface }]}>
-          ⚠️  Weather Alerts
-        </Text>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.sectionIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
+            <MaterialCommunityIcons name="alert-outline" size={18} color={theme.colors.secondary} />
+          </View>
+          <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontWeight: '600' }}>
+            Weather Alerts
+          </Text>
+        </View>
+
         {alerts.map((alert, index) => {
           const sv = getSeverityStyle(alert.severity, theme);
           return (
@@ -115,21 +127,25 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
               )}
               <View style={[styles.alertItem, { backgroundColor: sv.bg, borderLeftColor: sv.border }]}>
                 <View style={styles.alertHeader}>
-                  <MaterialCommunityIcons name={sv.icon} size={20} color={sv.iconColor} />
+                  <View style={[styles.alertIconBadge, { backgroundColor: theme.colors.surface }]}>
+                    <MaterialCommunityIcons name={sv.icon} size={18} color={sv.iconColor} />
+                  </View>
                   <Text
-                    variant="labelLarge"
-                    style={{ color: sv.textColor, fontWeight: '700', flex: 1 }}
+                    variant="titleSmall"
+                    style={{ color: sv.textColor, fontWeight: '600', flex: 1 }}
                     numberOfLines={1}
                   >
                     {alert.event}
                   </Text>
-                  <Text variant="labelSmall" style={{ color: sv.textColor }}>
-                    {alert.severity}
-                  </Text>
+                  <View style={[styles.severityPill, { borderColor: sv.border }]}>
+                    <Text variant="labelSmall" style={{ color: sv.textColor, fontWeight: '500' }}>
+                      {alert.severity}
+                    </Text>
+                  </View>
                 </View>
                 <Text
-                  variant="bodySmall"
-                  style={{ color: sv.textColor, marginTop: spacing.xs }}
+                  variant="bodyMedium"
+                  style={{ color: sv.textColor, marginTop: spacing.sm, lineHeight: 20 }}
                   numberOfLines={3}
                 >
                   {alert.headline}
@@ -144,12 +160,49 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 });
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg },
-  row: { flexDirection: 'row', alignItems: 'center' },
+  card: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.xl },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   noAlertRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  noAlertText: { flex: 1, gap: 2 },
-  alertsTitle: { fontWeight: '700', marginBottom: spacing.sm },
-  alertItem: { borderLeftWidth: 4, borderRadius: radius.sm, padding: spacing.sm, marginVertical: spacing.xs },
+  noAlertIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noAlertText: { flex: 1, gap: 4 },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  sectionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertItem: {
+    borderLeftWidth: 3,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginVertical: spacing.xs,
+  },
   alertHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  alertDivider: { marginVertical: spacing.xs },
+  alertIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  severityPill: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  alertDivider: { marginVertical: spacing.sm },
 });

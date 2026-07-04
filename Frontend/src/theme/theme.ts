@@ -18,7 +18,26 @@ export const radius = {
   sm: 8,
   md: 12,
   lg: 20,
+  xl: 24,
   pill: 999,
+} as const;
+
+/** Shared elevation shadows for premium card surfaces. */
+export const elevation = {
+  soft: {
+    shadowColor: '#1A1C19',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  card: {
+    shadowColor: '#1A1C19',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
 } as const;
 
 export type Spacing = keyof typeof spacing;

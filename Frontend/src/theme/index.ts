@@ -8,6 +8,7 @@ export {
   navigationTheme,
   spacing,
   radius,
+  elevation,
   type AppTheme,
   type Spacing,
   type Radius,

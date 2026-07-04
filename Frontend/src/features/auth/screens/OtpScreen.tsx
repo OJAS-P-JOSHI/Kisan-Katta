@@ -64,18 +64,25 @@ export default function OtpScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
       <View style={styles.container}>
-        <Text variant="titleLarge" style={[styles.title, { color: theme.colors.onBackground }]}>
+        <View style={[styles.iconBadge, { backgroundColor: theme.colors.primaryContainer }]}>
+          <MaterialCommunityIcons name="shield-check-outline" size={28} color={theme.colors.onPrimaryContainer} />
+        </View>
+
+        <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onBackground }]}>
           {strings.auth.otpTitle}
         </Text>
         <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
-          {strings.auth.otpSubtitle} +91 {mobile}
+          {strings.auth.otpSubtitle}{' '}
+          <Text variant="bodyMedium" style={{ color: theme.colors.onBackground, fontWeight: '700' }}>
+            +91 {mobile}
+          </Text>
         </Text>
 
         {!!devOtp && (
           <Card mode="contained" style={[styles.devCard, { backgroundColor: theme.colors.secondaryContainer }]}>
             <Card.Content style={styles.devCardContent}>
               <MaterialCommunityIcons name="flask-outline" size={18} color={theme.colors.onSecondaryContainer} />
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSecondaryContainer }}>
                 {strings.auth.devOtpLabel}: <Text style={styles.devOtpValue}>{devOtp}</Text>
               </Text>
             </Card.Content>
@@ -86,21 +93,24 @@ export default function OtpScreen() {
           <OtpInput value={code} onChange={handleChangeCode} error={!!verifyError} disabled={verifying} />
         </View>
 
-        {!!verifyError && (
-          <HelperText type="error" visible>
-            {verifyError}
-          </HelperText>
-        )}
-        {!!resendError && (
-          <HelperText type="error" visible>
-            {resendError}
-          </HelperText>
-        )}
+        <View style={styles.helperArea}>
+          {!!verifyError && (
+            <HelperText type="error" visible style={styles.helperText}>
+              {verifyError}
+            </HelperText>
+          )}
+          {!!resendError && (
+            <HelperText type="error" visible style={styles.helperText}>
+              {resendError}
+            </HelperText>
+          )}
+        </View>
 
         <Button
           mode="contained"
           style={styles.button}
           contentStyle={styles.buttonContent}
+          labelStyle={styles.buttonLabel}
           onPress={handleVerify}
           loading={verifying}
           disabled={verifying || code.length !== OTP_LENGTH}
@@ -129,14 +139,26 @@ export default function OtpScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  container: { flex: 1, padding: spacing.lg, justifyContent: 'center' },
-  title: { fontWeight: '700' },
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.lg },
-  devCard: { marginBottom: spacing.lg, borderRadius: radius.md },
+  container: { flex: 1, paddingHorizontal: spacing.lg, justifyContent: 'center' },
+  iconBadge: {
+    alignSelf: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  title: { fontWeight: '700', textAlign: 'center' },
+  subtitle: { marginTop: spacing.xs, marginBottom: spacing.lg, textAlign: 'center', lineHeight: 20 },
+  devCard: { marginBottom: spacing.lg, borderRadius: radius.md, alignSelf: 'center' },
   devCardContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   devOtpValue: { fontWeight: '700' },
-  otpBox: { marginBottom: spacing.sm },
-  button: { marginTop: spacing.lg, borderRadius: radius.md },
+  otpBox: { marginBottom: spacing.xs },
+  helperArea: { minHeight: spacing.lg * 1.5, alignItems: 'center' },
+  helperText: { textAlign: 'center' },
+  button: { marginTop: spacing.sm, borderRadius: radius.md },
   buttonContent: { paddingVertical: spacing.xs },
-  footerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm },
+  buttonLabel: { fontSize: 16, fontWeight: '700' },
+  footerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.lg },
 });

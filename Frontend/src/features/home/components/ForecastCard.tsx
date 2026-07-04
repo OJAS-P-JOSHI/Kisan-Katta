@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Text } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 
 import { palette, radius, spacing, useAppTheme } from '@/theme';
 
@@ -17,45 +17,66 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
   const theme = useAppTheme();
 
   return (
-    <Card mode="elevated" style={styles.card}>
-      <Card.Content style={styles.content}>
-        <Text
-          variant="labelMedium"
-          style={{
-            color: isToday ? theme.colors.primary : theme.colors.onSurfaceVariant,
-            fontWeight: isToday ? '700' : '400',
-          }}
-        >
-          {isToday ? 'Today' : formatDayShort(day.date)}
-        </Text>
+    <View
+      style={[
+        styles.item,
+        isToday
+          ? { backgroundColor: theme.colors.primaryContainer }
+          : { backgroundColor: theme.colors.surfaceVariant },
+      ]}
+    >
+      <Text
+        variant="labelLarge"
+        style={{
+          color: isToday ? theme.colors.primary : theme.colors.onSurfaceVariant,
+          fontWeight: isToday ? '600' : '500',
+        }}
+      >
+        {isToday ? 'Today' : formatDayShort(day.date)}
+      </Text>
 
+      <View style={[styles.iconWrap, { backgroundColor: theme.colors.surface }]}>
         <MaterialCommunityIcons
           name={getWeatherIcon(day.condition)}
-          size={32}
+          size={28}
           color={theme.colors.primary}
         />
+      </View>
 
-        <Text variant="labelLarge" style={{ color: palette.amber700, fontWeight: '700' }}>
-          {Math.round(day.maxTempC)}°
-        </Text>
+      <Text variant="titleSmall" style={{ color: palette.amber700, fontWeight: '600' }}>
+        {Math.round(day.maxTempC)}°
+      </Text>
 
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        {Math.round(day.minTempC)}°
+      </Text>
+
+      <View style={styles.rainRow}>
+        <MaterialCommunityIcons name="water-outline" size={13} color={theme.colors.primary} />
         <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-          {Math.round(day.minTempC)}°
+          {day.dailyChanceOfRain}%
         </Text>
-
-        <View style={styles.rainRow}>
-          <MaterialCommunityIcons name="water" size={12} color={theme.colors.primary} />
-          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {day.dailyChanceOfRain}%
-          </Text>
-        </View>
-      </Card.Content>
-    </Card>
+      </View>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  card: { width: 78, borderRadius: radius.md },
-  content: { alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.xs, paddingVertical: spacing.sm },
-  rainRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  item: {
+    width: 76,
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.md,
+  },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: spacing.xs,
+  },
+  rainRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
 });
