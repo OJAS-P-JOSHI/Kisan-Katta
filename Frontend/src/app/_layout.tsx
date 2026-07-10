@@ -4,6 +4,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
+import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import { navigationTheme, paperTheme } from '@/theme';
 
 /**
@@ -23,6 +24,34 @@ function RootNavigator() {
         <Stack.Screen
           name="edit-profile"
           options={{ headerShown: true, title: 'Edit Profile', presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-produce"
+          options={{ headerShown: true, title: marketplaceStrings.listings.produceTitle, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-products"
+          options={{ headerShown: true, title: marketplaceStrings.listings.productsTitle, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-listing/[id]"
+          options={{ headerShown: true, title: marketplaceStrings.detail.title, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-create"
+          options={{ headerShown: true, title: marketplaceStrings.create.title, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-edit/[id]"
+          options={{ headerShown: true, title: marketplaceStrings.create.editTitle, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-my-listings"
+          options={{ headerShown: true, title: marketplaceStrings.myListings.title, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="marketplace-saved"
+          options={{ headerShown: true, title: marketplaceStrings.saved.title, presentation: 'card' }}
         />
       </Stack.Protected>
       <Stack.Protected guard={!canEnterApp}>
