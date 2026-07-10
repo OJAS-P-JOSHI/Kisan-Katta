@@ -19,6 +19,7 @@ export const marketplaceStrings = {
     retry: 'Retry',
     emptyTitle: 'No listings found',
     emptyMessage: 'Try a different search or category.',
+    searchEmptyMessage: 'Try another search term.',
     loadMore: 'Loading more…',
   },
   detail: {
@@ -39,6 +40,9 @@ export const marketplaceStrings = {
     stock: 'Stock',
     crop: 'Crop',
     harvestDate: 'Harvest Date',
+    ownerActions: 'Owner Actions',
+    soldMessage: 'This listing has been marked as sold.\nIt is no longer visible to buyers.',
+    archivedMessage: 'This listing has been archived.\nArchived listings are only visible to you.',
   },
   create: {
     title: 'Sell Something',
@@ -79,13 +83,31 @@ export const marketplaceStrings = {
     edit: 'Edit',
     archive: 'Archive',
     markSold: 'Mark Sold',
-    emptyTitle: 'No listings here',
-    emptyMessage: 'Create a listing to start selling.',
+    myListingBadge: 'My Listing',
+    emptyTitle: "You haven't created any listings yet.",
+    emptyMessage: 'Sell your first product or crop.',
   },
   saved: {
     title: 'Saved Listings',
-    emptyTitle: 'No saved listings',
+    emptyTitle: "You haven't saved any listings yet.",
     emptyMessage: 'Tap the heart on a listing to save it.',
+  },
+  lifecycle: {
+    markSoldTitle: 'Mark Listing as Sold?',
+    markSoldMessage:
+      'This listing will no longer appear in Marketplace.\nYou can still view it inside My Listings.',
+    markSoldConfirm: 'Mark Sold',
+    archiveTitle: 'Archive Listing?',
+    archiveMessage:
+      'Archived listings disappear from Marketplace.\nThey remain available in My Listings.',
+    archiveConfirm: 'Archive',
+    cancel: 'Cancel',
+    markedSold: 'Listing marked as sold.',
+    archived: 'Listing archived successfully.',
+    unableMarkSold: 'Unable to mark listing as sold.',
+    unableArchive: 'Unable to archive listing.',
+    unableSave: 'Unable to save listing.',
+    whatsappUnavailable: 'WhatsApp is not available on this device.',
   },
   errors: {
     timeout: 'Request timed out. Please try again.',

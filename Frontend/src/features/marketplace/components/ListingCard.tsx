@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import { Card, IconButton, Text } from 'react-native-paper';
+import { Card, Chip, IconButton, Text } from 'react-native-paper';
 
 import { radius, spacing, useAppTheme } from '@/theme';
 
@@ -11,26 +11,34 @@ import {
   formatPrice,
   getListingDisplayTitle,
   getListingImageUrl,
+  isListingOwner,
 } from '../marketplace.utils';
+import { ListingStatusBadge } from './ListingStatusBadge';
 
 type ListingCardProps = {
   listing: MarketplaceListing;
+  currentUserId?: string | null;
   isSaved?: boolean;
   onPress: (listing: MarketplaceListing) => void;
   onToggleSave?: (listing: MarketplaceListing) => void;
   showBrand?: boolean;
+  showStatus?: boolean;
 };
 
 function ListingCardComponent({
   listing,
+  currentUserId,
   isSaved = false,
   onPress,
   onToggleSave,
   showBrand = listing.listingType === 'product',
+  showStatus = true,
 }: ListingCardProps) {
   const theme = useAppTheme();
   const imageUrl = getListingImageUrl(listing.images);
   const title = getListingDisplayTitle(listing);
+  const isOwner = isListingOwner(listing.sellerId, currentUserId);
+  const showSaveButton = !!onToggleSave && !isOwner;
 
   const handlePress = useCallback(() => onPress(listing), [listing, onPress]);
   const handleToggleSave = useCallback(() => {
@@ -51,6 +59,17 @@ function ListingCardComponent({
                 color={theme.colors.onSurfaceVariant}
               />
             )}
+            {isOwner ? (
+              <View style={[styles.ownerBadge, { backgroundColor: theme.colors.primaryContainer }]}>
+                <Text
+                  variant="labelSmall"
+                  numberOfLines={1}
+                  style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}
+                >
+                  My Listing
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.content}>
@@ -58,7 +77,7 @@ function ListingCardComponent({
               <Text variant="titleMedium" numberOfLines={1} style={{ color: theme.colors.onSurface, flex: 1 }}>
                 {title}
               </Text>
-              {onToggleSave ? (
+              {showSaveButton ? (
                 <IconButton
                   icon={isSaved ? 'heart' : 'heart-outline'}
                   size={20}
@@ -68,6 +87,12 @@ function ListingCardComponent({
                 />
               ) : null}
             </View>
+
+            {showStatus ? (
+              <View style={styles.badgeRow}>
+                <ListingStatusBadge status={listing.status} />
+              </View>
+            ) : null}
 
             {showBrand && listing.brand ? (
               <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -99,9 +124,9 @@ function ListingCardComponent({
               </View>
             </View>
 
-            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }}>
+            <Chip compact mode="outlined" style={styles.categoryChip} textStyle={styles.categoryChipText}>
               {listing.category}
-            </Text>
+            </Chip>
           </View>
         </View>
       </Card>
@@ -123,8 +148,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: { width: '100%', height: '100%' },
+  ownerBadge: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    maxWidth: 72,
+  },
   content: { flex: 1, justifyContent: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center' },
+  badgeRow: { marginTop: spacing.xs },
   saveButton: { margin: 0 },
   metaRow: {
     flexDirection: 'row',
@@ -134,4 +169,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
+  categoryChip: { alignSelf: 'flex-start', marginTop: spacing.xs, height: 24 },
+  categoryChipText: { fontSize: 10, lineHeight: 12, marginVertical: 0 },
 });

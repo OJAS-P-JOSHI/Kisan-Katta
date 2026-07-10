@@ -1,8 +1,9 @@
-import { useRouter, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Text } from 'react-native-paper';
+import { ActivityIndicator, Snackbar, Text } from 'react-native-paper';
 
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { spacing, useAppTheme } from '@/theme';
 
 import { ListingCard } from '../components/ListingCard';
@@ -11,10 +12,12 @@ import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getSavedListings, unsaveListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListing } from '../marketplace.types';
+import { isListingOwner } from '../marketplace.utils';
 
 export default function SavedListingsScreen() {
   const theme = useAppTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -22,6 +25,7 @@ export default function SavedListingsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [snackbar, setSnackbar] = useState<string | null>(null);
   const loadingMoreRef = useRef(false);
 
   const fetchPage = useCallback(async (pageToLoad: number, replace: boolean) => {
@@ -37,9 +41,11 @@ export default function SavedListingsScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchPage(1, true).finally(() => setLoading(false));
-  }, [fetchPage]);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchPage(1, true).finally(() => setLoading(false));
+    }, [fetchPage]),
+  );
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -64,29 +70,32 @@ export default function SavedListingsScreen() {
   );
 
   const handleToggleSave = useCallback(async (listing: MarketplaceListing) => {
+    if (isListingOwner(listing.sellerId, user?.userId)) return;
+
     setListings((prev) => prev.filter((item) => item.id !== listing.id));
 
     try {
       await unsaveListing(listing.id);
-    } catch (err) {
-      setError(getMarketplaceErrorMessage(err));
+    } catch {
       setListings((prev) => [listing, ...prev]);
+      setSnackbar(marketplaceStrings.lifecycle.unableSave);
     }
-  }, []);
+  }, [user?.userId]);
 
   const renderItem = useCallback(
     ({ item }: { item: MarketplaceListing }) => (
       <ListingCard
         listing={item}
+        currentUserId={user?.userId}
         isSaved
         onPress={handleListingPress}
-        onToggleSave={handleToggleSave}
+        onToggleSave={isListingOwner(item.sellerId, user?.userId) ? undefined : handleToggleSave}
       />
     ),
-    [handleListingPress, handleToggleSave],
+    [handleListingPress, handleToggleSave, user?.userId],
   );
 
-  if (loading) {
+  if (loading && listings.length === 0) {
     return <ListingLoadingView />;
   }
 
@@ -129,6 +138,10 @@ export default function SavedListingsScreen() {
           ) : null
         }
       />
+
+      <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
+        {snackbar}
+      </Snackbar>
     </View>
   );
 }

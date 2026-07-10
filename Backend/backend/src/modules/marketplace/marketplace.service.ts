@@ -193,6 +193,21 @@ const assertListingOwner = (
   }
 };
 
+const isListingExpired = (listing: Pick<IMarketplaceListing, "expiresAt">): boolean =>
+  listing.expiresAt <= new Date();
+
+const isListingPubliclyVisible = (
+  listing: Pick<IMarketplaceListing, "status" | "expiresAt">
+): boolean => listing.status === "ACTIVE" && !isListingExpired(listing);
+
+const assertPublicListingAccess = (
+  listing: HydratedDocument<IMarketplaceListing>
+): void => {
+  if (!isListingPubliclyVisible(listing)) {
+    throw new AppError("Listing not found.", 404);
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Service functions
 // ---------------------------------------------------------------------------
@@ -267,19 +282,27 @@ export const getListings = async (
 };
 
 export const getListingById = async (
-  listingId: string
+  listingId: string,
+  authenticatedUserId?: string
 ): Promise<ListingDetailResponseDTO> => {
   assertValidObjectId(listingId, "listing id");
 
-  const listing = await MarketplaceListing.findByIdAndUpdate(
-    listingId,
-    { $inc: { views: 1 } },
-    { new: true }
-  );
+  const listing = await MarketplaceListing.findById(listingId);
 
   if (!listing) {
     throw new AppError("Listing not found.", 404);
   }
+
+  const isOwner =
+    authenticatedUserId !== undefined &&
+    listing.sellerId.toString() === authenticatedUserId;
+
+  if (!isOwner) {
+    assertPublicListingAccess(listing);
+  }
+
+  listing.views += 1;
+  await listing.save();
 
   const seller = await fetchSellerInfo(listing.sellerId);
 
@@ -374,6 +397,10 @@ export const saveListing = async (
     throw new AppError("Listing not found.", 404);
   }
 
+  if (listing.sellerId.toString() === userId) {
+    throw new AppError("You cannot save your own listing.", 400);
+  }
+
   const existingSave = await MarketplaceSaved.findOne({
     userId: new Types.ObjectId(userId),
     listingId: new Types.ObjectId(listingId),
@@ -420,25 +447,42 @@ export const getSavedListings = async (
 ): Promise<SavedListingsDTO> => {
   const userObjectId = new Types.ObjectId(userId);
   const skip = (page - 1) * limit;
+  const now = new Date();
 
-  const [total, savedRecords] = await Promise.all([
-    MarketplaceSaved.countDocuments({ userId: userObjectId }),
-    MarketplaceSaved.find({ userId: userObjectId })
-      .sort({ savedAt: -1 })
-      .skip(skip)
-      .limit(limit),
+  const [aggregationResult] = await MarketplaceSaved.aggregate<{
+    metadata: { total: number }[];
+    data: { listing: HydratedDocument<IMarketplaceListing> }[];
+  }>([
+    { $match: { userId: userObjectId } },
+    {
+      $lookup: {
+        from: "marketplace",
+        localField: "listingId",
+        foreignField: "_id",
+        as: "listing",
+      },
+    },
+    { $unwind: "$listing" },
+    {
+      $match: {
+        "listing.status": "ACTIVE",
+        "listing.expiresAt": { $gt: now },
+      },
+    },
+    { $sort: { savedAt: -1 } },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: skip }, { $limit: limit }],
+      },
+    },
   ]);
 
-  const listingIds = savedRecords.map((record) => record.listingId);
-  const listings = await MarketplaceListing.find({ _id: { $in: listingIds } });
-  const listingMap = new Map(listings.map((listing) => [listing._id.toString(), listing]));
-
-  const orderedListings = savedRecords
-    .map((record) => listingMap.get(record.listingId.toString()))
-    .filter((listing): listing is HydratedDocument<IMarketplaceListing> => listing !== undefined);
+  const total = aggregationResult?.metadata[0]?.total ?? 0;
+  const savedRecords = aggregationResult?.data ?? [];
 
   return {
-    listings: orderedListings.map(toListingDTO),
+    listings: savedRecords.map((record) => toListingDTO(record.listing)),
     pagination: {
       page,
       limit,
@@ -446,4 +490,17 @@ export const getSavedListings = async (
       totalPages: total === 0 ? 0 : Math.ceil(total / limit),
     },
   };
+};
+
+export const recordContactClick = async (listingId: string): Promise<void> => {
+  assertValidObjectId(listingId, "listing id");
+
+  const listing = await MarketplaceListing.findByIdAndUpdate(
+    listingId,
+    { $inc: { contactClicks: 1 } }
+  );
+
+  if (!listing) {
+    throw new AppError("Listing not found.", 404);
+  }
 };

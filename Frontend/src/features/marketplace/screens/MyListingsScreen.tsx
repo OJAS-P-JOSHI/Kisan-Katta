@@ -1,14 +1,17 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, type Href } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import { Button, Card, SegmentedButtons, Text } from 'react-native-paper';
+import { Button, Card, SegmentedButtons, Snackbar, Text } from 'react-native-paper';
 
 import { radius, spacing, useAppTheme } from '@/theme';
 
+import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
 import { ListingEmptyView, ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
+import { ListingStatusBadge } from '../components/ListingStatusBadge';
+import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
-import { archiveListing, getMyListings, updateListing } from '../marketplace.service';
+import { getMyListings } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
 import type { ListingStatus, MarketplaceListing } from '../marketplace.types';
 import { formatListingDate, formatPrice, getListingDisplayTitle } from '../marketplace.utils';
@@ -23,7 +26,7 @@ export default function MyListingsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ACTIVE');
-  const [actionId, setActionId] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<string | null>(null);
 
   const fetchListings = useCallback(async () => {
     try {
@@ -35,9 +38,11 @@ export default function MyListingsScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchListings().finally(() => setLoading(false));
-  }, [fetchListings]);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchListings().finally(() => setLoading(false));
+    }, [fetchListings]),
+  );
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -49,42 +54,39 @@ export default function MyListingsScreen() {
     [listings, statusFilter],
   );
 
-  const handleArchive = useCallback(
-    async (listingId: string) => {
-      setActionId(listingId);
-      try {
-        await archiveListing(listingId);
-        setListings((prev) =>
-          prev.map((item) => (item.id === listingId ? { ...item, status: 'ARCHIVED' } : item)),
-        );
-      } catch (err) {
-        setError(getMarketplaceErrorMessage(err));
-      } finally {
-        setActionId(null);
-      }
-    },
-    [],
-  );
+  const {
+    dialog,
+    loading: lifecycleLoading,
+    openMarkSoldDialog,
+    openArchiveDialog,
+    closeDialog,
+    confirmMarkSold,
+    confirmArchive,
+  } = useListingLifecycleActions({
+    onMarkedSold: fetchListings,
+    onArchived: fetchListings,
+  });
 
-  const handleMarkSold = useCallback(async (listingId: string) => {
-    setActionId(listingId);
-    try {
-      await updateListing(listingId, { status: 'SOLD' });
-      setListings((prev) =>
-        prev.map((item) => (item.id === listingId ? { ...item, status: 'SOLD' } : item)),
-      );
-    } catch (err) {
-      setError(getMarketplaceErrorMessage(err));
-    } finally {
-      setActionId(null);
-    }
-  }, []);
+  const handleConfirmMarkSold = useCallback(async () => {
+    const message = await confirmMarkSold();
+    if (message) setSnackbar(message);
+  }, [confirmMarkSold]);
+
+  const handleConfirmArchive = useCallback(async () => {
+    const message = await confirmArchive();
+    if (message) setSnackbar(message);
+  }, [confirmArchive]);
 
   const renderItem = useCallback(
     ({ item }: { item: MarketplaceListing }) => (
       <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="elevated">
         <Card.Content style={styles.cardContent}>
-          <Text variant="titleMedium">{getListingDisplayTitle(item)}</Text>
+          <View style={styles.headerRow}>
+            <Text variant="titleMedium" style={{ flex: 1 }}>
+              {getListingDisplayTitle(item)}
+            </Text>
+            <ListingStatusBadge status={item.status} />
+          </View>
           <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
             {formatPrice(item.price)}
           </Text>
@@ -92,47 +94,57 @@ export default function MyListingsScreen() {
             {item.district} · {formatListingDate(item.createdAt)}
           </Text>
 
-          <View style={styles.actions}>
-            <Button
-              mode="outlined"
-              compact
-              onPress={() => router.push(`/marketplace-edit/${item.id}` as Href)}
-              style={styles.actionButton}
-            >
-              {marketplaceStrings.myListings.edit}
-            </Button>
-            {item.status === 'ACTIVE' ? (
+          {item.status === 'ACTIVE' ? (
+            <View style={styles.actions}>
               <Button
                 mode="outlined"
                 compact
-                onPress={() => handleMarkSold(item.id)}
-                loading={actionId === item.id}
-                disabled={actionId === item.id}
+                onPress={() => router.push(`/marketplace-edit/${item.id}` as Href)}
                 style={styles.actionButton}
+                disabled={lifecycleLoading}
+              >
+                {marketplaceStrings.myListings.edit}
+              </Button>
+              <Button
+                mode="outlined"
+                compact
+                onPress={() => openMarkSoldDialog(item.id)}
+                style={styles.actionButton}
+                disabled={lifecycleLoading}
               >
                 {marketplaceStrings.myListings.markSold}
               </Button>
-            ) : null}
-            {item.status !== 'ARCHIVED' ? (
               <Button
                 mode="text"
                 compact
                 textColor={theme.colors.error}
-                onPress={() => handleArchive(item.id)}
-                loading={actionId === item.id}
-                disabled={actionId === item.id}
+                onPress={() => openArchiveDialog(item.id)}
+                disabled={lifecycleLoading}
               >
                 {marketplaceStrings.myListings.archive}
               </Button>
-            ) : null}
-          </View>
+            </View>
+          ) : null}
+
+          {item.status === 'SOLD' ? (
+            <View style={styles.actions}>
+              <Button
+                mode="outlined"
+                compact
+                onPress={() => router.push(`/marketplace-edit/${item.id}` as Href)}
+                style={styles.actionButton}
+              >
+                {marketplaceStrings.myListings.edit}
+              </Button>
+            </View>
+          ) : null}
         </Card.Content>
       </Card>
     ),
-    [actionId, handleArchive, handleMarkSold, router, theme.colors],
+    [lifecycleLoading, openArchiveDialog, openMarkSoldDialog, router, theme.colors.error],
   );
 
-  if (loading) {
+  if (loading && listings.length === 0) {
     return <ListingLoadingView />;
   }
 
@@ -184,6 +196,18 @@ export default function MyListingsScreen() {
           ) : null
         }
       />
+
+      <ListingLifecycleDialogs
+        dialog={dialog}
+        loading={lifecycleLoading}
+        onDismiss={closeDialog}
+        onConfirmMarkSold={handleConfirmMarkSold}
+        onConfirmArchive={handleConfirmArchive}
+      />
+
+      <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
+        {snackbar}
+      </Snackbar>
     </View>
   );
 }
@@ -194,6 +218,7 @@ const styles = StyleSheet.create({
   listContent: { padding: spacing.md, paddingTop: 0, gap: spacing.md, flexGrow: 1 },
   card: { borderRadius: radius.lg },
   cardContent: { gap: spacing.xs },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
   actionButton: { borderRadius: radius.sm },
   inlineError: {

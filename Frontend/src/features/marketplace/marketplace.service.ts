@@ -94,3 +94,8 @@ export const getSavedListings = async (
   });
   return response.data.data;
 };
+
+/** Records a seller contact click for analytics. */
+export const recordContactClick = async (id: string): Promise<void> => {
+  await api.post(`${LISTINGS_ENDPOINT}/${id}/contact`);
+};

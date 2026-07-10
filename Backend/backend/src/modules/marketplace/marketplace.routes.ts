@@ -5,6 +5,7 @@ import { verifyToken } from "../auth/jwt.service";
 import { AuthUser } from "../auth/auth.model";
 import {
   archiveListingHandler,
+  contactListingHandler,
   createListingHandler,
   getListingByIdHandler,
   getListingsHandler,
@@ -52,7 +53,8 @@ router.post("/listings", authenticate, asyncHandler(createListingHandler));
 router.get("/my-listings", authenticate, asyncHandler(getMyListingsHandler));
 router.get("/saved", authenticate, asyncHandler(getSavedListingsHandler));
 
-router.get("/listings/:id", asyncHandler(getListingByIdHandler));
+router.get("/listings/:id", optionalAuthenticate, asyncHandler(getListingByIdHandler));
+router.post("/listings/:id/contact", asyncHandler(contactListingHandler));
 router.put("/listings/:id", authenticate, asyncHandler(updateListingHandler));
 router.delete("/listings/:id", authenticate, asyncHandler(archiveListingHandler));
 

@@ -1,3 +1,5 @@
+import type { ListingStatus } from './marketplace.types';
+
 /** Formats a price in Indian Rupees. */
 export const formatPrice = (value: number): string => `\u20B9${value.toLocaleString('en-IN')}`;
 
@@ -27,4 +29,60 @@ export const getListingDisplayTitle = (listing: {
     return listing.crop;
   }
   return listing.title;
+};
+
+/** Returns true when the authenticated user owns the listing. */
+export const isListingOwner = (
+  sellerId: string,
+  userId: string | null | undefined,
+): boolean => !!userId && sellerId === userId;
+
+/** Normalizes a phone number for `tel:` links. */
+export const formatPhoneForDial = (phone: string): string => phone.replace(/\s+/g, '');
+
+/** Normalizes a phone number for `https://wa.me/` links (India country code). */
+export const formatPhoneForWhatsApp = (phone: string): string => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.startsWith('91') && digits.length === 12) return digits;
+  return digits;
+};
+
+export type StatusBadgeColors = {
+  background: string;
+  text: string;
+};
+
+/** Semantic colors for listing status badges. */
+export const getStatusBadgeColors = (
+  status: ListingStatus,
+  theme: {
+    colors: {
+      primaryContainer: string;
+      onPrimaryContainer: string;
+      secondaryContainer: string;
+      onSecondaryContainer: string;
+      surfaceVariant: string;
+      onSurfaceVariant: string;
+    };
+  },
+): StatusBadgeColors => {
+  switch (status) {
+    case 'ACTIVE':
+      return {
+        background: theme.colors.primaryContainer,
+        text: theme.colors.onPrimaryContainer,
+      };
+    case 'SOLD':
+      return {
+        background: theme.colors.secondaryContainer,
+        text: theme.colors.onSecondaryContainer,
+      };
+    case 'ARCHIVED':
+    default:
+      return {
+        background: theme.colors.surfaceVariant,
+        text: theme.colors.onSurfaceVariant,
+      };
+  }
 };

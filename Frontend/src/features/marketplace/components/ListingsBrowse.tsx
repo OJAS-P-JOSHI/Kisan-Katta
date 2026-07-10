@@ -1,8 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Searchbar, Text } from 'react-native-paper';
+import { ActivityIndicator, Searchbar, Snackbar, Text } from 'react-native-paper';
 
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { spacing, useAppTheme } from '@/theme';
 
 import { CategoryChips } from './CategoryChips';
@@ -18,6 +20,7 @@ import { usePaginatedListings } from '../hooks/usePaginatedListings';
 import { useSavedListingIds } from '../hooks/useSavedListingIds';
 import { marketplaceStrings } from '../marketplace.strings';
 import type { ListingType, MarketplaceCategory, MarketplaceListing } from '../marketplace.types';
+import { isListingOwner } from '../marketplace.utils';
 
 type ListingsBrowseProps = {
   listingType: ListingType;
@@ -31,8 +34,10 @@ export function ListingsBrowse({
   onListingPress,
 }: ListingsBrowseProps) {
   const theme = useAppTheme();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>(CATEGORY_FILTER_ALL);
+  const [snackbar, setSnackbar] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
   const { isSaved, toggleSave } = useSavedListingIds();
 
@@ -48,11 +53,27 @@ export function ListingsBrowse({
       category: categoryParam,
     });
 
+  const hasFocusedOnce = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnce.current) {
+        hasFocusedOnce.current = true;
+        return;
+      }
+      void refresh();
+    }, [refresh]),
+  );
+
   const handleToggleSave = useCallback(
-    (listing: MarketplaceListing) => {
-      void toggleSave(listing.id);
+    async (listing: MarketplaceListing) => {
+      if (isListingOwner(listing.sellerId, user?.userId)) return;
+
+      const errorMessage = await toggleSave(listing.id);
+      if (errorMessage) {
+        setSnackbar(errorMessage);
+      }
     },
-    [toggleSave],
+    [toggleSave, user?.userId],
   );
 
   const handleEndReached = useCallback(() => {
@@ -63,13 +84,18 @@ export function ListingsBrowse({
     ({ item }: { item: MarketplaceListing }) => (
       <ListingCard
         listing={item}
+        currentUserId={user?.userId}
         isSaved={isSaved(item.id)}
         onPress={onListingPress}
         onToggleSave={handleToggleSave}
       />
     ),
-    [handleToggleSave, isSaved, onListingPress],
+    [handleToggleSave, isSaved, onListingPress, user?.userId],
   );
+
+  const emptyMessage = debouncedSearch.trim()
+    ? marketplaceStrings.listings.searchEmptyMessage
+    : marketplaceStrings.listings.emptyMessage;
 
   if (loading) {
     return <ListingLoadingView />;
@@ -116,7 +142,7 @@ export function ListingsBrowse({
         ListEmptyComponent={
           <ListingEmptyView
             title={marketplaceStrings.listings.emptyTitle}
-            message={marketplaceStrings.listings.emptyMessage}
+            message={emptyMessage}
           />
         }
         ListFooterComponent={
@@ -137,6 +163,10 @@ export function ListingsBrowse({
           ) : null
         }
       />
+
+      <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
+        {snackbar}
+      </Snackbar>
     </View>
   );
 }

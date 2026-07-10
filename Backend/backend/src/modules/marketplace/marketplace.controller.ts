@@ -15,6 +15,7 @@ import {
   getListings,
   getMyListings,
   getSavedListings,
+  recordContactClick,
   saveListing,
   unsaveListing,
   updateListing,
@@ -147,7 +148,7 @@ export const getListingByIdHandler = async (
   if (!listingId) {
     throw new AppError("Listing id is required.", 400);
   }
-  const data = await getListingById(listingId);
+  const data = await getListingById(listingId, req.user?.userId);
   res.status(200).json({ success: true, data });
 };
 
@@ -222,4 +223,16 @@ export const getSavedListingsHandler = async (
   const { page, limit } = parsePaginationQuery(req);
   const data = await getSavedListings(userId, page, limit);
   res.status(200).json({ success: true, data });
+};
+
+export const contactListingHandler = async (
+  req: Request,
+  res: Response<{ success: true }>
+): Promise<void> => {
+  const listingId = req.params["id"];
+  if (!listingId) {
+    throw new AppError("Listing id is required.", 400);
+  }
+  await recordContactClick(listingId);
+  res.status(200).json({ success: true });
 };
