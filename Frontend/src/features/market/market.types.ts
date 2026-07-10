@@ -12,7 +12,7 @@ export type MarketPrice = {
   maxPrice: number;
 };
 
-/** Envelope returned by `GET /api/v1/market/prices`. */
+/** Envelope returned by `GET /api/v1/market/prices` and `GET /api/v1/market/favourites`. */
 export type MarketPricesResponse = {
   success: boolean;
   data: MarketPrice[];

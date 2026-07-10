@@ -98,9 +98,9 @@ export const strings = {
     villageLabel: 'Village',
     villagePlaceholder: 'Enter your village name',
     cropsLabel: 'Favourite Crops',
-    cropsHelper: 'Select 1 to 10 crops',
-    languageLabel: 'Preferred Language',
+    cropsHelper: 'Select up to 10 crops you grow',
     saveProfile: 'Save Profile',
+
     saving: 'Saving…',
     updateProfile: 'Update Profile',
     updating: 'Updating…',

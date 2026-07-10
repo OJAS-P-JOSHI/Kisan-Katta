@@ -1,15 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Card, Chip, Divider, Searchbar, Text } from 'react-native-paper';
+import { useCallback, useEffect, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Card, Chip, Divider, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
 import { radius, spacing, useAppTheme } from '@/theme';
 
-import { getMarketPrices } from './market.service';
+import { getMarketErrorMessage } from './market.errors';
+import { getFavouriteMarketPrices } from './market.service';
 import type { MarketPrice } from './market.types';
-
-const FILTER_COMMODITIES = ['All', 'Onion', 'Soyabean', 'Cotton', 'Wheat', 'Tomato'] as const;
 
 const formatPrice = (value: number): string => `\u20B9${value.toLocaleString('en-IN')}`;
 
@@ -22,16 +21,14 @@ export default function MarketScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCommodity, setSelectedCommodity] = useState<string>('All');
 
   const fetchPrices = useCallback(async () => {
     try {
       setError(null);
-      const data = await getMarketPrices();
+      const data = await getFavouriteMarketPrices();
       setPrices(data);
-    } catch {
-      setError(strings.market.errorMessage);
+    } catch (err) {
+      setError(getMarketErrorMessage(err));
     }
   }, []);
 
@@ -43,19 +40,6 @@ export default function MarketScreen() {
     setRefreshing(true);
     fetchPrices().finally(() => setRefreshing(false));
   }, [fetchPrices]);
-
-  const filteredPrices = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    return prices.filter((item) => {
-      const matchesCommodity =
-        selectedCommodity === 'All' || item.commodity.toLowerCase() === selectedCommodity.toLowerCase();
-      const matchesQuery =
-        query.length === 0 ||
-        item.commodity.toLowerCase().includes(query) ||
-        item.market.toLowerCase().includes(query);
-      return matchesCommodity && matchesQuery;
-    });
-  }, [prices, searchQuery, selectedCommodity]);
 
   const renderItem = useCallback(
     ({ item }: { item: MarketPrice }) => (
@@ -158,30 +142,8 @@ export default function MarketScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Searchbar
-        placeholder={strings.market.searchPlaceholder}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchbar}
-        elevation={0}
-      />
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-        {FILTER_COMMODITIES.map((commodity) => (
-          <Chip
-            key={commodity}
-            selected={selectedCommodity === commodity}
-            onPress={() => setSelectedCommodity(commodity)}
-            style={styles.chip}
-            mode={selectedCommodity === commodity ? 'flat' : 'outlined'}
-          >
-            {commodity}
-          </Chip>
-        ))}
-      </ScrollView>
-
       <FlatList
-        data={filteredPrices}
+        data={prices}
         keyExtractor={getItemKey}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
@@ -196,7 +158,7 @@ export default function MarketScreen() {
               {strings.market.emptyTitle}
             </Text>
             <Text variant="bodyMedium" style={[styles.centeredText, { color: theme.colors.onSurfaceVariant }]}>
-              {strings.market.emptyMessage}
+              {strings.home.cropsComing}
             </Text>
           </View>
         }
@@ -210,10 +172,7 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg, gap: spacing.sm },
   centeredText: { textAlign: 'center' },
   retryButton: { marginTop: spacing.sm },
-  searchbar: { marginHorizontal: spacing.md, marginTop: spacing.sm },
-  chipRow: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, gap: spacing.sm },
-  chip: { marginRight: spacing.xs },
-  listContent: { padding: spacing.md, paddingTop: spacing.xs, gap: spacing.md, flexGrow: 1 },
+  listContent: { padding: spacing.md, paddingTop: spacing.sm, gap: spacing.md, flexGrow: 1 },
   card: { borderRadius: radius.lg },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   gradeChip: { height: 28 },

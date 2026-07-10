@@ -3,20 +3,19 @@ import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 
 import { Dropdown } from '@/components/Dropdown';
-import { MultiSelectChips } from '@/components/MultiSelectChips';
 import {
-  COMMON_CROPS,
   DEFAULT_LANGUAGE,
-  LANGUAGE_LABELS,
   MAHARASHTRA_DISTRICTS,
   MAX_FAVOURITE_CROPS,
-  SUPPORTED_LANGUAGES,
   TALUKAS_BY_DISTRICT,
   strings,
   type MaharashtraDistrict,
   type SupportedLanguage,
 } from '@/constants';
+import { MAHARASHTRA_CROPS, normalizeFavoriteCrops } from '@/constants/maharashtraCrops';
 import { radius, spacing } from '@/theme';
+
+import { CropMultiSelect } from './CropMultiSelect';
 
 export type ProfileFormValues = {
   name: string;
@@ -40,12 +39,10 @@ export type ProfileFormProps = {
   onSubmit: (values: ProfileFormValues) => void;
 };
 
-const LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map((code) => LANGUAGE_LABELS[code]);
-
 /**
- * Shared field set for Name / District / Taluka / Village / Favourite Crops /
- * Language, used by both `CompleteProfileScreen` and `EditProfileScreen` so
- * validation and layout live in exactly one place.
+ * Shared field set for Name / District / Taluka / Village / Favourite Crops,
+ * used by both `CompleteProfileScreen` and `EditProfileScreen`.
+ * Language is fixed to Marathi and still sent to preserve the API contract.
  */
 export function ProfileForm({
   initialValues,
@@ -61,8 +58,9 @@ export function ProfileForm({
   );
   const [taluka, setTaluka] = useState<string | null>(initialValues?.taluka ?? null);
   const [village, setVillage] = useState(initialValues?.village ?? '');
-  const [crops, setCrops] = useState<string[]>(initialValues?.favoriteCrops ?? []);
-  const [language, setLanguage] = useState<SupportedLanguage>(initialValues?.language ?? DEFAULT_LANGUAGE);
+  const [crops, setCrops] = useState<string[]>(() =>
+    normalizeFavoriteCrops(initialValues?.favoriteCrops ?? []),
+  );
   const [errors, setErrors] = useState<FormErrors>({});
 
   const talukaOptions = useMemo(() => (district ? TALUKAS_BY_DISTRICT[district] : []), [district]);
@@ -71,11 +69,6 @@ export function ProfileForm({
     setDistrict(value as MaharashtraDistrict);
     setTaluka(null);
     setErrors((e) => ({ ...e, district: undefined, taluka: undefined }));
-  };
-
-  const handleSelectLanguage = (label: string): void => {
-    const code = SUPPORTED_LANGUAGES.find((c) => LANGUAGE_LABELS[c] === label);
-    if (code) setLanguage(code);
   };
 
   const validate = (): boolean => {
@@ -97,7 +90,7 @@ export function ProfileForm({
       taluka,
       village: village.trim(),
       favoriteCrops: crops,
-      language,
+      language: DEFAULT_LANGUAGE,
     });
   };
 
@@ -105,6 +98,7 @@ export function ProfileForm({
     <View>
       <TextInput
         mode="outlined"
+        dense
         label={strings.completeProfile.nameLabel}
         placeholder={strings.completeProfile.namePlaceholder}
         value={name}
@@ -145,6 +139,7 @@ export function ProfileForm({
 
       <TextInput
         mode="outlined"
+        dense
         label={strings.completeProfile.villageLabel}
         placeholder={strings.completeProfile.villagePlaceholder}
         value={village}
@@ -158,11 +153,11 @@ export function ProfileForm({
       />
       {!!errors.village && <HelperText type="error">{errors.village}</HelperText>}
 
-      <View style={styles.field}>
-        <MultiSelectChips
+      <View style={styles.cropsField}>
+        <CropMultiSelect
           label={strings.completeProfile.cropsLabel}
           helperText={strings.completeProfile.cropsHelper}
-          options={COMMON_CROPS}
+          options={MAHARASHTRA_CROPS}
           selected={crops}
           onChange={(next) => {
             setCrops(next);
@@ -170,15 +165,6 @@ export function ProfileForm({
           }}
           max={MAX_FAVOURITE_CROPS}
           error={errors.crops}
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Dropdown
-          label={strings.completeProfile.languageLabel}
-          value={LANGUAGE_LABELS[language]}
-          options={LANGUAGE_OPTIONS}
-          onSelect={handleSelectLanguage}
           disabled={submitting}
         />
       </View>
@@ -204,7 +190,8 @@ export function ProfileForm({
 }
 
 const styles = StyleSheet.create({
-  field: { marginBottom: spacing.sm },
-  button: { marginTop: spacing.md, borderRadius: radius.md },
+  field: { marginBottom: spacing.xs },
+  cropsField: { marginBottom: spacing.sm, marginTop: spacing.xs },
+  button: { marginTop: spacing.sm, borderRadius: radius.md },
   buttonContent: { paddingVertical: spacing.xs },
 });

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, Portal, Text } from 'react-native-paper';
 
-import { strings } from '@/constants';
+import { getMaharashtraCropLabel, strings } from '@/constants';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { radius, spacing, useAppTheme } from '@/theme';
 
@@ -82,7 +82,11 @@ export default function ProfileScreen() {
           <Card.Content style={styles.cardContent}>
             <InfoRow icon="map-marker-outline" label="District" value={profile.district} />
             <InfoRow icon="home-outline" label="Village" value={`${profile.village}, ${profile.taluka}`} />
-            <InfoRow icon="sprout-outline" label="Favourite Crops" value={profile.favoriteCrops.join(', ')} />
+            <InfoRow
+              icon="sprout-outline"
+              label="Favourite Crops"
+              value={profile.favoriteCrops.map(getMaharashtraCropLabel).join(', ')}
+            />
           </Card.Content>
         </Card>
       ) : null}

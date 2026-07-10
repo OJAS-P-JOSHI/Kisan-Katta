@@ -69,5 +69,5 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  header: { marginBottom: spacing.md },
+  header: { marginBottom: spacing.sm },
 });

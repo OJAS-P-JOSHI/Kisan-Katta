@@ -8,6 +8,7 @@ import type { MarketPrice, MarketPricesResponse } from './market.types';
  * called directly.
  */
 const MARKET_PRICES_ENDPOINT = '/api/v1/market/prices';
+const MARKET_FAVOURITES_ENDPOINT = '/api/v1/market/favourites';
 
 const DEFAULT_STATE = 'Maharashtra';
 const DEFAULT_LIMIT = 20;
@@ -20,5 +21,11 @@ export const getMarketPrices = async (
   const response = await api.get<MarketPricesResponse>(MARKET_PRICES_ENDPOINT, {
     params: { state, limit },
   });
+  return response.data.data;
+};
+
+/** Fetches mandi prices for the authenticated farmer's favourite crops. */
+export const getFavouriteMarketPrices = async (): Promise<MarketPrice[]> => {
+  const response = await api.get<MarketPricesResponse>(MARKET_FAVOURITES_ENDPOINT);
   return response.data.data;
 };

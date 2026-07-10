@@ -50,5 +50,5 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   title: { fontWeight: '700' },
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.lg },
+  subtitle: { marginTop: spacing.xs, marginBottom: spacing.md },
 });
