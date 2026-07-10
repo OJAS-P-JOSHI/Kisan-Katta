@@ -12,6 +12,9 @@ interface EnvConfig {
   jwtSecret: string;
   jwtExpiresIn: string;
   otpExpiryMinutes: number;
+  marketApiBaseUrl: string;
+  marketDatasetId: string;
+  marketApiKey: string;
 }
 
 // Centralized, typed access to environment variables with sane defaults.
@@ -31,6 +34,10 @@ export const env: EnvConfig = {
   jwtSecret: process.env.JWT_SECRET || "changeme",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "30d",
   otpExpiryMinutes: Number(process.env.OTP_EXPIRY_MINUTES) || 5,
+  marketApiBaseUrl: process.env.MARKET_API_BASE_URL || "https://api.data.gov.in",
+  marketDatasetId:
+    process.env.MARKET_DATASET_ID || "35985678-0d79-46b4-9ed6-6f13308a1d24",
+  marketApiKey: process.env.MARKET_API_KEY || "",
 };
 
 export const isProduction = (): boolean => env.nodeEnv === "production";

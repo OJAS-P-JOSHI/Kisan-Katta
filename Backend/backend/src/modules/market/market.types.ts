@@ -18,7 +18,6 @@ export interface MarketPricesQuery {
   state?: string;
   district?: string;
   commodity?: string;
-  arrivalDate?: string;
   limit: number;
   offset: number;
 }
@@ -43,4 +42,8 @@ export interface GovMarketRecord {
 // Envelope returned by the data.gov.in resource API.
 export interface GovApiResponse {
   records?: GovMarketRecord[];
+  total?: number;
+  count?: number;
+  offset?: string | number;
+  limit?: string | number;
 }

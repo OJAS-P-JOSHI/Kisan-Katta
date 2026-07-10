@@ -1,0 +1,173 @@
+Market Module Validation — starting
+RECENT_DAYS= 20 GOV_URL= https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24
+Loaded 5 profiles
+
+========== TEST 1 — Profile Validation ==========
+FAIL  Profile Ojas Joshi — not a valid Agmarknet commodity: Kapus (Cotton); not a valid Agmarknet commodity: Tur (Pigeon Pea)
+PASS  Profile Raj Pawar — Sangli / 3 crops
+PASS  Profile Raj — Pune / 2 crops
+PASS  Profile wfwef — Sangli / 3 crops
+PASS  Profile efsdds — Sangli / 3 crops
+
+========== TEST 2 — Government API Validation ==========
+PASS  Gov API Bajra(Pearl Millet/Cumbu) — status=200 records=100 firstDate=16/03/2026 commodity=Bajra(Pearl Millet/Cumbu) district=Sangli time=818ms
+FAIL  Gov API Red gram/Arhar/Tur(whole) — fetch failed time=10734ms
+PASS  Gov API Onion — status=200 records=100 firstDate=09/07/2026 commodity=Onion district=Sangli time=5386ms
+Auth token acquired: true
+
+========== TEST 3 — Cache Validation (phase 1) ==========
+Using GET /market/favourites with auth token
+Cache request 1: status=503 time=10919ms records=n/a success=false
+Cache request 2: status=200 time=1646ms records=24 success=true
+Cache request 3: status=200 time=150ms records=24 success=true
+PASS  Favourites cache miss then hits (latency) — times=10919,1646,150ms — confirm server logs: miss, hit, hit
+
+========== TEST 4 — Recent Filter Validation ==========
+Cutoff: 2026-06-19T18:30:00.000Z MARKET_RECENT_DAYS=20
+PASS  Recent filter Bajra(Pearl Millet/Cumbu) — 0 records, all within window, 9ms
+PASS  Recent filter Red gram/Arhar/Tur(whole) — 0 records, all within window, 17ms
+PASS  Recent filter Onion — 24 records, all within window, 3ms
+
+========== TEST 5 — Seasonal Crop Validation ==========
+PASS  Seasonal Saffron — [] in 289ms
+PASS  Seasonal Rubber — [] in 276ms
+PASS  Seasonal Cocoa — [] in 306ms
+PASS  Seasonal Cardamom — [] in 269ms
+PASS  Seasonal Apple — unexpected recent data (13) but within window
+
+========== TEST 6 — Commodity Exact Match Validation ==========
+FAIL  Commodity exact Kapus (Cotton) — fetch failed
+PASS  Commodity exact Groundnut — 20 records exact match
+FAIL  Commodity exact Tur (Pigeon Pea) — fetch failed
+PASS  Commodity exact Wheat — 20 records exact match
+PASS  Commodity exact Lemon — 0 records exact match
+PASS  Commodity exact Kulthi(Horse Gram) — 20 records exact match
+PASS  Commodity exact Mustard — 0 records exact match
+PASS  Commodity exact Bajra(Pearl Millet/Cumbu) — 20 records exact match
+PASS  Commodity exact Sugarcane — 0 records exact match
+PASS  Commodity exact Maize — 20 records exact match
+PASS  Commodity exact Red gram/Arhar/Tur(whole) — 0 records exact match
+PASS  Commodity exact Onion — 20 records exact match
+
+========== TEST 7 — District Mapping Validation ==========
+Mapping: Chhatrapati Sambhajinagar → Aurangabad (expected Aurangabad)
+PASS  District API Chhatrapati Sambhajinagar — mapped=Aurangabad records=0 sampleDistrict=n/a
+Mapping: Dharashiv → Osmanabad (expected Osmanabad)
+PASS  District API Dharashiv — mapped=Osmanabad records=0 sampleDistrict=n/a
+Mapping: Sangli → Sangli (expected Sangli)
+PASS  District API Sangli — mapped=Sangli records=5 sampleDistrict=Sangli
+Mapping: Pune → Pune (expected Pune)
+PASS  District API Pune — mapped=Pune records=5 sampleDistrict=Pune
+Mapping: Nashik → Nashik (expected Nashik)
+PASS  District API Nashik — mapped=Nashik records=5 sampleDistrict=Nashik
+
+========== TEST 8 — Parallel vs Sequential Benchmark ==========
+Sequential (10 crops): 5233ms
+Parallel Promise.all (10 crops): 10718ms
+Speedup: 0.49x
+PASS  Parallel benchmark — seq=5233ms parallel=10718ms
+
+========== TEST 9 — Failure Handling ==========
+Invalid key gov status: 0
+FAIL  Invalid API key (gov) — expected 401/403 got 0
+Invalid district backend: status=503 {"success":false,"message":"Government market data service is unavailable"}
+PASS  Invalid district — error response: Government market data service is unavailable
+Invalid commodity backend: status=503 {"success":false,"message":"Government market data service is unavailable"}
+PASS  Invalid commodity — error: Government market data service is unavailable
+Invalid key via backend service:
+ imeout: 30000
+Node version: v22.23.1
+Platform: win32
+DNS Lookup: 15.867ms
+DNS Result: [ { address: '164.100.61.198', family: 4 } ]
+ERROR_STATUS=503
+ERROR_MESSAGE=Government market data service is unavailable
+GOVERNMENT API ERROR
+{
+  name: 'TypeError',
+  message: 'fetch failed',
+  stack: 'TypeError: fetch failed\n' +
+    '    at node:internal/deps/undici/undici:15141:13\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n' +
+    '    at async fetchMarketPricesFromGov (D:\\KISAN-KATTA\\Backend\\backend\\dist\\modules\\market\\market.service.js:211:24)\n' +
+    '    at async getMarketPrices (D:\\KISAN-KATTA\\Backend\\backend\\dist\\modules\\market\\market.service.js:302:18)\n' +
+    '    at async [eval]:7:5'
+}
+Government API unavailable: fetch failed
+
+PASS  Invalid API key (backend AppError) — 503 unavailable (gov may not return 401)
+
+========== TEST 10 — Build Validation ==========
+PASS  npm run build — zero TypeScript errors
+
+Waiting 202s more for cache TTL...
+
+========== TEST 3 — Cache Validation (post-TTL) ==========
+Post-TTL: status=200 time=58534ms records=24
+PASS  Cache miss after TTL — 58534ms
+
+=========================
+FINAL REPORT
+=========================
+Total tests executed: 41
+Tests passed: 36
+Tests failed: 5
+Invalid MongoDB profiles: 1
+[
+  {
+    name: 'Ojas Joshi',
+    userId: '6a4eaf1a8d719a918ee1cebe',
+    district: 'Chhatrapati Sambhajinagar',
+    issues: [
+      'not a valid Agmarknet commodity: Kapus (Cotton)',
+      'not a valid Agmarknet commodity: Tur (Pigeon Pea)'
+    ]
+  }
+]
+Invalid commodities: 2
+[
+  { profile: 'Ojas Joshi', crop: 'Kapus (Cotton)' },
+  { profile: 'Ojas Joshi', crop: 'Tur (Pigeon Pea)' }
+]
+Invalid districts: 0
+District mappings:
+[
+  {
+    frontend: 'Chhatrapati Sambhajinagar',
+    mapped: 'Aurangabad',
+    expected: 'Aurangabad',
+    ok: true
+  },
+  {
+    frontend: 'Dharashiv',
+    mapped: 'Osmanabad',
+    expected: 'Osmanabad',
+    ok: true
+  },
+  {
+    frontend: 'Sangli',
+    mapped: 'Sangli',
+    expected: 'Sangli',
+    ok: true
+  },
+  { frontend: 'Pune', mapped: 'Pune', expected: 'Pune', ok: true },
+  {
+    frontend: 'Nashik',
+    mapped: 'Nashik',
+    expected: 'Nashik',
+    ok: true
+  }
+]
+Commodity mismatches: 0
+Old records leaked: 0
+Cache behaviour: see Test 3 (in-memory TTL 5 min; miss/hit/hit then miss after TTL)
+Government API behaviour: native fetch; see Test 2 timings
+Average response time: 3762 ms
+Slowest response: 58534 ms
+Fastest response: 3 ms
+Parallel benchmark: { sequentialMs: 5233, parallelMs: 10718, crops: 10 }
+Production risks:
+ - Gov API network failure for Red gram/Arhar/Tur(whole): fetch failed
+ - Government API did not return 401/403 for invalid key in this run
+
+Wrote validate-market-report.json

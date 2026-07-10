@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { getMarketPrices } from "./market.service";
+import { getAuthUser } from "../auth/auth.middleware";
+import { getFavoriteMarketPrices, getMarketPrices } from "./market.service";
 import { MarketPriceDTO, MarketPricesQuery } from "./market.types";
 import { ApiSuccessResponse } from "../../types/api-response";
 import { AppError } from "../../utils/AppError";
@@ -7,8 +8,6 @@ import { AppError } from "../../utils/AppError";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
-// Trims a query param down to a clean string, treating blank/non-string
-// values (e.g. arrays from repeated query keys) as "not provided".
 const parseStringParam = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
@@ -37,7 +36,6 @@ const parseQuery = (req: Request): MarketPricesQuery => ({
   state: parseStringParam(req.query.state),
   district: parseStringParam(req.query.district),
   commodity: parseStringParam(req.query.commodity),
-  arrivalDate: parseStringParam(req.query.arrivalDate),
   limit: parseLimit(req.query.limit),
   offset: parseOffset(req.query.offset),
 });
@@ -48,6 +46,18 @@ export const getPrices = async (
 ): Promise<void> => {
   const query = parseQuery(req);
   const data = await getMarketPrices(query);
+  res.status(200).json({
+    success: true,
+    data,
+  });
+};
+
+export const getFavoritePrices = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<MarketPriceDTO[]>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const data = await getFavoriteMarketPrices(userId);
   res.status(200).json({
     success: true,
     data,

@@ -1,0 +1,329 @@
+{
+  "tests": [
+    {
+      "name": "Profile Ojas Joshi",
+      "ok": false,
+      "detail": "not a valid Agmarknet commodity: Kapus (Cotton); not a valid Agmarknet commodity: Tur (Pigeon Pea)"
+    },
+    {
+      "name": "Profile Raj Pawar",
+      "ok": true,
+      "detail": "Sangli / 3 crops"
+    },
+    {
+      "name": "Profile Raj",
+      "ok": true,
+      "detail": "Pune / 2 crops"
+    },
+    {
+      "name": "Profile wfwef",
+      "ok": true,
+      "detail": "Sangli / 3 crops"
+    },
+    {
+      "name": "Profile efsdds",
+      "ok": true,
+      "detail": "Sangli / 3 crops"
+    },
+    {
+      "name": "Gov API Bajra(Pearl Millet/Cumbu)",
+      "ok": true,
+      "detail": "status=200 records=100 firstDate=16/03/2026 commodity=Bajra(Pearl Millet/Cumbu) district=Sangli time=818ms"
+    },
+    {
+      "name": "Gov API Red gram/Arhar/Tur(whole)",
+      "ok": false,
+      "detail": "fetch failed time=10734ms"
+    },
+    {
+      "name": "Gov API Onion",
+      "ok": true,
+      "detail": "status=200 records=100 firstDate=09/07/2026 commodity=Onion district=Sangli time=5386ms"
+    },
+    {
+      "name": "Favourites cache miss then hits (latency)",
+      "ok": true,
+      "detail": "times=10919,1646,150ms — confirm server logs: miss, hit, hit"
+    },
+    {
+      "name": "Recent filter Bajra(Pearl Millet/Cumbu)",
+      "ok": true,
+      "detail": "0 records, all within window, 9ms"
+    },
+    {
+      "name": "Recent filter Red gram/Arhar/Tur(whole)",
+      "ok": true,
+      "detail": "0 records, all within window, 17ms"
+    },
+    {
+      "name": "Recent filter Onion",
+      "ok": true,
+      "detail": "24 records, all within window, 3ms"
+    },
+    {
+      "name": "Seasonal Saffron",
+      "ok": true,
+      "detail": "[] in 289ms"
+    },
+    {
+      "name": "Seasonal Rubber",
+      "ok": true,
+      "detail": "[] in 276ms"
+    },
+    {
+      "name": "Seasonal Cocoa",
+      "ok": true,
+      "detail": "[] in 306ms"
+    },
+    {
+      "name": "Seasonal Cardamom",
+      "ok": true,
+      "detail": "[] in 269ms"
+    },
+    {
+      "name": "Seasonal Apple",
+      "ok": true,
+      "detail": "unexpected recent data (13) but within window"
+    },
+    {
+      "name": "Commodity exact Kapus (Cotton)",
+      "ok": false,
+      "detail": "fetch failed"
+    },
+    {
+      "name": "Commodity exact Groundnut",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "Commodity exact Tur (Pigeon Pea)",
+      "ok": false,
+      "detail": "fetch failed"
+    },
+    {
+      "name": "Commodity exact Wheat",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "Commodity exact Lemon",
+      "ok": true,
+      "detail": "0 records exact match"
+    },
+    {
+      "name": "Commodity exact Kulthi(Horse Gram)",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "Commodity exact Mustard",
+      "ok": true,
+      "detail": "0 records exact match"
+    },
+    {
+      "name": "Commodity exact Bajra(Pearl Millet/Cumbu)",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "Commodity exact Sugarcane",
+      "ok": true,
+      "detail": "0 records exact match"
+    },
+    {
+      "name": "Commodity exact Maize",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "Commodity exact Red gram/Arhar/Tur(whole)",
+      "ok": true,
+      "detail": "0 records exact match"
+    },
+    {
+      "name": "Commodity exact Onion",
+      "ok": true,
+      "detail": "20 records exact match"
+    },
+    {
+      "name": "District API Chhatrapati Sambhajinagar",
+      "ok": true,
+      "detail": "mapped=Aurangabad records=0 sampleDistrict=n/a"
+    },
+    {
+      "name": "District API Dharashiv",
+      "ok": true,
+      "detail": "mapped=Osmanabad records=0 sampleDistrict=n/a"
+    },
+    {
+      "name": "District API Sangli",
+      "ok": true,
+      "detail": "mapped=Sangli records=5 sampleDistrict=Sangli"
+    },
+    {
+      "name": "District API Pune",
+      "ok": true,
+      "detail": "mapped=Pune records=5 sampleDistrict=Pune"
+    },
+    {
+      "name": "District API Nashik",
+      "ok": true,
+      "detail": "mapped=Nashik records=5 sampleDistrict=Nashik"
+    },
+    {
+      "name": "Parallel benchmark",
+      "ok": true,
+      "detail": "seq=5233ms parallel=10718ms"
+    },
+    {
+      "name": "Invalid API key (gov)",
+      "ok": false,
+      "detail": "expected 401/403 got 0"
+    },
+    {
+      "name": "Invalid district",
+      "ok": true,
+      "detail": "error response: Government market data service is unavailable"
+    },
+    {
+      "name": "Invalid commodity",
+      "ok": true,
+      "detail": "error: Government market data service is unavailable"
+    },
+    {
+      "name": "Invalid API key (backend AppError)",
+      "ok": true,
+      "detail": "503 unavailable (gov may not return 401)"
+    },
+    {
+      "name": "npm run build",
+      "ok": true,
+      "detail": "zero TypeScript errors"
+    },
+    {
+      "name": "Cache miss after TTL",
+      "ok": true,
+      "detail": "58534ms"
+    }
+  ],
+  "responseTimes": [
+    818,
+    10734,
+    5386,
+    10919,
+    1646,
+    150,
+    9,
+    17,
+    3,
+    289,
+    276,
+    306,
+    269,
+    464,
+    10244,
+    537,
+    10724,
+    525,
+    891,
+    217,
+    204,
+    211,
+    1188,
+    213,
+    179,
+    202,
+    186,
+    213,
+    176,
+    236,
+    192,
+    223,
+    391,
+    543,
+    278,
+    222,
+    503,
+    640,
+    473,
+    288,
+    1671,
+    257,
+    644,
+    841,
+    1282,
+    10706,
+    10709,
+    10712,
+    10713,
+    10715,
+    10709,
+    10730,
+    58534
+  ],
+  "invalidProfiles": [
+    {
+      "name": "Ojas Joshi",
+      "userId": "6a4eaf1a8d719a918ee1cebe",
+      "district": "Chhatrapati Sambhajinagar",
+      "issues": [
+        "not a valid Agmarknet commodity: Kapus (Cotton)",
+        "not a valid Agmarknet commodity: Tur (Pigeon Pea)"
+      ]
+    }
+  ],
+  "invalidCommodities": [
+    {
+      "profile": "Ojas Joshi",
+      "crop": "Kapus (Cotton)"
+    },
+    {
+      "profile": "Ojas Joshi",
+      "crop": "Tur (Pigeon Pea)"
+    }
+  ],
+  "invalidDistricts": [],
+  "oldRecords": [],
+  "commodityMismatches": [],
+  "districtMappings": [
+    {
+      "frontend": "Chhatrapati Sambhajinagar",
+      "mapped": "Aurangabad",
+      "expected": "Aurangabad",
+      "ok": true
+    },
+    {
+      "frontend": "Dharashiv",
+      "mapped": "Osmanabad",
+      "expected": "Osmanabad",
+      "ok": true
+    },
+    {
+      "frontend": "Sangli",
+      "mapped": "Sangli",
+      "expected": "Sangli",
+      "ok": true
+    },
+    {
+      "frontend": "Pune",
+      "mapped": "Pune",
+      "expected": "Pune",
+      "ok": true
+    },
+    {
+      "frontend": "Nashik",
+      "mapped": "Nashik",
+      "expected": "Nashik",
+      "ok": true
+    }
+  ],
+  "risks": [
+    "Gov API network failure for Red gram/Arhar/Tur(whole): fetch failed",
+    "Government API did not return 401/403 for invalid key in this run"
+  ],
+  "parallel": {
+    "sequentialMs": 5233,
+    "parallelMs": 10718,
+    "crops": 10
+  }
+}
