@@ -15,6 +15,11 @@ import {
   unsaveListingHandler,
   updateListingHandler,
 } from "./marketplace.controller";
+import {
+  deleteMarketplaceImageHandler,
+  uploadMarketplaceImagesHandler,
+} from "./marketplace.image.controller";
+import { marketplaceImageUpload } from "./marketplace.upload.middleware";
 
 const router = Router();
 
@@ -50,6 +55,13 @@ const optionalAuthenticate = asyncHandler(
 
 router.get("/listings", optionalAuthenticate, asyncHandler(getListingsHandler));
 router.post("/listings", authenticate, asyncHandler(createListingHandler));
+router.post(
+  "/images/upload",
+  authenticate,
+  marketplaceImageUpload,
+  asyncHandler(uploadMarketplaceImagesHandler)
+);
+router.delete("/images", authenticate, asyncHandler(deleteMarketplaceImageHandler));
 router.get("/my-listings", authenticate, asyncHandler(getMyListingsHandler));
 router.get("/saved", authenticate, asyncHandler(getSavedListingsHandler));
 

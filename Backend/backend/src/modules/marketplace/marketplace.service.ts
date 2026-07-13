@@ -6,6 +6,7 @@ import { AuthUser } from "../auth/auth.model";
 import { FarmerProfile } from "../profile/profile.model";
 import { getProfile } from "../profile/profile.service";
 import { LISTING_EXPIRY_DAYS } from "./marketplace.constants";
+import { normalizeListingImages, toStoredListingImages } from "./marketplace.image.utils";
 import { MarketplaceListing, MarketplaceSaved } from "./marketplace.model";
 import type {
   CreateListingBody,
@@ -36,7 +37,7 @@ const toListingDTO = (
   price: doc.price,
   quantity: doc.quantity,
   unit: doc.unit,
-  images: doc.images,
+  images: normalizeListingImages(doc.images as unknown[]),
   district: doc.district,
   status: doc.status,
   views: doc.views,
@@ -235,7 +236,7 @@ export const createListing = async (
     price: data.price,
     quantity: data.quantity,
     unit: data.unit,
-    images: data.images ?? [],
+    images: toStoredListingImages(data.images ?? []),
     district: profile.district,
     status: "ACTIVE",
     views: 0,
@@ -330,7 +331,13 @@ export const updateListing = async (
     throw new AppError("Archived listings cannot be updated.", 400);
   }
 
-  Object.assign(listing, data);
+  const { images, ...rest } = data;
+  Object.assign(listing, rest);
+
+  if (images !== undefined) {
+    listing.images = toStoredListingImages(images);
+  }
+
   await listing.save();
 
   return toListingDTO(listing);

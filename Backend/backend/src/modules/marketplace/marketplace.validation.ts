@@ -4,8 +4,8 @@ import {
   LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
   MARKETPLACE_UNITS,
-  MAX_LISTING_IMAGES,
 } from "./marketplace.constants";
+import { validateListingImages } from "./marketplace.image.validation";
 import type {
   CreateListingBody,
   ListingStatus,
@@ -72,24 +72,6 @@ const validateStatus = (value: unknown): ListingStatus => {
   return value as ListingStatus;
 };
 
-const validateImages = (value: unknown): string[] => {
-  if (value === undefined || value === null) return [];
-  if (!Array.isArray(value)) {
-    throw new AppError("images must be an array of URL strings.", 400);
-  }
-  if (value.length > MAX_LISTING_IMAGES) {
-    throw new AppError(`images cannot contain more than ${MAX_LISTING_IMAGES} URLs.`, 400);
-  }
-  const urls: string[] = [];
-  for (const item of value) {
-    if (typeof item !== "string" || item.trim().length === 0) {
-      throw new AppError("Each image must be a non-empty URL string.", 400);
-    }
-    urls.push(item.trim());
-  }
-  return urls;
-};
-
 const validateHarvestDate = (value: unknown): Date => {
   if (typeof value !== "string" && !(value instanceof Date)) {
     throw new AppError("harvestDate must be a valid date string.", 400);
@@ -138,7 +120,7 @@ export const validateCreateListing = (body: Record<string, unknown>): CreateList
     title: requireString(body["title"], "title"),
     category: validateCategory(body["category"]),
     price: requirePositiveNumber(body["price"], "price"),
-    images: validateImages(body["images"]),
+    images: validateListingImages(body["images"]),
   };
 
   const description = optionalString(body["description"], "description");
@@ -194,7 +176,7 @@ export const validateUpdateListing = (body: Record<string, unknown>): UpdateList
   if (body["price"] !== undefined) result.price = requirePositiveNumber(body["price"], "price");
   if (body["quantity"] !== undefined) result.quantity = requirePositiveNumber(body["quantity"], "quantity");
   if (body["unit"] !== undefined) result.unit = validateUnit(body["unit"]);
-  if (body["images"] !== undefined) result.images = validateImages(body["images"]);
+  if (body["images"] !== undefined) result.images = validateListingImages(body["images"]);
   if (body["status"] !== undefined) {
     const status = validateStatus(body["status"]);
     if (status === "ARCHIVED") {

@@ -1,19 +1,20 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Image, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Snackbar, Text } from 'react-native-paper';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { radius, spacing, useAppTheme } from '@/theme';
 
+import { ListingImageCarousel } from '../components/ListingImageCarousel';
 import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
 import { ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getListingById, recordContactClick } from '../marketplace.service';
-import { marketplaceStrings } from '../marketplace.strings';
+import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListingDetail } from '../marketplace.types';
 import {
   formatListingDate,
@@ -21,7 +22,6 @@ import {
   formatPhoneForWhatsApp,
   formatPrice,
   getListingDisplayTitle,
-  getListingImageUrl,
   isListingOwner,
 } from '../marketplace.utils';
 
@@ -142,7 +142,6 @@ export default function ListingDetailScreen() {
     );
   }
 
-  const imageUrl = getListingImageUrl(listing.images);
   const title = getListingDisplayTitle(listing);
   const isOwner = isListingOwner(listing.sellerId, user?.userId);
 
@@ -152,17 +151,7 @@ export default function ListingDetailScreen() {
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.content}
       >
-        <View style={[styles.imageWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <MaterialCommunityIcons
-              name={listing.listingType === 'produce' ? 'barley' : 'package-variant'}
-              size={64}
-              color={theme.colors.onSurfaceVariant}
-            />
-          )}
-        </View>
+        <ListingImageCarousel images={listing.images} listingType={listing.listingType} />
 
         <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="elevated">
           <Card.Content style={styles.cardContent}>
@@ -204,7 +193,7 @@ export default function ListingDetailScreen() {
               <DetailRow label={marketplaceStrings.detail.stock} value={String(listing.stock)} />
             ) : null}
 
-            <DetailRow label={marketplaceStrings.detail.category} value={listing.category} />
+            <DetailRow label={marketplaceStrings.detail.category} value={getCategoryLabel(listing.category)} />
 
             {listing.description ? (
               <>
@@ -250,7 +239,7 @@ export default function ListingDetailScreen() {
                   contentStyle={styles.actionButtonContent}
                   disabled={lifecycleLoading}
                 >
-                  {marketplaceStrings.create.editTitle}
+                  {marketplaceStrings.detail.editListing}
                 </Button>
                 <Button
                   mode="outlined"
@@ -260,7 +249,7 @@ export default function ListingDetailScreen() {
                   contentStyle={styles.actionButtonContent}
                   disabled={lifecycleLoading}
                 >
-                  {marketplaceStrings.create.markSold}
+                  {marketplaceStrings.detail.markSold}
                 </Button>
                 <Button
                   mode="outlined"
@@ -272,7 +261,7 @@ export default function ListingDetailScreen() {
                   disabled={lifecycleLoading}
                   loading={lifecycleLoading}
                 >
-                  {marketplaceStrings.create.archive}
+                  {marketplaceStrings.detail.archive}
                 </Button>
               </>
             ) : null}
@@ -285,7 +274,7 @@ export default function ListingDetailScreen() {
                 style={styles.actionButton}
                 contentStyle={styles.actionButtonContent}
               >
-                {marketplaceStrings.create.editTitle}
+                {marketplaceStrings.detail.editListing}
               </Button>
             ) : null}
           </View>
@@ -349,15 +338,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xl },
-  imageWrap: {
-    width: '100%',
-    height: 220,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  image: { width: '100%', height: '100%' },
   card: { borderRadius: radius.lg },
   cardContent: { gap: spacing.sm },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },

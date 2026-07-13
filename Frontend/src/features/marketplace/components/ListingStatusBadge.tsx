@@ -2,8 +2,9 @@ import { memo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Chip } from 'react-native-paper';
 
-import { spacing, useAppTheme } from '@/theme';
+import { useAppTheme } from '@/theme';
 
+import { getStatusLabel } from '../marketplace.strings';
 import type { ListingStatus } from '../marketplace.types';
 import { getStatusBadgeColors } from '../marketplace.utils';
 
@@ -22,7 +23,7 @@ function ListingStatusBadgeComponent({ status, compact = true }: ListingStatusBa
       style={[styles.chip, { backgroundColor: colors.background }]}
       textStyle={[styles.chipText, { color: colors.text }]}
     >
-      {status}
+      {getStatusLabel(status)}
     </Chip>
   );
 }

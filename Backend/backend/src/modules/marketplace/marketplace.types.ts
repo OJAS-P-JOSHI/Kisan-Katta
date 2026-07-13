@@ -18,6 +18,23 @@ export type ListingStatus = (typeof LISTING_STATUSES)[number];
 export type ListingSortOption = (typeof LISTING_SORT_OPTIONS)[number];
 
 // ---------------------------------------------------------------------------
+// Image shapes
+// ---------------------------------------------------------------------------
+
+export interface ListingImage {
+  url: string;
+  publicId: string;
+}
+
+export interface UploadImagesResponseDTO {
+  images: ListingImage[];
+}
+
+export interface DeleteImageBody {
+  publicId: string;
+}
+
+// ---------------------------------------------------------------------------
 // Mongoose document interfaces
 // ---------------------------------------------------------------------------
 
@@ -31,7 +48,7 @@ export interface IMarketplaceListing {
   price: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images: string[];
+  images: ListingImage[];
   district: string;
   status: ListingStatus;
   views: number;
@@ -66,7 +83,7 @@ export interface CreateListingBody {
   price: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images?: string[];
+  images?: ListingImage[];
   crop?: string;
   harvestDate?: Date;
   moisture?: number;
@@ -83,7 +100,7 @@ export interface UpdateListingBody {
   price?: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images?: string[];
+  images?: ListingImage[];
   status?: ListingStatus;
   crop?: string;
   harvestDate?: Date;
@@ -124,7 +141,7 @@ export interface ListingResponseDTO {
   price: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images: string[];
+  images: ListingImage[];
   district: string;
   status: ListingStatus;
   views: number;

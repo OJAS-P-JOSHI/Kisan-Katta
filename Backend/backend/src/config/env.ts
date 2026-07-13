@@ -15,6 +15,9 @@ interface EnvConfig {
   marketApiBaseUrl: string;
   marketDatasetId: string;
   marketApiKey: string;
+  cloudinaryCloudName: string;
+  cloudinaryApiKey: string;
+  cloudinaryApiSecret: string;
 }
 
 // Centralized, typed access to environment variables with sane defaults.
@@ -38,6 +41,9 @@ export const env: EnvConfig = {
   marketDatasetId:
     process.env.MARKET_DATASET_ID || "35985678-0d79-46b4-9ed6-6f13308a1d24",
   marketApiKey: process.env.MARKET_API_KEY || "",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
 };
 
 export const isProduction = (): boolean => env.nodeEnv === "production";

@@ -33,6 +33,8 @@ export const MARKETPLACE_UNITS = [
 
 export const LISTING_STATUSES = ['ACTIVE', 'SOLD', 'ARCHIVED'] as const;
 
+export const MAX_LISTING_IMAGES = 3;
+
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;
 

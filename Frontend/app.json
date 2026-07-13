@@ -36,7 +36,15 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "बाजारपेठ जाहिरातीसाठी फोटो निवडण्याची परवानगी द्या.",
+          "cameraPermission": "बाजारपेठ जाहिरातीसाठी कॅमेरा वापरण्याची परवानगी द्या."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -35,13 +35,13 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
     quantity: { type: Number, min: 0 },
     unit: { type: String, enum: MARKETPLACE_UNITS },
     images: {
-      type: [String],
+      type: [Schema.Types.Mixed],
       default: [],
       validate: {
-        validator: (v: string[]) => v.length <= MAX_LISTING_IMAGES,
-        message: `images cannot contain more than ${MAX_LISTING_IMAGES} URLs.`,
+        validator: (value: unknown[]) => value.length <= MAX_LISTING_IMAGES,
+        message: `images cannot contain more than ${MAX_LISTING_IMAGES} items.`,
       },
-    },
+    } as unknown as Schema<IMarketplaceListing>["obj"]["images"],
     district: { type: String, required: true, index: true },
     status: {
       type: String,

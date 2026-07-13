@@ -1,16 +1,18 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import { Card, Chip, IconButton, Text } from 'react-native-paper';
+import { Card, IconButton, Text } from 'react-native-paper';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { elevation, radius, spacing, useAppTheme } from '@/theme';
 
+import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListing } from '../marketplace.types';
 import {
   formatListingDate,
   formatPrice,
   getListingDisplayTitle,
   getListingImageUrl,
+  getListingImageUrls,
   isListingOwner,
 } from '../marketplace.utils';
 import { ListingStatusBadge } from './ListingStatusBadge';
@@ -36,6 +38,8 @@ function ListingCardComponent({
 }: ListingCardProps) {
   const theme = useAppTheme();
   const imageUrl = getListingImageUrl(listing.images);
+  const imageCount = getListingImageUrls(listing.images).length;
+  const extraImageCount = imageCount > 1 ? imageCount - 1 : 0;
   const title = getListingDisplayTitle(listing);
   const isOwner = isListingOwner(listing.sellerId, currentUserId);
   const showSaveButton = !!onToggleSave && !isOwner;
@@ -45,20 +49,34 @@ function ListingCardComponent({
     onToggleSave?.(listing);
   }, [listing, onToggleSave]);
 
+  const quantityText =
+    listing.quantity != null && listing.unit
+      ? `${listing.quantity} ${listing.unit}`
+      : listing.stock != null
+        ? `${listing.stock} ${marketplaceStrings.detail.inStock}`
+        : null;
+
   return (
     <Pressable onPress={handlePress}>
-      <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="elevated">
+      <Card style={[styles.card, elevation.soft, { backgroundColor: theme.colors.surface }]} mode="elevated">
         <View style={styles.cardRow}>
           <View style={[styles.imageWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
             {imageUrl ? (
               <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
             ) : (
               <MaterialCommunityIcons
-                name={listing.listingType === 'produce' ? 'barley' : 'package-variant'}
-                size={32}
+                name={listing.listingType === 'produce' ? 'sprout' : 'package-variant'}
+                size={36}
                 color={theme.colors.onSurfaceVariant}
               />
             )}
+            {extraImageCount > 0 ? (
+              <View style={[styles.moreBadge, { backgroundColor: theme.colors.surface }]}>
+                <Text variant="labelSmall" style={{ color: theme.colors.onSurface, fontWeight: '700' }}>
+                  {marketplaceStrings.images.morePhotosOverlay(extraImageCount)}
+                </Text>
+              </View>
+            ) : null}
             {isOwner ? (
               <View style={[styles.ownerBadge, { backgroundColor: theme.colors.primaryContainer }]}>
                 <Text
@@ -66,7 +84,7 @@ function ListingCardComponent({
                   numberOfLines={1}
                   style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}
                 >
-                  My Listing
+                  {marketplaceStrings.myListings.myListingBadge}
                 </Text>
               </View>
             ) : null}
@@ -74,16 +92,21 @@ function ListingCardComponent({
 
           <View style={styles.content}>
             <View style={styles.titleRow}>
-              <Text variant="titleMedium" numberOfLines={1} style={{ color: theme.colors.onSurface, flex: 1 }}>
+              <Text
+                variant="titleMedium"
+                numberOfLines={2}
+                style={{ color: theme.colors.onSurface, flex: 1, fontWeight: '600' }}
+              >
                 {title}
               </Text>
               {showSaveButton ? (
                 <IconButton
                   icon={isSaved ? 'heart' : 'heart-outline'}
-                  size={20}
+                  size={22}
                   iconColor={isSaved ? theme.colors.error : theme.colors.onSurfaceVariant}
                   onPress={handleToggleSave}
                   style={styles.saveButton}
+                  hitSlop={8}
                 />
               ) : null}
             </View>
@@ -100,33 +123,28 @@ function ListingCardComponent({
               </Text>
             ) : null}
 
-            <Text variant="titleSmall" style={{ color: theme.colors.primary, marginTop: spacing.xs }}>
+            <Text variant="titleSmall" style={[styles.price, { color: theme.colors.primary }]}>
               {formatPrice(listing.price)}
-              {listing.quantity != null && listing.unit
-                ? ` · ${listing.quantity} ${listing.unit}`
-                : listing.stock != null
-                  ? ` · ${listing.stock} in stock`
-                  : ''}
             </Text>
+
+            {quantityText ? (
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                {quantityText}
+              </Text>
+            ) : null}
 
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="map-marker-outline" size={14} color={theme.colors.onSurfaceVariant} />
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                <MaterialCommunityIcons name="map-marker-outline" size={15} color={theme.colors.primary} />
+                <Text variant="bodySmall" numberOfLines={1} style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
                   {listing.district}
-                </Text>
-              </View>
-              <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="calendar-outline" size={14} color={theme.colors.onSurfaceVariant} />
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  {formatListingDate(listing.createdAt)}
                 </Text>
               </View>
             </View>
 
-            <Chip compact mode="outlined" style={styles.categoryChip} textStyle={styles.categoryChipText}>
-              {listing.category}
-            </Chip>
+            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              {getCategoryLabel(listing.category)} · {formatListingDate(listing.createdAt)}
+            </Text>
           </View>
         </View>
       </Card>
@@ -138,16 +156,24 @@ export const ListingCard = memo(ListingCardComponent);
 
 const styles = StyleSheet.create({
   card: { borderRadius: radius.lg },
-  cardRow: { flexDirection: 'row', padding: spacing.sm, gap: spacing.sm },
+  cardRow: { flexDirection: 'row', padding: spacing.md, gap: spacing.md },
   imageWrap: {
-    width: 88,
-    height: 88,
+    width: 96,
+    height: 96,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   image: { width: '100%', height: '100%' },
+  moreBadge: {
+    position: 'absolute',
+    bottom: spacing.xs,
+    right: spacing.xs,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+  },
   ownerBadge: {
     position: 'absolute',
     top: spacing.xs,
@@ -155,20 +181,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
-    maxWidth: 72,
+    maxWidth: 80,
   },
-  content: { flex: 1, justifyContent: 'center' },
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
-  badgeRow: { marginTop: spacing.xs },
-  saveButton: { margin: 0 },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.xs,
-    gap: spacing.sm,
-  },
+  content: { flex: 1, gap: spacing.xs },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  badgeRow: { alignSelf: 'flex-start' },
+  saveButton: { margin: 0, width: 40, height: 40 },
+  price: { fontWeight: '700', marginTop: spacing.xs },
+  metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
-  categoryChip: { alignSelf: 'flex-start', marginTop: spacing.xs, height: 24 },
-  categoryChipText: { fontSize: 10, lineHeight: 12, marginVertical: 0 },
 });

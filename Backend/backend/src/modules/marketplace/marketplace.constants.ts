@@ -30,7 +30,17 @@ export const LISTING_SORT_OPTIONS = [
 ] as const;
 
 export const LISTING_EXPIRY_DAYS = 30;
-export const MAX_LISTING_IMAGES = 5;
+export const MAX_LISTING_IMAGES = 3;
+export const MAX_UPLOAD_IMAGES = 3;
+export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const CLOUDINARY_MARKETPLACE_FOLDER = "kisan-katta/marketplace";
 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;

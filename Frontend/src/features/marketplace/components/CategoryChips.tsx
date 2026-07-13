@@ -9,6 +9,7 @@ import {
   MARKETPLACE_CATEGORIES,
   type CategoryFilter,
 } from '../marketplace.constants';
+import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 
 type CategoryChipsProps = {
   selected: CategoryFilter;
@@ -19,17 +20,24 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
   const categories: CategoryFilter[] = [CATEGORY_FILTER_ALL, ...MARKETPLACE_CATEGORIES];
 
   const renderChip = useCallback(
-    (category: CategoryFilter) => (
-      <Chip
-        key={category}
-        compact
-        selected={selected === category}
-        onPress={() => onSelect(category)}
-        style={styles.chip}
-      >
-        {category}
-      </Chip>
-    ),
+    (category: CategoryFilter) => {
+      const label =
+        category === CATEGORY_FILTER_ALL
+          ? marketplaceStrings.listings.categoryAll
+          : getCategoryLabel(category);
+
+      return (
+        <Chip
+          key={category}
+          compact
+          selected={selected === category}
+          onPress={() => onSelect(category)}
+          style={styles.chip}
+        >
+          {label}
+        </Chip>
+      );
+    },
     [onSelect, selected],
   );
 

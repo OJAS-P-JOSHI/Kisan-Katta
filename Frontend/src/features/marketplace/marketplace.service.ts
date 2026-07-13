@@ -4,6 +4,7 @@ import { DEFAULT_LIMIT, DEFAULT_PAGE } from './marketplace.constants';
 import type {
   CreateListingPayload,
   ListingDetailResponse,
+  ListingImage,
   ListingResponse,
   ListingsQueryParams,
   PaginatedListings,
@@ -11,6 +12,7 @@ import type {
   SaveListingResponse,
   UnsaveListingResponse,
   UpdateListingPayload,
+  UploadImagesResponse,
 } from './marketplace.types';
 
 const MARKETPLACE_BASE = '/api/v1/marketplace';
@@ -98,4 +100,41 @@ export const getSavedListings = async (
 /** Records a seller contact click for analytics. */
 export const recordContactClick = async (id: string): Promise<void> => {
   await api.post(`${LISTINGS_ENDPOINT}/${id}/contact`);
+};
+
+const IMAGES_UPLOAD_ENDPOINT = `${MARKETPLACE_BASE}/images/upload`;
+const IMAGES_DELETE_ENDPOINT = `${MARKETPLACE_BASE}/images`;
+
+/** Uploads a single local image file to Cloudinary via the backend. */
+export const uploadMarketplaceImage = async (
+  uri: string,
+  fileName: string,
+  mimeType: string,
+): Promise<ListingImage> => {
+  const formData = new FormData();
+  formData.append('images', {
+    uri,
+    name: fileName,
+    type: mimeType,
+  } as unknown as Blob);
+
+  const response = await api.post<UploadImagesResponse>(
+    IMAGES_UPLOAD_ENDPOINT,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      transformRequest: (data) => data,
+    },
+  );
+
+  const uploaded = response.data.data.images[0];
+  if (!uploaded) {
+    throw new Error('Image upload returned no data.');
+  }
+  return uploaded;
+};
+
+/** Deletes an uploaded marketplace image from Cloudinary. */
+export const deleteMarketplaceImage = async (publicId: string): Promise<void> => {
+  await api.delete(IMAGES_DELETE_ENDPOINT, { data: { publicId } });
 };

@@ -1,15 +1,20 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 
 import { Dropdown } from '@/components/Dropdown';
+import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 import { radius, spacing, useAppTheme } from '@/theme';
 
+import { CropSelector } from './CropSelector';
+import { HarvestDateField } from './HarvestDateField';
+import { ListingImagePicker } from './ListingImagePicker';
 import {
   MARKETPLACE_UNITS,
   PRODUCT_CATEGORIES,
 } from '../marketplace.constants';
-import { marketplaceStrings } from '../marketplace.strings';
+import type { UseListingImagesReturn } from '../hooks/useListingImages';
+import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 import type {
   CreateListingPayload,
   ListingType,
@@ -34,11 +39,17 @@ export type ListingFormValues = {
   description: string;
 };
 
+export type ListingCreateSubmitPayload = Omit<CreateListingPayload, 'images'>;
+export type ListingUpdateSubmitPayload = Omit<UpdateListingPayload, 'images'>;
+export type ListingFormSubmitPayload = ListingCreateSubmitPayload | ListingUpdateSubmitPayload;
+
 type ListingFormProps = {
   initialListing?: MarketplaceListing;
+  images: UseListingImagesReturn;
+  onUploadRetry?: () => void;
   submitting: boolean;
   serverError?: string | null;
-  onSubmit: (payload: CreateListingPayload | UpdateListingPayload) => void;
+  onSubmit: (payload: ListingFormSubmitPayload) => void | Promise<void>;
   submitLabel: string;
   submittingLabel: string;
 };
@@ -83,8 +94,17 @@ const parseNumber = (value: string): number | null => {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 
+const productCategoryOptions = PRODUCT_CATEGORIES.map((category) => getCategoryLabel(category));
+
+const toProductCategoryValue = (label: string): MarketplaceCategory | null => {
+  const match = PRODUCT_CATEGORIES.find((category) => getCategoryLabel(category) === label);
+  return match ?? null;
+};
+
 export function ListingForm({
   initialListing,
+  images,
+  onUploadRetry,
   submitting,
   serverError,
   onSubmit,
@@ -92,6 +112,7 @@ export function ListingForm({
   submittingLabel,
 }: ListingFormProps) {
   const theme = useAppTheme();
+  const { data: profile } = useMyProfile();
   const isEdit = !!initialListing;
   const [values, setValues] = useState<ListingFormValues>(() =>
     initialListing ? valuesFromListing(initialListing) : emptyValues(),
@@ -99,9 +120,15 @@ export function ListingForm({
   const [errors, setErrors] = useState<Partial<Record<keyof ListingFormValues, string>>>({});
 
   const categoryOptions = useMemo(
-    () => (values.listingType === 'produce' ? ['Produce'] : [...PRODUCT_CATEGORIES]),
+    () => (values.listingType === 'produce' ? ['Produce'] : productCategoryOptions),
     [values.listingType],
   );
+
+  const districtLabel = profile?.district
+    ? marketplaceStrings.create.districtAuto(profile.district)
+    : marketplaceStrings.create.districtLoading;
+
+  const isBusy = submitting || images.isUploading;
 
   const validate = (): boolean => {
     const nextErrors: Partial<Record<keyof ListingFormValues, string>> = {};
@@ -127,10 +154,9 @@ export function ListingForm({
 
     if (values.listingType === 'produce') {
       const price = parseNumber(values.expectedPrice)!;
-      const payload: CreateListingPayload = {
-        listingType: 'produce',
+      const producePayload = {
         title: values.crop.trim(),
-        category: 'Produce',
+        category: 'Produce' as const,
         price,
         expectedPrice: price,
         crop: values.crop.trim(),
@@ -138,23 +164,32 @@ export function ListingForm({
         unit: values.unit!,
         harvestDate: values.harvestDate.trim(),
         description: values.description.trim() || undefined,
-        images: initialListing?.images ?? [],
       };
-      onSubmit(payload);
+
+      if (isEdit) {
+        onSubmit(producePayload);
+        return;
+      }
+
+      onSubmit({ listingType: 'produce' as const, ...producePayload });
       return;
     }
 
-    const payload: CreateListingPayload = {
-      listingType: 'product',
+    const productPayload = {
       title: values.productName.trim(),
       category: values.category!,
       price: parseNumber(values.price)!,
       brand: values.brand.trim() || undefined,
       stock: parseNumber(values.stock) ?? undefined,
       description: values.description.trim() || undefined,
-      images: initialListing?.images ?? [],
     };
-    onSubmit(payload);
+
+    if (isEdit) {
+      onSubmit(productPayload);
+      return;
+    }
+
+    onSubmit({ listingType: 'product' as const, ...productPayload });
   };
 
   const handleListingTypeChange = (nextType: string) => {
@@ -165,7 +200,9 @@ export function ListingForm({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <View style={styles.form}>
+      <ListingImagePicker images={images} disabled={isBusy} onRetry={onUploadRetry} />
+
       {!isEdit ? (
         <SegmentedButtons
           value={values.listingType}
@@ -178,35 +215,40 @@ export function ListingForm({
         />
       ) : null}
 
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        {districtLabel}
+      </Text>
+
       {values.listingType === 'produce' ? (
         <>
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.crop}
-            placeholder={marketplaceStrings.create.cropPlaceholder}
+          <CropSelector
             value={values.crop}
-            onChangeText={(crop) => setValues((v) => ({ ...v, crop }))}
-            error={!!errors.crop}
+            onSelect={(crop) => setValues((v) => ({ ...v, crop }))}
+            error={errors.crop}
           />
-          {errors.crop ? <HelperText type="error">{errors.crop}</HelperText> : null}
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.quantity}
-            value={values.quantity}
-            onChangeText={(quantity) => setValues((v) => ({ ...v, quantity }))}
-            keyboardType="numeric"
-            error={!!errors.quantity}
-          />
+          <View style={styles.quantityRow}>
+            <View style={styles.quantityInput}>
+              <TextInput
+                mode="outlined"
+                label={marketplaceStrings.create.quantity}
+                value={values.quantity}
+                onChangeText={(quantity) => setValues((v) => ({ ...v, quantity }))}
+                keyboardType="numeric"
+                error={!!errors.quantity}
+              />
+            </View>
+            <View style={styles.unitInput}>
+              <Dropdown
+                label={marketplaceStrings.create.unit}
+                value={values.unit}
+                options={MARKETPLACE_UNITS}
+                onSelect={(unit) => setValues((v) => ({ ...v, unit: unit as MarketplaceUnit }))}
+                error={errors.unit}
+              />
+            </View>
+          </View>
           {errors.quantity ? <HelperText type="error">{errors.quantity}</HelperText> : null}
-
-          <Dropdown
-            label={marketplaceStrings.create.unit}
-            value={values.unit}
-            options={MARKETPLACE_UNITS}
-            onSelect={(unit) => setValues((v) => ({ ...v, unit: unit as MarketplaceUnit }))}
-            error={errors.unit}
-          />
 
           <TextInput
             mode="outlined"
@@ -215,18 +257,15 @@ export function ListingForm({
             onChangeText={(expectedPrice) => setValues((v) => ({ ...v, expectedPrice }))}
             keyboardType="numeric"
             error={!!errors.expectedPrice}
+            left={<TextInput.Affix text="₹" />}
           />
           {errors.expectedPrice ? <HelperText type="error">{errors.expectedPrice}</HelperText> : null}
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.harvestDate}
-            placeholder={marketplaceStrings.create.harvestDatePlaceholder}
+          <HarvestDateField
             value={values.harvestDate}
-            onChangeText={(harvestDate) => setValues((v) => ({ ...v, harvestDate }))}
-            error={!!errors.harvestDate}
+            onChange={(harvestDate) => setValues((v) => ({ ...v, harvestDate }))}
+            error={errors.harvestDate}
           />
-          {errors.harvestDate ? <HelperText type="error">{errors.harvestDate}</HelperText> : null}
         </>
       ) : (
         <>
@@ -250,11 +289,15 @@ export function ListingForm({
 
           <Dropdown
             label={marketplaceStrings.create.category}
-            value={values.category}
+            value={values.category ? getCategoryLabel(values.category) : null}
             options={categoryOptions}
-            onSelect={(category) =>
-              setValues((v) => ({ ...v, category: category as MarketplaceCategory }))
-            }
+            onSelect={(label) => {
+              const category =
+                values.listingType === 'produce'
+                  ? ('Produce' as MarketplaceCategory)
+                  : toProductCategoryValue(label);
+              setValues((v) => ({ ...v, category }));
+            }}
             error={errors.category}
           />
 
@@ -273,6 +316,7 @@ export function ListingForm({
             onChangeText={(price) => setValues((v) => ({ ...v, price }))}
             keyboardType="numeric"
             error={!!errors.price}
+            left={<TextInput.Affix text="₹" />}
           />
           {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
         </>
@@ -288,37 +332,34 @@ export function ListingForm({
         numberOfLines={4}
       />
 
-      <View style={[styles.imagePlaceholder, { borderColor: theme.colors.outlineVariant }]}>
-        <Text variant="bodyMedium">{marketplaceStrings.create.imagesPlaceholder}</Text>
-      </View>
-
       {serverError ? <HelperText type="error">{serverError}</HelperText> : null}
 
       <Button
         mode="contained"
         onPress={handleSubmit}
-        loading={submitting}
-        disabled={submitting}
+        loading={isBusy}
+        disabled={isBusy}
         style={styles.submitButton}
         contentStyle={styles.submitButtonContent}
       >
-        {submitting ? submittingLabel : submitLabel}
+        {isBusy ? submittingLabel : submitLabel}
       </Button>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.md, gap: spacing.sm, paddingBottom: spacing.xl },
+  form: { gap: spacing.sm },
+  scrollContent: { padding: spacing.md, gap: spacing.sm, paddingBottom: spacing.xl },
   segmented: { marginBottom: spacing.sm },
-  imagePlaceholder: {
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    padding: spacing.lg,
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
+  quantityRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  quantityInput: { flex: 1 },
+  unitInput: { flex: 1 },
   submitButton: { marginTop: spacing.md, borderRadius: radius.md },
-  submitButtonContent: { paddingVertical: spacing.xs },
+  submitButtonContent: { paddingVertical: spacing.sm, minHeight: 48 },
 });
+
+export const listingFormScrollProps = {
+  contentContainerStyle: styles.scrollContent,
+  keyboardShouldPersistTaps: 'handled' as const,
+};

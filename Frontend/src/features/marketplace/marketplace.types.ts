@@ -13,6 +13,11 @@ export type MarketplaceCategory = (typeof MARKETPLACE_CATEGORIES)[number];
 export type MarketplaceUnit = (typeof MARKETPLACE_UNITS)[number];
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 
+export type ListingImage = {
+  url: string;
+  publicId: string;
+};
+
 export type SellerInfo = {
   name: string;
   district: string;
@@ -30,7 +35,7 @@ export type MarketplaceListing = {
   price: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images: string[];
+  images: ListingImage[];
   district: string;
   status: ListingStatus;
   views: number;
@@ -80,7 +85,7 @@ export type CreateListingPayload = {
   price: number;
   quantity?: number;
   unit?: MarketplaceUnit;
-  images?: string[];
+  images?: ListingImage[];
   crop?: string;
   harvestDate?: string;
   expectedPrice?: number;
@@ -101,6 +106,16 @@ export type SaveListingResult = {
 
 export type UnsaveListingResult = {
   listingId: string;
+};
+
+export type UploadImagesResult = {
+  images: ListingImage[];
+};
+
+export type UploadImagesResponse = ApiSuccessResponse<UploadImagesResult>;
+
+export type DeleteImagePayload = {
+  publicId: string;
 };
 
 export type PaginatedListingsResponse = ApiSuccessResponse<PaginatedListings>;
