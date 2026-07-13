@@ -30,6 +30,18 @@ const FarmerProfileSchema = new Schema<IFarmerProfile>(
       required: true,
       default: "mr",
     },
+    // Cloudinary metadata only — never store raw bytes or base64.
+    profileImage: {
+      type: new Schema(
+        {
+          url: { type: String, required: true },
+          publicId: { type: String, required: true },
+        },
+        { _id: false }
+      ),
+      default: null,
+      required: false,
+    },
   },
   {
     timestamps: true,

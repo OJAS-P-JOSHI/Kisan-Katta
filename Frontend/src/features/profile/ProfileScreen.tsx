@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, Portal, Text } from 'react-native-paper';
@@ -8,9 +8,20 @@ import { getMaharashtraCropLabel, strings } from '@/constants';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { radius, spacing, useAppTheme } from '@/theme';
 
+import { ProfileAvatar } from './components/ProfileAvatar';
 import { useMyProfile } from './hooks/useMyProfile';
+import { useProfilePhoto } from './hooks/useProfilePhoto';
+import { profileStrings } from './profile.strings';
 
-function InfoRow({ icon, label, value }: { icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string; value: string }) {
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  label: string;
+  value: string;
+}) {
   const theme = useAppTheme();
   return (
     <View style={styles.infoRow}>
@@ -31,8 +42,18 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const { user, logout } = useAuth();
   const { data: profile, loading, error, refresh } = useMyProfile();
+  const { displayUri, isBusy, showPhotoActions } = useProfilePhoto({
+    profileImage: profile?.profileImage,
+    refreshProfile: refresh,
+  });
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
 
   const handleLogout = useCallback(async () => {
     setLoggingOut(true);
@@ -46,6 +67,11 @@ export default function ProfileScreen() {
     }
   }, [logout]);
 
+  const cropSummary =
+    profile && profile.favoriteCrops.length > 0
+      ? `🌾 ${profileStrings.header.favoriteCrops(profile.favoriteCrops.length)}`
+      : null;
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
@@ -53,15 +79,30 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: theme.colors.primaryContainer }]}>
-          <MaterialCommunityIcons name="account" size={40} color={theme.colors.primary} />
-        </View>
+        <ProfileAvatar
+          name={profile?.name ?? ''}
+          imageUri={displayUri}
+          uploading={isBusy}
+          onPress={showPhotoActions}
+        />
         <Text variant="headlineSmall" style={{ color: theme.colors.onBackground, fontWeight: '700' }}>
           {profile?.name ?? '—'}
         </Text>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-          {user?.mobile ?? ''}
-        </Text>
+        {profile?.district ? (
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            📍 {profile.district}
+          </Text>
+        ) : null}
+        {cropSummary ? (
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            {cropSummary}
+          </Text>
+        ) : null}
+        {user?.mobile ? (
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {user.mobile}
+          </Text>
+        ) : null}
       </View>
 
       {loading ? (
@@ -97,7 +138,7 @@ export default function ProfileScreen() {
         style={styles.actionButton}
         onPress={() => router.push('/edit-profile')}
       >
-        {strings.profile.editProfile}
+        ✏ {profileStrings.header.editProfile}
       </Button>
 
       <Button
@@ -134,14 +175,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.sm },
   header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.md },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
   loader: { marginTop: spacing.lg },
   card: { borderRadius: radius.lg, marginBottom: spacing.md },
   cardContent: { gap: spacing.md },

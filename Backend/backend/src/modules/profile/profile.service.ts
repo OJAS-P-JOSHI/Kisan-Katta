@@ -15,6 +15,22 @@ import type {
 // Internal helper
 // ---------------------------------------------------------------------------
 
+const toProfileImageDTO = (
+  value: IFarmerProfile["profileImage"]
+): ProfileResponseDTO["profileImage"] => {
+  if (
+    value &&
+    typeof value.url === "string" &&
+    value.url.length > 0 &&
+    typeof value.publicId === "string" &&
+    value.publicId.length > 0
+  ) {
+    return { url: value.url, publicId: value.publicId };
+  }
+
+  return null;
+};
+
 const toProfileDTO = (doc: HydratedDocument<IFarmerProfile>): ProfileResponseDTO => ({
   userId: doc.userId.toString(),
   name: doc.name,
@@ -23,6 +39,7 @@ const toProfileDTO = (doc: HydratedDocument<IFarmerProfile>): ProfileResponseDTO
   village: doc.village,
   favoriteCrops: doc.favoriteCrops,
   language: doc.language,
+  profileImage: toProfileImageDTO(doc.profileImage),
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
 });

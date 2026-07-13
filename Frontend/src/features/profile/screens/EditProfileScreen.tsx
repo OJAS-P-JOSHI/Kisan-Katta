@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
+import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,14 +7,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { strings } from '@/constants';
 import { spacing, useAppTheme } from '@/theme';
 
+import { ProfileAvatar } from '../components/ProfileAvatar';
 import { ProfileForm, type ProfileFormValues } from '../components/ProfileForm';
 import { useMyProfile } from '../hooks/useMyProfile';
+import { useProfilePhoto } from '../hooks/useProfilePhoto';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 
 export default function EditProfileScreen() {
   const theme = useAppTheme();
   const { data, loading, error: loadError, refresh } = useMyProfile();
   const { updating, error: updateError, updateProfile } = useUpdateProfile();
+  const { displayUri, isBusy, showPhotoActions } = useProfilePhoto({
+    profileImage: data?.profileImage,
+    refreshProfile: refresh,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
 
   const handleSubmit = async (values: ProfileFormValues): Promise<void> => {
     const result = await updateProfile(values);
@@ -52,9 +65,18 @@ export default function EditProfileScreen() {
           </Text>
         </View>
 
+        <View style={styles.avatarBlock}>
+          <ProfileAvatar
+            name={data.name}
+            imageUri={displayUri}
+            uploading={isBusy}
+            onPress={showPhotoActions}
+          />
+        </View>
+
         <ProfileForm
           initialValues={data}
-          submitting={updating}
+          submitting={updating || isBusy}
           submitLabel={strings.completeProfile.updateProfile}
           submittingLabel={strings.completeProfile.updating}
           serverError={updateError}
@@ -70,4 +92,5 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   header: { marginBottom: spacing.sm },
+  avatarBlock: { alignItems: 'center', marginBottom: spacing.lg },
 });

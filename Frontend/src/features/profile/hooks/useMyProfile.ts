@@ -17,6 +17,9 @@ export type UseMyProfileReturn = {
  * This is the single source of truth for farmer profile data — Home, the
  * Profile tab, and Edit Profile all call this hook rather than caching the
  * profile in a global context.
+ *
+ * After the first load, `refresh` updates data without flipping `loading`
+ * so photo uploads and focus sync do not flash the whole screen.
  */
 export function useMyProfile(): UseMyProfileReturn {
   const [data, setData] = useState<ProfileResponseDTO | null>(null);
@@ -25,7 +28,6 @@ export function useMyProfile(): UseMyProfileReturn {
 
   const refresh = useCallback(async (): Promise<void> => {
     setError(null);
-    setLoading((wasLoading) => wasLoading || true);
     try {
       const profile = await getMyProfile();
       setData(profile);
@@ -37,7 +39,7 @@ export function useMyProfile(): UseMyProfileReturn {
   }, []);
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, [refresh]);
 
   return { data, loading, error, refresh };

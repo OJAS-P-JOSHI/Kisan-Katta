@@ -95,6 +95,13 @@ export const MAHARASHTRA_CROP_BY_VALUE: ReadonlyMap<string, MaharashtraCrop> = n
   MAHARASHTRA_CROPS.map((item) => [item.value, item]),
 );
 
+/** O(1) membership for the curated recommended set (duplicate prevention in search). */
+export const MAHARASHTRA_CROP_VALUES: ReadonlySet<string> = new Set(
+  MAHARASHTRA_CROPS.map((item) => item.value),
+);
+
+const AGMARKNET_COMMODITY_SET: ReadonlySet<string> = new Set(AGMARKNET_COMMODITIES);
+
 /**
  * Legacy favourite-crop labels previously stored in MongoDB.
  * Maps to the current Agmarknet `value` so existing profiles still load.
@@ -120,11 +127,16 @@ const LEGACY_CROP_TO_VALUE: Record<string, string> = {
   Tomato: 'Tomato',
 };
 
-/** Resolves a stored crop string to an Agmarknet value present in `MAHARASHTRA_CROPS`. */
+/**
+ * Resolves a stored crop string to an exact Agmarknet commodity value.
+ * Accepts curated Maharashtra crops, legacy profile labels, and any
+ * Agmarknet commodity (so search-picked favourites survive reload).
+ */
 export const resolveMaharashtraCropValue = (stored: string): string | null => {
   if (MAHARASHTRA_CROP_BY_VALUE.has(stored)) return stored;
   const mapped = LEGACY_CROP_TO_VALUE[stored];
-  if (mapped && MAHARASHTRA_CROP_BY_VALUE.has(mapped)) return mapped;
+  if (mapped && AGMARKNET_COMMODITY_SET.has(mapped)) return mapped;
+  if (AGMARKNET_COMMODITY_SET.has(stored)) return stored;
   return null;
 };
 
@@ -138,8 +150,11 @@ export const normalizeFavoriteCrops = (stored: readonly string[]): string[] => {
   return resolved;
 };
 
-/** UI label for a stored Agmarknet (or legacy) crop value. */
+/**
+ * UI label for a stored Agmarknet (or legacy) crop value.
+ * Prefer curated Marathi label when available; otherwise the Agmarknet name.
+ */
 export const getMaharashtraCropLabel = (stored: string): string => {
   const value = resolveMaharashtraCropValue(stored) ?? stored;
-  return MAHARASHTRA_CROP_BY_VALUE.get(value)?.label ?? stored;
+  return MAHARASHTRA_CROP_BY_VALUE.get(value)?.label ?? value;
 };

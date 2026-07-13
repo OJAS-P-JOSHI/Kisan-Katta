@@ -1,16 +1,27 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Chip, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
+import { Chip, HelperText, Modal, Portal, Snackbar, Text, TextInput } from 'react-native-paper';
 
-import type { MaharashtraCrop } from '@/constants/maharashtraCrops';
-import { MAHARASHTRA_CROP_BY_VALUE } from '@/constants/maharashtraCrops';
+import { AGMARKNET_COMMODITIES } from '@/constants/agmarknetCommodities';
+import {
+  getMaharashtraCropLabel,
+  MAHARASHTRA_CROPS,
+  MAHARASHTRA_CROP_BY_VALUE,
+  MAHARASHTRA_CROP_VALUES,
+  type MaharashtraCrop,
+} from '@/constants/maharashtraCrops';
 import { radius, spacing, useAppTheme } from '@/theme';
+
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { profileStrings } from '../profile.strings';
+
+const SEARCH_DEBOUNCE_MS = 300;
+const TOUCH_MIN = 48;
 
 export type CropMultiSelectProps = {
   label: string;
   helperText?: string;
-  options: readonly MaharashtraCrop[];
   selected: string[];
   onChange: (next: string[]) => void;
   max: number;
@@ -18,14 +29,83 @@ export type CropMultiSelectProps = {
   disabled?: boolean;
 };
 
+type MatchRank = 0 | 1 | 2;
+
+const getCommodityMatchRank = (commodity: string, query: string): MatchRank | null => {
+  const haystack = commodity.toLowerCase();
+  const label = MAHARASHTRA_CROP_BY_VALUE.get(commodity)?.label.toLowerCase() ?? '';
+
+  if (haystack === query || label === query) return 0;
+  if (haystack.startsWith(query) || label.startsWith(query)) return 1;
+  if (haystack.includes(query) || label.includes(query)) return 2;
+  return null;
+};
+
+/** Ranked Agmarknet search: exact → startsWith → contains, then A–Z within each rank. */
+const filterRankedAgmarknet = (query: string): string[] => {
+  if (!query) return [];
+
+  const matched: { value: string; rank: MatchRank }[] = [];
+  for (const commodity of AGMARKNET_COMMODITIES) {
+    if (MAHARASHTRA_CROP_VALUES.has(commodity)) continue;
+    const rank = getCommodityMatchRank(commodity, query);
+    if (rank === null) continue;
+    matched.push({ value: commodity, rank });
+  }
+
+  matched.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    return a.value.localeCompare(b.value);
+  });
+
+  return matched.map((item) => item.value);
+};
+
+type CropRowProps = {
+  label: string;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+};
+
+const CropRow = memo(function CropRow({ label, selected, disabled, onPress }: CropRowProps) {
+  const theme = useAppTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.option,
+        pressed && !disabled ? { backgroundColor: theme.colors.surfaceVariant } : null,
+        disabled && !selected ? styles.optionDisabled : null,
+      ]}
+    >
+      <Text
+        variant="bodyLarge"
+        style={{
+          flex: 1,
+          color: selected ? theme.colors.primary : theme.colors.onSurface,
+          paddingRight: spacing.sm,
+        }}
+      >
+        {profileStrings.crops.chipPrefix} {label}
+      </Text>
+      {selected ? (
+        <MaterialCommunityIcons name="check-circle" size={22} color={theme.colors.primary} />
+      ) : null}
+    </Pressable>
+  );
+});
+
 /**
- * Searchable multi-select for Maharashtra favourite crops.
- * Selection state stores Agmarknet `value` strings; search filters on `label`.
+ * Hybrid favourite-crop picker: curated Maharashtra crops up front,
+ * full Agmarknet search below. Always stores exact Agmarknet values.
  */
 export function CropMultiSelect({
   label,
   helperText,
-  options,
   selected,
   onChange,
   max,
@@ -34,48 +114,83 @@ export function CropMultiSelect({
 }: CropMultiSelectProps) {
   const theme = useAppTheme();
   const [visible, setVisible] = useState(false);
-  const [query, setQuery] = useState('');
+  const [cropSearch, setCropSearch] = useState('');
+  const [snackbar, setSnackbar] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(cropSearch, SEARCH_DEBOUNCE_MS);
 
   const atLimit = selected.length >= max;
+  const query = debouncedSearch.trim().toLowerCase();
+  const isSearching = query.length > 0;
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter((crop) => crop.label.toLowerCase().includes(q));
-  }, [options, query]);
-
-  const selectedCrops = useMemo(
-    () =>
-      selected
-        .map((value) => MAHARASHTRA_CROP_BY_VALUE.get(value))
-        .filter((crop): crop is MaharashtraCrop => Boolean(crop)),
-    [selected],
-  );
+  const filteredResults = useMemo(() => filterRankedAgmarknet(query), [query]);
 
   const summary =
-    selectedCrops.length === 0
+    selected.length === 0
       ? ''
-      : selectedCrops.length === 1
-        ? selectedCrops[0].label
-        : `${selectedCrops.length} crops selected`;
+      : selected.length === 1
+        ? getMaharashtraCropLabel(selected[0]!)
+        : profileStrings.crops.selectedSummary(selected.length);
 
-  const toggle = (value: string): void => {
-    if (selected.includes(value)) {
+  const toggle = useCallback(
+    (value: string): void => {
+      if (selected.includes(value)) {
+        onChange(selected.filter((item) => item !== value));
+        return;
+      }
+      if (selected.length >= max) {
+        setSnackbar(profileStrings.crops.maxReached);
+        return;
+      }
+      onChange([...selected, value]);
+    },
+    [max, onChange, selected],
+  );
+
+  const remove = useCallback(
+    (value: string): void => {
       onChange(selected.filter((item) => item !== value));
-      return;
-    }
-    if (atLimit) return;
-    onChange([...selected, value]);
-  };
+    },
+    [onChange, selected],
+  );
 
-  const remove = (value: string): void => {
-    onChange(selected.filter((item) => item !== value));
-  };
-
-  const closeModal = (): void => {
+  const closeModal = useCallback((): void => {
     setVisible(false);
-    setQuery('');
-  };
+    setCropSearch('');
+  }, []);
+
+  const renderRecommended = useCallback(
+    ({ item }: { item: MaharashtraCrop }) => {
+      const isSelected = selected.includes(item.value);
+      const canSelect = isSelected || !atLimit;
+      return (
+        <CropRow
+          label={item.label}
+          selected={isSelected}
+          disabled={!canSelect}
+          onPress={() => toggle(item.value)}
+        />
+      );
+    },
+    [atLimit, selected, toggle],
+  );
+
+  const renderResult = useCallback(
+    ({ item }: { item: string }) => {
+      const isSelected = selected.includes(item);
+      const canSelect = isSelected || !atLimit;
+      return (
+        <CropRow
+          label={getMaharashtraCropLabel(item)}
+          selected={isSelected}
+          disabled={!canSelect}
+          onPress={() => toggle(item)}
+        />
+      );
+    },
+    [atLimit, selected, toggle],
+  );
+
+  const showEmptyResults = isSearching && filteredResults.length === 0;
 
   return (
     <View>
@@ -86,7 +201,7 @@ export function CropMultiSelect({
             dense
             label={`${label} (${selected.length}/${max})`}
             value={summary}
-            placeholder="Search and select crops"
+            placeholder={profileStrings.crops.fieldPlaceholder}
             editable={false}
             error={!!error}
             right={<TextInput.Icon icon="chevron-down" />}
@@ -100,17 +215,17 @@ export function CropMultiSelect({
         </HelperText>
       )}
 
-      {selectedCrops.length > 0 && (
+      {selected.length > 0 && (
         <View style={styles.chipRow}>
-          {selectedCrops.map((crop) => (
+          {selected.map((value) => (
             <Chip
-              key={crop.id}
+              key={value}
               mode="flat"
               compact
-              onClose={disabled ? undefined : () => remove(crop.value)}
+              onClose={disabled ? undefined : () => remove(value)}
               style={styles.chip}
             >
-              {crop.label}
+              {profileStrings.crops.chipPrefix} {getMaharashtraCropLabel(value)}
             </Chip>
           ))}
         </View>
@@ -127,68 +242,85 @@ export function CropMultiSelect({
           <Text variant="titleMedium" style={styles.modalTitle}>
             {label}
           </Text>
+
+          <Text variant="labelLarge" style={[styles.sectionHeader, { color: theme.colors.primary }]}>
+            {profileStrings.crops.recommendedTitle}
+          </Text>
+
+          <FlatList
+            data={MAHARASHTRA_CROPS}
+            keyExtractor={(item) => item.id}
+            style={styles.recommendedList}
+            keyboardShouldPersistTaps="handled"
+            initialNumToRender={12}
+            maxToRenderPerBatch={16}
+            windowSize={6}
+            renderItem={renderRecommended}
+          />
+
+          <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
           <TextInput
             mode="outlined"
             dense
-            placeholder="Search crops…"
-            value={query}
-            onChangeText={setQuery}
+            placeholder={`🔍 ${profileStrings.crops.searchPlaceholder}`}
+            value={cropSearch}
+            onChangeText={setCropSearch}
             left={<TextInput.Icon icon="magnify" />}
             right={
-              query ? <TextInput.Icon icon="close" onPress={() => setQuery('')} /> : undefined
+              cropSearch ? (
+                <TextInput.Icon icon="close" onPress={() => setCropSearch('')} />
+              ) : undefined
             }
             style={styles.search}
-            autoFocus
           />
-          {atLimit && (
-            <Text variant="bodySmall" style={[styles.limitHint, { color: theme.colors.onSurfaceVariant }]}>
-              Maximum {max} crops selected
-            </Text>
-          )}
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.id}
-            style={styles.list}
-            keyboardShouldPersistTaps="handled"
-            ListEmptyComponent={
+
+          {isSearching ? (
+            <>
               <Text
-                variant="bodyMedium"
-                style={[styles.empty, { color: theme.colors.onSurfaceVariant }]}
+                variant="labelLarge"
+                style={[styles.sectionHeader, { color: theme.colors.primary }]}
               >
-                No crops match your search
+                {profileStrings.crops.searchResultsTitle}
               </Text>
-            }
-            renderItem={({ item }) => {
-              const isSelected = selected.includes(item.value);
-              const canSelect = isSelected || !atLimit;
-              return (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.option,
-                    pressed && canSelect && { backgroundColor: theme.colors.surfaceVariant },
-                    !canSelect && styles.optionDisabled,
-                  ]}
-                  disabled={!canSelect}
-                  onPress={() => toggle(item.value)}
-                >
-                  <View style={styles.optionText}>
-                    <Text
-                      variant="bodyLarge"
-                      style={{
-                        color: isSelected ? theme.colors.primary : theme.colors.onSurface,
-                      }}
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
-                  {isSelected && (
-                    <MaterialCommunityIcons name="check-circle" size={22} color={theme.colors.primary} />
-                  )}
-                </Pressable>
-              );
-            }}
-          />
+              {showEmptyResults ? (
+                <View style={styles.empty}>
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
+                  >
+                    {profileStrings.crops.emptySearch}
+                  </Text>
+                  <Text
+                    variant="bodySmall"
+                    style={{
+                      color: theme.colors.onSurfaceVariant,
+                      textAlign: 'center',
+                      marginTop: spacing.xs,
+                    }}
+                  >
+                    {profileStrings.crops.emptySearchHint}
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={filteredResults}
+                  keyExtractor={(item) => item}
+                  style={styles.resultsList}
+                  keyboardShouldPersistTaps="handled"
+                  initialNumToRender={16}
+                  maxToRenderPerBatch={20}
+                  windowSize={8}
+                  renderItem={renderResult}
+                />
+              )}
+            </>
+          ) : null}
         </Modal>
+
+        <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
+          {snackbar}
+        </Snackbar>
       </Portal>
     </View>
   );
@@ -202,26 +334,36 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginTop: spacing.xs,
   },
-  chip: { marginBottom: 2 },
+  chip: { marginBottom: 2, borderRadius: radius.pill },
   modal: {
     marginHorizontal: spacing.md,
     borderRadius: radius.lg,
     padding: spacing.md,
-    maxHeight: '80%',
+    maxHeight: '85%',
+    minHeight: '70%',
   },
   modalTitle: { marginBottom: spacing.sm, paddingHorizontal: spacing.xs },
-  search: { marginBottom: spacing.xs },
-  limitHint: { marginBottom: spacing.xs, paddingHorizontal: spacing.xs },
-  list: { flexGrow: 0 },
-  empty: { textAlign: 'center', paddingVertical: spacing.lg },
+  sectionHeader: {
+    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    fontWeight: '700',
+  },
+  recommendedList: { flexGrow: 1, flexShrink: 1, maxHeight: 280 },
+  resultsList: { flexGrow: 1, flexShrink: 1, maxHeight: 220 },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: spacing.sm,
+  },
+  search: { marginBottom: spacing.sm, borderRadius: radius.md },
+  empty: { paddingVertical: spacing.md, paddingHorizontal: spacing.md },
   option: {
+    minHeight: TOUCH_MIN,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
   },
   optionDisabled: { opacity: 0.4 },
-  optionText: { flex: 1, paddingRight: spacing.sm },
 });

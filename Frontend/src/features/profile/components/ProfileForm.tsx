@@ -12,9 +12,10 @@ import {
   type MaharashtraDistrict,
   type SupportedLanguage,
 } from '@/constants';
-import { MAHARASHTRA_CROPS, normalizeFavoriteCrops } from '@/constants/maharashtraCrops';
+import { normalizeFavoriteCrops } from '@/constants/maharashtraCrops';
 import { radius, spacing } from '@/theme';
 
+import { profileStrings } from '../profile.strings';
 import { CropMultiSelect } from './CropMultiSelect';
 
 export type ProfileFormValues = {
@@ -155,9 +156,8 @@ export function ProfileForm({
 
       <View style={styles.cropsField}>
         <CropMultiSelect
-          label={strings.completeProfile.cropsLabel}
-          helperText={strings.completeProfile.cropsHelper}
-          options={MAHARASHTRA_CROPS}
+          label={profileStrings.crops.title}
+          helperText={profileStrings.crops.helper}
           selected={crops}
           onChange={(next) => {
             setCrops(next);

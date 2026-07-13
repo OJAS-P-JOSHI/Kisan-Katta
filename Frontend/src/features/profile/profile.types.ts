@@ -6,6 +6,11 @@ import type { SupportedLanguage } from '@/constants';
  * uses the US spelling `favoriteCrops`.
  */
 
+export type ProfileImage = {
+  url: string;
+  publicId: string;
+};
+
 export type CreateProfileBody = {
   name: string;
   district: string;
@@ -17,6 +22,11 @@ export type CreateProfileBody = {
 
 export type UpdateProfileBody = Partial<CreateProfileBody>;
 
+/** POST /api/v1/profile/image */
+export type UploadProfileImageResponseDTO = {
+  profileImage: ProfileImage;
+};
+
 /** POST /api/v1/profile, GET /api/v1/profile/me, PUT /api/v1/profile/me */
 export type ProfileResponseDTO = {
   userId: string;
@@ -26,6 +36,7 @@ export type ProfileResponseDTO = {
   village: string;
   favoriteCrops: string[];
   language: SupportedLanguage;
+  profileImage: ProfileImage | null;
   createdAt: string;
   updatedAt: string;
 };
