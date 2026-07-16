@@ -3,7 +3,8 @@ import { memo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { elevation, palette, radius, spacing, useAppTheme } from '@/theme';
+import { BrandLeaves } from '@/components/BrandLeaves';
+import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { getGreeting } from '../weather.utils';
 
@@ -15,6 +16,8 @@ export type DashboardHeaderProps = {
   district?: string;
 };
 
+const LOGO_SIZE = 36;
+
 export const DashboardHeader = memo(function DashboardHeader({
   name,
   village,
@@ -25,18 +28,17 @@ export const DashboardHeader = memo(function DashboardHeader({
   const greeting = getGreeting();
   const hasLocation = !!(village || taluka || district);
 
-  const locationLine = [village, taluka, district].filter(Boolean).join(' · ');
+  const primaryLocation = district || taluka || village || '';
+  const detailParts = [village, taluka].filter(
+    (part) => !!part && part !== primaryLocation,
+  );
+  const locationDetail = detailParts.join(' · ');
 
   return (
     <View style={styles.wrapper}>
-      {/* Decorative organic shapes */}
-      <View style={[styles.blobTop, { backgroundColor: theme.colors.primaryContainer }]} />
-      <View style={[styles.blobBottom, { backgroundColor: palette.amber100 }]} />
-      <View style={[styles.leafAccent, { borderColor: theme.colors.primary }]}>
-        <MaterialCommunityIcons name="leaf" size={14} color={theme.colors.primary} style={styles.leafIcon} />
-      </View>
+      <View style={[styles.card, { backgroundColor: theme.colors.surface }, cardSurface]}>
+        <BrandLeaves variant="greeting" />
 
-      <View style={[styles.card, { backgroundColor: theme.colors.surface }, elevation.card]}>
         <Image
           source={require('@/assets/branding/logo-circle.png')}
           style={styles.logo}
@@ -45,84 +47,61 @@ export const DashboardHeader = memo(function DashboardHeader({
         />
 
         <View style={styles.textBlock}>
-          <Text variant="labelLarge" style={[styles.greeting, { color: theme.colors.onSurfaceVariant }]}>
-            {greeting}
+          <Text style={[typography.caption, styles.greeting, { color: theme.colors.onSurfaceVariant }]}>
+            {greeting} 👋
           </Text>
           <Text
-            variant="headlineSmall"
-            style={[styles.name, { color: theme.colors.onBackground }]}
+            style={[typography.largeHeading, { color: theme.colors.onBackground }]}
             numberOfLines={1}
           >
             {name}
           </Text>
-          {hasLocation && (
+          {hasLocation ? (
             <View style={styles.locationRow}>
               <View style={[styles.locationIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-                <MaterialCommunityIcons name="map-marker-outline" size={13} color={theme.colors.primary} />
+                <MaterialCommunityIcons
+                  name="map-marker"
+                  size={iconSize.xs}
+                  color={theme.colors.primary}
+                />
               </View>
-              <Text
-                variant="bodyMedium"
-                style={[styles.locationText, { color: theme.colors.onSurfaceVariant }]}
-                numberOfLines={2}
-              >
-                {locationLine}
-              </Text>
+              <View style={styles.locationTextBlock}>
+                <Text
+                  style={[typography.body, { color: theme.colors.onSurface, fontWeight: '500' }]}
+                  numberOfLines={1}
+                >
+                  {primaryLocation}
+                </Text>
+                {locationDetail ? (
+                  <Text
+                    style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}
+                    numberOfLines={1}
+                  >
+                    {locationDetail}
+                  </Text>
+                ) : null}
+              </View>
             </View>
-          )}
+          ) : null}
         </View>
       </View>
     </View>
   );
 });
 
-const LOGO_SIZE = 44;
-
 const styles = StyleSheet.create({
   wrapper: {
     marginHorizontal: spacing.md,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-    position: 'relative',
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
   },
-  blobTop: {
-    position: 'absolute',
-    top: -28,
-    right: -12,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    opacity: 0.45,
-  },
-  blobBottom: {
-    position: 'absolute',
-    bottom: -20,
-    left: -24,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    opacity: 0.35,
-  },
-  leafAccent: {
-    position: 'absolute',
-    top: 8,
-    right: 12,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    opacity: 0.25,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  leafIcon: { opacity: 0.6 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md + 2,
-    borderRadius: radius.xl,
-    overflow: 'hidden',
+    paddingVertical: spacing.md,
+    position: 'relative',
   },
   logo: {
     width: LOGO_SIZE,
@@ -132,20 +111,14 @@ const styles = StyleSheet.create({
   textBlock: {
     flex: 1,
     gap: 2,
-    paddingRight: spacing.sm,
+    paddingRight: spacing.xs,
   },
   greeting: {
-    letterSpacing: 0.2,
     textTransform: 'capitalize',
-  },
-  name: {
-    fontWeight: '600',
-    letterSpacing: -0.3,
-    marginTop: 1,
   },
   locationRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: spacing.sm,
     marginTop: spacing.xs,
   },
@@ -155,10 +128,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 1,
   },
-  locationText: {
+  locationTextBlock: {
     flex: 1,
-    lineHeight: 20,
+    gap: 1,
   },
 });

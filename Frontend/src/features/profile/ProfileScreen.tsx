@@ -3,10 +3,21 @@ import { useFocusEffect, router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, Portal, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BrandLeaves } from '@/components/BrandLeaves';
+import { OrganicBackground } from '@/components/OrganicBackground';
 import { getMaharashtraCropLabel, strings } from '@/constants';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { radius, spacing, useAppTheme } from '@/theme';
+import {
+  buttonSurface,
+  cardSurface,
+  iconSize,
+  radius,
+  spacing,
+  typography,
+  useAppTheme,
+} from '@/theme';
 
 import { ProfileAvatar } from './components/ProfileAvatar';
 import { useMyProfile } from './hooks/useMyProfile';
@@ -25,12 +36,14 @@ function InfoRow({
   const theme = useAppTheme();
   return (
     <View style={styles.infoRow}>
-      <MaterialCommunityIcons name={icon} size={20} color={theme.colors.primary} />
+      <View style={[styles.infoIcon, { backgroundColor: theme.colors.primaryContainer }]}>
+        <MaterialCommunityIcons name={icon} size={iconSize.sm} color={theme.colors.primary} />
+      </View>
       <View style={styles.infoText}>
-        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
           {label}
         </Text>
-        <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>
+        <Text style={[typography.body, { color: theme.colors.onSurface, fontWeight: '500' }]}>
           {value}
         </Text>
       </View>
@@ -40,6 +53,7 @@ function InfoRow({
 
 export default function ProfileScreen() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const { data: profile, loading, error, refresh } = useMyProfile();
   const { displayUri, isBusy, showPhotoActions } = useProfilePhoto({
@@ -69,117 +83,152 @@ export default function ProfileScreen() {
 
   const cropSummary =
     profile && profile.favoriteCrops.length > 0
-      ? `🌾 ${profileStrings.header.favoriteCrops(profile.favoriteCrops.length)}`
+      ? profileStrings.header.favoriteCrops(profile.favoriteCrops.length)
       : null;
 
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.colors.background }}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <ProfileAvatar
-          name={profile?.name ?? ''}
-          imageUri={displayUri}
-          uploading={isBusy}
-          onPress={showPhotoActions}
-        />
-        <Text variant="headlineSmall" style={{ color: theme.colors.onBackground, fontWeight: '700' }}>
-          {profile?.name ?? '—'}
-        </Text>
-        {profile?.district ? (
-          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-            📍 {profile.district}
-          </Text>
-        ) : null}
-        {cropSummary ? (
-          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-            {cropSummary}
-          </Text>
-        ) : null}
-        {user?.mobile ? (
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {user.mobile}
-          </Text>
-        ) : null}
-      </View>
-
-      {loading ? (
-        <ActivityIndicator animating size="small" style={styles.loader} color={theme.colors.primary} />
-      ) : error ? (
-        <Card mode="elevated" style={styles.card}>
-          <Card.Content style={styles.errorContent}>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
-              {error}
-            </Text>
-            <Button compact mode="text" onPress={refresh}>
-              {strings.market.retry}
-            </Button>
-          </Card.Content>
-        </Card>
-      ) : profile ? (
-        <Card mode="elevated" style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            <InfoRow icon="map-marker-outline" label="District" value={profile.district} />
-            <InfoRow icon="home-outline" label="Village" value={`${profile.village}, ${profile.taluka}`} />
-            <InfoRow
-              icon="sprout-outline"
-              label="Favourite Crops"
-              value={profile.favoriteCrops.map(getMaharashtraCropLabel).join(', ')}
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
+      <OrganicBackground intensity="subtle" />
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.sm }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <View style={styles.avatarStage}>
+            <BrandLeaves variant="profile" />
+            <ProfileAvatar
+              name={profile?.name ?? ''}
+              imageUri={displayUri}
+              uploading={isBusy}
+              onPress={showPhotoActions}
             />
-          </Card.Content>
-        </Card>
-      ) : null}
+          </View>
+          <Text style={[typography.largeHeading, { color: theme.colors.onBackground, textAlign: 'center' }]}>
+            {profile?.name ?? '—'}
+          </Text>
+          {profile?.district ? (
+            <View style={styles.metaRow}>
+              <MaterialCommunityIcons name="map-marker" size={iconSize.sm} color={theme.colors.primary} />
+              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
+                {profile.district}
+              </Text>
+            </View>
+          ) : null}
+          {cropSummary ? (
+            <View style={styles.metaRow}>
+              <MaterialCommunityIcons name="sprout" size={iconSize.sm} color={theme.colors.primary} />
+              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
+                {cropSummary}
+              </Text>
+            </View>
+          ) : null}
+          {user?.mobile ? (
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+              {user.mobile}
+            </Text>
+          ) : null}
+        </View>
 
-      <Button
-        mode="outlined"
-        icon="account-edit-outline"
-        style={styles.actionButton}
-        onPress={() => router.push('/edit-profile')}
-      >
-        ✏ {profileStrings.header.editProfile}
-      </Button>
+        {loading ? (
+          <ActivityIndicator animating size="small" style={styles.loader} color={theme.colors.primary} />
+        ) : error ? (
+          <Card mode="elevated" style={[styles.card, cardSurface]}>
+            <Card.Content style={styles.errorContent}>
+              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
+                {error}
+              </Text>
+              <Button compact mode="text" onPress={refresh}>
+                {strings.market.retry}
+              </Button>
+            </Card.Content>
+          </Card>
+        ) : profile ? (
+          <Card mode="elevated" style={[styles.card, cardSurface]}>
+            <Card.Content style={styles.cardContent}>
+              <InfoRow icon="map-marker-outline" label="District" value={profile.district} />
+              <InfoRow icon="home-outline" label="Village" value={`${profile.village}, ${profile.taluka}`} />
+              <InfoRow
+                icon="sprout-outline"
+                label="Favourite Crops"
+                value={profile.favoriteCrops.map(getMaharashtraCropLabel).join(', ')}
+              />
+            </Card.Content>
+          </Card>
+        ) : null}
 
-      <Button
-        mode="contained"
-        icon="logout"
-        buttonColor={theme.colors.errorContainer}
-        textColor={theme.colors.onErrorContainer}
-        style={styles.actionButton}
-        onPress={() => setLogoutDialogVisible(true)}
-      >
-        {strings.profile.logout}
-      </Button>
+        <Button
+          mode="outlined"
+          icon="account-edit-outline"
+          style={[styles.actionButton, buttonSurface]}
+          contentStyle={styles.buttonContent}
+          onPress={() => router.push('/edit-profile')}
+        >
+          {profileStrings.header.editProfile}
+        </Button>
 
-      <Portal>
-        <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
-          <Dialog.Title>{strings.profile.logoutConfirmTitle}</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium">{strings.profile.logoutConfirmMessage}</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setLogoutDialogVisible(false)} disabled={loggingOut}>
-              {strings.profile.cancel}
-            </Button>
-            <Button onPress={handleLogout} loading={loggingOut} disabled={loggingOut}>
-              {strings.profile.logout}
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    </ScrollView>
+        <Button
+          mode="contained"
+          icon="logout"
+          buttonColor={theme.colors.errorContainer}
+          textColor={theme.colors.onErrorContainer}
+          style={[styles.actionButton, buttonSurface]}
+          contentStyle={styles.buttonContent}
+          onPress={() => setLogoutDialogVisible(true)}
+        >
+          {strings.profile.logout}
+        </Button>
+
+        <Portal>
+          <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
+            <Dialog.Title>{strings.profile.logoutConfirmTitle}</Dialog.Title>
+            <Dialog.Content>
+              <Text style={typography.body}>{strings.profile.logoutConfirmMessage}</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setLogoutDialogVisible(false)} disabled={loggingOut}>
+                {strings.profile.cancel}
+              </Button>
+              <Button onPress={handleLogout} loading={loggingOut} disabled={loggingOut}>
+                {strings.profile.logout}
+              </Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.sm },
+  screen: { flex: 1 },
+  content: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.sm },
   header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.md },
+  avatarStage: {
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+    position: 'relative',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   loader: { marginTop: spacing.lg },
-  card: { borderRadius: radius.lg, marginBottom: spacing.md },
+  card: { marginBottom: spacing.md },
   cardContent: { gap: spacing.md },
   errorContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  infoText: { flex: 1 },
-  actionButton: { marginTop: spacing.sm, borderRadius: radius.md },
+  infoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoText: { flex: 1, gap: 2 },
+  actionButton: { marginTop: spacing.sm },
+  buttonContent: { minHeight: 48 },
 });

@@ -3,7 +3,7 @@ import { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { Card, IconButton, Text } from 'react-native-paper';
 
-import { elevation, radius, spacing, useAppTheme } from '@/theme';
+import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListing } from '../marketplace.types';
@@ -57,8 +57,11 @@ function ListingCardComponent({
         : null;
 
   return (
-    <Pressable onPress={handlePress}>
-      <Card style={[styles.card, elevation.soft, { backgroundColor: theme.colors.surface }]} mode="elevated">
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [pressed && styles.pressed]}
+    >
+      <Card style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]} mode="elevated">
         <View style={styles.cardRow}>
           <View style={[styles.imageWrap, { backgroundColor: theme.colors.surfaceVariant }]}>
             {imageUrl ? (
@@ -66,13 +69,13 @@ function ListingCardComponent({
             ) : (
               <MaterialCommunityIcons
                 name={listing.listingType === 'produce' ? 'sprout' : 'package-variant'}
-                size={36}
+                size={iconSize.xl}
                 color={theme.colors.onSurfaceVariant}
               />
             )}
             {extraImageCount > 0 ? (
               <View style={[styles.moreBadge, { backgroundColor: theme.colors.surface }]}>
-                <Text variant="labelSmall" style={{ color: theme.colors.onSurface, fontWeight: '700' }}>
+                <Text style={[typography.caption, { color: theme.colors.onSurface, fontWeight: '700' }]}>
                   {marketplaceStrings.images.morePhotosOverlay(extraImageCount)}
                 </Text>
               </View>
@@ -80,9 +83,8 @@ function ListingCardComponent({
             {isOwner ? (
               <View style={[styles.ownerBadge, { backgroundColor: theme.colors.primaryContainer }]}>
                 <Text
-                  variant="labelSmall"
                   numberOfLines={1}
-                  style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}
+                  style={[typography.caption, { color: theme.colors.onPrimaryContainer, fontSize: 9 }]}
                 >
                   {marketplaceStrings.myListings.myListingBadge}
                 </Text>
@@ -93,9 +95,8 @@ function ListingCardComponent({
           <View style={styles.content}>
             <View style={styles.titleRow}>
               <Text
-                variant="titleMedium"
                 numberOfLines={2}
-                style={{ color: theme.colors.onSurface, flex: 1, fontWeight: '600' }}
+                style={[typography.sectionTitle, { color: theme.colors.onSurface, flex: 1 }]}
               >
                 {title}
               </Text>
@@ -118,31 +119,34 @@ function ListingCardComponent({
             ) : null}
 
             {showBrand && listing.brand ? (
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
                 {listing.brand}
               </Text>
             ) : null}
 
-            <Text variant="titleSmall" style={[styles.price, { color: theme.colors.primary }]}>
+            <Text style={[typography.sectionTitle, styles.price, { color: theme.colors.primary }]}>
               {formatPrice(listing.price)}
             </Text>
 
             {quantityText ? (
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
                 {quantityText}
               </Text>
             ) : null}
 
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="map-marker-outline" size={15} color={theme.colors.primary} />
-                <Text variant="bodySmall" numberOfLines={1} style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
+                <MaterialCommunityIcons name="map-marker-outline" size={iconSize.sm} color={theme.colors.primary} />
+                <Text
+                  numberOfLines={1}
+                  style={[typography.caption, { color: theme.colors.onSurfaceVariant, flex: 1 }]}
+                >
                   {listing.district}
                 </Text>
               </View>
             </View>
 
-            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
               {getCategoryLabel(listing.category)} · {formatListingDate(listing.createdAt)}
             </Text>
           </View>
@@ -155,7 +159,8 @@ function ListingCardComponent({
 export const ListingCard = memo(ListingCardComponent);
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg },
+  card: {},
+  pressed: { opacity: 0.94, transform: [{ scale: 0.99 }] },
   cardRow: { flexDirection: 'row', padding: spacing.md, gap: spacing.md },
   imageWrap: {
     width: 96,
@@ -187,7 +192,7 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'flex-start' },
   badgeRow: { alignSelf: 'flex-start' },
   saveButton: { margin: 0, width: 40, height: 40 },
-  price: { fontWeight: '700', marginTop: spacing.xs },
+  price: { marginTop: spacing.xs },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
 });

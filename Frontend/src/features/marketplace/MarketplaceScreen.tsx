@@ -2,23 +2,25 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
 import { useCallback, useState, type ComponentProps } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Searchbar, Text } from 'react-native-paper';
+import { Searchbar, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { elevation, palette, radius, spacing, useAppTheme } from '@/theme';
+import { BrandLeaves } from '@/components/BrandLeaves';
+import { OrganicBackground } from '@/components/OrganicBackground';
+import {
+  cardSurface,
+  elevation,
+  iconSize,
+  palette,
+  radius,
+  spacing,
+  typography,
+  useAppTheme,
+} from '@/theme';
 
 import { SEARCH_DEBOUNCE_MS } from './marketplace.constants';
 import { useDebouncedValue } from './hooks/useDebouncedValue';
 import { marketplaceStrings } from './marketplace.strings';
-
-function MarketplaceBackground() {
-  const theme = useAppTheme();
-  return (
-    <View style={styles.backgroundLayer} pointerEvents="none">
-      <View style={[styles.hillLarge, { backgroundColor: theme.colors.primaryContainer }]} />
-      <View style={[styles.hillSmall, { backgroundColor: palette.mist }]} />
-    </View>
-  );
-}
 
 type HeroCardProps = {
   title: string;
@@ -27,9 +29,14 @@ type HeroCardProps = {
   icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
   backgroundColor: string;
   textColor: string;
+  accentColor: string;
   onPress: () => void;
 };
 
+/**
+ * Entire card is one Pressable. The CTA is a non-interactive View pill
+ * so React Native Web never nests <button> inside <button>.
+ */
 function HeroCard({
   title,
   subtitle,
@@ -37,58 +44,86 @@ function HeroCard({
   icon,
   backgroundColor,
   textColor,
+  accentColor,
   onPress,
 }: HeroCardProps) {
   return (
-    <Pressable onPress={onPress}>
-      <Card style={[styles.heroCard, elevation.soft, { backgroundColor }]} mode="elevated">
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${actionLabel}`}
+    >
+      <View style={[styles.heroCard, cardSurface, { backgroundColor }]}>
+        <BrandLeaves variant="hero" />
         <View style={styles.heroRow}>
           <View style={styles.heroTextBlock}>
-            <Text variant="titleLarge" style={{ color: textColor, fontWeight: '700' }}>
+            <Text style={[typography.sectionTitle, styles.heroTitle, { color: textColor }]}>
               {title}
             </Text>
-            <Text variant="bodyMedium" style={{ color: textColor, opacity: 0.9 }}>
+            <Text style={[typography.body, styles.heroSubtitle, { color: textColor }]}>
               {subtitle}
             </Text>
-            <Button
-              mode="contained"
-              onPress={onPress}
-              style={styles.heroButton}
-              contentStyle={styles.heroButtonContent}
-              buttonColor={palette.white}
-              textColor={palette.green700}
-            >
-              {actionLabel}
-            </Button>
+            <View style={[styles.heroCta, elevation.soft, { backgroundColor: palette.white }]}>
+              <Text style={[typography.caption, styles.heroCtaLabel, { color: accentColor }]}>
+                {actionLabel}
+              </Text>
+              <MaterialCommunityIcons name="chevron-right" size={iconSize.sm} color={accentColor} />
+            </View>
           </View>
-          <View style={[styles.heroIconWrap, { backgroundColor: `${palette.white}33` }]}>
-            <MaterialCommunityIcons name={icon} size={48} color={textColor} />
+          <View style={[styles.heroIconWrap, { backgroundColor: `${palette.white}40` }]}>
+            <MaterialCommunityIcons name={icon} size={52} color={textColor} />
           </View>
         </View>
-      </Card>
+      </View>
     </Pressable>
   );
 }
 
+type QuickActionTone = 'saved' | 'listings' | 'sell';
+
+const QUICK_TONES: Record<
+  QuickActionTone,
+  { iconBg: string; iconColor: string }
+> = {
+  saved: { iconBg: palette.green50, iconColor: palette.green700 },
+  listings: { iconBg: palette.mist, iconColor: palette.green900 },
+  sell: { iconBg: palette.green100, iconColor: palette.green700 },
+};
+
 function QuickActionCard({
   icon,
   label,
+  tone,
   onPress,
 }: {
   icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
   label: string;
+  tone: QuickActionTone;
   onPress: () => void;
 }) {
   const theme = useAppTheme();
+  const colors = QUICK_TONES[tone];
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.quickAction, elevation.soft, { backgroundColor: theme.colors.surface }]}
+      style={({ pressed }) => [
+        styles.quickAction,
+        cardSurface,
+        { backgroundColor: theme.colors.surface },
+        pressed && styles.pressed,
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
     >
-      <View style={[styles.quickIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name={icon} size={24} color={theme.colors.primary} />
+      <View style={[styles.quickIconWrap, { backgroundColor: colors.iconBg }]}>
+        <MaterialCommunityIcons name={icon} size={iconSize.xl} color={colors.iconColor} />
       </View>
-      <Text variant="labelMedium" style={{ color: theme.colors.onSurface, textAlign: 'center' }}>
+      <Text
+        style={[typography.caption, styles.quickLabel, { color: theme.colors.onSurface }]}
+        numberOfLines={2}
+      >
         {label}
       </Text>
     </Pressable>
@@ -97,6 +132,7 @@ function QuickActionCard({
 
 export default function MarketplaceScreen() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
@@ -117,16 +153,19 @@ export default function MarketplaceScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <MarketplaceBackground />
+      <OrganicBackground intensity="subtle" />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + spacing.md },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text variant="headlineMedium" style={{ color: theme.colors.onBackground, fontWeight: '700' }}>
-            🌾 {marketplaceStrings.home.title}
+          <Text style={[typography.largeHeading, styles.screenTitle, { color: theme.colors.onBackground }]}>
+            {marketplaceStrings.home.title}
           </Text>
-          <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text style={[typography.body, styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
             {marketplaceStrings.home.subtitle}
           </Text>
         </View>
@@ -137,50 +176,62 @@ export default function MarketplaceScreen() {
           onChangeText={setSearchQuery}
           onSubmitEditing={handleSearchSubmit}
           onIconPress={handleSearchSubmit}
-          style={[styles.searchbar, elevation.soft, { backgroundColor: theme.colors.surface }]}
+          style={[styles.searchbar, elevation.card, { backgroundColor: theme.colors.surface }]}
           inputStyle={styles.searchInput}
           elevation={0}
           icon={() => (
-            <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="magnify" size={iconSize.lg} color={theme.colors.primary} />
           )}
         />
 
-        <HeroCard
-          title={marketplaceStrings.home.produceCardTitle}
-          subtitle={marketplaceStrings.home.produceCardSubtitle}
-          actionLabel={marketplaceStrings.home.produceCardAction}
-          icon="sprout"
-          backgroundColor={theme.colors.primaryContainer}
-          textColor={theme.colors.onPrimaryContainer}
-          onPress={() => navigateToProduce()}
-        />
+        <View style={styles.heroStack}>
+          <HeroCard
+            title={marketplaceStrings.home.produceCardTitle}
+            subtitle={marketplaceStrings.home.produceCardSubtitle}
+            actionLabel={marketplaceStrings.home.produceCardAction}
+            icon="sprout"
+            backgroundColor={theme.colors.primaryContainer}
+            textColor={theme.colors.onPrimaryContainer}
+            accentColor={palette.green700}
+            onPress={() => navigateToProduce()}
+          />
 
-        <HeroCard
-          title={marketplaceStrings.home.productCardTitle}
-          subtitle={marketplaceStrings.home.productCardSubtitle}
-          actionLabel={marketplaceStrings.home.productCardAction}
-          icon="tractor"
-          backgroundColor={theme.colors.secondaryContainer}
-          textColor={theme.colors.onSecondaryContainer}
-          onPress={() => router.push('/marketplace-products' as Href)}
-        />
+          <HeroCard
+            title={marketplaceStrings.home.productCardTitle}
+            subtitle={marketplaceStrings.home.productCardSubtitle}
+            actionLabel={marketplaceStrings.home.productCardAction}
+            icon="tractor"
+            backgroundColor={theme.colors.secondaryContainer}
+            textColor={theme.colors.onSecondaryContainer}
+            accentColor={palette.green900}
+            onPress={() => router.push('/marketplace-products' as Href)}
+          />
+        </View>
 
-        <View style={styles.quickActions}>
-          <QuickActionCard
-            icon="heart-outline"
-            label={marketplaceStrings.home.savedListings}
-            onPress={() => router.push('/marketplace-saved' as Href)}
-          />
-          <QuickActionCard
-            icon="clipboard-list-outline"
-            label={marketplaceStrings.home.myListings}
-            onPress={() => router.push('/marketplace-my-listings' as Href)}
-          />
-          <QuickActionCard
-            icon="plus-circle-outline"
-            label={marketplaceStrings.home.sellSomething}
-            onPress={() => router.push('/marketplace-create' as Href)}
-          />
+        <View style={styles.quickSection}>
+          <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
+            {marketplaceStrings.home.quickActionsTitle}
+          </Text>
+          <View style={styles.quickActions}>
+            <QuickActionCard
+              icon="heart-outline"
+              label={marketplaceStrings.home.savedListings}
+              tone="saved"
+              onPress={() => router.push('/marketplace-saved' as Href)}
+            />
+            <QuickActionCard
+              icon="clipboard-list-outline"
+              label={marketplaceStrings.home.myListings}
+              tone="listings"
+              onPress={() => router.push('/marketplace-my-listings' as Href)}
+            />
+            <QuickActionCard
+              icon="plus-circle-outline"
+              label={marketplaceStrings.home.sellSomething}
+              tone="sell"
+              onPress={() => router.push('/marketplace-create' as Href)}
+            />
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -189,61 +240,123 @@ export default function MarketplaceScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  backgroundLayer: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
-  hillLarge: {
-    position: 'absolute',
-    width: '140%',
-    height: 220,
-    borderRadius: 999,
-    top: -80,
-    right: -80,
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: spacing.xxl,
   },
-  hillSmall: {
-    position: 'absolute',
-    width: '90%',
-    height: 140,
-    borderRadius: 999,
-    top: 40,
-    left: -60,
-    opacity: 0.5,
+  header: {
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xl },
-  header: { gap: spacing.xs, marginTop: spacing.sm },
-  searchbar: { borderRadius: radius.lg, minHeight: 52 },
-  searchInput: { minHeight: 48, fontSize: 16 },
-  heroCard: { borderRadius: radius.lg, minHeight: 152 },
+  screenTitle: {
+    fontSize: 30,
+    lineHeight: 38,
+    letterSpacing: -0.6,
+  },
+  screenSubtitle: {
+    opacity: 0.85,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  searchbar: {
+    borderRadius: 28,
+    height: 52,
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  searchInput: {
+    minHeight: 48,
+    fontSize: 15,
+    alignSelf: 'center',
+  },
+  heroStack: {
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  heroCard: {
+    minHeight: 148,
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 22,
+  },
   heroRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.md,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
     gap: spacing.md,
-    minHeight: 152,
+    minHeight: 148,
   },
-  heroTextBlock: { flex: 1, gap: spacing.xs },
-  heroButton: { alignSelf: 'flex-start', marginTop: spacing.sm, borderRadius: radius.pill },
-  heroButtonContent: { paddingVertical: spacing.xs, paddingHorizontal: spacing.sm },
+  heroTextBlock: {
+    flex: 1,
+    gap: spacing.sm,
+    justifyContent: 'center',
+  },
+  heroTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '700',
+  },
+  heroSubtitle: {
+    opacity: 0.82,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  heroCta: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: spacing.xs,
+    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+  },
+  heroCtaLabel: {
+    fontWeight: '600',
+    fontSize: 13,
+    letterSpacing: 0.15,
+  },
   heroIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.lg,
+    width: 84,
+    height: 84,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickActions: { flexDirection: 'row', gap: spacing.sm },
+  quickSection: {
+    gap: spacing.md,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
   quickAction: {
     flex: 1,
-    borderRadius: radius.lg,
-    padding: spacing.md,
+    borderRadius: 22,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    minHeight: 96,
+    minHeight: 100,
   },
   quickIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.pill,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  quickLabel: {
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  pressed: {
+    opacity: 0.94,
+    transform: [{ scale: 0.985 }],
   },
 });

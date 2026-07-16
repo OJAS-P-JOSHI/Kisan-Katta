@@ -9,7 +9,9 @@ export const strings = {
   tabs: {
     home: 'Home',
     market: 'Market',
-    community: 'Community',
+    /** @deprecated Use farmerPrice — kept for any lingering references. */
+    community: 'अपेक्षित भाव',
+    farmerPrice: 'अपेक्षित भाव',
     marketplace: 'Marketplace',
     profile: 'Profile',
   },
@@ -49,9 +51,13 @@ export const strings = {
     perQuintal: 'per quintal',
   },
   community: {
-    title: 'Community',
-    subtitle: 'Connect with fellow farmers',
-    placeholder: 'Community content coming soon.',
+    title: 'शेतकऱ्यांचा अपेक्षित भाव',
+    subtitle: 'तुमच्या जिल्ह्यातील शेतकऱ्यांचे अपेक्षित विक्री दर',
+    placeholder: '',
+  },
+  farmerPrice: {
+    title: 'शेतकऱ्यांचा अपेक्षित भाव',
+    subtitle: 'तुमच्या जिल्ह्यातील शेतकऱ्यांचे अपेक्षित विक्री दर',
   },
   marketplace: {
     title: 'Marketplace',

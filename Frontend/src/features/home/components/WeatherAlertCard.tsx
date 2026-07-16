@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
 
-import { elevation, radius, spacing, useAppTheme } from '@/theme';
+import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
 import type { WeatherAlert } from '../weather.types';
@@ -69,10 +69,10 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 
   if (error && alerts === null) {
     return (
-      <Card mode="elevated" style={[styles.card, elevation.soft]}>
+      <Card mode="elevated" style={[styles.card, cardSurface]}>
         <Card.Content style={styles.row}>
-          <MaterialCommunityIcons name="alert-circle-outline" size={20} color={theme.colors.error} />
-          <Text variant="bodyMedium" style={{ color: theme.colors.error, flex: 1 }}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={iconSize.md} color={theme.colors.error} />
+          <Text style={[typography.body, { color: theme.colors.error, flex: 1 }]}>
             {error}
           </Text>
           <Button compact mode="text" onPress={onRetry}>
@@ -87,17 +87,17 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
     return (
       <Card
         mode="elevated"
-        style={[styles.card, elevation.soft, { backgroundColor: theme.colors.primaryContainer }]}
+        style={[styles.card, cardSurface, { backgroundColor: theme.colors.primaryContainer }]}
       >
         <Card.Content style={styles.noAlertRow}>
           <View style={[styles.noAlertIcon, { backgroundColor: theme.colors.surface }]}>
-            <MaterialCommunityIcons name="check-circle-outline" size={26} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="check-circle-outline" size={iconSize.lg} color={theme.colors.primary} />
           </View>
           <View style={styles.noAlertText}>
-            <Text variant="titleSmall" style={{ color: theme.colors.onPrimaryContainer, fontWeight: '600' }}>
+            <Text style={[typography.sectionTitle, { color: theme.colors.onPrimaryContainer }]}>
               No active weather alerts
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onPrimaryContainer, opacity: 0.9 }}>
+            <Text style={[typography.caption, { color: theme.colors.onPrimaryContainer, opacity: 0.9 }]}>
               Sky is clear – good time to work outdoors
             </Text>
           </View>
@@ -107,13 +107,13 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
   }
 
   return (
-    <Card mode="elevated" style={[styles.card, elevation.card]}>
+    <Card mode="elevated" style={[styles.card, cardSurface]}>
       <Card.Content>
         <View style={styles.sectionHeader}>
           <View style={[styles.sectionIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
-            <MaterialCommunityIcons name="alert-outline" size={18} color={theme.colors.secondary} />
+            <MaterialCommunityIcons name="alert-outline" size={iconSize.sm} color={theme.colors.secondary} />
           </View>
-          <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontWeight: '600' }}>
+          <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
             Weather Alerts
           </Text>
         </View>
@@ -128,24 +128,22 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
               <View style={[styles.alertItem, { backgroundColor: sv.bg, borderLeftColor: sv.border }]}>
                 <View style={styles.alertHeader}>
                   <View style={[styles.alertIconBadge, { backgroundColor: theme.colors.surface }]}>
-                    <MaterialCommunityIcons name={sv.icon} size={18} color={sv.iconColor} />
+                    <MaterialCommunityIcons name={sv.icon} size={iconSize.sm} color={sv.iconColor} />
                   </View>
                   <Text
-                    variant="titleSmall"
-                    style={{ color: sv.textColor, fontWeight: '600', flex: 1 }}
+                    style={[typography.sectionTitle, { color: sv.textColor, flex: 1, fontSize: 15 }]}
                     numberOfLines={1}
                   >
                     {alert.event}
                   </Text>
                   <View style={[styles.severityPill, { borderColor: sv.border }]}>
-                    <Text variant="labelSmall" style={{ color: sv.textColor, fontWeight: '500' }}>
+                    <Text style={[typography.caption, { color: sv.textColor, fontWeight: '500' }]}>
                       {alert.severity}
                     </Text>
                   </View>
                 </View>
                 <Text
-                  variant="bodyMedium"
-                  style={{ color: sv.textColor, marginTop: spacing.sm, lineHeight: 20 }}
+                  style={[typography.body, { color: sv.textColor, marginTop: spacing.sm }]}
                   numberOfLines={3}
                 >
                   {alert.headline}
@@ -160,17 +158,17 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 });
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.xl },
+  card: { marginHorizontal: spacing.md, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   noAlertRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   noAlertIcon: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  noAlertText: { flex: 1, gap: 4 },
+  noAlertText: { flex: 1, gap: 3 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -178,8 +176,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionIcon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,8 +190,8 @@ const styles = StyleSheet.create({
   },
   alertHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   alertIconBadge: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',

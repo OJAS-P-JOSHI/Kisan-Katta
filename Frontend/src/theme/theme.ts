@@ -1,7 +1,8 @@
 import { DefaultTheme as NavigationDefaultTheme } from 'expo-router';
+import type { ViewStyle } from 'react-native';
 import { MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
-import { lightColors } from './colors';
+import { lightColors, palette } from './colors';
 
 /** 4pt spacing scale. Use these tokens instead of raw numbers. */
 export const spacing = {
@@ -13,32 +14,48 @@ export const spacing = {
   xxl: 48,
 } as const;
 
-/** Corner radius scale. */
+/** Corner radius scale. Cards use `xl` throughout the app. */
 export const radius = {
   sm: 8,
   md: 12,
-  lg: 20,
-  xl: 24,
+  lg: 16,
+  xl: 20,
   pill: 999,
 } as const;
 
-/** Shared elevation shadows for premium card surfaces. */
+/** Shared elevation shadows — natural, soft, never harsh. */
 export const elevation = {
   soft: {
-    shadowColor: '#1A1C19',
+    shadowColor: palette.ink,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
   card: {
-    shadowColor: '#1A1C19',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: palette.ink,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 3,
   },
 } as const;
+
+/**
+ * Unified card surface — identical radius, shadow, and overflow
+ * for every elevated card in the app.
+ */
+export const cardSurface: ViewStyle = {
+  borderRadius: radius.xl,
+  overflow: 'hidden',
+  ...elevation.card,
+};
+
+/** Standard primary / action button shape. */
+export const buttonSurface: ViewStyle = {
+  borderRadius: radius.lg,
+  minHeight: 48,
+};
 
 export type Spacing = keyof typeof spacing;
 export type Radius = keyof typeof radius;

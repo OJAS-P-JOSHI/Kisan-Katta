@@ -3,10 +3,12 @@ import { useCallback, useState } from 'react';
 import type { ComponentProps } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { elevation, palette, radius, spacing, useAppTheme } from '@/theme';
+import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { useCurrentWeather } from './hooks/useCurrentWeather';
 import { useForecast } from './hooks/useForecast';
@@ -21,25 +23,14 @@ import { WeatherCardSkeleton } from './components/WeatherSkeleton';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-function HomeBackground() {
-  const theme = useAppTheme();
-  return (
-    <View style={styles.backgroundLayer} pointerEvents="none">
-      <View style={[styles.hillLarge, { backgroundColor: theme.colors.primaryContainer }]} />
-      <View style={[styles.hillSmall, { backgroundColor: palette.mist }]} />
-      <View style={[styles.accentOrb, { backgroundColor: palette.amber100 }]} />
-    </View>
-  );
-}
-
 function SectionHeader({ icon, title }: { icon: IconName; title: string }) {
   const theme = useAppTheme();
   return (
     <View style={styles.sectionHeader}>
       <View style={[styles.sectionIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name={icon} size={18} color={theme.colors.primary} />
+        <MaterialCommunityIcons name={icon} size={iconSize.sm} color={theme.colors.primary} />
       </View>
-      <Text variant="titleMedium" style={{ color: theme.colors.onBackground, fontWeight: '600' }}>
+      <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
         {title}
       </Text>
     </View>
@@ -49,10 +40,10 @@ function SectionHeader({ icon, title }: { icon: IconName; title: string }) {
 function WeatherErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   const theme = useAppTheme();
   return (
-    <Card mode="elevated" style={[styles.errorCard, elevation.soft]}>
+    <Card mode="elevated" style={[styles.errorCard, cardSurface]}>
       <Card.Content style={styles.errorContent}>
-        <MaterialCommunityIcons name="cloud-off-outline" size={22} color={theme.colors.error} />
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
+        <MaterialCommunityIcons name="cloud-off-outline" size={iconSize.md} color={theme.colors.error} />
+        <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
           {message}
         </Text>
         <Button compact mode="text" onPress={onRetry}>
@@ -65,6 +56,7 @@ function WeatherErrorCard({ message, onRetry }: { message: string; onRetry: () =
 
 export default function HomeScreen() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
   const { data: profile, refresh: refreshProfile } = useMyProfile();
@@ -91,10 +83,10 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <HomeBackground />
+      <OrganicBackground />
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xs }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -168,53 +160,25 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { flex: 1 },
-  backgroundLayer: {
-    ...StyleSheet.absoluteFill,
-    overflow: 'hidden',
-  },
-  hillLarge: {
-    position: 'absolute',
-    top: -80,
-    right: -60,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    opacity: 0.35,
-  },
-  hillSmall: {
-    position: 'absolute',
-    top: 120,
-    left: -70,
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    opacity: 0.5,
-  },
-  accentOrb: {
-    position: 'absolute',
-    bottom: 180,
-    right: -40,
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    opacity: 0.25,
-  },
   content: { paddingBottom: spacing.xxl },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.xs,
     paddingBottom: spacing.sm,
   },
   sectionIcon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorCard: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.xl },
+  errorCard: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
   errorContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 });

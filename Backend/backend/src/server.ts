@@ -2,6 +2,7 @@ import os from "os";
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { connectDatabase } from "./config/database";
+import { startFarmerPriceScheduler } from "./modules/farmer-price/farmer-price.scheduler";
 
 const app = createApp();
 
@@ -28,6 +29,15 @@ const getLanAddresses = (): string[] => {
 // (Docker, PM2, k8s) can restart the container rather than serving 500s.
 const startServer = async (): Promise<void> => {
   await connectDatabase();
+
+  // Maintain Farmer Price polls in the background. Failures must not
+  // block HTTP startup.
+  try {
+    startFarmerPriceScheduler();
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error("[FarmerPriceScheduler] Failed to initialize scheduler:", error);
+  }
 
   const server = app.listen(env.port, env.host, () => {
     // eslint-disable-next-line no-console

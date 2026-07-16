@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { palette, radius, spacing, useAppTheme } from '@/theme';
+import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import type { ForecastDay } from '../weather.types';
 import { formatDayShort, getWeatherIcon } from '../weather.utils';
@@ -26,11 +26,13 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
       ]}
     >
       <Text
-        variant="labelLarge"
-        style={{
-          color: isToday ? theme.colors.primary : theme.colors.onSurfaceVariant,
-          fontWeight: isToday ? '600' : '500',
-        }}
+        style={[
+          typography.caption,
+          {
+            color: isToday ? theme.colors.primary : theme.colors.onSurfaceVariant,
+            fontWeight: isToday ? '600' : '500',
+          },
+        ]}
       >
         {isToday ? 'Today' : formatDayShort(day.date)}
       </Text>
@@ -38,22 +40,22 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
       <View style={[styles.iconWrap, { backgroundColor: theme.colors.surface }]}>
         <MaterialCommunityIcons
           name={getWeatherIcon(day.condition)}
-          size={28}
+          size={iconSize.lg}
           color={theme.colors.primary}
         />
       </View>
 
-      <Text variant="titleSmall" style={{ color: palette.amber700, fontWeight: '600' }}>
+      <Text style={[typography.sectionTitle, { color: palette.amber700, fontSize: 15 }]}>
         {Math.round(day.maxTempC)}°
       </Text>
 
-      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+      <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, fontSize: 14 }]}>
         {Math.round(day.minTempC)}°
       </Text>
 
       <View style={styles.rainRow}>
-        <MaterialCommunityIcons name="water-outline" size={13} color={theme.colors.primary} />
-        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        <MaterialCommunityIcons name="water-outline" size={iconSize.xs} color={theme.colors.primary} />
+        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
           {day.dailyChanceOfRain}%
         </Text>
       </View>
@@ -63,7 +65,7 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
 
 const styles = StyleSheet.create({
   item: {
-    width: 76,
+    width: 74,
     alignItems: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.md,
@@ -71,9 +73,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: spacing.xs,

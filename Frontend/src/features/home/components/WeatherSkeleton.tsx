@@ -2,7 +2,7 @@ import { memo, useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Card } from 'react-native-paper';
 
-import { elevation, palette, radius, spacing } from '@/theme';
+import { cardSurface, palette, radius, spacing } from '@/theme';
 
 /** Animated pulsing grey box — the primitive for all skeleton states. */
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
@@ -29,7 +29,7 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 
 export function WeatherCardSkeleton() {
   return (
-    <Card mode="elevated" style={[sk.card, elevation.soft]}>
+    <Card mode="elevated" style={[sk.card, cardSurface]}>
       <SkeletonBox style={sk.heroBand} />
       <Card.Content style={sk.content}>
         <SkeletonBox style={sk.msgBox} />
@@ -51,7 +51,7 @@ export function WeatherCardSkeleton() {
 
 export function AlertSkeleton() {
   return (
-    <Card mode="elevated" style={[sk.card, elevation.soft]}>
+    <Card mode="elevated" style={[sk.card, cardSurface]}>
       <Card.Content>
         <SkeletonBox style={sk.alertBox} />
       </Card.Content>
@@ -72,7 +72,7 @@ export function ForecastSkeleton() {
 }
 
 const sk = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.xl, overflow: 'hidden' },
+  card: { marginHorizontal: spacing.md, marginBottom: spacing.md },
   heroBand: { height: 160, borderRadius: 0 },
   content: { gap: spacing.md, paddingTop: spacing.md },
   msgBox: { height: 44, borderRadius: radius.md },

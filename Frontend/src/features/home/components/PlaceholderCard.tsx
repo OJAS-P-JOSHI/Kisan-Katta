@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Chip, Divider, Text } from 'react-native-paper';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -24,32 +24,27 @@ export const PlaceholderCard = memo(function PlaceholderCard({
   const theme = useAppTheme();
 
   return (
-    <Card mode="elevated" style={styles.card}>
+    <Card mode="elevated" style={[styles.card, cardSurface]}>
       <Card.Content>
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name={icon} size={22} color={theme.colors.primary} />
+            <MaterialCommunityIcons name={icon} size={iconSize.md} color={theme.colors.primary} />
           </View>
           <View style={styles.titleBlock}>
-            <Text variant="titleSmall" style={{ color: theme.colors.onSurface, fontWeight: '700' }}>
+            <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
               {title}
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
               {subtitle}
             </Text>
           </View>
         </View>
         <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
         <View style={styles.body}>
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, flex: 1 }}>
+          <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
             {message}
           </Text>
-          <Chip
-            compact
-            mode="outlined"
-            style={styles.chip}
-            textStyle={styles.chipText}
-          >
+          <Chip compact mode="outlined" style={styles.chip} textStyle={styles.chipText}>
             Coming Soon
           </Chip>
         </View>
@@ -59,9 +54,15 @@ export const PlaceholderCard = memo(function PlaceholderCard({
 });
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg },
+  card: { marginHorizontal: spacing.md, marginBottom: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  iconContainer: { width: 44, height: 44, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   titleBlock: { flex: 1, gap: 2 },
   divider: { marginVertical: spacing.sm },
   body: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

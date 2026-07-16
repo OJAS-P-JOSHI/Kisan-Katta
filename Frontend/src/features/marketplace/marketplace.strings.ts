@@ -12,6 +12,7 @@ export const marketplaceStrings = {
     savedListings: 'जतन केलेले',
     myListings: 'माझ्या जाहिराती',
     sellSomething: 'नवीन जाहिरात',
+    quickActionsTitle: 'जलद क्रिया',
   },
   listings: {
     produceTitle: 'शेतमाल',

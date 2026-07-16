@@ -9,20 +9,30 @@ export const palette = {
   black: '#000000',
   transparent: 'transparent',
 
+  /** Deep earthy green — headlines / primary actions */
   green900: '#1B5E20',
+  /** Soft primary brand green */
   green700: '#2E7D32',
+  /** Mid leaf green — accents, icons */
   green500: '#43A047',
+  /** Soft foliage wash */
   green100: '#C8E6C9',
+  /** Whisper-green for decorative washes */
+  green50: '#EEF5EB',
 
-  amber700: '#F9A825',
-  amber100: '#FFE08D',
+  /** Soft harvest gold — secondary accents (not neon) */
+  amber700: '#C9A227',
+  /** Soft harvest wash / earth beige */
+  amber100: '#F3E9D2',
 
-  sand: '#F6F8F4',
-  mist: '#DEE5D8',
+  /** Warm white / soft field background */
+  sand: '#F8F7F2',
+  mist: '#E4E8DE',
 
+  /** Dark leaf / ink */
   ink: '#1A1C19',
-  slate: '#424940',
-  steel: '#72796F',
+  slate: '#3F463C',
+  steel: '#6E7669',
 
   red700: '#BA1A1A',
   red100: '#FFDAD6',
