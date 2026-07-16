@@ -1,15 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Button, Card, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
+import { Button, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
 
 import {
-  buttonSurface,
-  cardSurface,
   iconSize,
+  palette,
   radius,
   spacing,
-  typography,
   useAppTheme,
 } from '@/theme';
 
@@ -41,18 +39,12 @@ function computeNeedsReason(
   parsedPrice: number | null,
 ): boolean {
   if (parsedPrice == null) return false;
-
-  if (!governmentPriceAvailable) {
-    return true;
-  }
-
-  if (governmentPriceSnapshot == null) {
-    return true;
-  }
-
+  if (!governmentPriceAvailable) return true;
+  if (governmentPriceSnapshot == null) return true;
   return parsedPrice !== governmentPriceSnapshot;
 }
 
+/** Compact vote form — rendered inside PollCard (no separate card shell). */
 export function VoteCard({
   governmentPriceAvailable,
   governmentPriceSnapshot,
@@ -77,9 +69,7 @@ export function VoteCard({
   const reasonTextValid =
     trimmedReason.length >= MIN_REASON_LENGTH && trimmedReason.length <= MAX_REASON_LENGTH;
   const reasonComplete = reasonType != null && reasonTextValid;
-
-  const canSubmit =
-    parsedPrice != null && (!needsReason || reasonComplete) && !submitting;
+  const canSubmit = parsedPrice != null && (!needsReason || reasonComplete) && !submitting;
 
   const reasonHeight = useRef(new Animated.Value(0)).current;
   const reasonOpacity = useRef(new Animated.Value(0)).current;
@@ -88,7 +78,7 @@ export function VoteCard({
     Animated.parallel([
       Animated.timing(reasonHeight, {
         toValue: needsReason ? 1 : 0,
-        duration: 220,
+        duration: 200,
         useNativeDriver: false,
       }),
       Animated.timing(reasonOpacity, {
@@ -144,111 +134,105 @@ export function VoteCard({
     void onSubmit(payload);
   };
 
-  const maxReasonLines = 4;
-
   return (
-    <Card
-      mode="elevated"
-      style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]}
-    >
-      <Card.Content style={styles.content}>
-        <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
-          {farmerPriceStrings.vote.heading}
-        </Text>
+    <View style={styles.root}>
+      <Text style={[styles.heading, { color: theme.colors.onSurface }]}>
+        {farmerPriceStrings.vote.heading}
+      </Text>
 
-        <TextInput
-          mode="outlined"
-          value={priceText}
-          onChangeText={handlePriceChange}
-          placeholder={farmerPriceStrings.vote.placeholder}
-          keyboardType="number-pad"
-          editable={!submitting}
-          error={!!localError && !needsReason}
-          left={<TextInput.Affix text={farmerPriceStrings.vote.prefix} />}
-          right={<TextInput.Affix text={farmerPriceStrings.vote.suffix} />}
-          accessibilityLabel={farmerPriceStrings.vote.a11yPriceField}
-          style={styles.input}
-        />
-        {localError && !needsReason ? <HelperText type="error">{localError}</HelperText> : null}
+      <TextInput
+        mode="outlined"
+        value={priceText}
+        onChangeText={handlePriceChange}
+        placeholder={farmerPriceStrings.vote.placeholder}
+        keyboardType="number-pad"
+        editable={!submitting}
+        error={!!localError && !needsReason}
+        left={<TextInput.Affix text={farmerPriceStrings.vote.prefix} />}
+        right={<TextInput.Affix text={farmerPriceStrings.vote.suffix} />}
+        accessibilityLabel={farmerPriceStrings.vote.a11yPriceField}
+        style={styles.input}
+        outlineStyle={styles.inputOutline}
+        dense
+      />
+      {localError && !needsReason ? <HelperText type="error">{localError}</HelperText> : null}
 
-        <Animated.View
-          style={{
-            opacity: reasonOpacity,
-            maxHeight: reasonHeight.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 280],
-            }),
-            overflow: 'hidden',
-          }}
-          pointerEvents={needsReason ? 'auto' : 'none'}
-        >
-          <View style={styles.reasonBlock}>
-            <Pressable
-              onPress={() => !submitting && setReasonMenuOpen(true)}
-              disabled={submitting}
-              accessibilityRole="button"
-              accessibilityLabel={farmerPriceStrings.vote.reasonTypeLabel}
-              style={styles.dropdownPressable}
-            >
-              <View pointerEvents="none">
-                <TextInput
-                  mode="outlined"
-                  label={farmerPriceStrings.vote.reasonTypeLabel}
-                  value={reasonType ? getReasonTypeLabel(reasonType) : ''}
-                  placeholder={farmerPriceStrings.vote.reasonTypePlaceholder}
-                  editable={false}
-                  error={localError === farmerPriceStrings.vote.reasonTypeRequired}
-                  right={<TextInput.Icon icon="chevron-down" />}
-                />
-              </View>
-            </Pressable>
+      <Animated.View
+        style={{
+          opacity: reasonOpacity,
+          maxHeight: reasonHeight.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 220],
+          }),
+          overflow: 'hidden',
+        }}
+        pointerEvents={needsReason ? 'auto' : 'none'}
+      >
+        <View style={styles.reasonBlock}>
+          <Pressable
+            onPress={() => !submitting && setReasonMenuOpen(true)}
+            disabled={submitting}
+            accessibilityRole="button"
+            accessibilityLabel={farmerPriceStrings.vote.reasonTypeLabel}
+            style={styles.dropdownPressable}
+          >
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label={farmerPriceStrings.vote.reasonTypeLabel}
+                value={reasonType ? getReasonTypeLabel(reasonType) : ''}
+                placeholder={farmerPriceStrings.vote.reasonTypePlaceholder}
+                editable={false}
+                dense
+                error={localError === farmerPriceStrings.vote.reasonTypeRequired}
+                right={<TextInput.Icon icon="chevron-down" />}
+                outlineStyle={styles.inputOutline}
+              />
+            </View>
+          </Pressable>
 
-            {reasonType ? (
-              <View>
-                <TextInput
-                  mode="outlined"
-                  value={reasonText}
-                  onChangeText={(text) => {
-                    setLocalError(null);
-                    setReasonText(text.slice(0, MAX_REASON_LENGTH));
-                  }}
-                  placeholder={farmerPriceStrings.vote.reasonTextPlaceholder}
-                  multiline
-                  numberOfLines={maxReasonLines}
-                  editable={!submitting}
-                  error={localError === farmerPriceStrings.vote.reasonTextRequired}
-                  style={styles.reasonInput}
-                />
-                <Text
-                  style={[
-                    typography.caption,
-                    styles.counter,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {farmerPriceStrings.vote.reasonCounter(reasonText.length, MAX_REASON_LENGTH)}
-                </Text>
-              </View>
-            ) : null}
+          {reasonType ? (
+            <View>
+              <TextInput
+                mode="outlined"
+                value={reasonText}
+                onChangeText={(text) => {
+                  setLocalError(null);
+                  setReasonText(text.slice(0, MAX_REASON_LENGTH));
+                }}
+                placeholder={farmerPriceStrings.vote.reasonTextPlaceholder}
+                multiline
+                numberOfLines={3}
+                editable={!submitting}
+                dense
+                error={localError === farmerPriceStrings.vote.reasonTextRequired}
+                style={styles.reasonInput}
+                outlineStyle={styles.inputOutline}
+              />
+              <Text style={[styles.counter, { color: theme.colors.onSurfaceVariant }]}>
+                {farmerPriceStrings.vote.reasonCounter(reasonText.length, MAX_REASON_LENGTH)}
+              </Text>
+            </View>
+          ) : null}
 
-            {localError && needsReason ? <HelperText type="error">{localError}</HelperText> : null}
-          </View>
-        </Animated.View>
+          {localError && needsReason ? <HelperText type="error">{localError}</HelperText> : null}
+        </View>
+      </Animated.View>
 
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          loading={submitting}
-          disabled={!canSubmit}
-          style={[buttonSurface, styles.submit]}
-          contentStyle={styles.submitContent}
-          labelStyle={styles.submitLabel}
-          accessibilityLabel={farmerPriceStrings.vote.a11ySubmit}
-          accessibilityState={{ disabled: !canSubmit }}
-        >
-          {submitting ? farmerPriceStrings.vote.submitting : farmerPriceStrings.vote.submit}
-        </Button>
-      </Card.Content>
+      <Button
+        mode="contained"
+        onPress={handleSubmit}
+        loading={submitting}
+        disabled={!canSubmit}
+        style={styles.submit}
+        contentStyle={styles.submitContent}
+        labelStyle={styles.submitLabel}
+        buttonColor={palette.green700}
+        accessibilityLabel={farmerPriceStrings.vote.a11ySubmit}
+        accessibilityState={{ disabled: !canSubmit }}
+      >
+        {submitting ? farmerPriceStrings.vote.submitting : farmerPriceStrings.vote.submit}
+      </Button>
 
       <Portal>
         <Modal
@@ -286,7 +270,11 @@ export function VoteCard({
                     {getReasonTypeLabel(item)}
                   </Text>
                   {selected ? (
-                    <MaterialCommunityIcons name="check" size={iconSize.md} color={theme.colors.primary} />
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={iconSize.md}
+                      color={theme.colors.primary}
+                    />
                   ) : null}
                 </Pressable>
               );
@@ -294,42 +282,54 @@ export function VoteCard({
           />
         </Modal>
       </Portal>
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {},
-  content: {
-    padding: spacing.md + 4,
-    gap: spacing.md,
+  root: {
+    gap: 12,
+  },
+  heading: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
   },
   input: {
-    backgroundColor: 'transparent',
+    backgroundColor: palette.white,
+    height: 48,
+  },
+  inputOutline: {
+    borderRadius: radius.lg,
   },
   reasonBlock: {
-    gap: spacing.md,
-    paddingTop: spacing.xs,
+    gap: 12,
+    paddingTop: 2,
   },
   dropdownPressable: {
     minHeight: 48,
   },
   reasonInput: {
-    minHeight: 96,
-    maxHeight: 120,
+    minHeight: 72,
+    maxHeight: 96,
+    backgroundColor: palette.white,
   },
   counter: {
     alignSelf: 'flex-end',
-    marginTop: spacing.xs,
+    marginTop: 4,
+    fontSize: 11,
+    lineHeight: 14,
   },
   submit: {
-    marginTop: spacing.xs,
+    borderRadius: radius.lg,
+    marginTop: 2,
   },
   submitContent: {
-    minHeight: 48,
+    height: 48,
   },
   submitLabel: {
     fontWeight: '700',
+    fontSize: 15,
   },
   modal: {
     marginHorizontal: spacing.lg,

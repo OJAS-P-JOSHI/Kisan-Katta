@@ -1,7 +1,5 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-
-import { spacing } from '@/theme';
 
 import { useSubmitFarmerVote } from '../hooks/useSubmitFarmerVote';
 import type {
@@ -9,8 +7,8 @@ import type {
   ReasonType,
   SubmittedVoteLocal,
 } from '../farmer-price.types';
+import { CommentsBottomSheet } from './CommentsBottomSheet';
 import { PollCard } from './PollCard';
-import { RecentInsightsCard } from './RecentInsightsCard';
 import { ThankYouCard } from './ThankYouCard';
 import { VoteCard } from './VoteCard';
 
@@ -30,6 +28,7 @@ export function PollBlock({
   onAlreadyVoted,
 }: PollBlockProps) {
   const { submitting, submit } = useSubmitFarmerVote();
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const handleSubmit = useCallback(
     async (payload: {
@@ -52,24 +51,28 @@ export function PollBlock({
 
   return (
     <View style={styles.block}>
-      <PollCard poll={poll} />
-      {submittedVote ? (
-        <ThankYouCard vote={submittedVote} />
-      ) : (
-        <VoteCard
-          governmentPriceAvailable={poll.governmentPriceAvailable}
-          governmentPriceSnapshot={poll.governmentPriceSnapshot}
-          submitting={submitting}
-          onSubmit={handleSubmit}
-        />
-      )}
-      <RecentInsightsCard insights={poll.recentInsights} />
+      <PollCard poll={poll} onViewComments={() => setCommentsOpen(true)}>
+        {submittedVote ? (
+          <ThankYouCard vote={submittedVote} />
+        ) : (
+          <VoteCard
+            governmentPriceAvailable={poll.governmentPriceAvailable}
+            governmentPriceSnapshot={poll.governmentPriceSnapshot}
+            submitting={submitting}
+            onSubmit={handleSubmit}
+          />
+        )}
+      </PollCard>
+
+      <CommentsBottomSheet
+        visible={commentsOpen}
+        comments={poll.recentInsights}
+        onDismiss={() => setCommentsOpen(false)}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  block: {
-    gap: spacing.md,
-  },
+  block: {},
 });

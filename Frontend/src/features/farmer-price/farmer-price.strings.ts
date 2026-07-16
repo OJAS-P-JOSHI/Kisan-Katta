@@ -7,36 +7,41 @@ export const farmerPriceStrings = {
     subtitle: 'तुमच्या जिल्ह्यातील शेतकऱ्यांचे अपेक्षित विक्री दर',
   },
   poll: {
-    governmentPriceLabel: 'शासकीय बाजारभाव',
-    governmentPriceUnavailable: 'शासकीय बाजारभाव उपलब्ध नाही.',
-    perQuintal: 'प्रति क्विंटल',
-    updated: 'Updated',
-    communityPriceLabel: 'शेतकऱ्यांचा अपेक्षित भाव',
-    minimumVotesNotReached: 'अजून पुरेसे प्रतिसाद मिळाले नाहीत.',
-    minimumVotesCaption: 'किमान १० शेतकऱ्यांच्या प्रतिसादानंतर अपेक्षित भाव दिसेल.',
-    voteCount: (count: number) => `${count} शेतकरी`,
-    votingEnds: 'Voting Ends',
-    remainingTime: (days: number, hours: number) => `${days} दिवस ${hours} तास`,
-    remainingHoursOnly: (hours: number) => `${hours} तास`,
-    a11yPollCard: (crop: string, district: string) => `${crop}, ${district} मतदान कार्ड`,
+    governmentPriceLabel: 'Government Price',
+    governmentPriceUnavailableChip: '⚠ Market price unavailable',
+    communityPriceLabel: 'Community Expected',
+    waitingVotesProgress: (current: number, required: number) => `${current} / ${required} Votes`,
+    waitingVotesNeed: (remaining: number) => `Need ${remaining} more votes`,
+    perQuintal: 'per Quintal',
+    votesChip: (count: number) => `👨‍🌾 ${count} Votes`,
+    votesProgressChip: (current: number, required: number) =>
+      `👨‍🌾 ${current} / ${required} Votes`,
+    compactRemaining: (days: number, hours: number) => `${days}d ${hours}h`,
+    compactHoursOnly: (hours: number) => `${hours}h`,
+    timeChip: (label: string) => `⏱ ${label}`,
+    viewComments: (count: number) =>
+      count === 1 ? '💬 View 1 Comment →' : `💬 View ${count} Comments →`,
+    viewCommentsEmpty: '💬 View Comments →',
+    a11yPollCard: (crop: string, district: string) => `${crop}, ${district} price poll`,
+    a11yViewComments: 'View comments',
   },
   confidence: {
-    NOT_AVAILABLE: 'NOT_AVAILABLE',
+    NOT_AVAILABLE: 'N/A',
     LOW: 'LOW',
     MEDIUM: 'MEDIUM',
     HIGH: 'HIGH',
   } satisfies Record<ConfidenceLevel, string>,
   vote: {
-    heading: 'तुमचा अपेक्षित विक्री दर',
-    placeholder: 'उदा. 7000',
+    heading: 'Your Expected Price',
+    placeholder: 'e.g. 7000',
     prefix: '₹',
-    suffix: 'प्रति क्विंटल',
-    reasonTypeLabel: 'कारणाचा प्रकार',
-    reasonTypePlaceholder: 'कारण निवडा',
-    reasonTextPlaceholder: 'तुमचे कारण लिहा...',
+    suffix: 'per Quintal',
+    reasonTypeLabel: 'Reason',
+    reasonTypePlaceholder: 'Select reason',
+    reasonTextPlaceholder: 'Write your reason…',
     reasonCounter: (current: number, max: number) => `${current} / ${max}`,
-    submit: 'मत नोंदवा',
-    submitting: 'नोंदवत आहे…',
+    submit: 'Submit Vote',
+    submitting: 'Submitting…',
     priceRequired: 'कृपया अपेक्षित दर भरा.',
     priceInvalid: 'कृपया वैध पूर्णांक किंमत भरा.',
     reasonTypeRequired: 'कृपया कारणाचा प्रकार निवडा.',
@@ -55,16 +60,25 @@ export const farmerPriceStrings = {
     OTHER: 'Other',
   } satisfies Record<ReasonType, string>,
   thankYou: {
-    heading: 'धन्यवाद!',
-    body: 'तुमचे मत यशस्वीरित्या नोंदवले आहे.',
-    submittedPrice: 'नोंदवलेला दर',
-    submittedReason: 'नोंदवलेले कारण',
-    a11y: 'मत यशस्वीरित्या नोंदवले',
+    heading: 'Your Vote',
+    priceLine: (amount: string) => `${amount} / Quintal`,
+    a11y: 'Your vote submitted',
   },
-  insights: {
-    title: 'अलीकडील शेतकरी निरीक्षणे',
-    anonymousAuthor: 'Anonymous Farmer',
-    empty: 'अजून कोणतीही निरीक्षणे उपलब्ध नाहीत.',
+  comments: {
+    title: 'Comments',
+    subtitle: 'What farmers are saying',
+    emptyEmoji: '💬',
+    emptyTitle: 'No comments yet.',
+    emptyBody: 'Be the first farmer to explain your expected price.',
+    filters: {
+      all: 'All',
+      goodQuality: 'Good Quality',
+      lowQuality: 'Low Quality',
+      storage: 'Storage',
+      export: 'Export',
+      transport: 'Transport',
+      other: 'Other',
+    },
   },
   disclaimer: {
     line1: 'हा दर अधिकृत बाजारभाव नाही.',
@@ -88,21 +102,12 @@ export const farmerPriceStrings = {
     dismiss: 'OK',
   },
   relative: {
-    justNow: 'आत्ताच',
-    minutesAgo: (n: number) => `${toMarathiDigits(n)} मिनिटांपूर्वी`,
-    hoursAgo: (n: number) => `${toMarathiDigits(n)} तासांपूर्वी`,
-    daysAgo: (n: number) => `${toMarathiDigits(n)} दिवसांपूर्वी`,
+    justNow: 'just now',
+    minutesAgo: (n: number) => (n === 1 ? '1 minute ago' : `${n} minutes ago`),
+    hoursAgo: (n: number) => (n === 1 ? '1 hour ago' : `${n} hours ago`),
+    daysAgo: (n: number) => (n === 1 ? '1 day ago' : `${n} days ago`),
   },
 } as const;
-
-const MARATHI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'] as const;
-
-function toMarathiDigits(value: number): string {
-  return String(value)
-    .split('')
-    .map((ch) => (/\d/.test(ch) ? MARATHI_DIGITS[Number(ch)] : ch))
-    .join('');
-}
 
 export function getReasonTypeLabel(reasonType: ReasonType): string {
   return farmerPriceStrings.reasonTypes[reasonType];

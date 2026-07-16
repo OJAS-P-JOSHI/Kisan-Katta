@@ -36,6 +36,13 @@ export const palette = {
 
   red700: '#BA1A1A',
   red100: '#FFDAD6',
+
+  /** Soft steel blue — confidence MEDIUM chips */
+  blue800: '#2F5F7A',
+  blue100: '#DCE8F0',
+
+  /** Warm harvest orange — confidence LOW chips */
+  orange800: '#9A6B1A',
 } as const;
 
 /**

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { getErrorMessage } from '@/utils';
 
 import { getMyPollDetails } from '../farmer-price.service';
@@ -8,6 +9,7 @@ import { getAllSubmittedVotes } from '../farmer-price.vote-storage';
 
 export type UseMyFarmerPricePollReturn = {
   polls: PollDetailResponseDTO[];
+  /** Thank-you cache for the authenticated user only, keyed by pollId. */
   submittedVotes: Record<string, SubmittedVoteLocal>;
   loading: boolean;
   refreshing: boolean;
@@ -19,33 +21,47 @@ export type UseMyFarmerPricePollReturn = {
 
 /**
  * Loads the farmer's active polls (district + favourite crops) with detail
- * payloads, plus locally cached submitted votes for thank-you cards.
+ * payloads, plus this user's locally cached submitted votes for thank-you cards.
  */
 export function useMyFarmerPricePoll(): UseMyFarmerPricePollReturn {
+  const { user } = useAuth();
+  const userId = user?.userId ?? null;
+
   const [polls, setPolls] = useState<PollDetailResponseDTO[]>([]);
   const [submittedVotes, setSubmittedVotes] = useState<Record<string, SubmittedVoteLocal>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (mode: 'initial' | 'refresh'): Promise<void> => {
-    if (mode === 'refresh') {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-    try {
-      const [details, votes] = await Promise.all([getMyPollDetails(), getAllSubmittedVotes()]);
-      setPolls(details);
-      setSubmittedVotes(votes);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (mode: 'initial' | 'refresh'): Promise<void> => {
+      if (mode === 'refresh') {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+      try {
+        if (!userId) {
+          setPolls([]);
+          setSubmittedVotes({});
+          return;
+        }
+        const [details, votes] = await Promise.all([
+          getMyPollDetails(),
+          getAllSubmittedVotes(userId),
+        ]);
+        setPolls(details);
+        setSubmittedVotes(votes);
+      } catch (err) {
+        setError(getErrorMessage(err));
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [userId],
+  );
 
   const refresh = useCallback(async (): Promise<void> => {
     await load('refresh');
@@ -66,6 +82,8 @@ export function useMyFarmerPricePoll(): UseMyFarmerPricePollReturn {
   }, []);
 
   useEffect(() => {
+    // Reset UI cache immediately when the authenticated user changes.
+    setSubmittedVotes({});
     void load('initial');
   }, [load]);
 

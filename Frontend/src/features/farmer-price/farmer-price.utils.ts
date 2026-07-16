@@ -6,37 +6,22 @@ export function formatRupee(amount: number): string {
   return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
-/** Formats difference with triangle indicator, e.g. `▲ ₹260`. */
-export function formatDifference(diff: number): string {
-  const abs = formatRupee(Math.abs(diff));
-  if (diff > 0) return `▲ ${abs}`;
-  if (diff < 0) return `▼ ${abs}`;
-  return abs;
+/** Compact diff chip label, e.g. `▲ +4%`. */
+export function formatDiffChip(pct: number): string {
+  if (pct > 0) return `▲ +${pct}%`;
+  if (pct < 0) return `▼ ${pct}%`;
+  return `${pct}%`;
 }
 
-/** Formats percentage with sign, e.g. `(+3.8%)`. */
-export function formatPercentage(pct: number): string {
-  const sign = pct > 0 ? '+' : '';
-  return `(${sign}${pct}%)`;
-}
-
-/** Formats a short date like `18 Jul`. */
-export function formatShortDate(iso: string | null): string {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
-/** Converts remaining hours into Marathi day/hour copy. */
-export function formatRemainingTime(remainingHours: number): string {
+/** Compact remaining time, e.g. `2d 18h`. */
+export function formatCompactRemaining(remainingHours: number): string {
   const safe = Math.max(0, Math.floor(remainingHours));
   const days = Math.floor(safe / 24);
   const hours = safe % 24;
   if (days <= 0) {
-    return farmerPriceStrings.poll.remainingHoursOnly(hours);
+    return farmerPriceStrings.poll.compactHoursOnly(hours);
   }
-  return farmerPriceStrings.poll.remainingTime(days, hours);
+  return farmerPriceStrings.poll.compactRemaining(days, hours);
 }
 
 /** Progress 0–1 for voting window remaining. */
@@ -48,7 +33,7 @@ export function remainingProgress(
   return Math.min(1, Math.max(0, remainingHours / totalHours));
 }
 
-/** Relative Marathi time for insight timestamps. */
+/** Relative short time for comment timestamps. */
 export function formatRelativeTime(iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return '';

@@ -7,12 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/EmptyState';
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import {
-  buttonSurface,
-  spacing,
-  typography,
-  useAppTheme,
-} from '@/theme';
+import { palette, radius, spacing, useAppTheme } from '@/theme';
 
 import { FarmerPriceSkeleton } from './components/FarmerPriceSkeleton';
 import { PollBlock } from './components/PollBlock';
@@ -93,14 +88,15 @@ export default function FarmerPriceScreen() {
       return (
         <View style={styles.emptyWrap}>
           <RNText style={styles.emoji}>{farmerPriceStrings.empty.noFavoritesEmoji}</RNText>
-          <Text style={[typography.sectionTitle, styles.emptyTitle, { color: theme.colors.onSurface }]}>
+          <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
             {farmerPriceStrings.empty.noFavoritesTitle}
           </Text>
           <Button
             mode="contained"
             onPress={openProfile}
-            style={[buttonSurface, styles.emptyAction]}
+            style={styles.emptyAction}
             contentStyle={styles.emptyActionContent}
+            buttonColor={palette.green700}
             accessibilityLabel={farmerPriceStrings.empty.openProfile}
           >
             {farmerPriceStrings.empty.openProfile}
@@ -113,7 +109,7 @@ export default function FarmerPriceScreen() {
       return (
         <View style={styles.emptyWrap}>
           <RNText style={styles.emoji}>{farmerPriceStrings.empty.noPollEmoji}</RNText>
-          <Text style={[typography.sectionTitle, styles.emptyTitle, { color: theme.colors.onSurface }]}>
+          <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
             {farmerPriceStrings.empty.noPollTitle}
           </Text>
           <Button
@@ -121,8 +117,9 @@ export default function FarmerPriceScreen() {
             onPress={() => {
               void handleRefresh();
             }}
-            style={[buttonSurface, styles.emptyAction]}
+            style={styles.emptyAction}
             contentStyle={styles.emptyActionContent}
+            buttonColor={palette.green700}
             accessibilityLabel={farmerPriceStrings.empty.refresh}
           >
             {farmerPriceStrings.empty.refresh}
@@ -145,10 +142,10 @@ export default function FarmerPriceScreen() {
         ))}
 
         <View style={styles.disclaimer}>
-          <Text style={[typography.caption, styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
+          <Text style={[styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
             {farmerPriceStrings.disclaimer.line1}
           </Text>
-          <Text style={[typography.caption, styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
+          <Text style={[styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
             {farmerPriceStrings.disclaimer.line2}
           </Text>
         </View>
@@ -162,7 +159,10 @@ export default function FarmerPriceScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xl },
+          {
+            paddingTop: insets.top + spacing.md,
+            paddingBottom: insets.bottom + spacing.lg,
+          },
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -177,12 +177,10 @@ export default function FarmerPriceScreen() {
         }
       >
         <View style={styles.header}>
-          <Text
-            style={[typography.largeHeading, styles.screenTitle, { color: theme.colors.onBackground }]}
-          >
+          <Text style={[styles.screenTitle, { color: theme.colors.onBackground }]}>
             {farmerPriceStrings.screen.title}
           </Text>
-          <Text style={[typography.body, styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+          <Text style={[styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
             {farmerPriceStrings.screen.subtitle}
           </Text>
         </View>
@@ -214,23 +212,32 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
+    gap: 4,
+    paddingBottom: 12,
+    marginBottom: 0,
   },
   screenTitle: {
-    fontSize: 30,
-    lineHeight: 38,
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
-  screenSubtitle: {},
+  screenSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
   pollStack: {
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   disclaimer: {
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: 2,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
     alignItems: 'center',
   },
   disclaimerText: {
+    fontSize: 11,
+    lineHeight: 15,
     textAlign: 'center',
   },
   emptyWrap: {
@@ -245,14 +252,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   emptyTitle: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '600',
     textAlign: 'center',
     maxWidth: 280,
   },
   emptyAction: {
     marginTop: spacing.md,
+    borderRadius: radius.lg,
   },
   emptyActionContent: {
-    minHeight: 48,
+    height: 48,
     paddingHorizontal: spacing.md,
   },
 });
