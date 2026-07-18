@@ -6,6 +6,7 @@ import authRoutes from "../modules/auth/auth.routes";
 import profileRoutes from "../modules/profile/profile.routes";
 import marketplaceRoutes from "../modules/marketplace/marketplace.routes";
 import farmerPriceRoutes from "../modules/farmer-price/farmer-price.routes";
+import gramSahakariRoutes from "../modules/gram-sahakari/routes";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/api/v1/auth", authRoutes);
 router.use("/api/v1/profile", profileRoutes);
 router.use("/api/v1/marketplace", marketplaceRoutes);
 router.use("/api/v1/farmer-price", farmerPriceRoutes);
+router.use("/api/v1/gram-sahakari", gramSahakariRoutes);
 
 export default router;

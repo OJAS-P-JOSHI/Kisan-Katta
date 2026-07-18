@@ -27,13 +27,18 @@ export const authenticate = asyncHandler(
     // verifyToken wraps all JWT errors as AppError(401) — no local try/catch needed
     const payload = verifyToken(token);
 
-    // Confirm the account still exists (handles deleted-user edge case)
-    const userExists = await AuthUser.exists({ _id: payload.userId });
-    if (!userExists) {
+    // Confirm the account still exists and load current role (handles deleted-user
+    // edge case and ensures role changes take effect without re-login).
+    const user = await AuthUser.findById(payload.userId).select("mobile role").lean();
+    if (!user) {
       throw new AppError("User account no longer exists.", 401);
     }
 
-    req.user = { userId: payload.userId, mobile: payload.mobile };
+    req.user = {
+      userId: payload.userId,
+      mobile: user.mobile,
+      role: user.role ?? "FARMER",
+    };
     next();
   }
 );
@@ -43,7 +48,9 @@ export const authenticate = asyncHandler(
  * Use inside any protected handler after the authenticate middleware.
  * Throws if called on an unprotected route (programming error, not user error).
  */
-export const getAuthUser = (req: Request): { userId: string; mobile: string } => {
+export const getAuthUser = (
+  req: Request
+): { userId: string; mobile: string; role: import("./auth.constants").UserRole } => {
   if (!req.user) {
     throw new AppError("Authentication required.", 401);
   }

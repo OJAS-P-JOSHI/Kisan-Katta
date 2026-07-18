@@ -8,6 +8,7 @@ declare global {
       user?: {
         userId: string;
         mobile: string;
+        role: import("../modules/auth/auth.constants").UserRole;
       };
     }
   }

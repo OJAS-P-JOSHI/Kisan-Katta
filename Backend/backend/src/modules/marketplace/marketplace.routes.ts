@@ -40,10 +40,14 @@ const optionalAuthenticate = asyncHandler(
 
     try {
       const payload = verifyToken(token);
-      const userExists = await AuthUser.exists({ _id: payload.userId });
+      const user = await AuthUser.findById(payload.userId).select("mobile role").lean();
 
-      if (userExists) {
-        req.user = { userId: payload.userId, mobile: payload.mobile };
+      if (user) {
+        req.user = {
+          userId: payload.userId,
+          mobile: user.mobile,
+          role: user.role ?? "FARMER",
+        };
       }
     } catch {
       // Public browse endpoint — ignore invalid tokens.
