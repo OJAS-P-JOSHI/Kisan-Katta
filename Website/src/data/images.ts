@@ -7,7 +7,11 @@
 
 export const brandAssets = {
   logo: '/logo-circle.png',
-  hero: '/login-hero.png',
+  /** Flat brand illustration (used on auth screens, not as a full-bleed background) */
+  illustration: '/login-hero.png',
+  /** Optimized cinematic hero photograph — Maharashtra farmer at golden hour */
+  hero: '/hero-field.webp',
+  heroMobile: '/hero-field-mobile.webp',
 } as const
 
 /** Unsplash — Indian agriculture, commercial use */

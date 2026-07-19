@@ -5,18 +5,22 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0 active:translate-y-0 active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:translate-y-0',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-soft hover:bg-forest-700 hover:shadow-card',
+          'bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:bg-forest-700 hover:shadow-card',
         secondary:
-          'bg-gold-500 text-secondary-foreground shadow-soft hover:bg-gold-600 hover:shadow-card',
+          'bg-gold-500 text-secondary-foreground shadow-soft hover:-translate-y-0.5 hover:bg-gold-600 hover:shadow-card',
         outline:
-          'border-2 border-primary bg-transparent text-primary hover:bg-forest-50',
+          'border-2 border-primary bg-transparent text-primary hover:-translate-y-0.5 hover:bg-forest-50',
         ghost: 'text-foreground hover:bg-forest-50',
         link: 'text-primary underline-offset-4 hover:underline',
+        glow:
+          'bg-gradient-to-br from-gold-400 to-gold-600 text-forest-900 shadow-[0_10px_30px_-6px_rgba(212,146,10,0.6)] hover:-translate-y-0.5 hover:from-gold-400 hover:to-gold-500 hover:shadow-[0_18px_46px_-8px_rgba(212,146,10,0.78)]',
+        glass:
+          'border border-white/40 bg-white/10 text-white backdrop-blur-md hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/20 hover:text-white',
       },
       size: {
         default: 'min-h-12 px-6',

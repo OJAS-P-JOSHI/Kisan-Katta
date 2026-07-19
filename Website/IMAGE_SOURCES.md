@@ -7,7 +7,8 @@ All external images are royalty-free and licensed for commercial use.
 | File | Usage |
 |---|---|
 | `logo-circle.png` | Navbar, Footer, Login, Brand cards, Loading placeholder |
-| `login-hero.png` | Hero section background |
+| `login-hero.png` | Flat brand illustration (auth screens) |
+| `hero-field.webp`, `hero-field-mobile.webp` | Landing hero background (AI-generated, custom for Kisan Katta; brand-owned) |
 | `favicon-96x96.png`, `favicon.svg`, `favicon.ico` | Browser favicons |
 | `apple-touch-icon.png` | iOS home screen |
 | `web-app-manifest-192x192.png`, `web-app-manifest-512x512.png` | PWA icons |

@@ -36,11 +36,11 @@ export function LoginPage() {
       footer={
         <p className="text-xs text-white/70 lg:text-muted-foreground">
           By continuing, you agree to our{' '}
-          <Link to="/terms" className="font-medium underline-offset-2 hover:underline">
+          <Link to="/terms-and-conditions" className="font-medium underline-offset-2 hover:underline">
             Terms
           </Link>{' '}
           &{' '}
-          <Link to="/privacy" className="font-medium underline-offset-2 hover:underline">
+          <Link to="/privacy-policy" className="font-medium underline-offset-2 hover:underline">
             Privacy Policy
           </Link>
         </p>

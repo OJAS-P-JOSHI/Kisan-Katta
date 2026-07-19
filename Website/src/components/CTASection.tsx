@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
@@ -49,16 +50,14 @@ export function CTASection({
             )}
             {children}
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="lg" variant="secondary">
-                <Link to={primaryHref}>{primaryLabel}</Link>
+              <Button asChild size="lg" variant="glow">
+                <Link to={primaryHref}>
+                  {primaryLabel}
+                  <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </Link>
               </Button>
               {secondaryLabel && secondaryHref && (
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-                >
+                <Button asChild size="lg" variant="glass">
                   <Link to={secondaryHref}>{secondaryLabel}</Link>
                 </Button>
               )}

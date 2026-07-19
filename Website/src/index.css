@@ -66,10 +66,30 @@
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
     font-size: 16px;
     line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .font-marathi {
     font-family: var(--font-marathi);
+  }
+
+  /* Respect users who prefer reduced motion — disable smooth scroll,
+     looping animations, and long transitions site-wide. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

@@ -25,3 +25,23 @@ export const defaultTransition = {
   duration: 0.5,
   ease: [0.22, 1, 0.36, 1] as const,
 }
+
+/** Refined easing curves for premium motion. */
+export const premiumEase = [0.16, 1, 0.3, 1] as const
+
+/** Hero title/copy staggered reveal — smooth, cinematic upward fade. */
+export const heroStagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.09, delayChildren: 0.15 },
+  },
+} as const
+
+export const heroItem = {
+  hidden: { opacity: 0, y: 22 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: premiumEase },
+  },
+} as const

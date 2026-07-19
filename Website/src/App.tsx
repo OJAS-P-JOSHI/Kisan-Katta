@@ -7,7 +7,8 @@ import { ContactPage } from '@/pages/ContactPage'
 import { FAQPage } from '@/pages/FAQPage'
 import { FeaturesPage } from '@/pages/FeaturesPage'
 import { LandingPage } from '@/pages/LandingPage'
-import { PrivacyPage, TermsPage } from '@/pages/LegalPages'
+import { PrivacyPage, RefundPage, TermsPage } from '@/pages/LegalPages'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { ApplicationPage } from '@/pages/ApplicationPage'
 import { ApplicationStatusPage } from '@/pages/ApplicationStatusPage'
@@ -27,8 +28,14 @@ export function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/verify-otp" element={<VerifyOtpPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
-      <Route path="/terms" element={<TermsPage />} />
+
+      {/* Legal */}
+      <Route path="/privacy-policy" element={<PrivacyPage />} />
+      <Route path="/terms-and-conditions" element={<TermsPage />} />
+      <Route path="/refund-policy" element={<RefundPage />} />
+      {/* Backwards-compatible redirects for previous legal paths */}
+      <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+      <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
 
       {/* Protected */}
       <Route
@@ -55,6 +62,9 @@ export function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* 404 */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

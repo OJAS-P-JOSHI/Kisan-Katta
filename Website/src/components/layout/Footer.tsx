@@ -1,17 +1,42 @@
-import { Globe, Mail, MapPin, MessageCircle, Phone, Share2 } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { BrandLogo } from '@/components/common/BrandLogo'
 import { contactInfo, footerLinks } from '@/data/site'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import type { TranslationKeys } from '@/i18n/translations'
 import { cn } from '@/lib/utils'
 
-const socialLinks = [
-  { icon: Share2, href: '#', label: 'Facebook' },
-  { icon: Globe, href: '#', label: 'Instagram' },
-  { icon: MessageCircle, href: '#', label: 'Twitter' },
-  { icon: Mail, href: '#', label: 'LinkedIn' },
-] as const
+function LinkColumn({
+  heading,
+  links,
+}: {
+  heading: string
+  links: readonly { key: TranslationKeys; href: string }[]
+}) {
+  const { t, locale } = useTranslation()
+
+  return (
+    <div>
+      <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">{heading}</h4>
+      <ul className="space-y-2.5">
+        {links.map((link) => (
+          <li key={link.href + link.key}>
+            <Link
+              to={link.href}
+              className={cn(
+                'inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-forest-900',
+                locale === 'mr' && 'font-marathi',
+              )}
+            >
+              {t(link.key)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 export function Footer() {
   const { t, locale } = useTranslation()
@@ -19,7 +44,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-white">
       <div className="container-wide section-padding !py-12 sm:!py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <BrandLogo size="lg" />
             <p
@@ -30,115 +55,60 @@ export function Footer() {
             >
               {t('footer.tagline')}
             </p>
-            <div className="mt-5 flex gap-2.5">
-              {socialLinks.map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="touch-target flex items-center justify-center rounded-xl bg-forest-50 text-forest-700 transition-colors hover:bg-forest-900 hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
-          <div>
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">
-              {t('footer.quickLinks')}
-            </h4>
-            <ul className="space-y-2.5">
-              {footerLinks.quick.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className={cn(
-                      'inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-forest-900',
-                      locale === 'mr' && 'font-marathi',
-                    )}
-                  >
-                    {t(link.key)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <LinkColumn heading={t('footer.company')} links={footerLinks.company} />
+          <LinkColumn heading={t('footer.resources')} links={footerLinks.resources} />
 
           <div>
             <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">
               {t('footer.support')}
             </h4>
-            <ul className="space-y-2.5">
-              {footerLinks.support.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className={cn(
-                      'inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-forest-900',
-                      locale === 'mr' && 'font-marathi',
-                    )}
-                  >
-                    {t(link.key)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">
-              {t('footer.legal')}
-            </h4>
-            <ul className="space-y-2.5">
-              {footerLinks.legal.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className={cn(
-                      'inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-forest-900',
-                      locale === 'mr' && 'font-marathi',
-                    )}
-                  >
-                    {t(link.key)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">
-              {t('footer.contact')}
-            </h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" />
-                <a href={`mailto:${contactInfo.email}`} className="hover:text-forest-900">
-                  {contactInfo.email}
-                </a>
-              </li>
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" />
-                <a href={`tel:${contactInfo.phone}`} className="hover:text-forest-900">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
+                <a href={`tel:${contactInfo.phoneHref}`} className="hover:text-forest-900">
                   {contactInfo.phone}
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" />
-                <span>{contactInfo.address}</span>
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
+                <a
+                  href={`mailto:${contactInfo.email}`}
+                  className="break-all hover:text-forest-900"
+                >
+                  {contactInfo.email}
+                </a>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-muted-foreground">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
+                <address className="not-italic leading-relaxed">
+                  {contactInfo.addressLines.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </address>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-border pt-6 text-center text-sm text-muted-foreground sm:mt-12 sm:pt-8">
-          <p>
-            &copy; {new Date().getFullYear()} Kisan Katta. {t('footer.rights')}
+        <div className="mt-10 border-t border-border pt-6 sm:mt-12 sm:pt-8">
+          <p
+            className={cn(
+              'text-xs leading-relaxed text-muted-foreground',
+              locale === 'mr' && 'font-marathi',
+            )}
+          >
+            {t('footer.disclaimer')}
           </p>
-          <p className={cn('mt-1 text-forest-700', locale === 'mr' ? 'font-marathi' : 'font-marathi')}>
-            {t('footer.forFarmers')}
-          </p>
+          <div className="mt-6 flex flex-col items-center gap-1 text-center text-sm text-muted-foreground">
+            <p>
+              &copy; {Math.max(2026, new Date().getFullYear())} Kisan Katta. {t('footer.rights')}
+            </p>
+            <p className="font-marathi text-forest-700">{t('footer.forFarmers')}</p>
+          </div>
         </div>
       </div>
     </footer>

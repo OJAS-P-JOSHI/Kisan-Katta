@@ -59,13 +59,19 @@ export const translations = {
     'footer.support': 'Support',
     'footer.legal': 'Legal',
     'footer.contact': 'Contact',
-    'footer.rights': 'All rights reserved.',
+    'footer.rights': 'All Rights Reserved.',
     'footer.forFarmers': 'For farmers of Maharashtra',
 
     'footer.helpCenter': 'Help Center',
     'footer.contactSupport': 'Contact Support',
     'footer.privacy': 'Privacy Policy',
-    'footer.terms': 'Terms of Service',
+    'footer.terms': 'Terms & Conditions',
+    'footer.refund': 'Refund & Cancellation Policy',
+    'footer.company': 'Company',
+    'footer.resources': 'Resources',
+    'footer.aboutKisanKatta': 'About Kisan Katta',
+    'footer.disclaimer':
+      'Kisan Katta is an independent agritech platform. Government market price information, weather data, and similar external information are sourced from third-party or government providers where applicable. Availability and accuracy may vary.',
 
     'landing.cta.title': "Ready to Join Maharashtra's Digital Farming Revolution?",
     'landing.cta.description':
@@ -138,6 +144,12 @@ export const translations = {
     'footer.contactSupport': 'सहाय्याशी संपर्क',
     'footer.privacy': 'गोपनीयता धोरण',
     'footer.terms': 'अटी व शर्ती',
+    'footer.refund': 'परतावा व रद्दीकरण धोरण',
+    'footer.company': 'कंपनी',
+    'footer.resources': 'संसाधने',
+    'footer.aboutKisanKatta': 'किसान कatta बद्दल',
+    'footer.disclaimer':
+      'किसान कatta हे एक स्वतंत्र अ‍ॅग्रीटेक व्यासपीठ आहे. सरकारी बाजारभाव माहिती, हवामान डेटा आणि तत्सम बाह्य माहिती लागू असेल तेथे तृतीय-पक्ष किंवा सरकारी स्रोतांकडून घेतली जाते. उपलब्धता व अचूकता बदलू शकते.',
 
     'landing.cta.title': 'महाराष्ट्राच्या डिजिटल शेती क्रांतीत सामील व्हाल?',
     'landing.cta.description':
