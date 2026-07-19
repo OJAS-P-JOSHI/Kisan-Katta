@@ -6,6 +6,7 @@ import { FeaturesSection } from '@/components/sections/FeaturesSection'
 import { GramSahakariSection } from '@/components/sections/GramSahakariSection'
 import { HeroSection } from '@/components/sections/HeroSection'
 import { HowItWorksSection } from '@/components/sections/HowItWorksSection'
+import { QuickFeaturesSection } from '@/components/sections/QuickFeaturesSection'
 import { StatsSection } from '@/components/sections/StatsSection'
 import { TestimonialsSection } from '@/components/sections/TestimonialsSection'
 import { WhyChooseSection } from '@/components/sections/WhyChooseSection'
@@ -17,6 +18,7 @@ export function LandingPage() {
   return (
     <PageLayout>
       <HeroSection />
+      <QuickFeaturesSection />
       <StatsSection />
       <AboutSection />
       <FeaturesSection />

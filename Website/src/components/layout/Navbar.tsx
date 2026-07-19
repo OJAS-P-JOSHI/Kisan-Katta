@@ -48,7 +48,7 @@ export function Navbar() {
             transparent ? 'h-[4.5rem] sm:h-20' : 'h-16 sm:h-[4.5rem]',
           )}
         >
-          <BrandLogo size="md" priority={isHome} />
+          <BrandLogo size="md" priority={isHome} className="h-12 w-12 sm:h-11 sm:w-11" />
 
           <div className="hidden items-center gap-1 lg:flex">
             {desktopNavLinks.map((link) => {

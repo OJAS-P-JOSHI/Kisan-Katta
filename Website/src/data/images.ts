@@ -11,7 +11,8 @@ export const brandAssets = {
   illustration: '/login-hero.png',
   /** Optimized cinematic hero photograph — Maharashtra farmer at golden hour */
   hero: '/hero-field.webp',
-  heroMobile: '/hero-field-mobile.webp',
+  /** Dedicated portrait composition for mobile — farmer in the upper half */
+  heroMobile: '/hero-mobile.webp',
 } as const
 
 /** Unsplash — Indian agriculture, commercial use */

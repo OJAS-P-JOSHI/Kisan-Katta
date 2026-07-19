@@ -1,6 +1,7 @@
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import {
   ArrowRight,
+  ChevronDown,
   CloudSun,
   Download,
   HandCoins,
@@ -139,58 +140,60 @@ export function HeroSection() {
   const reduced = useReducedMotion() ?? false
   const { scrollY } = useScroll()
   const imageY = useTransform(scrollY, [0, 500], [0, 60])
+  const cueOpacity = useTransform(scrollY, [0, 90], [1, 0])
+  const marathi = locale === 'mr'
 
   return (
     <section id="hero" className="relative min-h-[100dvh] overflow-hidden bg-forest-900">
-      {/* Background photograph — crisp on desktop, subtly softened on mobile */}
+      {/* Shared background — a portrait crop on mobile and a wide crop on desktop.
+          <picture> ensures only the appropriate image is downloaded per device. */}
       <motion.div style={reduced ? undefined : { y: imageY }} className="absolute inset-0">
-        <img
-          src={brandAssets.hero}
-          alt="A Maharashtra farmer using the Kisan Katta app in a field at golden hour"
-          width={1920}
-          height={1080}
-          fetchPriority="high"
-          decoding="async"
-          className="hidden h-full w-full object-cover object-center sm:block"
-        />
-        <img
-          src={brandAssets.heroMobile}
-          alt=""
-          aria-hidden
-          width={1080}
-          height={1350}
-          fetchPriority="high"
-          decoding="async"
-          className="h-full w-full scale-105 object-cover object-center blur-[3px] sm:hidden"
-        />
+        <picture>
+          <source media="(min-width: 640px)" srcSet={brandAssets.hero} width={1920} height={1080} />
+          <img
+            src={brandAssets.heroMobile}
+            alt="A Maharashtra farmer smiling while using the Kisan Katta app in his field at golden hour"
+            width={1080}
+            height={1620}
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-cover object-top sm:object-center"
+          />
+        </picture>
       </motion.div>
 
-      {/* Depth & lighting — gradients, overlays and vignette instead of blur (desktop) */}
-      {/* Directional dark gradient anchoring the copy on the left */}
-      <div className="absolute inset-0 bg-gradient-to-r from-forest-900/85 via-forest-900/45 to-transparent sm:from-forest-900/80 sm:via-forest-900/30" />
-      {/* Vertical grounding gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-forest-900/75 via-transparent to-forest-900/30" />
-      {/* Cinematic vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(125%_125%_at_50%_45%,transparent_42%,rgba(10,33,19,0.6)_100%)]" />
+      {/* ---- Mobile overlays: strong bottom-up scrim for lower-half copy ---- */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-forest-900/55 to-transparent sm:hidden"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,33,19,0.97)_0%,rgba(14,33,19,0.86)_30%,rgba(14,33,19,0.45)_52%,rgba(14,33,19,0.1)_70%,transparent_86%)] sm:hidden"
+      />
 
-      {/* Blurred colored light blobs for depth */}
+      {/* ---- Desktop overlays: cinematic directional lighting & depth ---- */}
+      <div className="absolute inset-0 hidden bg-gradient-to-r from-forest-900/80 via-forest-900/30 to-transparent sm:block" />
+      <div className="absolute inset-0 hidden bg-gradient-to-t from-forest-900/75 via-transparent to-forest-900/30 sm:block" />
+      <div className="absolute inset-0 hidden bg-[radial-gradient(125%_125%_at_50%_45%,transparent_42%,rgba(10,33,19,0.6)_100%)] sm:block" />
+
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute -left-24 top-1/4 h-96 w-96 rounded-full bg-forest-500/25 blur-3xl"
+        className="pointer-events-none absolute -left-24 top-1/4 hidden h-96 w-96 rounded-full bg-forest-500/25 blur-3xl sm:block"
         animate={reduced ? undefined : { opacity: [0.35, 0.6, 0.35], scale: [1, 1.08, 1] }}
         transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute right-[8%] top-[12%] h-80 w-80 rounded-full bg-gold-400/25 blur-3xl"
+        className="pointer-events-none absolute right-[8%] top-[12%] hidden h-80 w-80 rounded-full bg-gold-400/25 blur-3xl sm:block"
         animate={reduced ? undefined : { opacity: [0.3, 0.55, 0.3], scale: [1, 1.12, 1] }}
         transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       />
 
       <LeafField />
 
-      {/* Smooth transition into the next (cream) section */}
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-cream" />
+      {/* Smooth transition into the next section (desktop only) */}
+      <div className="absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-b from-transparent to-cream sm:block" />
 
       {floatingCards.map((card) => (
         <FloatingCard
@@ -204,10 +207,83 @@ export function HeroSection() {
         />
       ))}
 
+      {/* ============ MOBILE HERO (dedicated, simplified) ============ */}
       <div
         className={cn(
-          'container-wide relative flex min-h-[100dvh] flex-col justify-end px-4 pb-28 pt-24 sm:justify-center sm:px-5 sm:pb-16 sm:pt-28',
-          locale === 'mr' && 'font-marathi',
+          'relative flex min-h-[100dvh] flex-col justify-end px-5 pb-32 pt-24 sm:hidden',
+          marathi && 'font-marathi',
+        )}
+      >
+        <motion.div initial="hidden" animate="visible" variants={heroStagger} className="max-w-[22rem]">
+          <motion.span
+            variants={heroItem}
+            className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-md"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
+            {t('hero.eyebrow')}
+          </motion.span>
+
+          <motion.h1
+            variants={heroItem}
+            className="mt-5 text-[1.75rem] font-bold leading-[1.18] tracking-tight text-white drop-shadow-[0_2px_16px_rgba(10,33,19,0.5)]"
+          >
+            {t('hero.headline')}
+          </motion.h1>
+
+          {!marathi && (
+            <motion.p variants={heroItem} className="font-marathi mt-3 text-sm text-gold-100">
+              तंत्रज्ञानाद्वारे शेतकऱ्यांना सक्षम करणे
+            </motion.p>
+          )}
+
+          <motion.p
+            variants={heroItem}
+            className="mt-4 line-clamp-2 max-w-[20rem] text-[15px] leading-relaxed text-white/85"
+          >
+            {t('hero.mobileSubheadline')}
+          </motion.p>
+
+          <motion.div variants={heroItem} className="mt-8 flex flex-col gap-3">
+            <Button asChild size="lg" variant="glow" className="w-full">
+              <Link to="/become-gram-sahakari">
+                {t('hero.cta.gramSahakari')}
+                <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="glass" className="w-full">
+              <a href="#download">
+                <Download className="h-5 w-5" />
+                {t('hero.cta.download')}
+              </a>
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        {/* Mobile scroll indicator — fades out on scroll */}
+        {!reduced && (
+          <motion.div
+            aria-hidden
+            style={{ opacity: cueOpacity }}
+            className="pointer-events-none absolute inset-x-0 bottom-[5rem] flex flex-col items-center gap-1 text-white/70"
+          >
+            <span className="text-[10px] font-medium uppercase tracking-[0.2em]">
+              {t('hero.scroll')}
+            </span>
+            <motion.span
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </motion.span>
+          </motion.div>
+        )}
+      </div>
+
+      {/* ============ DESKTOP HERO ============ */}
+      <div
+        className={cn(
+          'container-wide relative hidden min-h-[100dvh] flex-col justify-center px-5 pt-28 sm:flex',
+          marathi && 'font-marathi',
         )}
       >
         <motion.div
@@ -218,7 +294,7 @@ export function HeroSection() {
         >
           <motion.span
             variants={heroItem}
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-md sm:mb-6 sm:text-xs"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-md"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
             {t('hero.eyebrow')}
@@ -226,56 +302,32 @@ export function HeroSection() {
 
           <motion.h1
             variants={heroItem}
-            className="text-[2rem] font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_20px_rgba(10,33,19,0.35)] sm:text-5xl md:text-6xl lg:text-[4.25rem]"
+            className="text-5xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_20px_rgba(10,33,19,0.35)] md:text-6xl lg:text-[4.25rem]"
           >
             {t('hero.headline')}
           </motion.h1>
 
-          {locale === 'en' && (
-            <motion.p
-              variants={heroItem}
-              className="font-marathi mt-4 text-base text-gold-100 sm:mt-5 sm:text-xl"
-            >
+          {!marathi && (
+            <motion.p variants={heroItem} className="font-marathi mt-5 text-xl text-gold-100">
               तंत्रज्ञानाद्वारे महाराष्ट्रातील शेतकऱ्यांना सक्षम करणे
             </motion.p>
           )}
 
           <motion.p
             variants={heroItem}
-            className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/85 sm:mt-6 sm:text-lg sm:leading-relaxed"
+            className="mt-6 max-w-xl text-lg leading-relaxed text-white/85"
           >
             {t('hero.subheadline')}
           </motion.p>
 
-          <motion.div variants={heroItem} className="mt-6 flex flex-wrap gap-2 sm:hidden">
-            {floatingCards.map(({ icon: Icon, labelMarathi }) => (
-              <span
-                key={labelMarathi}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/15 px-3 py-1.5 text-xs text-white backdrop-blur-sm"
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="font-marathi">{labelMarathi}</span>
-              </span>
-            ))}
-          </motion.div>
-
-          {/* CTA — Become Gram Sahakari is the primary action */}
-          <motion.div
-            variants={heroItem}
-            className="mt-8 hidden flex-col gap-3.5 sm:mt-10 sm:flex sm:flex-row sm:gap-4"
-          >
-            <Button asChild size="lg" variant="glow" className="w-full sm:w-auto">
+          <motion.div variants={heroItem} className="mt-10 flex flex-row gap-4">
+            <Button asChild size="lg" variant="glow">
               <Link to="/become-gram-sahakari">
                 {t('hero.cta.gramSahakari')}
                 <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="glass"
-              className="w-full sm:w-auto"
-            >
+            <Button asChild size="lg" variant="glass">
               <a href="#download">
                 <Download className="h-5 w-5" />
                 {t('hero.cta.download')}
@@ -285,14 +337,12 @@ export function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Scroll cue */}
+      {/* Desktop scroll cue */}
       {!reduced && (
         <motion.div
           aria-hidden
+          style={{ opacity: cueOpacity }}
           className="absolute inset-x-0 bottom-6 hidden justify-center lg:flex"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
         >
           <div className="flex h-9 w-6 items-start justify-center rounded-full border border-white/40 p-1.5">
             <motion.span

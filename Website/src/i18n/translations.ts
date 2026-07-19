@@ -14,13 +14,19 @@ export const translations = {
     'hero.headline': "Empowering Maharashtra's Farmers Through Technology",
     'hero.subheadline':
       'Weather, government mandi prices, farmer community insights, and a local marketplace — all in Marathi, built for every village in Maharashtra.',
+    'hero.mobileSubheadline': 'Weather, mandi prices & marketplace — all in Marathi.',
     'hero.cta.download': 'Download App',
     'hero.cta.gramSahakari': 'Become Gram Sahakari',
+    'hero.scroll': 'Scroll',
 
     'features.weather': 'Weather',
     'features.marketPrices': 'Market Prices',
     'features.marketplace': 'Marketplace',
     'features.farmerPrice': 'Farmer Expected Price',
+    'features.community': 'Farmer Community',
+
+    'section.quickFeatures.eyebrow': 'Explore',
+    'section.quickFeatures.title': 'Quick Features',
 
     'cta.downloadApp': 'Download Kisan Katta App',
     'cta.becomeGramSahakari': 'Become Gram Sahakari',
@@ -92,13 +98,19 @@ export const translations = {
     'hero.headline': 'तंत्रज्ञानाद्वारे महाराष्ट्रातील शेतकऱ्यांना सक्षम करणे',
     'hero.subheadline':
       'हवामान, सरकारी बाजार भाव, शेतकरी समुदाय अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व काही मराठीत, महाराष्ट्रातील प्रत्येक गावासाठी.',
+    'hero.mobileSubheadline': 'हवामान, बाजार भाव आणि बाजारपेठ — सर्व मराठीत.',
     'hero.cta.download': 'अॅप डाउनलोड करा',
     'hero.cta.gramSahakari': 'ग्राम सहकारी बना',
+    'hero.scroll': 'स्क्रोल करा',
 
     'features.weather': 'हवामान',
     'features.marketPrices': 'बाजार भाव',
     'features.marketplace': 'बाजारपेठ',
     'features.farmerPrice': 'अपेक्षित भाव',
+    'features.community': 'शेतकरी समुदाय',
+
+    'section.quickFeatures.eyebrow': 'शोधा',
+    'section.quickFeatures.title': 'त्वरित वैशिष्ट्ये',
 
     'cta.downloadApp': 'किसान कatta अॅप डाउनलोड करा',
     'cta.becomeGramSahakari': 'ग्राम सहकारी बना',
