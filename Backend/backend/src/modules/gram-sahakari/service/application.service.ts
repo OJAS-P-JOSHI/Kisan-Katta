@@ -2,7 +2,6 @@ import { Types } from "mongoose";
 import { resolveDistrict } from "../../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../../utils/AppError";
 import type { UserRole } from "../../auth/auth.constants";
-import { AuthUser } from "../../auth/auth.model";
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
@@ -19,14 +18,9 @@ import {
 } from "../repository/application.repository";
 import type {
   AdminApplicationsQuery,
-  PaymentSuccessBody,
-  RejectApplicationBody,
-  ReviewApplicationBody,
   UpdateApplicationBody,
 } from "../types/application.types";
-import {
-  assertSubmitReady,
-} from "../validation/application.validation";
+import { assertSubmitReady } from "../validation/application.validation";
 import { generateApplicationNumber } from "./application-number.service";
 import { logAuditEvent } from "./audit.service";
 import {
@@ -41,10 +35,7 @@ import type {
   PaginatedApplicationsDTO,
   UploadDocumentResponseDTO,
 } from "../dto/application.dto";
-import {
-  toCloudinaryDocumentDTO,
-  toExperienceCertificateDTO,
-} from "../dto/application.dto";
+import { toCloudinaryDocumentDTO } from "../dto/application.dto";
 
 // ---------------------------------------------------------------------------
 // DTO mappers
@@ -61,49 +52,35 @@ export const toApplicationDTO = (
   }
 
   return {
-  id: String(application._id),
-  applicationNumber: application.applicationNumber,
-  userId: String(application.userId),
-  status: application.status,
-  fullName: application.fullName,
-  phone: application.phone,
-  email: application.email,
-  gender: application.gender,
-  dob: toIsoString(application.dob),
-  photo: toCloudinaryDocumentDTO(application.photo),
-  district: application.district,
-  taluka: application.taluka,
-  village: application.village,
-  address: application.address,
-  pincode: application.pincode,
-  aadhaarNumber: application.aadhaarNumber,
-  aadhaarFront: toCloudinaryDocumentDTO(application.aadhaarFront),
-  aadhaarBack: toCloudinaryDocumentDTO(application.aadhaarBack),
-  panNumber: application.panNumber,
-  panImage: toCloudinaryDocumentDTO(application.panImage),
-  cancelledChequeImage: toCloudinaryDocumentDTO(application.cancelledChequeImage),
-  bankAccountHolder: application.bankAccountHolder,
-  bankAccountNumber: application.bankAccountNumber,
-  bankIFSC: application.bankIFSC,
-  bankName: application.bankName,
-  education: application.education,
-  occupation: application.occupation,
-  languages: application.languages ?? [],
-  experience: application.experience,
-  experienceCertificates: (application.experienceCertificates ?? []).map(
-    toExperienceCertificateDTO
-  ),
-  whyJoin: application.whyJoin,
-  paymentStatus: application.paymentStatus,
-  paymentReference: application.paymentReference,
-  reviewedBy: application.reviewedBy ? String(application.reviewedBy) : null,
-  assignedTo: application.assignedTo ? String(application.assignedTo) : null,
-  reviewRemarks: application.reviewRemarks,
-  approvedAt: toIsoString(application.approvedAt),
-  rejectedAt: toIsoString(application.rejectedAt),
-  submittedAt: toIsoString(application.submittedAt),
-  createdAt: application.createdAt.toISOString(),
-  updatedAt: application.updatedAt.toISOString(),
+    id: String(application._id),
+    applicationNumber: application.applicationNumber,
+    userId: String(application.userId),
+    status: application.status,
+    fullName: application.fullName,
+    phone: application.phone,
+    email: application.email,
+    gender: application.gender,
+    dob: toIsoString(application.dob),
+    photo: toCloudinaryDocumentDTO(application.photo),
+    district: application.district,
+    taluka: application.taluka,
+    village: application.village,
+    address: application.address,
+    pincode: application.pincode,
+    aadhaarNumber: application.aadhaarNumber,
+    aadhaarFront: toCloudinaryDocumentDTO(application.aadhaarFront),
+    aadhaarBack: toCloudinaryDocumentDTO(application.aadhaarBack),
+    cancelledChequeImage: toCloudinaryDocumentDTO(application.cancelledChequeImage),
+    bankAccountHolder: application.bankAccountHolder,
+    bankAccountNumber: application.bankAccountNumber,
+    bankIFSC: application.bankIFSC,
+    bankName: application.bankName,
+    paymentStatus: application.paymentStatus,
+    paymentReference: application.paymentReference,
+    reviewRemarks: null,
+    submittedAt: toIsoString(application.submittedAt),
+    createdAt: application.createdAt.toISOString(),
+    updatedAt: application.updatedAt.toISOString(),
   };
 };
 
@@ -115,18 +92,18 @@ const toApplicationSummaryDTO = (
   }
 
   return {
-  id: String(application._id),
-  applicationNumber: application.applicationNumber,
-  userId: String(application.userId),
-  status: application.status,
-  fullName: application.fullName,
-  phone: application.phone,
-  district: application.district,
-  taluka: application.taluka,
-  village: application.village,
-  paymentStatus: application.paymentStatus,
-  submittedAt: toIsoString(application.submittedAt),
-  createdAt: application.createdAt.toISOString(),
+    id: String(application._id),
+    applicationNumber: application.applicationNumber,
+    userId: String(application.userId),
+    status: application.status,
+    fullName: application.fullName,
+    phone: application.phone,
+    district: application.district,
+    taluka: application.taluka,
+    village: application.village,
+    paymentStatus: application.paymentStatus,
+    submittedAt: toIsoString(application.submittedAt),
+    createdAt: application.createdAt.toISOString(),
   };
 };
 
@@ -159,10 +136,7 @@ export const startApplication = async (
     throw new AppError("You already have an active Gram Sahakari application.", 409);
   }
 
-  // Generate the permanent application number BEFORE creating the document so
-  // it can be stored atomically as a required, immutable field.
   const { applicationNumber, sequence } = await generateApplicationNumber();
-
   const application = await createDraftApplication(userId, applicationNumber);
 
   logAuditEvent({
@@ -203,7 +177,7 @@ export const updateMyApplication = async (
 
   assertDraftApplication(application);
 
-  const { dob, district, bankIFSC, panNumber, ...rest } = body;
+  const { dob, district, bankIFSC, ...rest } = body;
   const update: Partial<IGramSahakariApplication> = { ...rest };
 
   if (district) {
@@ -217,10 +191,6 @@ export const updateMyApplication = async (
 
   if (bankIFSC) {
     update.bankIFSC = bankIFSC.toUpperCase();
-  }
-
-  if (panNumber) {
-    update.panNumber = panNumber.toUpperCase();
   }
 
   const updated = await updateApplicationById(String(application._id), update);
@@ -252,25 +222,18 @@ export const uploadApplicationDocument = async (
 
   assertDraftApplication(application);
 
+  const field = getDocumentFieldName(documentType);
+  const existingDocument = application[field] as
+    | import("../interfaces/application.interface").ICloudinaryDocument
+    | null;
+
   const uploadResult = await uploadGramSahakariDocument(file, documentType, {
-    existingDocument:
-      documentType !== "experienceCertificate"
-        ? (application[getDocumentFieldName(documentType as Exclude<DocumentType, "experienceCertificate">)] as import("../interfaces/application.interface").ICloudinaryDocument | null)
-        : null,
-    existingCertificates: application.experienceCertificates,
+    existingDocument,
   });
 
-  const update: Partial<IGramSahakariApplication> = {};
-
-  if (documentType === "experienceCertificate") {
-    update.experienceCertificates = [
-      ...(application.experienceCertificates ?? []),
-      uploadResult.document as import("../interfaces/application.interface").IExperienceCertificate,
-    ];
-  } else {
-    const field = getDocumentFieldName(documentType as Exclude<DocumentType, "experienceCertificate">);
-    (update as Record<string, unknown>)[field] = uploadResult.document;
-  }
+  const update: Partial<IGramSahakariApplication> = {
+    [field]: uploadResult.document,
+  };
 
   const updated = await saveApplicationDocument(String(application._id), update);
   if (!updated) {
@@ -287,10 +250,14 @@ export const uploadApplicationDocument = async (
 
   return {
     documentType,
-    document: toCloudinaryDocumentDTO(uploadResult.document as import("../interfaces/application.interface").ICloudinaryDocument)!,
+    document: toCloudinaryDocumentDTO(uploadResult.document)!,
   };
 };
 
+/**
+ * Prepares a draft for payment. Does NOT officially submit the application.
+ * Official submission (status = SUBMITTED) happens only inside completePayment().
+ */
 export const submitApplication = async (
   userId: string,
   actorRole: UserRole
@@ -300,21 +267,29 @@ export const submitApplication = async (
     throw new AppError("Application not found. Start an application first.", 404);
   }
 
+  if (application.status === "SUBMITTED") {
+    throw new AppError("This application has already been submitted.", 409);
+  }
+
+  if (application.status === "PAYMENT_PENDING") {
+    // Idempotent: already waiting for payment.
+    return toApplicationDTO(application as IGramSahakariApplication & { _id: Types.ObjectId });
+  }
+
   assertDraftApplication(application);
   assertSubmitReady(application);
 
   const updated = await updateApplicationById(String(application._id), {
-    status: "SUBMITTED",
-    submittedAt: new Date(),
+    status: "PAYMENT_PENDING",
     paymentStatus: "PENDING",
   });
 
   if (!updated) {
-    throw new AppError("Failed to submit application.", 500);
+    throw new AppError("Failed to prepare application for payment.", 500);
   }
 
   logAuditEvent({
-    action: "APPLICATION_SUBMITTED",
+    action: "APPLICATION_READY_FOR_PAYMENT",
     applicationId: String(application._id),
     actorUserId: userId,
     actorRole,
@@ -333,64 +308,17 @@ export const getApplicationStatus = async (userId: string): Promise<ApplicationS
     applicationNumber: application.applicationNumber,
     status: application.status,
     paymentStatus: application.paymentStatus,
-    reviewRemarks: application.reviewRemarks,
-  };
-};
-
-export const recordPaymentSuccess = async (
-  userId: string,
-  body: PaymentSuccessBody,
-  actorRole: UserRole
-): Promise<ApplicationStatusDTO> => {
-  const application = await findApplicationByUserId(userId);
-  if (!application) {
-    throw new AppError("Application not found.", 404);
-  }
-
-  if (!["SUBMITTED", "UNDER_REVIEW", "APPROVED", "ACTIVE"].includes(application.status)) {
-    throw new AppError("Payment cannot be recorded for this application status.", 409);
-  }
-
-  const nextStatus =
-    application.status === "APPROVED" ? "ACTIVE" : application.status;
-
-  const updated = await updateApplicationById(String(application._id), {
-    paymentStatus: "PAID",
-    paymentReference: body.paymentReference,
-    status: nextStatus,
-  });
-
-  if (!updated) {
-    throw new AppError("Failed to record payment.", 500);
-  }
-
-  logAuditEvent({
-    action: "PAYMENT_UPDATED",
-    applicationId: String(application._id),
-    actorUserId: userId,
-    actorRole,
-    details: {
-      paymentStatus: "PAID",
-      paymentReference: body.paymentReference,
-      status: nextStatus,
-    },
-  });
-
-  return {
-    applicationNumber: updated.applicationNumber,
-    status: updated.status,
-    paymentStatus: updated.paymentStatus,
-    reviewRemarks: updated.reviewRemarks,
+    reviewRemarks: null,
   };
 };
 
 // ---------------------------------------------------------------------------
-// Admin / team services
+// Admin read-only services (no review / approve / reject)
 // ---------------------------------------------------------------------------
 
 export const listApplications = async (
   query: AdminApplicationsQuery,
-  actor: { userId: string; role: UserRole }
+  _actor: { userId: string; role: UserRole }
 ): Promise<PaginatedApplicationsDTO> => {
   const page = query.page ?? DEFAULT_PAGE;
   const limit = query.limit ?? DEFAULT_LIMIT;
@@ -400,12 +328,7 @@ export const listApplications = async (
     district = resolveDistrict(district).district;
   }
 
-  const assignedTo = actor.role === "TEAM" ? actor.userId : undefined;
-
-  const { items, total } = await findApplications(
-    { ...query, page, limit, district },
-    { assignedTo }
-  );
+  const { items, total } = await findApplications({ ...query, page, limit, district });
 
   return {
     items: items.map((item) =>
@@ -420,172 +343,10 @@ export const listApplications = async (
 
 export const getApplicationById = async (
   applicationId: string,
-  actor: { userId: string; role: UserRole }
+  _actor: { userId: string; role: UserRole }
 ): Promise<ApplicationDTO> => {
   const application = await getApplicationOrThrow(applicationId);
-
-  if (actor.role === "TEAM") {
-    const assignedTo = application.assignedTo ? String(application.assignedTo) : null;
-    if (assignedTo !== actor.userId) {
-      throw new AppError("You are not assigned to this application.", 403);
-    }
-  }
-
   return toApplicationDTO(application);
-};
-
-export const reviewApplication = async (
-  applicationId: string,
-  body: ReviewApplicationBody,
-  actor: { userId: string; role: UserRole }
-): Promise<ApplicationDTO> => {
-  const application = await getApplicationOrThrow(applicationId);
-
-  if (actor.role === "TEAM") {
-    const assignedTo = application.assignedTo ? String(application.assignedTo) : null;
-    if (assignedTo !== actor.userId) {
-      throw new AppError("You are not assigned to this application.", 403);
-    }
-  }
-
-  if (!["SUBMITTED", "UNDER_REVIEW"].includes(application.status)) {
-    throw new AppError("Only submitted applications can be reviewed.", 409);
-  }
-
-  const update: Partial<IGramSahakariApplication> = {
-    status: "UNDER_REVIEW",
-    reviewedBy: new Types.ObjectId(actor.userId),
-  };
-
-  if (body.reviewRemarks !== undefined) {
-    update.reviewRemarks = body.reviewRemarks;
-  }
-
-  if (body.assignedTo && actor.role === "ADMIN") {
-    update.assignedTo = new Types.ObjectId(body.assignedTo);
-  }
-
-  const updated = await updateApplicationById(applicationId, update);
-  if (!updated) {
-    throw new AppError("Failed to update application review state.", 500);
-  }
-
-  logAuditEvent({
-    action: body.reviewRemarks ? "REMARKS_UPDATED" : "APPLICATION_REVIEWED",
-    applicationId,
-    actorUserId: actor.userId,
-    actorRole: actor.role,
-    details: { ...body },
-  });
-
-  return toApplicationDTO(updated as IGramSahakariApplication & { _id: Types.ObjectId });
-};
-
-export const approveApplication = async (
-  applicationId: string,
-  actor: { userId: string; role: UserRole }
-): Promise<ApplicationDTO> => {
-  const application = await getApplicationOrThrow(applicationId);
-
-  if (!["SUBMITTED", "UNDER_REVIEW"].includes(application.status)) {
-    throw new AppError("Only submitted or under-review applications can be approved.", 409);
-  }
-
-  const updated = await updateApplicationById(applicationId, {
-    status: "APPROVED",
-    approvedAt: new Date(),
-    reviewedBy: new Types.ObjectId(actor.userId),
-    rejectedAt: null,
-  });
-
-  if (!updated) {
-    throw new AppError("Failed to approve application.", 500);
-  }
-
-  await AuthUser.findByIdAndUpdate(application.userId, { role: "GRAM_SAHAKARI" });
-
-  logAuditEvent({
-    action: "APPLICATION_APPROVED",
-    applicationId,
-    actorUserId: actor.userId,
-    actorRole: actor.role,
-  });
-
-  logAuditEvent({
-    action: "ROLE_CHANGED",
-    applicationId,
-    actorUserId: actor.userId,
-    actorRole: actor.role,
-    details: {
-      userId: String(application.userId),
-      from: "FARMER",
-      to: "GRAM_SAHAKARI",
-    },
-  });
-
-  return toApplicationDTO(updated as IGramSahakariApplication & { _id: Types.ObjectId });
-};
-
-export const rejectApplication = async (
-  applicationId: string,
-  body: RejectApplicationBody,
-  actor: { userId: string; role: UserRole }
-): Promise<ApplicationDTO> => {
-  const application = await getApplicationOrThrow(applicationId);
-
-  if (!["SUBMITTED", "UNDER_REVIEW"].includes(application.status)) {
-    throw new AppError("Only submitted or under-review applications can be rejected.", 409);
-  }
-
-  const updated = await updateApplicationById(applicationId, {
-    status: "REJECTED",
-    rejectedAt: new Date(),
-    reviewRemarks: body.reviewRemarks,
-    reviewedBy: new Types.ObjectId(actor.userId),
-  });
-
-  if (!updated) {
-    throw new AppError("Failed to reject application.", 500);
-  }
-
-  logAuditEvent({
-    action: "APPLICATION_REJECTED",
-    applicationId,
-    actorUserId: actor.userId,
-    actorRole: actor.role,
-    details: { reviewRemarks: body.reviewRemarks },
-  });
-
-  return toApplicationDTO(updated as IGramSahakariApplication & { _id: Types.ObjectId });
-};
-
-export const suspendApplication = async (
-  applicationId: string,
-  actor: { userId: string; role: UserRole }
-): Promise<ApplicationDTO> => {
-  const application = await getApplicationOrThrow(applicationId);
-
-  if (application.status !== "ACTIVE") {
-    throw new AppError("Only active applications can be suspended.", 409);
-  }
-
-  const updated = await updateApplicationById(applicationId, {
-    status: "SUSPENDED",
-    reviewedBy: new Types.ObjectId(actor.userId),
-  });
-
-  if (!updated) {
-    throw new AppError("Failed to suspend application.", 500);
-  }
-
-  logAuditEvent({
-    action: "APPLICATION_SUSPENDED",
-    applicationId,
-    actorUserId: actor.userId,
-    actorRole: actor.role,
-  });
-
-  return toApplicationDTO(updated as IGramSahakariApplication & { _id: Types.ObjectId });
 };
 
 export const assertApplicationOwnership = (

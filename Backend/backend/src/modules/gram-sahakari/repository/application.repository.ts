@@ -46,8 +46,7 @@ export const updateApplicationById = (
   }).lean();
 
 export const findApplications = async (
-  query: AdminApplicationsQuery,
-  options: { assignedTo?: string } = {}
+  query: AdminApplicationsQuery
 ): Promise<{ items: IGramSahakariApplication[]; total: number }> => {
   const filter: Record<string, unknown> = {};
 
@@ -63,10 +62,6 @@ export const findApplications = async (
     filter.paymentStatus = query.paymentStatus;
   }
 
-  if (options.assignedTo) {
-    filter.assignedTo = new Types.ObjectId(options.assignedTo);
-  }
-
   if (query.fromDate || query.toDate) {
     const submittedAt: Record<string, Date> = {};
     if (query.fromDate) {
@@ -79,7 +74,10 @@ export const findApplications = async (
   }
 
   if (query.search) {
-    const searchRegex = new RegExp(query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const searchRegex = new RegExp(
+      query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i"
+    );
     filter.$or = [
       { applicationNumber: searchRegex },
       { fullName: searchRegex },

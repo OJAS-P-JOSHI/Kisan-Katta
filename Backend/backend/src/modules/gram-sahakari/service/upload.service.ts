@@ -5,13 +5,11 @@ import { AppError } from "../../../utils/AppError";
 import {
   CLOUDINARY_GRAM_SAHAKARI_FOLDER,
   DOCUMENT_IMAGE_MAX_EDGE_PX,
-  EDITABLE_DOCUMENT_TYPES,
-  MAX_EXPERIENCE_CERTIFICATES,
+  DOCUMENT_TYPES,
 } from "../gram-sahakari.constants";
 import type { DocumentType } from "../types/application.types";
 import type {
   ICloudinaryDocument,
-  IExperienceCertificate,
   UploadableDocumentField,
 } from "../interfaces/application.interface";
 
@@ -22,9 +20,6 @@ const uploadBufferToCloudinary = (
   publicId: string
 ): Promise<UploadApiResponse> =>
   new Promise((resolve, reject) => {
-    // [UPLOAD-DEBUG] About to stream buffer to Cloudinary.
-    // eslint-disable-next-line no-console
-    console.log("[UPLOAD-DEBUG] Uploading to Cloudinary, publicId =", publicId);
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: CLOUDINARY_GRAM_SAHAKARI_FOLDER,
@@ -45,15 +40,9 @@ const uploadBufferToCloudinary = (
       },
       (error, result) => {
         if (error || !result) {
-          // [UPLOAD-DEBUG] Cloudinary reported a failure.
-          // eslint-disable-next-line no-console
-          console.error("[UPLOAD-DEBUG] Cloudinary upload FAILURE:", error);
           reject(new AppError("Cloudinary upload failed.", 502));
           return;
         }
-        // [UPLOAD-DEBUG] Cloudinary upload succeeded.
-        // eslint-disable-next-line no-console
-        console.log("[UPLOAD-DEBUG] Cloudinary upload SUCCESS:", result.public_id);
         resolve(result);
       }
     );
@@ -76,11 +65,13 @@ const toCloudinaryDocument = (result: UploadApiResponse): ICloudinaryDocument =>
   publicId: result.public_id,
 });
 
-const documentFieldMap: Record<UploadableDocumentField, keyof import("../interfaces/application.interface").IGramSahakariApplication> = {
+const documentFieldMap: Record<
+  UploadableDocumentField,
+  keyof import("../interfaces/application.interface").IGramSahakariApplication
+> = {
   photo: "photo",
   aadhaarFront: "aadhaarFront",
   aadhaarBack: "aadhaarBack",
-  pan: "panImage",
   cancelledCheque: "cancelledChequeImage",
 };
 
@@ -89,38 +80,9 @@ export const uploadGramSahakariDocument = async (
   documentType: DocumentType,
   options: {
     existingDocument?: ICloudinaryDocument | null;
-    existingCertificates?: IExperienceCertificate[];
   } = {}
-): Promise<{ documentType: DocumentType; document: ICloudinaryDocument | IExperienceCertificate }> => {
-  // [UPLOAD-DEBUG] Confirms execution reaches the upload service.
-  // eslint-disable-next-line no-console
-  console.log("[UPLOAD-DEBUG] Entering upload service:", {
-    documentType,
-    fileFieldname: file?.fieldname,
-    fileSize: file?.size,
-    hasBuffer: Boolean(file?.buffer),
-  });
-
-  if (documentType === "experienceCertificate") {
-    if (
-      options.existingCertificates &&
-      options.existingCertificates.length >= MAX_EXPERIENCE_CERTIFICATES
-    ) {
-      throw new AppError(
-        `You can upload at most ${MAX_EXPERIENCE_CERTIFICATES} experience certificates.`,
-        400
-      );
-    }
-
-    const publicId = buildPublicId();
-    const result = await uploadBufferToCloudinary(file.buffer, publicId);
-    return {
-      documentType,
-      document: toCloudinaryDocument(result),
-    };
-  }
-
-  if (!(EDITABLE_DOCUMENT_TYPES as readonly string[]).includes(documentType)) {
+): Promise<{ documentType: DocumentType; document: ICloudinaryDocument }> => {
+  if (!(DOCUMENT_TYPES as readonly string[]).includes(documentType)) {
     throw new AppError("Unsupported document type.", 400);
   }
 

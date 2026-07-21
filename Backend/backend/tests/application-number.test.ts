@@ -37,7 +37,6 @@ const baseApplicationData = (overrides: Record<string, unknown> = {}) => ({
   userId: new Types.ObjectId(),
   status: "DRAFT",
   paymentStatus: "NOT_REQUIRED",
-  languages: [],
   metadata: {},
   ...overrides,
 });

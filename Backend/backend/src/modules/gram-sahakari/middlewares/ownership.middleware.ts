@@ -53,3 +53,24 @@ export const requireFarmerApplicant = asyncHandler(
     next();
   }
 );
+
+/**
+ * Guards payment-finalization endpoints (verify). A farmer uses these during a
+ * normal payment. But when the Razorpay webhook wins the webhook-vs-verify race,
+ * it finalizes the payment and promotes the user to GRAM_SAHAKARI *before* the
+ * browser's verify call arrives. That follow-up verify must still be allowed
+ * through to the idempotent handler, which returns the already-completed state
+ * (HTTP 200) — never a misleading 403. ADMIN/TEAM never pay, so they stay
+ * blocked. Ownership is enforced in the service (payments are scoped to req.user).
+ */
+export const requirePaymentActor = asyncHandler(
+  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    const { role } = getAuthUser(req);
+
+    if (role === "ADMIN" || role === "TEAM") {
+      throw new AppError("This action is only available to farmer applicants.", 403);
+    }
+
+    next();
+  }
+);

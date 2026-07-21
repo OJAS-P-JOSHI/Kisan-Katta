@@ -24,16 +24,10 @@ export interface UpdateApplicationBody {
   address?: string;
   pincode?: string;
   aadhaarNumber?: string;
-  panNumber?: string;
   bankAccountHolder?: string;
   bankAccountNumber?: string;
   bankIFSC?: string;
   bankName?: string;
-  education?: string;
-  occupation?: string;
-  languages?: string[];
-  experience?: string;
-  whyJoin?: string;
 }
 
 export interface AdminApplicationsQuery {
@@ -45,17 +39,4 @@ export interface AdminApplicationsQuery {
   toDate?: string;
   page?: number;
   limit?: number;
-}
-
-export interface ReviewApplicationBody {
-  reviewRemarks?: string;
-  assignedTo?: string;
-}
-
-export interface RejectApplicationBody {
-  reviewRemarks: string;
-}
-
-export interface PaymentSuccessBody {
-  paymentReference: string;
 }

@@ -4,7 +4,6 @@ import { asyncHandler } from "../../../utils/asyncHandler";
 import {
   getApplicationStatusHandler,
   getMyApplicationHandler,
-  paymentSuccessHandler,
   startApplicationHandler,
   submitApplicationHandler,
   updateApplicationHandler,
@@ -56,12 +55,6 @@ router.get(
   "/application/status",
   authenticate,
   asyncHandler(getApplicationStatusHandler)
-);
-
-router.post(
-  "/application/payment-success",
-  authenticate,
-  asyncHandler(paymentSuccessHandler)
 );
 
 export default router;

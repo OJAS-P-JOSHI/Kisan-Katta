@@ -7,8 +7,6 @@ import {
   GENDERS,
   IFSC_REGEX,
   INDIAN_PHONE_REGEX,
-  MAX_EXPERIENCE_CERTIFICATES,
-  PAN_REGEX,
   PAYMENT_STATUSES,
   PINCODE_REGEX,
 } from "../gram-sahakari.constants";
@@ -24,22 +22,12 @@ export const parseWithZod = <T>(schema: z.ZodType<T>, data: unknown): T => {
   return result.data;
 };
 
-const optionalTrimmedString = z
-  .string()
-  .trim()
-  .min(1)
-  .optional();
+const optionalTrimmedString = z.string().trim().min(1).optional();
 
 const phoneSchema = z
   .string()
   .trim()
   .regex(INDIAN_PHONE_REGEX, "Phone must be a valid Indian mobile number.");
-
-const panSchema = z
-  .string()
-  .trim()
-  .toUpperCase()
-  .regex(PAN_REGEX, "PAN must match format ABCDE1234F.");
 
 const aadhaarSchema = z
   .string()
@@ -75,7 +63,6 @@ export const updateApplicationSchema = z
     address: optionalTrimmedString,
     pincode: pincodeSchema.optional(),
     aadhaarNumber: aadhaarSchema.optional(),
-    panNumber: panSchema.optional(),
     bankAccountHolder: optionalTrimmedString,
     bankAccountNumber: z
       .string()
@@ -84,42 +71,10 @@ export const updateApplicationSchema = z
       .optional(),
     bankIFSC: ifscSchema.optional(),
     bankName: optionalTrimmedString,
-    education: optionalTrimmedString,
-    occupation: optionalTrimmedString,
-    languages: z
-      .array(z.string().trim().min(1, "Language cannot be empty."))
-      .min(1, "At least one language is required.")
-      .optional(),
-    experience: optionalTrimmedString,
-    whyJoin: z.string().trim().min(20, "Why join must be at least 20 characters.").optional(),
   })
   .strict();
-
-export const submitApplicationSchema = z.object({}).strict();
 
 export const documentTypeSchema = z.enum(DOCUMENT_TYPES);
-
-export const reviewApplicationSchema = z
-  .object({
-    reviewRemarks: z.string().trim().min(3).optional(),
-    assignedTo: z.string().trim().min(1).optional(),
-  })
-  .strict();
-
-export const rejectApplicationSchema = z
-  .object({
-    reviewRemarks: z
-      .string()
-      .trim()
-      .min(10, "Rejection remarks must be at least 10 characters."),
-  })
-  .strict();
-
-export const paymentSuccessSchema = z
-  .object({
-    paymentReference: z.string().trim().min(3, "Payment reference is required."),
-  })
-  .strict();
 
 export const adminApplicationsQuerySchema = z.object({
   district: z.string().trim().min(1).optional(),
@@ -146,25 +101,17 @@ export const validateUpdateApplication = (body: unknown) =>
 export const validateDocumentType = (value: unknown) =>
   parseWithZod(documentTypeSchema, value);
 
-export const validateReviewApplication = (body: unknown) =>
-  parseWithZod(reviewApplicationSchema, body);
-
-export const validateRejectApplication = (body: unknown) =>
-  parseWithZod(rejectApplicationSchema, body);
-
-export const validatePaymentSuccess = (body: unknown) =>
-  parseWithZod(paymentSuccessSchema, body);
-
 export const validateAdminApplicationsQuery = (query: unknown) =>
   parseWithZod(adminApplicationsQuerySchema, query);
 
+/**
+ * Completeness check for "Pay ₹500 & Submit" readiness.
+ * Required: personal (name/dob/gender), address, aadhaar + images, bank + cheque.
+ */
 export const assertSubmitReady = (application: {
   fullName: string | null;
-  phone: string | null;
-  email: string | null;
   gender: string | null;
   dob: Date | null;
-  photo: unknown;
   district: string | null;
   taluka: string | null;
   village: string | null;
@@ -173,27 +120,17 @@ export const assertSubmitReady = (application: {
   aadhaarNumber: string | null;
   aadhaarFront: unknown;
   aadhaarBack: unknown;
-  panNumber: string | null;
-  panImage: unknown;
   cancelledChequeImage: unknown;
   bankAccountHolder: string | null;
   bankAccountNumber: string | null;
   bankIFSC: string | null;
   bankName: string | null;
-  education: string | null;
-  occupation: string | null;
-  languages: string[];
-  whyJoin: string | null;
-  experienceCertificates?: unknown[];
 }): void => {
   const missing: string[] = [];
 
   if (!application.fullName) missing.push("fullName");
-  if (!application.phone) missing.push("phone");
-  if (!application.email) missing.push("email");
   if (!application.gender) missing.push("gender");
   if (!application.dob) missing.push("dob");
-  if (!application.photo) missing.push("photo");
   if (!application.district) missing.push("district");
   if (!application.taluka) missing.push("taluka");
   if (!application.village) missing.push("village");
@@ -202,28 +139,15 @@ export const assertSubmitReady = (application: {
   if (!application.aadhaarNumber) missing.push("aadhaarNumber");
   if (!application.aadhaarFront) missing.push("aadhaarFront");
   if (!application.aadhaarBack) missing.push("aadhaarBack");
-  if (!application.panNumber) missing.push("panNumber");
-  if (!application.panImage) missing.push("panImage");
   if (!application.cancelledChequeImage) missing.push("cancelledChequeImage");
   if (!application.bankAccountHolder) missing.push("bankAccountHolder");
   if (!application.bankAccountNumber) missing.push("bankAccountNumber");
   if (!application.bankIFSC) missing.push("bankIFSC");
   if (!application.bankName) missing.push("bankName");
-  if (!application.education) missing.push("education");
-  if (!application.occupation) missing.push("occupation");
-  if (!application.languages?.length) missing.push("languages");
-  if (!application.whyJoin) missing.push("whyJoin");
 
   if (missing.length > 0) {
     throw new AppError(
       `Application is incomplete. Missing required fields: ${missing.join(", ")}.`,
-      400
-    );
-  }
-
-  if (application.experienceCertificates && application.experienceCertificates.length > MAX_EXPERIENCE_CERTIFICATES) {
-    throw new AppError(
-      `You can upload at most ${MAX_EXPERIENCE_CERTIFICATES} experience certificates.`,
       400
     );
   }

@@ -9,7 +9,6 @@ import type {
 import {
   getApplicationStatus,
   getMyApplication,
-  recordPaymentSuccess,
   startApplication,
   submitApplication,
   updateMyApplication,
@@ -17,7 +16,6 @@ import {
 } from "../service/application.service";
 import {
   validateDocumentType,
-  validatePaymentSuccess,
   validateUpdateApplication,
 } from "../validation/application.validation";
 import {
@@ -99,15 +97,5 @@ export const getApplicationStatusHandler = async (
 ): Promise<void> => {
   const { userId } = getAuthUser(req);
   const data = await getApplicationStatus(userId);
-  res.status(200).json({ success: true, data });
-};
-
-export const paymentSuccessHandler = async (
-  req: Request,
-  res: Response<ApiSuccessResponse<ApplicationStatusDTO>>
-): Promise<void> => {
-  const { userId, role } = getAuthUser(req);
-  const body = validatePaymentSuccess(req.body);
-  const data = await recordPaymentSuccess(userId, body, role);
   res.status(200).json({ success: true, data });
 };

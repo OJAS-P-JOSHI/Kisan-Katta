@@ -6,14 +6,14 @@ import type {
   Gender,
   PaymentStatus,
 } from "../types/application.types";
+import type {
+  IPaymentEvent,
+  IPaymentMeta,
+} from "../../payment/interfaces/payment.interface";
 
 export interface ICloudinaryDocument {
   url: string;
   publicId: string;
-}
-
-export interface IExperienceCertificate extends ICloudinaryDocument {
-  label?: string;
 }
 
 /** Reserved for OCR, digital ID, commission payouts, and QR verification. */
@@ -43,26 +43,27 @@ export interface IGramSahakariApplication {
   aadhaarNumber: string | null;
   aadhaarFront: ICloudinaryDocument | null;
   aadhaarBack: ICloudinaryDocument | null;
-  panNumber: string | null;
-  panImage: ICloudinaryDocument | null;
   cancelledChequeImage: ICloudinaryDocument | null;
   bankAccountHolder: string | null;
   bankAccountNumber: string | null;
   bankIFSC: string | null;
   bankName: string | null;
-  education: string | null;
-  occupation: string | null;
-  languages: string[];
-  experience: string | null;
-  experienceCertificates: IExperienceCertificate[];
-  whyJoin: string | null;
   paymentStatus: PaymentStatus;
   paymentReference: string | null;
-  reviewedBy: Types.ObjectId | null;
-  assignedTo: Types.ObjectId | null;
-  reviewRemarks: string | null;
-  approvedAt: Date | null;
-  rejectedAt: Date | null;
+  paymentAmount: number | null;
+  paymentCurrency: string | null;
+  razorpayOrderId: string | null;
+  razorpayPaymentId: string | null;
+  paidAt: Date | null;
+  paymentMethod: string | null;
+  paymentFailureReason: string | null;
+  paymentAttemptCount: number;
+  paymentVerified: boolean;
+  authorizedAt: Date | null;
+  refundedAt: Date | null;
+  refundId: string | null;
+  paymentEvents: IPaymentEvent[];
+  paymentMeta: IPaymentMeta;
   submittedAt: Date | null;
   metadata: IApplicationMetadata;
   createdAt: Date;
@@ -78,7 +79,4 @@ export interface IAuditLogEntry {
   timestamp: Date;
 }
 
-export type UploadableDocumentField = Exclude<
-  DocumentType,
-  "experienceCertificate"
->;
+export type UploadableDocumentField = DocumentType;

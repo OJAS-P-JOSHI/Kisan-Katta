@@ -3,10 +3,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["tests/**/*.test.ts"],
-    testTimeout: 60_000,
-    hookTimeout: 120_000,
-    // Sequential files: a single shared in-memory MongoDB per file, no cross-file races.
+    setupFiles: ["./tests/setup.ts"],
+    hookTimeout: 120000,
+    testTimeout: 60000,
+    // Payment tests share a single in-memory Mongo; keep them serial.
     fileParallelism: false,
   },
 });

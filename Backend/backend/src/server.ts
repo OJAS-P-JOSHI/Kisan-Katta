@@ -3,6 +3,7 @@ import { createApp } from "./app";
 import { env } from "./config/env";
 import { connectDatabase } from "./config/database";
 import { startFarmerPriceScheduler } from "./modules/farmer-price/farmer-price.scheduler";
+import { startPaymentReconciliationScheduler } from "./modules/payment/payment.scheduler";
 
 const app = createApp();
 
@@ -37,6 +38,18 @@ const startServer = async (): Promise<void> => {
   } catch (error: unknown) {
     // eslint-disable-next-line no-console
     console.error("[FarmerPriceScheduler] Failed to initialize scheduler:", error);
+  }
+
+  // Safety net: eventually completes payments that never received a webhook or
+  // browser verify. Failures must not block HTTP startup.
+  try {
+    startPaymentReconciliationScheduler();
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[PaymentReconciliationScheduler] Failed to initialize scheduler:",
+      error
+    );
   }
 
   const server = app.listen(env.port, env.host, () => {

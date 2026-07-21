@@ -4,6 +4,10 @@ import {
   GENDERS,
   PAYMENT_STATUSES,
 } from "./gram-sahakari.constants";
+import {
+  PAYMENT_EVENT_TYPES,
+  PROCESSING_SOURCES,
+} from "../payment/payment.constants";
 import type { IGramSahakariApplication } from "./interfaces/application.interface";
 
 const CloudinaryDocumentSchema = new Schema(
@@ -14,11 +18,22 @@ const CloudinaryDocumentSchema = new Schema(
   { _id: false }
 );
 
-const ExperienceCertificateSchema = new Schema(
+const PaymentEventSchema = new Schema(
   {
-    url: { type: String, required: true, trim: true },
-    publicId: { type: String, required: true, trim: true },
-    label: { type: String, trim: true },
+    type: { type: String, enum: PAYMENT_EVENT_TYPES, required: true },
+    source: { type: String, enum: PROCESSING_SOURCES, required: true },
+    details: { type: Schema.Types.Mixed, default: {} },
+    timestamp: { type: Date, required: true, default: Date.now },
+  },
+  { _id: false }
+);
+
+const PaymentMetaSchema = new Schema(
+  {
+    paymentGateway: { type: String, default: null },
+    gatewayVersion: { type: String, default: null },
+    gatewayResponse: { type: Schema.Types.Mixed, default: null },
+    processingSource: { type: String, enum: PROCESSING_SOURCES, default: null },
   },
   { _id: false }
 );
@@ -58,19 +73,11 @@ const GramSahakariApplicationSchema = new Schema<IGramSahakariApplication>(
     aadhaarNumber: { type: String, default: null, trim: true },
     aadhaarFront: { type: CloudinaryDocumentSchema, default: null },
     aadhaarBack: { type: CloudinaryDocumentSchema, default: null },
-    panNumber: { type: String, default: null, trim: true, uppercase: true },
-    panImage: { type: CloudinaryDocumentSchema, default: null },
     cancelledChequeImage: { type: CloudinaryDocumentSchema, default: null },
     bankAccountHolder: { type: String, default: null, trim: true },
     bankAccountNumber: { type: String, default: null, trim: true },
     bankIFSC: { type: String, default: null, trim: true, uppercase: true },
     bankName: { type: String, default: null, trim: true },
-    education: { type: String, default: null, trim: true },
-    occupation: { type: String, default: null, trim: true },
-    languages: { type: [String], default: [] },
-    experience: { type: String, default: null, trim: true },
-    experienceCertificates: { type: [ExperienceCertificateSchema], default: [] },
-    whyJoin: { type: String, default: null, trim: true },
     paymentStatus: {
       type: String,
       enum: PAYMENT_STATUSES,
@@ -79,20 +86,20 @@ const GramSahakariApplicationSchema = new Schema<IGramSahakariApplication>(
       index: true,
     },
     paymentReference: { type: String, default: null, trim: true },
-    reviewedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "AuthUser",
-      default: null,
-    },
-    assignedTo: {
-      type: Schema.Types.ObjectId,
-      ref: "AuthUser",
-      default: null,
-      index: true,
-    },
-    reviewRemarks: { type: String, default: null, trim: true },
-    approvedAt: { type: Date, default: null },
-    rejectedAt: { type: Date, default: null },
+    paymentAmount: { type: Number, default: null },
+    paymentCurrency: { type: String, default: null, trim: true, uppercase: true },
+    razorpayOrderId: { type: String, default: null, trim: true },
+    razorpayPaymentId: { type: String, default: null, trim: true },
+    paidAt: { type: Date, default: null },
+    paymentMethod: { type: String, default: null, trim: true },
+    paymentFailureReason: { type: String, default: null, trim: true },
+    paymentAttemptCount: { type: Number, required: true, default: 0 },
+    paymentVerified: { type: Boolean, required: true, default: false },
+    authorizedAt: { type: Date, default: null },
+    refundedAt: { type: Date, default: null },
+    refundId: { type: String, default: null, trim: true },
+    paymentEvents: { type: [PaymentEventSchema], default: [] },
+    paymentMeta: { type: PaymentMetaSchema, default: () => ({}) },
     submittedAt: { type: Date, default: null, index: true },
     metadata: {
       type: Schema.Types.Mixed,
@@ -102,13 +109,10 @@ const GramSahakariApplicationSchema = new Schema<IGramSahakariApplication>(
   {
     timestamps: true,
     collection: "gram_sahakari_applications",
+    strict: true,
   }
 );
 
-// Unique application number. Partial filter keeps the unique constraint scoped
-// to documents that actually have a string applicationNumber, so legacy
-// documents (created before this field existed) don't collide on `null` before
-// the backfill migration runs. After backfill, every document has a value.
 GramSahakariApplicationSchema.index(
   { applicationNumber: 1 },
   {
@@ -119,7 +123,30 @@ GramSahakariApplicationSchema.index(
 GramSahakariApplicationSchema.index({ userId: 1, status: 1 });
 GramSahakariApplicationSchema.index({ district: 1, status: 1, submittedAt: -1 });
 GramSahakariApplicationSchema.index({ status: 1, submittedAt: -1 });
-GramSahakariApplicationSchema.index({ assignedTo: 1, status: 1 });
+GramSahakariApplicationSchema.index(
+  { razorpayOrderId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      razorpayOrderId: { $type: "string" },
+    },
+  }
+);
+// Webhook/refund lookups resolve an application by the gateway payment id
+// (findApplicationByRazorpayPaymentId). Unique + partial so a payment id maps to
+// at most one application (identity integrity) while unset/null docs are skipped.
+GramSahakariApplicationSchema.index(
+  { razorpayPaymentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      razorpayPaymentId: { $type: "string" },
+    },
+  }
+);
+// Backs the reconciliation sweep query: paymentStatus in {PENDING,AUTHORIZED}
+// with razorpayOrderId set, oldest updatedAt first.
+GramSahakariApplicationSchema.index({ paymentStatus: 1, updatedAt: 1 });
 
 export const GramSahakariApplication = model<IGramSahakariApplication>(
   "GramSahakariApplication",

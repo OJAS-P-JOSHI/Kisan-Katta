@@ -3,18 +3,11 @@ import type {
   Gender,
   PaymentStatus,
 } from "../types/application.types";
-import type {
-  ICloudinaryDocument,
-  IExperienceCertificate,
-} from "../interfaces/application.interface";
+import type { ICloudinaryDocument } from "../interfaces/application.interface";
 
 export interface CloudinaryDocumentDTO {
   url: string;
   publicId: string;
-}
-
-export interface ExperienceCertificateDTO extends CloudinaryDocumentDTO {
-  label?: string;
 }
 
 export interface ApplicationDTO {
@@ -36,26 +29,15 @@ export interface ApplicationDTO {
   aadhaarNumber: string | null;
   aadhaarFront: CloudinaryDocumentDTO | null;
   aadhaarBack: CloudinaryDocumentDTO | null;
-  panNumber: string | null;
-  panImage: CloudinaryDocumentDTO | null;
   cancelledChequeImage: CloudinaryDocumentDTO | null;
   bankAccountHolder: string | null;
   bankAccountNumber: string | null;
   bankIFSC: string | null;
   bankName: string | null;
-  education: string | null;
-  occupation: string | null;
-  languages: string[];
-  experience: string | null;
-  experienceCertificates: ExperienceCertificateDTO[];
-  whyJoin: string | null;
   paymentStatus: PaymentStatus;
   paymentReference: string | null;
-  reviewedBy: string | null;
-  assignedTo: string | null;
-  reviewRemarks: string | null;
-  approvedAt: string | null;
-  rejectedAt: string | null;
+  /** Always null — review workflow removed; kept for Website response shape. */
+  reviewRemarks: null;
   submittedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -65,7 +47,8 @@ export interface ApplicationStatusDTO {
   applicationNumber: string;
   status: ApplicationStatus;
   paymentStatus: PaymentStatus;
-  reviewRemarks: string | null;
+  /** Always null — review workflow removed; kept for Website response shape. */
+  reviewRemarks: null;
 }
 
 export interface ApplicationSummaryDTO {
@@ -102,11 +85,3 @@ export const toCloudinaryDocumentDTO = (
   if (!doc?.url || !doc.publicId) return null;
   return { url: doc.url, publicId: doc.publicId };
 };
-
-export const toExperienceCertificateDTO = (
-  cert: IExperienceCertificate
-): ExperienceCertificateDTO => ({
-  url: cert.url,
-  publicId: cert.publicId,
-  ...(cert.label ? { label: cert.label } : {}),
-});

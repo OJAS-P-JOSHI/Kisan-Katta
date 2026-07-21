@@ -21,8 +21,16 @@ export const createApp = (): Application => {
     app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
   }
 
-  // Body parsing
-  app.use(express.json());
+  // Body parsing. The `verify` hook stashes the raw bytes on the request so the
+  // Razorpay webhook route can compute an HMAC over the exact payload Razorpay
+  // signed. This preserves global JSON parsing for every other route.
+  app.use(
+    express.json({
+      verify: (req, _res, buf) => {
+        (req as express.Request).rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true }));
 
   // Routes (includes /health and /api/v1/market)

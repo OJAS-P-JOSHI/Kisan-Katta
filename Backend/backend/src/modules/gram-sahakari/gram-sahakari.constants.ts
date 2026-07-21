@@ -1,16 +1,13 @@
 export const APPLICATION_STATUSES = [
   "DRAFT",
+  "PAYMENT_PENDING",
   "SUBMITTED",
-  "UNDER_REVIEW",
-  "APPROVED",
-  "REJECTED",
-  "ACTIVE",
-  "SUSPENDED",
 ] as const;
 
 export const PAYMENT_STATUSES = [
   "NOT_REQUIRED",
   "PENDING",
+  "AUTHORIZED",
   "PAID",
   "FAILED",
   "REFUNDED",
@@ -22,27 +19,14 @@ export const DOCUMENT_TYPES = [
   "photo",
   "aadhaarFront",
   "aadhaarBack",
-  "pan",
-  "cancelledCheque",
-  "experienceCertificate",
-] as const;
-
-export const EDITABLE_DOCUMENT_TYPES = [
-  "photo",
-  "aadhaarFront",
-  "aadhaarBack",
-  "pan",
   "cancelledCheque",
 ] as const;
 
 /** Statuses that block creating a new application for the same user. */
 export const BLOCKING_APPLICATION_STATUSES = [
   "DRAFT",
+  "PAYMENT_PENDING",
   "SUBMITTED",
-  "UNDER_REVIEW",
-  "APPROVED",
-  "ACTIVE",
-  "SUSPENDED",
 ] as const;
 
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -61,9 +45,6 @@ export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 100;
 
-export const MAX_EXPERIENCE_CERTIFICATES = 5;
-
-export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 export const PINCODE_REGEX = /^[1-9][0-9]{5}$/;
 export const AADHAAR_REGEX = /^[0-9]{12}$/;
@@ -73,15 +54,10 @@ export const AUDIT_ACTIONS = [
   "APPLICATION_STARTED",
   "APPLICATION_NUMBER_GENERATED",
   "APPLICATION_UPDATED",
+  "APPLICATION_READY_FOR_PAYMENT",
   "APPLICATION_SUBMITTED",
   "DOCUMENT_UPLOADED",
-  "APPLICATION_REVIEWED",
-  "APPLICATION_APPROVED",
-  "APPLICATION_REJECTED",
-  "APPLICATION_SUSPENDED",
-  "PAYMENT_UPDATED",
   "ROLE_CHANGED",
-  "REMARKS_UPDATED",
 ] as const;
 
 // ---------------------------------------------------------------------------
