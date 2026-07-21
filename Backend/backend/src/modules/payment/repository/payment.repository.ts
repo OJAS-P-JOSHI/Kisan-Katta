@@ -18,12 +18,18 @@ export const findApplicationByRazorpayPaymentId = (
 ): Promise<IGramSahakariApplication | null> =>
   GramSahakariApplication.findOne({ razorpayPaymentId }).lean();
 
+/**
+ * Applications that may still settle against an attached Razorpay order.
+ * Includes FAILED: payment.failed is attempt-level, not order-terminal — a later
+ * capture on the same order must be recoverable by reconciliation.
+ */
 export const findPendingPayableApplications = (
   limit: number
 ): Promise<IGramSahakariApplication[]> =>
   GramSahakariApplication.find({
-    paymentStatus: { $in: ["PENDING", "AUTHORIZED"] },
+    paymentStatus: { $in: ["PENDING", "AUTHORIZED", "FAILED"] },
     razorpayOrderId: { $ne: null },
+    status: "PAYMENT_PENDING",
   })
     .sort({ updatedAt: 1 })
     .limit(limit)

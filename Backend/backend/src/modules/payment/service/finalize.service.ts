@@ -94,7 +94,9 @@ const primaryHistoryFor = (
  *  - a transition to the current state is a no-op success (duplicate delivery);
  *  - an atomic guarded write means only the first of N concurrent/replayed
  *    callers performs the mutation; the rest observe `changed: false`;
- *  - invalid transitions (e.g. FAILED -> AUTHORIZED) are rejected.
+ *  - invalid transitions (e.g. PAID -> FAILED, REFUNDED -> anything) are rejected;
+ *  - FAILED -> AUTHORIZED/PAID is allowed for same-order Razorpay attempt retries
+ *    (order identity / amount / currency are still enforced below).
  */
 export const completePayment = async (
   options: CompletePaymentOptions
@@ -125,6 +127,25 @@ export const completePayment = async (
     event.razorpayOrderId !== application.razorpayOrderId
   ) {
     throw new AppError("Payment order does not match this application.", 400);
+  }
+
+  // FAILED → AUTHORIZED/PAID is same-order recovery only (Razorpay Checkout
+  // retry after payment.failed). Require an attached order and an explicit
+  // matching order id on the event — never recover across orders.
+  if (
+    current === "FAILED" &&
+    (target === "PAID" || target === "AUTHORIZED")
+  ) {
+    if (
+      !application.razorpayOrderId ||
+      !event.razorpayOrderId ||
+      event.razorpayOrderId !== application.razorpayOrderId
+    ) {
+      throw new AppError(
+        "Payment order does not match this application.",
+        400
+      );
+    }
   }
 
   // Payment-id equality is only enforced once the application is already PAID.
@@ -162,13 +183,68 @@ export const completePayment = async (
   };
 
   // --- Idempotent no-op for a repeat of the same terminal state -------------
-  if (target && current === target) {
+  // Exception: repeated payment.failed attempts while already FAILED.
+  // Razorpay may deliver many failed attempts on the same order; each must
+  // still update failure metadata, timeline, and attempt count — without
+  // treating the order as permanently dead.
+  if (target && current === target && !(event.kind === "FAILED" && current === "FAILED")) {
     paymentDebug("completePayment: idempotent no-op (already at target state)", {
       applicationId,
       paymentStatus: current,
       changed: false,
     });
     return { application, changed: false, paymentStatus: current };
+  }
+
+  // Repeated FAILED while already FAILED: record the attempt, stay FAILED.
+  if (event.kind === "FAILED" && current === "FAILED") {
+    const failSet: Record<string, unknown> = { paymentMeta: meta };
+    if (event.failureReason) failSet.paymentFailureReason = event.failureReason;
+
+    const failEvents: IPaymentEvent[] = [
+      ...(options.extraEvents ?? []),
+      ...primaryHistoryFor("FAILED"),
+    ].map((type) => ({
+      type,
+      source,
+      details: {
+        razorpayOrderId: event.razorpayOrderId ?? application.razorpayOrderId,
+        razorpayPaymentId: event.razorpayPaymentId ?? null,
+        refundId: null,
+        failureReason: event.failureReason ?? null,
+      },
+      timestamp: now,
+    }));
+
+    const updatedFail = await transitionPayment(applicationId, {
+      fromStates: ["FAILED"],
+      set: failSet,
+      events: failEvents,
+      incrementAttempt: options.incrementAttempt === true,
+    });
+
+    if (!updatedFail) {
+      const fresh = (await findApplicationById(applicationId)) ?? application;
+      return { application: fresh, changed: false, paymentStatus: fresh.paymentStatus };
+    }
+
+    emitCompletionAudit("FAILED", source, applicationId, actor, {
+      razorpayPaymentId: event.razorpayPaymentId ?? null,
+      razorpayOrderId: event.razorpayOrderId ?? updatedFail.razorpayOrderId,
+      refundId: null,
+    });
+
+    paymentDebug("completePayment: recorded additional failed attempt", {
+      applicationId,
+      paymentAttemptCount: updatedFail.paymentAttemptCount,
+      changed: true,
+    });
+
+    return {
+      application: updatedFail,
+      changed: true,
+      paymentStatus: "FAILED",
+    };
   }
 
   // --- Validate the transition ----------------------------------------------
@@ -202,6 +278,9 @@ export const completePayment = async (
     case "AUTHORIZED":
       set.paymentStatus = "AUTHORIZED";
       set.authorizedAt = now;
+      // Clear prior attempt failure metadata — a later authorize on the same
+      // order supersedes the failed attempt.
+      set.paymentFailureReason = null;
       break;
     case "PAID":
       set.paymentStatus = "PAID";
@@ -213,6 +292,8 @@ export const completePayment = async (
       if (event.razorpayPaymentId) set.paymentReference = event.razorpayPaymentId;
       break;
     case "FAILED":
+      // Attempt-level failure only. Does not clear the attached order, so a
+      // subsequent authorize/capture on the SAME order can still complete.
       set.paymentStatus = "FAILED";
       if (event.failureReason) set.paymentFailureReason = event.failureReason;
       break;

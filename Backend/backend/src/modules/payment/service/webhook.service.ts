@@ -219,6 +219,9 @@ export const handleWebhook = async (
 
   try {
     paymentDebug("Webhook: calling completePayment", { eventId, applicationId });
+    // payment.failed is attempt-level: record the failure and bump attempt count,
+    // but do NOT treat the attached order as terminal (same-order Checkout retry
+    // may still authorize/capture).
     const result = await completePayment({
       application,
       event: {
@@ -235,6 +238,7 @@ export const handleWebhook = async (
       source: "WEBHOOK",
       actor: SYSTEM_ACTOR,
       extraEvents: ["WEBHOOK_RECEIVED", "WEBHOOK_VERIFIED"],
+      ...(kind === "FAILED" ? { incrementAttempt: true } : {}),
     });
 
     await completeEvent(eventId, "PROCESSED", applicationId);

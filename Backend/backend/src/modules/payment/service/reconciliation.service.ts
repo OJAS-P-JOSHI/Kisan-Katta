@@ -144,10 +144,15 @@ export const reconcileApplication = async (
       );
     }
 
-    if (authorized && application.paymentStatus === "PENDING") {
+    if (
+      authorized &&
+      (application.paymentStatus === "PENDING" ||
+        application.paymentStatus === "FAILED")
+    ) {
       paymentDebug("Reconciliation: recovery attempted (authorized payment found)", {
         applicationId,
         paymentId: authorized.id,
+        fromStatus: application.paymentStatus,
       });
       const result = await completePayment({
         application,

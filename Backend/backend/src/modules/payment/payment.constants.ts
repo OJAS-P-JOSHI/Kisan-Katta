@@ -41,17 +41,23 @@ export const PAYMENT_RECONCILIATION_BATCH_LIMIT = 100;
 
 /**
  * Allowed payment state transitions. Any transition not listed here is rejected
- * by the finalization service, e.g. FAILED -> AUTHORIZED can never happen.
+ * by the finalization service.
  *
- * FAILED -> PENDING is permitted so a farmer can retry after a failed attempt
- * (a brand-new Razorpay order is created for the retry).
+ * Razorpay model (one Order → many Payment Attempts):
+ *  - FAILED means one *attempt* failed — NOT that the order is terminal.
+ *  - FAILED → AUTHORIZED / PAID: same-order Checkout retry after payment.failed
+ *    (customer retries inside Razorpay without a new create-order).
+ *  - FAILED → PENDING: backend retry that attaches a brand-new Razorpay order.
+ *
+ * completePayment still enforces order identity, amount, and currency before
+ * any FAILED → AUTHORIZED/PAID write is applied.
  */
 export const ALLOWED_PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
   NOT_REQUIRED: ["PENDING"],
   PENDING: ["AUTHORIZED", "PAID", "FAILED"],
   AUTHORIZED: ["PAID", "FAILED"],
   PAID: ["REFUNDED"],
-  FAILED: ["PENDING"],
+  FAILED: ["PENDING", "AUTHORIZED", "PAID"],
   REFUNDED: [],
 };
 

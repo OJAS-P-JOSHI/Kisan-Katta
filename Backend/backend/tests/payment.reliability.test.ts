@@ -194,6 +194,11 @@ describe("Webhook: event handling", () => {
     const fresh = await GramSahakariApplication.findById(app._id).lean();
     expect(fresh?.paymentStatus).toBe("FAILED");
     expect(fresh?.paymentFailureReason).toBe("card declined");
+    expect(fresh?.paymentAttemptCount).toBe(1);
+    // Failed attempt must not poison the attached order identity.
+    expect(fresh?.razorpayOrderId).toBe(ORDER_ID);
+    expect(fresh?.razorpayPaymentId ?? null).toBeNull();
+    expect(fresh?.status).toBe("PAYMENT_PENDING");
   });
 
   it("✓ order.paid → PAID", async () => {
@@ -546,23 +551,412 @@ describe("Idempotency & ordering", () => {
 });
 
 describe("State machine", () => {
-  it("✓ invalid transition (FAILED → AUTHORIZED) is rejected, DB unchanged", async () => {
+  it("✓ same-order FAILED → AUTHORIZED succeeds (Checkout retry)", async () => {
     const app = await createCompleteDraft();
     await createPaymentOrder(uidOf(app), "FARMER");
     await deliver(
-      { event: "payment.failed", payload: { payment: paymentEntity({ status: "failed" }) } },
+      {
+        event: "payment.failed",
+        payload: { payment: paymentEntity({ id: "pay_fail_1", status: "failed" }) },
+      },
       "evt_sm_fail_1"
     );
 
     const res = await deliver(
-      { event: "payment.authorized", payload: { payment: paymentEntity({ status: "authorized" }) } },
+      {
+        event: "payment.authorized",
+        payload: {
+          payment: paymentEntity({ id: "pay_auth_retry", status: "authorized" }),
+        },
+      },
       "evt_sm_auth_1"
     );
-    // Webhook acknowledges (200) but the illegal transition is not applied.
+    expect(res.status).toBe("ok");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("AUTHORIZED");
+    expect(fresh?.status).toBe("PAYMENT_PENDING");
+    expect(fresh?.paymentFailureReason ?? null).toBeNull();
+  });
+
+  it("✓ FAILED → PAID with wrong order id is rejected", async () => {
+    const app = await createCompleteDraft();
+    await createPaymentOrder(uidOf(app), "FARMER");
+    await deliver(
+      {
+        event: "payment.failed",
+        payload: { payment: paymentEntity({ status: "failed" }) },
+      },
+      "evt_sm_wrong_fail"
+    );
+
+    const res = await deliver(
+      capturedBody({ id: "pay_spoof", order_id: "order_other_999" }),
+      "evt_sm_wrong_cap"
+    );
     expect(res.httpStatus).toBe(200);
 
     const fresh = await GramSahakariApplication.findById(app._id).lean();
     expect(fresh?.paymentStatus).toBe("FAILED");
+    expect(fresh?.status).toBe("PAYMENT_PENDING");
+  });
+
+  it("✓ PAID → FAILED is rejected (terminal money collected)", async () => {
+    const app = await createCompleteDraft();
+    await createPaymentOrder(uidOf(app), "FARMER");
+    await deliver(capturedBody({ id: "pay_paid_1" }), "evt_sm_paid_1");
+
+    const res = await deliver(
+      {
+        event: "payment.failed",
+        payload: {
+          payment: paymentEntity({ id: "pay_late_fail", status: "failed" }),
+        },
+      },
+      "evt_sm_late_fail"
+    );
+    expect(res.httpStatus).toBe(200);
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+  });
+});
+
+describe("Razorpay same-order retry after payment.failed", () => {
+  const failThen = async (
+    app: { _id: mongoose.Types.ObjectId; userId: mongoose.Types.ObjectId },
+    failEventId: string
+  ) => {
+    await createPaymentOrder(uidOf(app), "FARMER");
+    await deliver(
+      {
+        event: "payment.failed",
+        payload: {
+          payment: paymentEntity({
+            id: "pay_failed_attempt",
+            status: "failed",
+            error_description: "insufficient funds",
+          }),
+        },
+      },
+      failEventId
+    );
+    const mid = await GramSahakariApplication.findById(app._id).lean();
+    expect(mid?.paymentStatus).toBe("FAILED");
+    expect(mid?.razorpayOrderId).toBe(ORDER_ID);
+    expect(mid?.status).toBe("PAYMENT_PENDING");
+    return mid;
+  };
+
+  it("✓ payment.failed → payment.captured (same order) → PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_retry_cap_fail");
+
+    const res = await deliver(
+      capturedBody({ id: "pay_retry_success" }),
+      "evt_retry_cap_ok"
+    );
+    expect(res.status).toBe("ok");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+    expect(fresh?.paymentVerified).toBe(true);
+    expect(fresh?.razorpayPaymentId).toBe("pay_retry_success");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+  });
+
+  it("✓ payment.failed → order.paid (same order) → PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_retry_op_fail");
+
+    const res = await deliver(
+      {
+        event: "order.paid",
+        payload: {
+          order: { entity: { id: ORDER_ID, amount: 50000 } },
+          payment: paymentEntity({ id: "pay_order_paid_retry" }),
+        },
+      },
+      "evt_retry_op_ok"
+    );
+    expect(res.status).toBe("ok");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+  });
+
+  it("✓ payment.failed → verify (same order) → PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_retry_verify_fail");
+
+    const res = await verifyPayment(
+      uidOf(app),
+      {
+        razorpay_order_id: ORDER_ID,
+        razorpay_payment_id: "pay_verify_after_fail",
+        razorpay_signature: signPayment(ORDER_ID, "pay_verify_after_fail"),
+      },
+      "FARMER"
+    );
+
+    expect(res.paymentStatus).toBe("PAID");
+    expect(res.status).toBe("SUBMITTED");
+    expect(res.paymentVerified).toBe(true);
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+  });
+
+  it("✓ payment.failed → scheduler → PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_retry_sched_fail");
+
+    vi.mocked(fetchOrderPayments).mockResolvedValueOnce([
+      {
+        id: "pay_sched_after_fail",
+        orderId: ORDER_ID,
+        status: "captured",
+        method: "upi",
+        amount: 50000,
+        currency: "INR",
+        raw: {},
+      },
+    ]);
+
+    const result = await reconcileApplication(String(app._id), {
+      userId: "admin1",
+      role: "ADMIN",
+    });
+    expect(result.repaired).toBe(true);
+    expect(result.currentStatus).toBe("PAID");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+  });
+
+  it("✓ duplicate payment.failed is idempotent", async () => {
+    const app = await createCompleteDraft();
+    await createPaymentOrder(uidOf(app), "FARMER");
+
+    const body = {
+      event: "payment.failed",
+      payload: {
+        payment: paymentEntity({ id: "pay_dup_fail", status: "failed" }),
+      },
+    };
+    const first = await deliver(body, "evt_dup_fail_1");
+    const second = await deliver(body, "evt_dup_fail_1");
+    expect(first.status).toBe("ok");
+    expect(second.status).toBe("duplicate");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("FAILED");
+    expect(await countEvents(app._id, "PAYMENT_FAILED")).toBe(1);
+  });
+
+  it("✓ duplicate payment.captured after failed → single PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_dup_cap_fail");
+
+    await deliver(capturedBody({ id: "pay_dup_cap" }), "evt_dup_cap_ok");
+    await deliver(capturedBody({ id: "pay_dup_cap" }), "evt_dup_cap_ok");
+
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+  });
+
+  it("✓ out-of-order: authorized then failed then captured → PAID", async () => {
+    const app = await createCompleteDraft();
+    await createPaymentOrder(uidOf(app), "FARMER");
+
+    await deliver(
+      {
+        event: "payment.authorized",
+        payload: {
+          payment: paymentEntity({ id: "pay_oo_auth", status: "authorized" }),
+        },
+      },
+      "evt_oo_auth"
+    );
+    // A later failed attempt on the same order (new payment id) may arrive.
+    await deliver(
+      {
+        event: "payment.failed",
+        payload: {
+          payment: paymentEntity({ id: "pay_oo_fail", status: "failed" }),
+        },
+      },
+      "evt_oo_fail"
+    );
+    await deliver(capturedBody({ id: "pay_oo_cap" }), "evt_oo_cap");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+  });
+
+  it("✓ payment.failed → new create-order → new order → success", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_new_order_fail");
+
+    vi.mocked(createRazorpayOrder).mockResolvedValueOnce({
+      id: "order_after_fail_789",
+      amount: 50000,
+      currency: "INR",
+    });
+
+    const order = await createPaymentOrder(uidOf(app), "FARMER");
+    expect(order.orderId).toBe("order_after_fail_789");
+
+    const mid = await GramSahakariApplication.findById(app._id).lean();
+    expect(mid?.paymentStatus).toBe("PENDING");
+    expect(mid?.razorpayOrderId).toBe("order_after_fail_789");
+
+    const res = await verifyPayment(
+      uidOf(app),
+      {
+        razorpay_order_id: "order_after_fail_789",
+        razorpay_payment_id: "pay_new_order_ok",
+        razorpay_signature: signPayment("order_after_fail_789", "pay_new_order_ok"),
+      },
+      "FARMER"
+    );
+    expect(res.paymentStatus).toBe("PAID");
+  });
+
+  it("✓ old failed payment ignored; new payment on same order succeeds", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_old_fail_ignore");
+
+    // Capture uses a different payment id than the failed attempt.
+    await deliver(capturedBody({ id: "pay_new_success" }), "evt_old_fail_cap");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.razorpayPaymentId).toBe("pay_new_success");
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.paymentFailureReason ?? null).toBeNull();
+  });
+
+  it("✓ payment.failed ×3 → payment.captured → PAID once", async () => {
+    const app = await createCompleteDraft();
+    await createPaymentOrder(uidOf(app), "FARMER");
+
+    for (let i = 1; i <= 3; i += 1) {
+      await deliver(
+        {
+          event: "payment.failed",
+          payload: {
+            payment: paymentEntity({
+              id: `pay_multi_fail_${i}`,
+              status: "failed",
+              error_description: `attempt ${i}`,
+            }),
+          },
+        },
+        `evt_multi_fail_${i}`
+      );
+    }
+
+    const mid = await GramSahakariApplication.findById(app._id).lean();
+    expect(mid?.paymentStatus).toBe("FAILED");
+    expect(mid?.paymentAttemptCount).toBe(3);
+
+    await deliver(capturedBody({ id: "pay_multi_ok" }), "evt_multi_cap");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+  });
+
+  it("✓ webhook + verify race after failed → exactly one PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_race_fail");
+
+    const results = await Promise.allSettled([
+      verifyPayment(
+        uidOf(app),
+        {
+          razorpay_order_id: ORDER_ID,
+          razorpay_payment_id: "pay_race_after_fail",
+          razorpay_signature: signPayment(ORDER_ID, "pay_race_after_fail"),
+        },
+        "FARMER"
+      ),
+      deliver(capturedBody({ id: "pay_race_after_fail" }), "evt_race_cap"),
+    ]);
+
+    expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
+  });
+
+  it("✓ reconciliation after failed recovers captured order", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_recon_after_fail");
+
+    vi.mocked(fetchOrderPayments).mockResolvedValueOnce([
+      {
+        id: "pay_recon_after_fail",
+        orderId: ORDER_ID,
+        status: "captured",
+        method: "card",
+        amount: 50000,
+        currency: "INR",
+        raw: {},
+      },
+    ]);
+
+    const summary = await reconcilePendingPayments(10);
+    expect(summary.repaired).toBeGreaterThanOrEqual(1);
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+  });
+
+  it("✓ restart after failed before capture → capture recovers", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_restart_fail");
+
+    // Simulate restart: no in-memory state; only Mongo persists FAILED + order.
+    const afterRestart = await GramSahakariApplication.findById(app._id).lean();
+    expect(afterRestart?.paymentStatus).toBe("FAILED");
+    expect(afterRestart?.razorpayOrderId).toBe(ORDER_ID);
+
+    await deliver(capturedBody({ id: "pay_after_restart" }), "evt_restart_cap");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+  });
+
+  it("✓ payment.failed → payment.authorized → payment.captured → PAID", async () => {
+    const app = await createCompleteDraft();
+    await failThen(app, "evt_full_retry_fail");
+
+    await deliver(
+      {
+        event: "payment.authorized",
+        payload: {
+          payment: paymentEntity({ id: "pay_full_auth", status: "authorized" }),
+        },
+      },
+      "evt_full_retry_auth"
+    );
+    await deliver(capturedBody({ id: "pay_full_cap" }), "evt_full_retry_cap");
+
+    const fresh = await GramSahakariApplication.findById(app._id).lean();
+    expect(fresh?.paymentStatus).toBe("PAID");
+    expect(fresh?.status).toBe("SUBMITTED");
+    expect(await countEvents(app._id, "PAYMENT_COMPLETED")).toBe(1);
   });
 });
 
