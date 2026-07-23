@@ -1,3 +1,6 @@
+import type { AdminProfileDTO } from "../admin/admin.dto";
+import type { UserRole } from "./auth.constants";
+
 // ---------------------------------------------------------------------------
 // JWT
 // ---------------------------------------------------------------------------
@@ -35,6 +38,10 @@ export interface VerifyOtpResponseDTO {
   token: string;
   isNewUser: boolean;
   isProfileCompleted: boolean;
+  role: UserRole;
+  /** True when an active Admin portal record exists for this mobile. */
+  isAdmin: boolean;
+  admin: AdminProfileDTO | null;
 }
 
 export interface MeResponseDTO {
@@ -42,4 +49,7 @@ export interface MeResponseDTO {
   mobile: string;
   isProfileCompleted: boolean;
   createdAt: Date;
+  role: UserRole;
+  isAdmin: boolean;
+  admin: AdminProfileDTO | null;
 }

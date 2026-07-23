@@ -1,5 +1,9 @@
 import { env } from "../../config/env";
 import { AppError } from "../../utils/AppError";
+import {
+  lookupAdminForSession,
+  resolveAdminAfterAuth,
+} from "../admin/admin.service";
 import { AuthUser } from "./auth.model";
 import { generateOtp, consumeOtp } from "./otp.service";
 import { signToken } from "./jwt.service";
@@ -27,6 +31,9 @@ export const sendOtp = (mobile: string): SendOtpResponseDTO => {
 /**
  * Verifies the OTP, creates the auth_user if this is a new number,
  * and returns a signed JWT plus flags the client needs for routing.
+ *
+ * Admin authorization runs ONLY after OTP success — never trust the
+ * phone number before verification.
  */
 export const verifyOtpAndAuthenticate = async (
   mobile: string,
@@ -56,6 +63,16 @@ export const verifyOtpAndAuthenticate = async (
     await user.save();
   }
 
+  // Portal admin lookup — post-OTP only. Syncs AuthUser.role for legacy
+  // requireAdmin middleware compatibility without a separate login system.
+  const admin = await resolveAdminAfterAuth(user._id.toString(), user.mobile);
+  if (admin) {
+    if (user.role !== "ADMIN") {
+      user.role = "ADMIN";
+      await user.save();
+    }
+  }
+
   const token = signToken({
     userId: user._id.toString(),
     mobile: user.mobile,
@@ -65,14 +82,26 @@ export const verifyOtpAndAuthenticate = async (
     token,
     isNewUser,
     isProfileCompleted: user.isProfileCompleted,
+    role: user.role,
+    isAdmin: Boolean(admin),
+    admin: admin ?? null,
   };
 };
 
-/** Returns the authenticated user's auth record. */
+/** Returns the authenticated user's auth record (+ admin portal profile when applicable). */
 export const getMe = async (userId: string): Promise<MeResponseDTO> => {
   const user = await AuthUser.findById(userId);
   if (!user) {
     throw new AppError("Authenticated user not found.", 401);
+  }
+
+  const admin = await lookupAdminForSession(
+    user._id.toString(),
+    user.mobile
+  );
+  if (admin && user.role !== "ADMIN") {
+    user.role = "ADMIN";
+    await user.save();
   }
 
   return {
@@ -80,5 +109,8 @@ export const getMe = async (userId: string): Promise<MeResponseDTO> => {
     mobile: user.mobile,
     isProfileCompleted: user.isProfileCompleted,
     createdAt: user.createdAt,
+    role: user.role,
+    isAdmin: Boolean(admin),
+    admin: admin ?? null,
   };
 };

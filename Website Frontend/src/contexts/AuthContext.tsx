@@ -24,8 +24,8 @@ export type AuthContextValue = {
   loading: boolean
   /** `true` once a JWT is present. */
   isAuthenticated: boolean
-  /** Persists the token, then refreshes `user`. */
-  login: (newToken: string) => Promise<void>
+  /** Persists the token, then refreshes `user`. Returns the user when available. */
+  login: (newToken: string) => Promise<AuthUser | null>
   /** Clears the token and resets state (calls the backend logout endpoint). */
   logout: () => Promise<{ remoteOk: boolean }>
   /** Re-fetches `GET /auth/me`. Auto-logs-out on a 401. */
@@ -73,10 +73,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [clearSession])
 
   const login = useCallback(
-    async (newToken: string): Promise<void> => {
+    async (newToken: string): Promise<AuthUser | null> => {
       tokenService.setToken(newToken)
       setToken(newToken)
-      await refreshUser()
+      return refreshUser()
     },
     [refreshUser],
   )

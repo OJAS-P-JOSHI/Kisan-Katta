@@ -5,6 +5,8 @@
  * another frontend client, so the contracts must match exactly.
  */
 
+import type { AdminProfile } from '@/types/admin.types'
+
 /** Standard success envelope used by every backend endpoint. */
 export type ApiSuccessResponse<T> = {
   success: true
@@ -29,12 +31,13 @@ export type VerifyOtpResponse = {
   token: string
   isNewUser: boolean
   isProfileCompleted: boolean
+  role: UserRole
+  isAdmin: boolean
+  admin: AdminProfile | null
 }
 
 /**
- * Roles supported by the backend (`auth.constants.ts`). The `/auth/me`
- * endpoint does not currently return the role, so `AuthUser.role` is optional;
- * permissions must therefore never be hardcoded on the client.
+ * Roles supported by the backend (`auth.constants.ts`).
  */
 export const USER_ROLES = ['FARMER', 'GRAM_SAHAKARI', 'TEAM', 'ADMIN'] as const
 
@@ -46,6 +49,7 @@ export type AuthUser = {
   mobile: string
   isProfileCompleted: boolean
   createdAt: string
-  /** Optional — only present if the backend includes it in the `/me` payload. */
-  role?: UserRole
+  role: UserRole
+  isAdmin: boolean
+  admin: AdminProfile | null
 }

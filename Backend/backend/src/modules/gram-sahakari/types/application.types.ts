@@ -32,6 +32,7 @@ export interface UpdateApplicationBody {
 
 export interface AdminApplicationsQuery {
   district?: string;
+  taluka?: string;
   status?: ApplicationStatus;
   paymentStatus?: PaymentStatus;
   search?: string;

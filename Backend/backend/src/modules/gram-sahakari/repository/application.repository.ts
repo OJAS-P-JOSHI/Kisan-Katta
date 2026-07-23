@@ -54,6 +54,10 @@ export const findApplications = async (
     filter.district = query.district;
   }
 
+  if (query.taluka) {
+    filter.taluka = query.taluka;
+  }
+
   if (query.status) {
     filter.status = query.status;
   }

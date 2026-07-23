@@ -2,6 +2,7 @@ import os from "os";
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { connectDatabase } from "./config/database";
+import { seedSuperAdmin } from "./modules/admin/admin.service";
 import { startFarmerPriceScheduler } from "./modules/farmer-price/farmer-price.scheduler";
 import { startPaymentReconciliationScheduler } from "./modules/payment/payment.scheduler";
 
@@ -30,6 +31,14 @@ const getLanAddresses = (): string[] => {
 // (Docker, PM2, k8s) can restart the container rather than serving 500s.
 const startServer = async (): Promise<void> => {
   await connectDatabase();
+
+  // Idempotent SUPER_ADMIN bootstrap for the Admin Portal.
+  try {
+    await seedSuperAdmin();
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error("[Admin] Failed to seed SUPER_ADMIN:", error);
+  }
 
   // Maintain Farmer Price polls in the background. Failures must not
   // block HTTP startup.

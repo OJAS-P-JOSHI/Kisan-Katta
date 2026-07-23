@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useSendOtp, useVerifyOtp } from '@/hooks/useOtp'
 import { useTranslation } from '@/i18n/LanguageProvider'
-import { resolveAuthRedirect } from '@/lib/application-entry'
+import { resolveAuthRedirect, ADMIN_DASHBOARD_PATH } from '@/lib/application-entry'
 import { getErrorMessage } from '@/lib/api-error'
 import { COUNTRY_CODE, OTP_LENGTH, RESEND_COOLDOWN_SECONDS } from '@/lib/validation'
 
@@ -52,7 +52,11 @@ export function VerifyOtpPage() {
         onSuccess: async (result) => {
           setFinalizing(true)
           try {
-            await login(result.token)
+            const me = await login(result.token)
+            if (result.isAdmin || me?.isAdmin) {
+              navigate(ADMIN_DASHBOARD_PATH, { replace: true })
+              return
+            }
             navigate(from, { replace: true })
           } catch {
             setFinalizing(false)

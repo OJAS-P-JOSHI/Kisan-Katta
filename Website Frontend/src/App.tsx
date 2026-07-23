@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
+import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminRoute } from '@/components/admin/AdminRoute'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { FullScreenLoader } from '@/components/FullScreenLoader'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
@@ -38,6 +40,9 @@ const RefundPage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
+const ForbiddenPage = lazy(() =>
+  import('@/pages/ForbiddenPage').then((m) => ({ default: m.ForbiddenPage })),
+)
 const LoginPage = lazy(() =>
   import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
 )
@@ -64,6 +69,47 @@ const VerifyVolunteerPage = lazy(() =>
   import('@/pages/VerifyVolunteerPage').then((m) => ({ default: m.VerifyVolunteerPage })),
 )
 
+const AdminDashboardPage = lazy(() =>
+  import('@/pages/admin/AdminDashboardPage').then((m) => ({
+    default: m.AdminDashboardPage,
+  })),
+)
+const AdminApplicationsPage = lazy(() =>
+  import('@/pages/admin/AdminApplicationsPage').then((m) => ({
+    default: m.AdminApplicationsPage,
+  })),
+)
+const AdminApplicationDetailPage = lazy(() =>
+  import('@/pages/admin/AdminApplicationDetailPage').then((m) => ({
+    default: m.AdminApplicationDetailPage,
+  })),
+)
+const AdminGramSahakarisPage = lazy(() =>
+  import('@/pages/admin/AdminGramSahakarisPage').then((m) => ({
+    default: m.AdminGramSahakarisPage,
+  })),
+)
+const AdminPaymentsPage = lazy(() =>
+  import('@/pages/admin/AdminPaymentsPage').then((m) => ({
+    default: m.AdminPaymentsPage,
+  })),
+)
+const AdminAnalyticsPage = lazy(() =>
+  import('@/pages/admin/AdminAnalyticsPage').then((m) => ({
+    default: m.AdminAnalyticsPage,
+  })),
+)
+const AdminReportsPage = lazy(() =>
+  import('@/pages/admin/AdminReportsPage').then((m) => ({
+    default: m.AdminReportsPage,
+  })),
+)
+const AdminSettingsPage = lazy(() =>
+  import('@/pages/admin/AdminSettingsPage').then((m) => ({
+    default: m.AdminSettingsPage,
+  })),
+)
+
 function RouteFallback() {
   const { t } = useTranslation()
   return <FullScreenLoader message={t('common.loading')} />
@@ -85,6 +131,7 @@ export function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/verify/:volunteerId" element={<VerifyVolunteerPage />} />
+          <Route path="/403" element={<ForbiddenPage />} />
 
           {/* Legal */}
           <Route path="/privacy-policy" element={<PrivacyPage />} />
@@ -126,6 +173,26 @@ export function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Admin portal */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="applications" element={<AdminApplicationsPage />} />
+            <Route path="applications/:id" element={<AdminApplicationDetailPage />} />
+            <Route path="gram-sahakaris" element={<AdminGramSahakarisPage />} />
+            <Route path="payments" element={<AdminPaymentsPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+          </Route>
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
