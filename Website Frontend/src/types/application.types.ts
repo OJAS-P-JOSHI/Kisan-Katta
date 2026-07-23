@@ -45,6 +45,8 @@ export type ApplicationDTO = {
   status: ApplicationStatus
   fullName: string | null
   phone: string | null
+  /** Verified login mobile — same value as `phone`. */
+  phoneNumber?: string | null
   email: string | null
   gender: Gender | null
   dob: string | null
@@ -81,7 +83,6 @@ export type ApplicationStatusDTO = {
 /** PUT /application — the backend validates this with `.strict()`. */
 export type UpdateApplicationBody = {
   fullName?: string
-  phone?: string
   email?: string
   gender?: Gender
   dob?: string

@@ -124,7 +124,10 @@ export function AdminApplicationDetailPage() {
               )}
               <dl className="grid flex-1 gap-4 sm:grid-cols-2">
                 <Field label="Full name" value={data.fullName} />
-                <Field label="Phone" value={data.phone} />
+                <Field
+                  label="Phone"
+                  value={data.phoneNumber ?? data.phone}
+                />
                 <Field label="Email" value={data.email} />
                 <Field label="Gender" value={data.gender} />
                 <Field

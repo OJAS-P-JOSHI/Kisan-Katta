@@ -4,8 +4,11 @@ import {
   getAdminAnalytics,
   getAdminApplication,
   getAdminDashboard,
+  getAdminFarmer,
   getAdminMe,
+  getAdminSystemInfo,
   listAdminApplications,
+  listAdminFarmers,
   listAdminPayments,
   listAdminVolunteers,
 } from '@/api/admin.api'
@@ -16,6 +19,7 @@ export const adminKeys = {
   me: () => [...adminKeys.all, 'me'] as const,
   dashboard: () => [...adminKeys.all, 'dashboard'] as const,
   analytics: () => [...adminKeys.all, 'analytics'] as const,
+  system: () => [...adminKeys.all, 'system'] as const,
   applications: (query?: AdminListQuery) =>
     [...adminKeys.all, 'applications', query ?? {}] as const,
   application: (id: string) => [...adminKeys.all, 'application', id] as const,
@@ -23,6 +27,9 @@ export const adminKeys = {
     [...adminKeys.all, 'volunteers', query ?? {}] as const,
   payments: (query?: AdminListQuery) =>
     [...adminKeys.all, 'payments', query ?? {}] as const,
+  farmers: (query?: AdminListQuery) =>
+    [...adminKeys.all, 'farmers', query ?? {}] as const,
+  farmer: (id: string) => [...adminKeys.all, 'farmer', id] as const,
 }
 
 export const useAdminMe = () =>
@@ -39,6 +46,13 @@ export const useAdminAnalytics = () =>
   useQuery({
     queryKey: adminKeys.analytics(),
     queryFn: getAdminAnalytics,
+    staleTime: 60_000,
+  })
+
+export const useAdminSystemInfo = () =>
+  useQuery({
+    queryKey: adminKeys.system(),
+    queryFn: getAdminSystemInfo,
     staleTime: 60_000,
   })
 
@@ -68,4 +82,18 @@ export const useAdminPayments = (query: AdminListQuery) =>
     queryKey: adminKeys.payments(query),
     queryFn: () => listAdminPayments(query),
     placeholderData: (prev) => prev,
+  })
+
+export const useAdminFarmers = (query: AdminListQuery) =>
+  useQuery({
+    queryKey: adminKeys.farmers(query),
+    queryFn: () => listAdminFarmers(query),
+    placeholderData: (prev) => prev,
+  })
+
+export const useAdminFarmer = (id: string) =>
+  useQuery({
+    queryKey: adminKeys.farmer(id),
+    queryFn: () => getAdminFarmer(id),
+    enabled: Boolean(id),
   })

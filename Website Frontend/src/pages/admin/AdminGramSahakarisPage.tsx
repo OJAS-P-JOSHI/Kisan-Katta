@@ -58,7 +58,7 @@ export function AdminGramSahakarisPage() {
     {
       key: 'phone',
       header: 'Phone',
-      render: (row) => row.phone ?? '—',
+      render: (row) => row.phoneNumber ?? row.phone ?? '—',
     },
     {
       key: 'district',

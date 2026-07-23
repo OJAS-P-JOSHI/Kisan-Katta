@@ -43,7 +43,7 @@ export function AdminReportsPage() {
         const rows = data.items.map((item) => ({
           applicationNumber: item.applicationNumber,
           fullName: item.fullName,
-          phone: item.phone,
+          phone: item.phoneNumber ?? item.phone,
           district: item.district,
           taluka: item.taluka,
           status: item.status,

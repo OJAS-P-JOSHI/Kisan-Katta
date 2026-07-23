@@ -69,6 +69,16 @@ const VerifyVolunteerPage = lazy(() =>
   import('@/pages/VerifyVolunteerPage').then((m) => ({ default: m.VerifyVolunteerPage })),
 )
 
+const AdminFarmersPage = lazy(() =>
+  import('@/pages/admin/AdminFarmersPage').then((m) => ({
+    default: m.AdminFarmersPage,
+  })),
+)
+const AdminFarmerDetailPage = lazy(() =>
+  import('@/pages/admin/AdminFarmerDetailPage').then((m) => ({
+    default: m.AdminFarmerDetailPage,
+  })),
+)
 const AdminDashboardPage = lazy(() =>
   import('@/pages/admin/AdminDashboardPage').then((m) => ({
     default: m.AdminDashboardPage,
@@ -185,6 +195,8 @@ export function App() {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="farmers" element={<AdminFarmersPage />} />
+            <Route path="farmers/:id" element={<AdminFarmerDetailPage />} />
             <Route path="applications" element={<AdminApplicationsPage />} />
             <Route path="applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="gram-sahakaris" element={<AdminGramSahakarisPage />} />

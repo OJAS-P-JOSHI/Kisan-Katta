@@ -1,107 +1,121 @@
-import { AdminCard, AdminPageHeader, formatDateTime } from '@/components/admin/AdminUI'
-import { LanguageToggle } from '@/components/common/LanguageToggle'
-import { useAuth } from '@/hooks/useAuth'
-import { useLanguage } from '@/i18n/LanguageProvider'
+import { LogOut } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
+
+import {
+  AccountStatusBadge,
+  AdminPageHeader,
+  InfoGrid,
+  ProfileSection,
+  formatDateTime,
+} from '@/components/admin/AdminUI'
+import { useAdminMe, useAdminSystemInfo } from '@/hooks/useAdmin'
+
+type OutletCtx = { onLogout?: () => Promise<void> }
 
 export function AdminSettingsPage() {
-  const { user } = useAuth()
-  const { locale } = useLanguage()
-  const admin = user?.admin
+  const { data: admin } = useAdminMe()
+  const { data: system, isLoading: systemLoading } = useAdminSystemInfo()
+  const outlet = useOutletContext<OutletCtx>()
 
   return (
     <div>
       <AdminPageHeader
         title="Settings"
-        description="Admin profile, preferences, and system information."
+        description="Admin profile and system information."
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Admin profile">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <ProfileSection title="Admin Profile">
           {admin ? (
-            <dl className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Name</dt>
-                <dd className="mt-1 text-sm font-medium text-ink">{admin.name}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Role</dt>
-                <dd className="mt-1 text-sm font-medium text-ink">{admin.role}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Phone</dt>
-                <dd className="mt-1 text-sm text-ink">{admin.phoneNumber}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Email</dt>
-                <dd className="mt-1 text-sm text-ink">{admin.email}</dd>
-              </div>
-              <div className="sm:col-span-2">
-                <dt className="text-xs uppercase tracking-wide text-steel">Address</dt>
-                <dd className="mt-1 text-sm text-ink">
-                  {admin.address.line1}, {admin.address.taluka}, {admin.address.district},{' '}
-                  {admin.address.city}, {admin.address.state} {admin.address.pincode}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Last login</dt>
-                <dd className="mt-1 text-sm text-ink">
-                  {formatDateTime(admin.lastLoginAt)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-steel">Status</dt>
-                <dd className="mt-1 text-sm font-medium text-forest-700">
-                  {admin.isActive ? 'ACTIVE' : 'INACTIVE'}
-                </dd>
-              </div>
-            </dl>
+            <InfoGrid
+              items={[
+                { label: 'Name', value: admin.name },
+                { label: 'Phone', value: admin.phoneNumber },
+                { label: 'Email', value: admin.email },
+                { label: 'Role', value: admin.role },
+                {
+                  label: 'Status',
+                  value: (
+                    <AccountStatusBadge
+                      status={admin.isActive ? 'ACTIVE' : 'INACTIVE'}
+                    />
+                  ),
+                },
+                {
+                  label: 'Last Login',
+                  value: formatDateTime(admin.lastLoginAt),
+                },
+                {
+                  label: 'Account Created',
+                  value: formatDateTime(admin.createdAt),
+                },
+              ]}
+            />
           ) : (
-            <p className="text-sm text-steel">Admin profile unavailable.</p>
+            <p className="text-sm text-steel">Loading profile…</p>
           )}
-        </AdminCard>
+        </ProfileSection>
 
-        <AdminCard title="Preferences">
-          <div className="space-y-5">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-steel">
-                Language
-              </p>
-              <div className="mt-2">
-                <LanguageToggle />
-              </div>
-              <p className="mt-2 text-xs text-steel">
-                Current: {locale === 'mr' ? 'Marathi' : 'English'}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-steel">
-                Theme
-              </p>
-              <p className="mt-2 text-sm text-ink">
-                Light (Admin) — dark theme reserved for a future release.
-              </p>
-            </div>
-          </div>
-        </AdminCard>
+        <ProfileSection title="Office Address">
+          {admin ? (
+            <InfoGrid
+              items={[
+                { label: 'Address', value: admin.address.line1 },
+                { label: 'Taluka', value: admin.address.taluka },
+                { label: 'District', value: admin.address.district },
+                { label: 'City', value: admin.address.city },
+                { label: 'State', value: admin.address.state },
+                { label: 'PIN', value: admin.address.pincode },
+              ]}
+            />
+          ) : (
+            <p className="text-sm text-steel">Loading address…</p>
+          )}
+        </ProfileSection>
 
-        <AdminCard title="System information" className="lg:col-span-2">
-          <dl className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-steel">Portal</dt>
-              <dd className="mt-1 text-sm text-ink">Kisan Katta Admin</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-steel">Phase</dt>
-              <dd className="mt-1 text-sm text-ink">Phase-2 · Admin Dashboard</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-steel">Permissions</dt>
-              <dd className="mt-1 text-sm text-ink">
-                {admin?.permissions.join(', ') ?? '—'}
-              </dd>
-            </div>
-          </dl>
-        </AdminCard>
+        <ProfileSection title="System Information" className="lg:col-span-2">
+          {systemLoading ? (
+            <p className="text-sm text-steel">Checking system status…</p>
+          ) : (
+            <InfoGrid
+              columns={3}
+              items={[
+                {
+                  label: 'Backend Version',
+                  value: system?.backendVersion ?? '—',
+                },
+                {
+                  label: 'Frontend Version',
+                  value: system?.frontendVersion ?? '0.0.0',
+                },
+                {
+                  label: 'Database Status',
+                  value: system?.databaseStatus ?? '—',
+                },
+                { label: 'API Status', value: system?.apiStatus ?? '—' },
+                {
+                  label: 'Server Time',
+                  value: formatDateTime(system?.serverTime),
+                },
+                {
+                  label: 'Environment',
+                  value: system?.environment ?? '—',
+                },
+              ]}
+            />
+          )}
+        </ProfileSection>
+
+        <ProfileSection title="Quick Actions" className="lg:col-span-2">
+          <button
+            type="button"
+            onClick={() => void outlet.onLogout?.()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-forest-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-forest-700"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </button>
+        </ProfileSection>
       </div>
     </div>
   )

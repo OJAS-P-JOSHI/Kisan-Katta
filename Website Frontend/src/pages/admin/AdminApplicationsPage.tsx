@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { DataTable, Pagination, type Column } from '@/components/admin/DataTable'
+import {
+  FilterPanel,
+  filterControlClass,
+} from '@/components/admin/FilterPanel'
 import { AdminCard, AdminPageHeader, formatDateTime } from '@/components/admin/AdminUI'
 import { StatusBadge } from '@/components/application/StatusBadge'
 import { useAdminApplications } from '@/hooks/useAdmin'
@@ -18,6 +22,7 @@ const PAYMENT_STATUSES = [
 ] as const
 
 export function AdminApplicationsPage() {
+  const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
@@ -43,6 +48,14 @@ export function AdminApplicationsPage() {
   )
 
   const { data, isLoading, isFetching } = useAdminApplications(query)
+  const activeFilters = [
+    status,
+    paymentStatus,
+    district,
+    taluka,
+    fromDate,
+    toDate,
+  ].filter(Boolean).length
 
   const columns: Column<ApplicationSummary>[] = [
     {
@@ -52,6 +65,7 @@ export function AdminApplicationsPage() {
         <Link
           to={`/admin/applications/${row.id}`}
           className="font-medium text-forest-800 hover:underline"
+          onClick={(e) => e.stopPropagation()}
         >
           {row.applicationNumber}
         </Link>
@@ -65,7 +79,7 @@ export function AdminApplicationsPage() {
     {
       key: 'phone',
       header: 'Phone',
-      render: (row) => row.phone ?? '—',
+      render: (row) => row.phoneNumber ?? row.phone ?? '—',
     },
     {
       key: 'district',
@@ -75,6 +89,7 @@ export function AdminApplicationsPage() {
     {
       key: 'taluka',
       header: 'Taluka',
+      hideOnMobile: true,
       render: (row) => row.taluka ?? '—',
     },
     {
@@ -97,19 +112,8 @@ export function AdminApplicationsPage() {
     {
       key: 'createdAt',
       header: 'Date',
+      hideOnMobile: true,
       render: (row) => formatDateTime(row.submittedAt ?? row.createdAt),
-    },
-    {
-      key: 'actions',
-      header: '',
-      render: (row) => (
-        <Link
-          to={`/admin/applications/${row.id}`}
-          className="text-xs font-semibold text-forest-700 hover:underline"
-        >
-          Open
-        </Link>
-      ),
     },
   ]
 
@@ -121,7 +125,7 @@ export function AdminApplicationsPage() {
       />
 
       <AdminCard>
-        <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-3">
           <input
             value={search}
             onChange={(e) => {
@@ -129,15 +133,19 @@ export function AdminApplicationsPage() {
               setSearch(e.target.value)
             }}
             placeholder="Search name, phone, ID…"
-            className="rounded-xl border border-mist px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-forest-500/30 xl:col-span-2"
+            className={filterControlClass}
+            aria-label="Search applications"
           />
+        </div>
+
+        <FilterPanel activeCount={activeFilters}>
           <select
             value={status}
             onChange={(e) => {
               setPage(1)
               setStatus(e.target.value)
             }}
-            className="rounded-xl border border-mist px-3 py-2 text-sm"
+            className={filterControlClass}
             aria-label="Filter by status"
           >
             <option value="">All statuses</option>
@@ -153,7 +161,7 @@ export function AdminApplicationsPage() {
               setPage(1)
               setPaymentStatus(e.target.value)
             }}
-            className="rounded-xl border border-mist px-3 py-2 text-sm"
+            className={filterControlClass}
             aria-label="Filter by payment status"
           >
             <option value="">All payments</option>
@@ -170,7 +178,7 @@ export function AdminApplicationsPage() {
               setDistrict(e.target.value)
             }}
             placeholder="District"
-            className="rounded-xl border border-mist px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-forest-500/30"
+            className={filterControlClass}
           />
           <input
             value={taluka}
@@ -179,7 +187,7 @@ export function AdminApplicationsPage() {
               setTaluka(e.target.value)
             }}
             placeholder="Taluka"
-            className="rounded-xl border border-mist px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-forest-500/30"
+            className={filterControlClass}
           />
           <input
             type="date"
@@ -188,7 +196,7 @@ export function AdminApplicationsPage() {
               setPage(1)
               setFromDate(e.target.value)
             }}
-            className="rounded-xl border border-mist px-3 py-2 text-sm"
+            className={filterControlClass}
             aria-label="From date"
           />
           <input
@@ -198,17 +206,19 @@ export function AdminApplicationsPage() {
               setPage(1)
               setToDate(e.target.value)
             }}
-            className="rounded-xl border border-mist px-3 py-2 text-sm"
+            className={filterControlClass}
             aria-label="To date"
           />
-        </div>
+        </FilterPanel>
 
         <DataTable
           columns={columns}
           rows={data?.items ?? []}
           loading={isLoading || (isFetching && !data)}
           rowKey={(row) => row.id}
+          mobileTitleKey="applicationNumber"
           emptyTitle="No applications match your filters"
+          onRowClick={(row) => navigate(`/admin/applications/${row.id}`)}
         />
         <Pagination
           page={data?.page ?? page}

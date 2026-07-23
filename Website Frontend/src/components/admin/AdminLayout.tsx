@@ -25,7 +25,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8F6] text-ink">
+    <div className="min-h-dvh overflow-x-hidden bg-[#F7F8F6] text-ink">
       <AdminSidebar
         open={mobileOpen}
         collapsed={collapsed}
@@ -35,7 +35,7 @@ export function AdminLayout() {
 
       <div
         className={cn(
-          'flex min-h-screen flex-col transition-[padding] duration-200',
+          'flex min-h-dvh max-w-[100vw] flex-col transition-[padding] duration-200',
           collapsed ? 'lg:pl-[72px]' : 'lg:pl-64',
         )}
       >
@@ -48,8 +48,8 @@ export function AdminLayout() {
           onSearchChange={setSearch}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <Outlet context={{ search }} />
+        <main className="mx-auto w-full max-w-[1400px] flex-1 overflow-x-hidden p-3 sm:p-5 lg:p-8">
+          <Outlet context={{ search, onLogout: handleLogout }} />
         </main>
       </div>
     </div>

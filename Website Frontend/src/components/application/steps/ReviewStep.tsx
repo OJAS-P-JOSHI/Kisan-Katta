@@ -56,7 +56,12 @@ export function ReviewStep({ editable = true }: ReviewStepProps) {
             value: v.gender ? genderLabel(v.gender) : undefined,
             missing: !v.gender,
           },
-          { label: t('app.fields.phone'), value: text(v.phone) },
+          {
+            label: t('app.fields.phone'),
+            value: text(
+              v.phone || application.phoneNumber || application.phone || '',
+            ),
+          },
           { label: t('app.fields.email'), value: text(v.email) },
         ]}
       />

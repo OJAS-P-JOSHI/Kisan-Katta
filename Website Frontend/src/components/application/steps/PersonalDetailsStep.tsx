@@ -7,17 +7,22 @@ import {
   TextField,
 } from '@/components/application/FormFields'
 import { useWizard } from '@/components/application/wizard-context'
-import { GENDERS } from '@/types/application.types'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import { GENDERS } from '@/types/application.types'
 
 export function PersonalDetailsStep() {
   const { application, applyUpload } = useWizard()
   const { t } = useTranslation()
+  const { user } = useAuth()
 
   const genderOptions = GENDERS.map((value) => ({
     value,
     label: t(`app.gender.${value}`),
   }))
+
+  const verifiedPhone =
+    application.phoneNumber ?? application.phone ?? user?.mobile ?? ''
 
   return (
     <StepCard
@@ -50,15 +55,25 @@ export function PersonalDetailsStep() {
         />
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField
-          name="phone"
-          label={t('app.fields.phone')}
-          type="tel"
-          inputMode="tel"
-          placeholder={t('app.fields.phonePh')}
-          autoComplete="tel"
-          hint={t('app.fields.optional')}
-        />
+        <div className="space-y-1.5">
+          <label
+            htmlFor="verified-phone"
+            className="block text-sm font-medium text-ink"
+          >
+            {t('app.fields.phone')}
+          </label>
+          <input
+            id="verified-phone"
+            type="tel"
+            readOnly
+            value={verifiedPhone}
+            className="flex h-12 w-full cursor-not-allowed rounded-xl border border-border bg-mist/40 px-4 text-base text-foreground"
+            aria-readonly="true"
+          />
+          <p className="text-xs text-muted-foreground">
+            Verified login mobile — cannot be changed here.
+          </p>
+        </div>
         <TextField
           name="email"
           label={t('app.fields.email')}

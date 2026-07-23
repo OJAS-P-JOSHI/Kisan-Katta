@@ -67,7 +67,7 @@ export function AdminAnalyticsPage() {
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">
           <AdminCard title="Monthly growth">
-            <div className="h-72">
+          <div className="h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data?.monthlyGrowth ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E0DBD0" />
@@ -87,7 +87,7 @@ export function AdminAnalyticsPage() {
           </AdminCard>
 
           <AdminCard title="Monthly revenue">
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.monthlyGrowth ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E0DBD0" />
@@ -101,7 +101,7 @@ export function AdminAnalyticsPage() {
           </AdminCard>
 
           <AdminCard title="District registrations">
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data?.districtDistribution ?? []}
@@ -124,7 +124,7 @@ export function AdminAnalyticsPage() {
           </AdminCard>
 
           <AdminCard title="Status breakdown">
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

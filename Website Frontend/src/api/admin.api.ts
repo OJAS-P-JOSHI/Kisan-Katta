@@ -6,9 +6,12 @@ import type {
   AdminProfile,
   AnalyticsSummary,
   DashboardSummary,
+  FarmerDetail,
   PaginatedApplications,
+  PaginatedFarmers,
   PaginatedPayments,
   PaginatedVolunteers,
+  SystemInfo,
 } from '@/types/admin.types'
 
 const BASE = '/api/v1/admin'
@@ -77,6 +80,30 @@ export const listAdminPayments = async (
   const { data } = await api.get<ApiSuccessResponse<PaginatedPayments>>(
     `${BASE}/payments`,
     { params: toParams(query) },
+  )
+  return data.data
+}
+
+export const listAdminFarmers = async (
+  query?: AdminListQuery,
+): Promise<PaginatedFarmers> => {
+  const { data } = await api.get<ApiSuccessResponse<PaginatedFarmers>>(
+    `${BASE}/farmers`,
+    { params: toParams(query) },
+  )
+  return data.data
+}
+
+export const getAdminFarmer = async (id: string): Promise<FarmerDetail> => {
+  const { data } = await api.get<ApiSuccessResponse<FarmerDetail>>(
+    `${BASE}/farmers/${id}`,
+  )
+  return data.data
+}
+
+export const getAdminSystemInfo = async (): Promise<SystemInfo> => {
+  const { data } = await api.get<ApiSuccessResponse<SystemInfo>>(
+    `${BASE}/system`,
   )
   return data.data
 }

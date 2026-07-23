@@ -25,10 +25,6 @@ const dobRefinement = (value: string): boolean => {
  */
 const fieldValidators = {
   fullName: z.string().trim().min(1, 'Full name is required.'),
-  phone: z
-    .string()
-    .trim()
-    .regex(INDIAN_PHONE_REGEX, 'Enter a valid Indian mobile number.'),
   email: z.string().trim().email('Enter a valid email address.'),
   gender: z
     .string()
