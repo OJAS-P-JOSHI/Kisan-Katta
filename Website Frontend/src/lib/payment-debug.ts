@@ -1,31 +1,15 @@
-import axios from 'axios'
-
-const PREFIX = '[PAYMENT_DEBUG]'
-
-/** Temporary payment-flow debug logger. Remove after QA. */
+/** Temporary payment-flow debug logger — silent in production builds. */
 export const paymentDebug = (message: string, data?: unknown): void => {
+  if (!import.meta.env.DEV) return
   if (data !== undefined) {
-    console.log(`${PREFIX} ${message}`, data)
+    console.log(`[PAYMENT_DEBUG] ${message}`, data)
   } else {
-    console.log(`${PREFIX} ${message}`)
+    console.log(`[PAYMENT_DEBUG] ${message}`)
   }
 }
 
-/** Temporary payment-flow error logger. Remove after QA. */
+/** Temporary payment-flow error logger — silent in production builds. */
 export const paymentDebugError = (message: string, error: unknown): void => {
-  const payload: Record<string, unknown> = {}
-
-  if (error instanceof Error) {
-    payload.message = error.message
-    payload.stack = error.stack
-  } else {
-    payload.message = String(error)
-  }
-
-  if (axios.isAxiosError(error)) {
-    payload.axiosStatus = error.response?.status
-    payload.axiosData = error.response?.data
-  }
-
-  console.error(`${PREFIX} ${message}`, payload, error)
+  if (!import.meta.env.DEV) return
+  console.error(`[PAYMENT_DEBUG] ${message}`, error)
 }

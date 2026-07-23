@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import type { FAQItem } from '@/data/faq'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 
 interface FAQAccordionProps {
@@ -14,6 +15,8 @@ interface FAQAccordionProps {
 }
 
 export function FAQAccordion({ items, className, defaultOpen }: FAQAccordionProps) {
+  const { t } = useTranslation()
+
   return (
     <Accordion
       type="single"
@@ -23,8 +26,8 @@ export function FAQAccordion({ items, className, defaultOpen }: FAQAccordionProp
     >
       {items.map((item) => (
         <AccordionItem key={item.id} value={item.id}>
-          <AccordionTrigger>{item.question}</AccordionTrigger>
-          <AccordionContent>{item.answer}</AccordionContent>
+          <AccordionTrigger>{t(item.questionKey)}</AccordionTrigger>
+          <AccordionContent>{t(item.answerKey)}</AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>

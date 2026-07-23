@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence } from 'framer-motion'
 import { AlertCircle, ArrowLeft, ArrowRight, CreditCard, Loader2 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { WizardLayout } from '@/components/application/WizardLayout'
@@ -15,8 +15,10 @@ import { ReviewStep } from '@/components/application/steps/ReviewStep'
 import { Button } from '@/components/ui/button'
 import { useApplicationPayment } from '@/hooks/useApplicationPayment'
 import { useAutoSave } from '@/hooks/useAutoSave'
+import { useTranslation } from '@/i18n/LanguageProvider'
+import type { TranslationKeys } from '@/i18n/translations'
 import {
-  applicationFormSchema,
+  createApplicationFormSchema,
   getFormDefaults,
   STEP_FIELDS,
   type ApplicationFormValues,
@@ -24,12 +26,27 @@ import {
 import { paymentDebug } from '@/lib/payment-debug'
 import type { ApplicationDTO, UploadDocumentResponse } from '@/types/application.types'
 
-const STEPS: StepMeta[] = [
-  { title: 'Personal Details', shortTitle: 'Personal' },
-  { title: 'Address', shortTitle: 'Address' },
-  { title: 'Aadhaar', shortTitle: 'Aadhaar' },
-  { title: 'Bank Details', shortTitle: 'Bank' },
-  { title: 'Review', shortTitle: 'Review' },
+const STEP_KEYS: { titleKey: TranslationKeys; shortKey: TranslationKeys }[] = [
+  {
+    titleKey: 'app.wizard.steps.personal.title',
+    shortKey: 'app.wizard.steps.personal.short',
+  },
+  {
+    titleKey: 'app.wizard.steps.address.title',
+    shortKey: 'app.wizard.steps.address.short',
+  },
+  {
+    titleKey: 'app.wizard.steps.aadhaar.title',
+    shortKey: 'app.wizard.steps.aadhaar.short',
+  },
+  {
+    titleKey: 'app.wizard.steps.bank.title',
+    shortKey: 'app.wizard.steps.bank.short',
+  },
+  {
+    titleKey: 'app.wizard.steps.review.title',
+    shortKey: 'app.wizard.steps.review.short',
+  },
 ]
 
 const AADHAAR_STEP = 2
@@ -68,16 +85,35 @@ export function ApplicationWizard({
   initialApplication,
   fallbackPhone,
 }: ApplicationWizardProps) {
+  const { t, locale } = useTranslation()
   const [application, setApplication] = useState<ApplicationDTO>(initialApplication)
   const [currentStep, setCurrentStep] = useState(0)
   const [advancing, setAdvancing] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  const steps: StepMeta[] = useMemo(
+    () =>
+      STEP_KEYS.map((step) => ({
+        title: t(step.titleKey),
+        shortTitle: t(step.shortKey),
+      })),
+    [t],
+  )
+
+  const schema = useMemo(() => createApplicationFormSchema(t), [t])
+  const schemaRef = useRef(schema)
+  schemaRef.current = schema
+
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(applicationFormSchema),
+    resolver: (values, context, options) =>
+      zodResolver(schemaRef.current)(values, context, options),
     defaultValues: getFormDefaults(initialApplication, fallbackPhone),
     mode: 'onTouched',
   })
+
+  useEffect(() => {
+    form.clearErrors()
+  }, [locale, form])
 
   const payment = useApplicationPayment({
     name: form.getValues('fullName') || undefined,
@@ -218,7 +254,7 @@ export function ApplicationWizard({
     <FormProvider {...form}>
       <WizardContext.Provider value={wizardValue}>
         <WizardLayout
-          steps={STEPS}
+          steps={steps}
           currentStep={currentStep}
           completedSteps={completedSteps}
           saveStatus={saveStatus}
@@ -245,9 +281,9 @@ export function ApplicationWizard({
               <div>
                 {payment.phase === 'failed' && !formError ? (
                   <>
-                    <p>Payment not completed.</p>
+                    <p>{t('app.status.paymentNotCompletedTitle')}</p>
                     <p className="mt-1 font-normal text-red-500">
-                      Your application has been saved. You can retry payment anytime.
+                      {t('app.status.paymentNotCompletedBody')}
                     </p>
                     {payment.error && (
                       <p className="mt-1 font-normal text-red-500">{payment.error}</p>
@@ -280,7 +316,7 @@ export function ApplicationWizard({
               }
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('app.wizard.back')}
             </Button>
 
             {currentStep === REVIEW_STEP ? (
@@ -289,12 +325,12 @@ export function ApplicationWizard({
                   {locked ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Please wait…
+                      {t('common.pleaseWait')}
                     </>
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4" />
-                      Retry Payment
+                      {t('app.wizard.retryPayment')}
                     </>
                   )}
                 </Button>
@@ -303,19 +339,19 @@ export function ApplicationWizard({
                   {locked ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Please wait…
+                      {t('common.pleaseWait')}
                     </>
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4" />
-                      Pay ₹500 & Submit
+                      {t('app.wizard.payAndSubmit')}
                     </>
                   )}
                 </Button>
               )
             ) : (
               <Button type="button" onClick={() => void handleNext()} disabled={advancing || locked}>
-                {advancing ? 'Saving…' : 'Save & Next'}
+                {advancing ? t('app.autosave.saving') : t('app.wizard.next')}
                 {!advancing && <ArrowRight className="h-4 w-4" />}
               </Button>
             )}

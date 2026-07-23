@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 
-import { defaultTransition, fadeUp, staggerContainer } from '@/lib/motion'
 import type { TimelineStep } from '@/data/gram-sahakari'
+import { useTranslation } from '@/i18n/LanguageProvider'
+import { defaultTransition, fadeUp, staggerContainer } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 interface TimelineProps {
@@ -10,6 +11,8 @@ interface TimelineProps {
 }
 
 export function Timeline({ steps, className }: TimelineProps) {
+  const { t } = useTranslation()
+
   return (
     <motion.div
       initial="hidden"
@@ -35,9 +38,9 @@ export function Timeline({ steps, className }: TimelineProps) {
               {index < steps.length - 1 && (
                 <div className="absolute top-6 left-[calc(50%+24px)] h-0.5 w-[calc(100%-48px)] bg-forest-100" />
               )}
-              <h4 className="mt-4 text-sm font-semibold text-ink">{step.title}</h4>
+              <h4 className="mt-4 text-sm font-semibold text-ink">{t(step.titleKey)}</h4>
               <p className="mt-2 px-1 text-xs leading-relaxed text-muted-foreground">
-                {step.description}
+                {t(step.descriptionKey)}
               </p>
             </motion.div>
           ))}
@@ -58,9 +61,9 @@ export function Timeline({ steps, className }: TimelineProps) {
               <div className="absolute -left-10 flex h-10 w-10 items-center justify-center rounded-full bg-forest-700 text-sm font-bold text-white shadow-soft">
                 {index + 1}
               </div>
-              <h4 className="text-base font-semibold text-ink">{step.title}</h4>
+              <h4 className="text-base font-semibold text-ink">{t(step.titleKey)}</h4>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {step.description}
+                {t(step.descriptionKey)}
               </p>
             </motion.div>
           ))}

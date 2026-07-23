@@ -7,43 +7,66 @@ import {
   TextField,
 } from '@/components/application/FormFields'
 import { useWizard } from '@/components/application/wizard-context'
-import { GENDER_OPTIONS } from '@/data/application-options'
+import { GENDERS } from '@/types/application.types'
+import { useTranslation } from '@/i18n/LanguageProvider'
 
 export function PersonalDetailsStep() {
   const { application, applyUpload } = useWizard()
+  const { t } = useTranslation()
+
+  const genderOptions = GENDERS.map((value) => ({
+    value,
+    label: t(`app.gender.${value}`),
+  }))
 
   return (
-    <StepCard icon={User} title="Personal Details" description="Tell us about yourself.">
+    <StepCard
+      icon={User}
+      title={t('app.wizard.steps.personal.title')}
+      description={t('app.wizard.steps.personal.desc')}
+    >
       <UploadCard
-        label="Profile Photo"
-        description="Optional. A clear passport-style photo."
+        label={t('app.fields.photo')}
+        description={t('app.fields.photoDesc')}
         documentType="photo"
         document={application.photo}
         onUploaded={applyUpload}
       />
-      <TextField name="fullName" label="Full Name" placeholder="As per Aadhaar" required autoComplete="name" />
+      <TextField
+        name="fullName"
+        label={t('app.fields.fullName')}
+        placeholder={t('app.fields.fullNamePh')}
+        required
+        autoComplete="name"
+      />
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField name="dob" label="Date of Birth" type="date" required />
-        <SelectField name="gender" label="Gender" options={GENDER_OPTIONS} required />
+        <TextField name="dob" label={t('app.fields.dob')} type="date" required />
+        <SelectField
+          name="gender"
+          label={t('app.fields.gender')}
+          options={genderOptions}
+          placeholder={t('app.fields.select')}
+          required
+        />
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           name="phone"
-          label="Phone Number"
+          label={t('app.fields.phone')}
           type="tel"
           inputMode="tel"
-          placeholder="10-digit mobile"
+          placeholder={t('app.fields.phonePh')}
           autoComplete="tel"
-          hint="Optional"
+          hint={t('app.fields.optional')}
         />
         <TextField
           name="email"
-          label="Email"
+          label={t('app.fields.email')}
           type="email"
           inputMode="email"
-          placeholder="you@example.com"
+          placeholder={t('app.fields.emailPh')}
           autoComplete="email"
-          hint="Optional"
+          hint={t('app.fields.optional')}
         />
       </div>
     </StepCard>

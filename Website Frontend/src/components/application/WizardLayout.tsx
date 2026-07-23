@@ -4,6 +4,7 @@ import { BrandLogo } from '@/components/common/BrandLogo'
 import { AutoSaveIndicator } from '@/components/application/AutoSaveIndicator'
 import { Stepper, type StepMeta } from '@/components/application/Stepper'
 import type { SaveStatus } from '@/hooks/useAutoSave'
+import { useTranslation } from '@/i18n/LanguageProvider'
 
 interface WizardLayoutProps {
   steps: StepMeta[]
@@ -23,6 +24,8 @@ export function WizardLayout({
   onStepClick,
   children,
 }: WizardLayoutProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="relative min-h-[100dvh] bg-background">
       <div className="organic-blob absolute inset-0" aria-hidden />
@@ -32,8 +35,8 @@ export function WizardLayout({
           <div className="flex items-center gap-3">
             <BrandLogo size="sm" />
             <div className="leading-tight">
-              <p className="text-sm font-bold text-ink">Gram Sahakari Application</p>
-              <p className="font-marathi text-xs text-forest-700">ग्राम सहकारी अर्ज</p>
+              <p className="text-sm font-bold text-ink">{t('app.profile.title')}</p>
+              <p className="font-marathi text-xs text-forest-700">{t('app.profile.marathi')}</p>
             </div>
           </div>
           <AutoSaveIndicator status={saveStatus} />

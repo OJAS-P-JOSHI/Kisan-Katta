@@ -47,10 +47,12 @@ export const getMe = async (): Promise<AuthUser> => {
 }
 
 /** POST /api/v1/auth/logout — stateless ack on the backend; safe to ignore errors. */
-export const logoutRequest = async (): Promise<void> => {
+export const logoutRequest = async (): Promise<boolean> => {
   try {
     await api.post(ENDPOINTS.logout)
+    return true
   } catch {
     // JWT is stateless; a failed logout call must not block local sign-out.
+    return false
   }
 }

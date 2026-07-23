@@ -2,6 +2,7 @@ import {
   APPLICATION_STATUS_CONFIG,
   PAYMENT_STATUS_CONFIG,
 } from '@/lib/status-config'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 import type { ApplicationStatus, PaymentStatus } from '@/types/application.types'
 
@@ -11,6 +12,7 @@ type StatusBadgeProps =
 
 /** Colored pill for application / payment status. */
 export function StatusBadge(props: StatusBadgeProps) {
+  const { t } = useTranslation()
   const config =
     props.kind === 'application'
       ? APPLICATION_STATUS_CONFIG[props.status]
@@ -25,7 +27,7 @@ export function StatusBadge(props: StatusBadgeProps) {
       )}
     >
       <span className={cn('h-2 w-2 rounded-full', config.dot)} />
-      {config.label}
+      {t(config.labelKey)}
     </span>
   )
 }

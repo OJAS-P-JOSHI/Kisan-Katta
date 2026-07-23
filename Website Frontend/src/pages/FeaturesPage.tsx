@@ -1,16 +1,21 @@
 import { FeatureCard } from '@/components/cards/FeatureCard'
 import { PageHero } from '@/components/common/SectionTitle'
+import { Seo } from '@/components/common/Seo'
 import { CTASection } from '@/components/CTASection'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { features } from '@/data/features'
+import { useTranslation } from '@/i18n/LanguageProvider'
 
 export function FeaturesPage() {
+  const { t, locale } = useTranslation()
+
   return (
     <PageLayout>
+      <Seo title={t('seo.features.title')} description={t('seo.features.description')} path="/features" />
       <PageHero
-        title="Features"
-        marathiTitle="वैशिष्ट्ये"
-        subtitle="Everything you need to farm smarter — from weather to marketplace, all in one app."
+        title={t('featuresPage.heroTitle')}
+        marathiTitle={t('featuresPage.heroMarathi')}
+        subtitle={t('featuresPage.heroSubtitle')}
       />
 
       <section className="section-padding bg-cream">
@@ -19,11 +24,12 @@ export function FeaturesPage() {
             {features.map((feature, index) => (
               <FeatureCard
                 key={feature.id}
-                title={feature.title}
-                titleMarathi={feature.titleMarathi}
-                description={feature.description}
+                title={locale === 'mr' ? t(feature.titleMrKey) : t(feature.titleKey)}
+                titleMarathi={t(feature.titleMrKey)}
+                description={t(feature.descriptionKey)}
                 icon={feature.icon}
                 index={index}
+                locale={locale}
               />
             ))}
           </div>
@@ -31,11 +37,11 @@ export function FeaturesPage() {
       </section>
 
       <CTASection
-        title="Experience It Yourself"
-        description="Download Kisan Katta and see how technology can transform your farming day."
-        primaryLabel="Download App"
-        primaryHref="#download"
-        secondaryLabel="Learn About Gram Sahakari"
+        title={t('featuresPage.ctaTitle')}
+        description={t('featuresPage.ctaDescription')}
+        primaryLabel={t('featuresPage.ctaDownload')}
+        primaryHref="/#download"
+        secondaryLabel={t('featuresPage.ctaGram')}
         secondaryHref="/become-gram-sahakari"
       />
     </PageLayout>

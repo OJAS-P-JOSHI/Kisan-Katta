@@ -32,7 +32,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
         <>
           <motion.button
             type="button"
-            aria-label="Close menu"
+            aria-label={t('common.closeMenu')}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -44,7 +44,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
           <motion.aside
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation menu"
+            aria-label={t('common.navMenu')}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -56,7 +56,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close menu"
+                aria-label={t('common.closeMenu')}
                 className="touch-target flex items-center justify-center rounded-xl text-ink hover:bg-forest-50"
               >
                 <X className="h-6 w-6" />
@@ -128,11 +128,13 @@ interface DrawerTriggerProps {
 }
 
 export function DrawerTrigger({ onClick, className, light }: DrawerTriggerProps) {
+  const { t } = useTranslation()
+
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Open menu"
+      aria-label={t('common.openMenu')}
       className={cn(
         'touch-target flex items-center justify-center rounded-2xl transition-colors',
         light

@@ -251,7 +251,7 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="glass" className="w-full">
-              <a href="#download">
+              <a href="/#download">
                 <Download className="h-5 w-5" />
                 {t('hero.cta.download')}
               </a>
@@ -328,7 +328,7 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="glass">
-              <a href="#download">
+              <a href="/#download">
                 <Download className="h-5 w-5" />
                 {t('hero.cta.download')}
               </a>

@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 
 import { DocumentPreview } from '@/components/application/DocumentPreview'
 import { useDocumentUpload } from '@/hooks/useDocumentUpload'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 import type {
   CloudinaryDocument,
@@ -37,6 +38,7 @@ export function UploadCard({
   required,
   onUploaded,
 }: UploadCardProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const { status, progress, error, upload } = useDocumentUpload()
   const [lastFile, setLastFile] = useState<File | null>(null)
@@ -83,7 +85,7 @@ export function UploadCard({
             onClick={openPicker}
             className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-forest-700 transition-colors hover:bg-forest-50"
           >
-            Replace
+            {t('app.upload.replace')}
           </button>
         )}
       </div>
@@ -97,7 +99,9 @@ export function UploadCard({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">Uploading… {progress}%</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {t('app.upload.uploading')} {progress}%
+          </p>
         </div>
       ) : hasDoc ? (
         <DocumentPreview url={document!.url} alt={label} showBadge={!isError} />
@@ -111,7 +115,7 @@ export function UploadCard({
           )}
         >
           <Upload className="h-6 w-6 text-forest-700" />
-          <span className="text-sm font-medium text-slate">Tap to upload</span>
+          <span className="text-sm font-medium text-slate">{t('app.upload.tap')}</span>
           <span className="text-xs text-muted-foreground">JPEG, PNG or WebP · max 5 MB</span>
         </button>
       )}
@@ -129,7 +133,7 @@ export function UploadCard({
             className="flex shrink-0 items-center gap-1 text-xs font-semibold text-red-700 hover:underline"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            Retry
+            {t('app.upload.retry')}
           </button>
         </div>
       )}

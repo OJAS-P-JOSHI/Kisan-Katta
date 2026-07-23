@@ -2,9 +2,12 @@ import { motion } from 'framer-motion'
 
 import { AnimatedCounter } from '@/components/common/AnimatedCounter'
 import { stats } from '@/data/features'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { fadeUp, staggerContainer, defaultTransition } from '@/lib/motion'
 
 export function StatsSection() {
+  const { t } = useTranslation()
+
   return (
     <section className="section-padding bg-cream">
       <div className="container-wide">
@@ -17,7 +20,7 @@ export function StatsSection() {
         >
           {stats.map((stat, index) => (
             <motion.div
-              key={stat.label}
+              key={stat.labelKey}
               variants={fadeUp}
               transition={{ ...defaultTransition, delay: index * 0.1 }}
               className="rounded-2xl border border-border/60 bg-white p-4 text-center shadow-soft sm:p-6 md:p-8"
@@ -26,7 +29,7 @@ export function StatsSection() {
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </p>
               <p className="mt-1.5 text-xs font-medium leading-snug text-muted-foreground sm:mt-2 sm:text-sm">
-                {stat.label}
+                {t(stat.labelKey)}
               </p>
             </motion.div>
           ))}

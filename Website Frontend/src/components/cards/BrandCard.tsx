@@ -18,7 +18,7 @@ export function BrandCard({
       <CardContent className="flex flex-col items-center p-6 text-center sm:p-8">
         <BrandLogo size="xl" showLink={false} />
         <h3 className="mt-4 text-lg font-bold text-ink">{title}</h3>
-        <p className="font-marathi mt-1 text-sm text-forest-700">किसान कatta</p>
+        <p className="font-marathi mt-1 text-sm text-forest-700">किसान कट्टा</p>
         {description && (
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         )}

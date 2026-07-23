@@ -14,7 +14,7 @@ import { LOCALE_STORAGE_KEY, type Locale } from '@/i18n/types'
 interface LanguageContextValue {
   locale: Locale
   setLocale: (locale: Locale) => void
-  t: (key: TranslationKeys) => string
+  t: (key: TranslationKeys, params?: Record<string, string | number>) => string
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
@@ -46,7 +46,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = locale === 'mr' ? 'mr' : 'en'
   }, [locale])
 
-  const t = useCallback((key: TranslationKeys) => translate(locale, key), [locale])
+  const t = useCallback(
+    (key: TranslationKeys, params?: Record<string, string | number>) =>
+      translate(locale, key, params),
+    [locale],
+  )
 
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t])
 

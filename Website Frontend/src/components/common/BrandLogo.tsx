@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { brandAssets } from '@/data/images'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 
 interface BrandLogoProps {
@@ -24,6 +25,8 @@ export function BrandLogo({
   showLink = true,
   priority = false,
 }: BrandLogoProps) {
+  const { t } = useTranslation()
+
   const image = (
     <OptimizedImage
       src={brandAssets.logo}
@@ -38,7 +41,11 @@ export function BrandLogo({
   if (!showLink) return image
 
   return (
-    <Link to="/" className="inline-flex shrink-0 touch-target items-center justify-center" aria-label="Kisan Katta Home">
+    <Link
+      to="/"
+      className="inline-flex shrink-0 touch-target items-center justify-center"
+      aria-label={t('common.brandHome')}
+    >
       {image}
     </Link>
   )

@@ -1,41 +1,34 @@
 import { motion } from 'framer-motion'
-import { Eye, Heart, Target } from 'lucide-react'
+import { Eye, Heart, Target, type LucideIcon } from 'lucide-react'
 
 import { BrandCard } from '@/components/cards/BrandCard'
 import { InteractiveCard } from '@/components/common/InteractiveCard'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import type { TranslationKeys } from '@/i18n/translations'
 import { defaultTransition, fadeUp, staggerContainer } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
-const aboutCards = [
+const aboutCards: {
+  icon: LucideIcon
+  titleKey: TranslationKeys
+  descriptionKey: TranslationKeys
+}[] = [
   {
     icon: Target,
-    titleEn: 'Our Mission',
-    titleMr: 'आमचे ध्येय',
-    descriptionEn:
-      'To empower every farmer in Maharashtra with accessible digital tools — weather, market data, and community — in their own language.',
-    descriptionMr:
-      'महाराष्ट्रातील प्रत्येक शेतकऱ्याला सुलभ डिजिटल साधने — हवामान, बाजार डेटा आणि समुदाय — त्यांच्या भाषेत उपलब्ध करून देणे.',
+    titleKey: 'about.mission.title',
+    descriptionKey: 'about.mission.description',
   },
   {
     icon: Eye,
-    titleEn: 'Our Vision',
-    titleMr: 'आमची दृष्टी',
-    descriptionEn:
-      'A digitally connected Maharashtra where every village farmer makes informed decisions and earns fair prices for their hard work.',
-    descriptionMr:
-      'डिजिटलरीत्या जोडलेले महाराष्ट्र जिथे प्रत्येक गावातील शेतकरी माहितीपूर्ण निर्णय घेतात आणि त्यांच्या मेहनतीचा योग्य मोबदला मिळवतात.',
+    titleKey: 'about.vision.title',
+    descriptionKey: 'about.vision.description',
   },
   {
     icon: Heart,
-    titleEn: 'Why We Exist',
-    titleMr: 'आम्ही का अस्तित्वात आहोत',
-    descriptionEn:
-      'Farmers deserve technology that respects their language, their land, and their livelihood. Kisan Katta was built for them, not for spreadsheets.',
-    descriptionMr:
-      'शेतकऱ्यांना अशी तंत्रज्ञानाची गरज आहे जी त्यांची भाषा, जमीन आणि उपजीविका यांचा आदर करते. किसान कatta त्यांच्यासाठी बांधले — स्प्रेडशीटसाठी नाही.',
+    titleKey: 'about.why.title',
+    descriptionKey: 'about.why.description',
   },
 ]
 
@@ -48,7 +41,7 @@ export function AboutSection() {
         <SectionTitle
           eyebrow={t('section.about.eyebrow')}
           title={t('section.about.title')}
-          marathiTitle="किसान कatta बद्दल"
+          marathiTitle={t('section.about.marathiTitle')}
           subtitle={t('section.about.subtitle')}
         />
 
@@ -65,7 +58,7 @@ export function AboutSection() {
         >
           {aboutCards.map((card, index) => (
             <motion.div
-              key={card.titleEn}
+              key={card.titleKey}
               variants={fadeUp}
               transition={{ ...defaultTransition, delay: index * 0.1 }}
             >
@@ -81,10 +74,10 @@ export function AboutSection() {
                         locale === 'mr' && 'font-marathi',
                       )}
                     >
-                      {locale === 'mr' ? card.titleMr : card.titleEn}
+                      {t(card.titleKey)}
                     </h3>
                     <p className="mt-3 leading-relaxed text-muted-foreground">
-                      {locale === 'mr' ? card.descriptionMr : card.descriptionEn}
+                      {t(card.descriptionKey)}
                     </p>
                   </CardContent>
                 </Card>

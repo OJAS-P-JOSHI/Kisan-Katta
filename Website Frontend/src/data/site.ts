@@ -15,8 +15,13 @@ export const desktopNavLinks = [
   { key: 'nav.contact' as const, href: '/contact' },
 ] as const
 
+/**
+ * Portal enters the application flow (`/application`).
+ * Unauthenticated users are redirected to login by ProtectedRoute.
+ * Non-DRAFT applications are redirected to status by ApplicationPage.
+ */
 export const drawerPortalLinks = [
-  { key: 'nav.portal' as const, href: '/login', highlight: true as const },
+  { key: 'nav.portal' as const, href: '/application', highlight: true as const },
   { key: 'nav.login' as const, href: '/login', highlight: false as const },
 ] as const
 
@@ -46,9 +51,10 @@ export const contactInfo = {
   ],
   address: 'Solanapur, Rahatgaon, Paithan, Chhatrapati Sambhajinagar, Maharashtra – 431107',
   hours: {
-    days: 'Monday – Saturday',
-    time: '9:00 AM – 6:00 PM',
+    daysKey: 'contact.hoursDaysValue' as const,
+    timeKey: 'contact.hoursTimeValue' as const,
   },
 } as const
 
-export const appDownloadHref = '#download'
+/** Scroll target on the landing page download section. */
+export const appDownloadHref = '/#download'

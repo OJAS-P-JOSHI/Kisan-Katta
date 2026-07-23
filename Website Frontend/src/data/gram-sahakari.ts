@@ -1,111 +1,110 @@
+import type { TranslationKeys } from '@/i18n/translations'
+
 export interface TimelineStep {
   id: string
-  title: string
-  description: string
+  titleKey: TranslationKeys
+  descriptionKey: TranslationKeys
 }
 
 export const gramSahakariTimelineSteps: TimelineStep[] = [
   {
     id: 'apply',
-    title: 'Apply',
-    description: 'Submit your application to become a Gram Sahakari volunteer.',
+    titleKey: 'become.timeline.apply.title',
+    descriptionKey: 'become.timeline.apply.description',
   },
   {
     id: 'verification',
-    title: 'Verification',
-    description: 'Our team verifies your details and local village connection.',
+    titleKey: 'become.timeline.verification.title',
+    descriptionKey: 'become.timeline.verification.description',
   },
   {
     id: 'profile',
-    title: 'Profile Completion',
-    description: 'Complete your profile with photo, district, and village details.',
+    titleKey: 'become.timeline.profile.title',
+    descriptionKey: 'become.timeline.profile.description',
   },
   {
     id: 'registration',
-    title: 'Registration',
-    description: 'Finalize your registration in the Gram Sahakari network.',
+    titleKey: 'become.timeline.registration.title',
+    descriptionKey: 'become.timeline.registration.description',
   },
   {
     id: 'approval',
-    title: 'Approval',
-    description: 'Receive official approval from the Kisan Katta team.',
+    titleKey: 'become.timeline.approval.title',
+    descriptionKey: 'become.timeline.approval.description',
   },
   {
     id: 'id-card',
-    title: 'Digital ID Card',
-    description: 'Get your verified digital Gram Sahakari ID card.',
+    titleKey: 'become.timeline.idCard.title',
+    descriptionKey: 'become.timeline.idCard.description',
   },
   {
     id: 'start',
-    title: 'Start Helping Farmers',
-    description: 'Begin onboarding and guiding farmers in your village.',
+    titleKey: 'become.timeline.start.title',
+    descriptionKey: 'become.timeline.start.description',
   },
 ]
 
 export const gramSahakariBenefits = [
   {
-    title: 'Digital ID Card',
-    description: 'Receive an official Gram Sahakari digital ID recognized across Maharashtra.',
+    titleKey: 'become.benefit.digitalId.title' as const,
+    descriptionKey: 'become.benefit.digitalId.description' as const,
   },
   {
-    title: 'Serve Your Village',
-    description: 'Make a lasting impact by helping fellow farmers adopt digital tools.',
+    titleKey: 'become.benefit.serve.title' as const,
+    descriptionKey: 'become.benefit.serve.description' as const,
   },
   {
-    title: 'Join a Network',
-    description: 'Connect with 2,000+ Gram Sahakari volunteers and share best practices.',
+    titleKey: 'become.benefit.network.title' as const,
+    descriptionKey: 'become.benefit.network.description' as const,
   },
   {
-    title: 'Community Recognition',
-    description: 'Get recognized for your contribution to digital farming in your district.',
+    titleKey: 'become.benefit.recognition.title' as const,
+    descriptionKey: 'become.benefit.recognition.description' as const,
   },
 ]
 
-export const gramSahakariResponsibilities = [
-  'Help farmers install the Kisan Katta app',
-  'Guide them through weather, prices, and marketplace features',
-  'Promote digital farming in your village',
-  'Connect your gram panchayat to the Kisan Katta network',
-  'Assist farmers with questions and onboarding',
+export const gramSahakariResponsibilities: { textKey: TranslationKeys }[] = [
+  { textKey: 'become.resp.install' },
+  { textKey: 'become.resp.guide' },
+  { textKey: 'become.resp.promote' },
+  { textKey: 'become.resp.connect' },
+  { textKey: 'become.resp.assist' },
 ]
 
 export const villageImpactStats = [
-  { label: 'Farmers per Village', value: '150+' },
-  { label: 'Villages Connected', value: '500+' },
-  { label: 'Districts Active', value: '36' },
+  { labelKey: 'become.impact.farmers' as const, value: '150+' },
+  { labelKey: 'become.impact.villages' as const, value: '500+' },
+  { labelKey: 'become.impact.districts' as const, value: '36' },
 ]
 
 export interface Testimonial {
   id: string
-  name: string
-  role: string
-  location: string
-  quote: string
+  nameKey: TranslationKeys
+  roleKey: TranslationKeys
+  locationKey: TranslationKeys
+  quoteKey: TranslationKeys
 }
 
 export const testimonials: Testimonial[] = [
   {
     id: '1',
-    name: 'Placeholder Farmer',
-    role: 'Soybean Farmer',
-    location: 'Nashik, Maharashtra',
-    quote:
-      'Kisan Katta helped me check mandi prices before selling my crop. I got a better rate because I knew what to expect.',
+    nameKey: 'testimonial.1.name',
+    roleKey: 'testimonial.1.role',
+    locationKey: 'testimonial.1.location',
+    quoteKey: 'testimonial.1.quote',
   },
   {
     id: '2',
-    name: 'Placeholder Volunteer',
-    role: 'Gram Sahakari',
-    location: 'Solapur, Maharashtra',
-    quote:
-      'As a Gram Sahakari, I have helped over 200 farmers in my village use the app. The Marathi interface makes it easy for everyone.',
+    nameKey: 'testimonial.2.name',
+    roleKey: 'testimonial.2.role',
+    locationKey: 'testimonial.2.location',
+    quoteKey: 'testimonial.2.quote',
   },
   {
     id: '3',
-    name: 'Placeholder Farmer',
-    role: 'Cotton Farmer',
-    location: 'Yavatmal, Maharashtra',
-    quote:
-      'Weather alerts saved my crop last season. I planted at the right time because I had accurate local forecasts.',
+    nameKey: 'testimonial.3.name',
+    roleKey: 'testimonial.3.role',
+    locationKey: 'testimonial.3.location',
+    quoteKey: 'testimonial.3.quote',
   },
 ]

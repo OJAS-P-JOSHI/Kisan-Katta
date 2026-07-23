@@ -6,13 +6,15 @@ import { FullScreenLoader } from '@/components/FullScreenLoader'
 import { Button } from '@/components/ui/button'
 import { useApplicationDraft } from '@/hooks/useApplicationDraft'
 import { useAuth } from '@/hooks/useAuth'
+import { useTranslation } from '@/i18n/LanguageProvider'
 
 export function ApplicationPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const { application, loading, error } = useApplicationDraft()
 
   if (loading) {
-    return <FullScreenLoader message="Loading your application…" />
+    return <FullScreenLoader message={t('app.loading')} />
   }
 
   if (error || !application) {
@@ -22,12 +24,12 @@ export function ApplicationPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
             <AlertCircle className="h-7 w-7 text-red-500" />
           </div>
-          <h1 className="text-xl font-bold text-ink">Something went wrong</h1>
+          <h1 className="text-xl font-bold text-ink">{t('app.loadErrorTitle')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {error ?? 'We could not load your application.'}
+            {error ?? t('app.loadErrorBody')}
           </p>
           <Button className="mt-6" onClick={() => window.location.reload()}>
-            Try Again
+            {t('app.tryAgain')}
           </Button>
         </div>
       </div>

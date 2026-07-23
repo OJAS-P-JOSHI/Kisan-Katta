@@ -8,95 +8,94 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
+import type { TranslationKeys } from '@/i18n/translations'
+
 export interface Feature {
   id: string
-  title: string
-  titleMarathi?: string
-  description: string
+  titleKey: TranslationKeys
+  titleMrKey: TranslationKeys
+  descriptionKey: TranslationKeys
   icon: LucideIcon
 }
 
 export const features: Feature[] = [
   {
     id: 'weather',
-    title: 'Weather Updates',
-    titleMarathi: 'हवामान अद्यतने',
-    description:
-      'Accurate local weather forecasts and alerts tailored for Maharashtra’s farming seasons and crop cycles.',
+    titleKey: 'feature.weather.title',
+    titleMrKey: 'feature.weather.titleMr',
+    descriptionKey: 'feature.weather.description',
     icon: CloudSun,
   },
   {
     id: 'gov-prices',
-    title: 'Government Market Prices',
-    titleMarathi: 'सरकारी बाजार भाव',
-    description:
-      'Live mandi rates sourced from official government data — transparent, reliable, and updated daily.',
+    titleKey: 'feature.govPrices.title',
+    titleMrKey: 'feature.govPrices.titleMr',
+    descriptionKey: 'feature.govPrices.description',
     icon: TrendingUp,
   },
   {
     id: 'farmer-price',
-    title: 'Farmer Expected Price',
-    titleMarathi: 'शेतकऱ्यांचा अपेक्षित भाव',
-    description:
-      'Community-driven price insights from farmers in your district — know what others expect before you sell.',
+    titleKey: 'feature.farmerPrice.title',
+    titleMrKey: 'feature.farmerPrice.titleMr',
+    descriptionKey: 'feature.farmerPrice.description',
     icon: Handshake,
   },
   {
     id: 'marketplace',
-    title: 'Marketplace',
-    titleMarathi: 'बाजारपेठ',
-    description:
-      'Buy and sell produce, seeds, and farm supplies directly within your trusted farming community.',
+    titleKey: 'feature.marketplace.title',
+    titleMrKey: 'feature.marketplace.titleMr',
+    descriptionKey: 'feature.marketplace.description',
     icon: ShoppingBasket,
   },
   {
     id: 'marathi',
-    title: 'Marathi Language',
-    titleMarathi: 'मराठी भाषा',
-    description:
-      'Built Marathi-first so every farmer in Maharashtra can use the app comfortably in their own language.',
+    titleKey: 'feature.marathi.title',
+    titleMrKey: 'feature.marathi.titleMr',
+    descriptionKey: 'feature.marathi.description',
     icon: Languages,
   },
   {
     id: 'community',
-    title: 'Community',
-    titleMarathi: 'समुदाय',
-    description:
-      'Connect with fellow farmers, share knowledge, and stay informed about local agricultural developments.',
+    titleKey: 'feature.community.title',
+    titleMrKey: 'feature.community.titleMr',
+    descriptionKey: 'feature.community.description',
     icon: Globe,
   },
 ]
 
-export const whyChooseItems = [
+export const whyChooseItems: {
+  titleKey: TranslationKeys
+  descriptionKey: TranslationKeys
+}[] = [
   {
-    title: 'Government Data',
-    description: 'Official mandi prices you can trust, not guesswork.',
+    titleKey: 'why.govData.title',
+    descriptionKey: 'why.govData.description',
   },
   {
-    title: 'Easy to Use',
-    description: 'Simple, intuitive design made for farmers of all ages.',
+    titleKey: 'why.easy.title',
+    descriptionKey: 'why.easy.description',
   },
   {
-    title: 'Marathi First',
-    description: 'Every screen, every label — in the language you speak.',
+    titleKey: 'why.marathi.title',
+    descriptionKey: 'why.marathi.description',
   },
   {
-    title: 'Fast',
-    description: 'Lightweight app that works even on basic smartphones.',
+    titleKey: 'why.fast.title',
+    descriptionKey: 'why.fast.description',
   },
   {
-    title: 'Reliable',
-    description: 'Built for rural connectivity with offline-friendly design.',
+    titleKey: 'why.reliable.title',
+    descriptionKey: 'why.reliable.description',
   },
   {
-    title: 'Community Driven',
-    description: 'Powered by farmers, for farmers across Maharashtra.',
+    titleKey: 'why.community.title',
+    descriptionKey: 'why.community.description',
   },
 ]
 
-export const stats = [
-  { label: 'Farmers Connected', value: 50000, suffix: '+' },
-  { label: 'Districts Covered', value: 36, suffix: '' },
-  { label: 'Market Updates Daily', value: 500, suffix: '+' },
-  { label: 'Daily Active Users', value: 12000, suffix: '+' },
+export const stats: { labelKey: TranslationKeys; value: number; suffix: string }[] = [
+  { labelKey: 'stats.farmers', value: 50000, suffix: '+' },
+  { labelKey: 'stats.districts', value: 36, suffix: '' },
+  { labelKey: 'stats.updates', value: 500, suffix: '+' },
+  { labelKey: 'stats.activeUsers', value: 12000, suffix: '+' },
 ]

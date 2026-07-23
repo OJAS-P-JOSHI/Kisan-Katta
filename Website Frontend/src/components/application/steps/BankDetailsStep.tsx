@@ -4,47 +4,54 @@ import { StepCard } from '@/components/application/StepCard'
 import { UploadCard } from '@/components/application/UploadCard'
 import { TextField } from '@/components/application/FormFields'
 import { useWizard } from '@/components/application/wizard-context'
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { sanitizeDigits, sanitizeUpperAlnum } from '@/lib/field-transforms'
 
 export function BankDetailsStep() {
   const { application, applyUpload } = useWizard()
+  const { t } = useTranslation()
 
   return (
     <StepCard
       icon={Landmark}
-      title="Bank Details"
-      description="Used for verification and future payouts."
+      title={t('app.wizard.steps.bank.title')}
+      description={t('app.wizard.steps.bank.desc')}
     >
       <TextField
         name="bankAccountHolder"
-        label="Account Holder Name"
-        placeholder="As per bank records"
+        label={t('app.fields.bankHolder')}
+        placeholder={t('app.fields.bankHolderPh')}
         required
       />
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           name="bankAccountNumber"
-          label="Account Number"
+          label={t('app.fields.accountNumber')}
           inputMode="numeric"
-          placeholder="9–18 digits"
+          placeholder={t('app.fields.accountNumberPh')}
           maxLength={18}
           transform={(v) => sanitizeDigits(v, 18)}
           required
         />
         <TextField
           name="bankIFSC"
-          label="IFSC Code"
-          placeholder="ABCD0123456"
+          label={t('app.fields.ifsc')}
+          placeholder={t('app.fields.ifscPh')}
           maxLength={11}
           transform={(v) => sanitizeUpperAlnum(v, 11)}
           required
         />
       </div>
-      <TextField name="bankName" label="Bank Name" placeholder="e.g. State Bank of India" required />
+      <TextField
+        name="bankName"
+        label={t('app.fields.bankName')}
+        placeholder={t('app.fields.bankNamePh')}
+        required
+      />
 
       <UploadCard
-        label="Cancelled Cheque / Passbook"
-        description="Image of a cancelled cheque or bank passbook for verification."
+        label={t('app.fields.cheque')}
+        description={t('app.fields.chequeDesc')}
         documentType="cancelledCheque"
         document={application.cancelledChequeImage}
         required

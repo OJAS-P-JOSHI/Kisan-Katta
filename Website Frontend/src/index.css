@@ -46,9 +46,9 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 1.75rem;
 
-  --shadow-soft: 0 2px 16px -2px rgb(26 77 46 / 0.08);
-  --shadow-card: 0 8px 32px -8px rgb(26 77 46 / 0.12);
-  --shadow-lift: 0 16px 48px -12px rgb(26 77 46 / 0.16);
+  --shadow-soft: 0 2px 18px -2px rgb(26 77 46 / 0.07);
+  --shadow-card: 0 10px 36px -10px rgb(26 77 46 / 0.11);
+  --shadow-lift: 0 18px 52px -14px rgb(26 77 46 / 0.15);
   --shadow-drawer: -8px 0 40px -8px rgb(26 28 25 / 0.18);
 }
 
@@ -95,7 +95,7 @@
 
 @layer utilities {
   .section-padding {
-    @apply px-4 py-14 sm:px-5 sm:py-16 md:px-6 md:py-20 lg:px-8 lg:py-24;
+    @apply px-4 py-16 sm:px-5 sm:py-20 md:px-6 md:py-24 lg:px-8 lg:py-28;
   }
 
   .container-wide {
@@ -103,11 +103,11 @@
   }
 
   .glass {
-    @apply border border-white/40 bg-white/75 backdrop-blur-xl;
+    @apply border border-white/50 bg-white/80 shadow-soft backdrop-blur-2xl;
   }
 
   .glass-dark {
-    @apply border border-white/15 bg-forest-900/60 backdrop-blur-xl;
+    @apply border border-white/15 bg-forest-900/55 shadow-lift backdrop-blur-2xl;
   }
 
   .text-gradient {

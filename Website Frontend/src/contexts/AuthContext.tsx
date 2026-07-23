@@ -27,7 +27,7 @@ export type AuthContextValue = {
   /** Persists the token, then refreshes `user`. */
   login: (newToken: string) => Promise<void>
   /** Clears the token and resets state (calls the backend logout endpoint). */
-  logout: () => Promise<void>
+  logout: () => Promise<{ remoteOk: boolean }>
   /** Re-fetches `GET /auth/me`. Auto-logs-out on a 401. */
   refreshUser: () => Promise<AuthUser | null>
 }
@@ -45,9 +45,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(null)
   }, [])
 
-  const logout = useCallback(async (): Promise<void> => {
-    await logoutRequest()
-    clearSession()
+  const logout = useCallback(async (): Promise<{ remoteOk: boolean }> => {
+    let remoteOk = true
+    try {
+      remoteOk = await logoutRequest()
+    } finally {
+      // Always clear local auth — network failures / expired sessions must not
+      // leave a stale JWT in storage.
+      clearSession()
+    }
+    return { remoteOk }
   }, [clearSession])
 
   const refreshUser = useCallback(async (): Promise<AuthUser | null> => {

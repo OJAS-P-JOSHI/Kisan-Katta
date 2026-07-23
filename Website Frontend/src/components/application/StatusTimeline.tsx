@@ -1,63 +1,64 @@
 import { Check, Clock } from 'lucide-react'
 
+import { useTranslation } from '@/i18n/LanguageProvider'
+import type { TranslationKeys } from '@/i18n/translations'
 import { cn } from '@/lib/utils'
 import type { ApplicationDTO } from '@/types/application.types'
 
 type NodeState = 'done' | 'current' | 'upcoming'
 
 type TimelineNode = {
-  label: string
+  labelKey: TranslationKeys
   date: string | null
   state: NodeState
 }
 
-const formatDate = (iso: string | null): string | null => {
+const formatDate = (iso: string | null, locale: string): string | null => {
   if (!iso) return null
-  return new Date(iso).toLocaleDateString('en-IN', {
+  return new Date(iso).toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   })
 }
 
-const buildNodes = (app: ApplicationDTO): TimelineNode[] => {
+const buildNodes = (app: ApplicationDTO, locale: string): TimelineNode[] => {
   const s = app.status
 
   return [
     {
-      label: 'Application Started',
-      date: formatDate(app.createdAt),
+      labelKey: 'app.timeline.started',
+      date: formatDate(app.createdAt, locale),
       state: 'done',
     },
     {
-      label: 'Ready for Payment',
+      labelKey: 'app.timeline.readyPayment',
       date: null,
       state:
         s === 'PAYMENT_PENDING'
           ? 'current'
           : s === 'SUBMITTED'
             ? 'done'
-            : s === 'DRAFT'
-              ? 'upcoming'
-              : 'upcoming',
+            : 'upcoming',
     },
     {
-      label: 'Submitted',
-      date: formatDate(app.submittedAt),
-      state: s === 'SUBMITTED' ? 'done' : s === 'PAYMENT_PENDING' ? 'upcoming' : 'upcoming',
+      labelKey: 'app.timeline.submitted',
+      date: formatDate(app.submittedAt, locale),
+      state: s === 'SUBMITTED' ? 'done' : 'upcoming',
     },
   ]
 }
 
 export function StatusTimeline({ application }: { application: ApplicationDTO }) {
-  const nodes = buildNodes(application)
+  const { t, locale } = useTranslation()
+  const nodes = buildNodes(application, locale)
 
   return (
     <ol className="relative space-y-6 pl-2">
       {nodes.map((node, index) => {
         const isLast = index === nodes.length - 1
         return (
-          <li key={node.label} className="relative flex gap-4">
+          <li key={node.labelKey} className="relative flex gap-4">
             {!isLast && (
               <span
                 className={cn(
@@ -89,7 +90,7 @@ export function StatusTimeline({ application }: { application: ApplicationDTO })
                   node.state === 'upcoming' ? 'text-muted-foreground' : 'text-ink',
                 )}
               >
-                {node.label}
+                {t(node.labelKey)}
               </p>
               {node.date && (
                 <p className="text-xs text-muted-foreground">{node.date}</p>

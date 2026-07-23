@@ -1,16 +1,19 @@
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Timeline } from '@/components/Timeline'
 import { gramSahakariTimelineSteps } from '@/data/gram-sahakari'
+import { useTranslation } from '@/i18n/LanguageProvider'
 
 export function HowItWorksSection() {
+  const { t } = useTranslation()
+
   return (
     <section className="section-padding bg-white">
       <div className="container-wide">
         <SectionTitle
-          eyebrow="Application Process"
-          title="How It Works"
-          marathiTitle="अर्ज प्रक्रिया"
-          subtitle="From application to your first farmer onboarding — a simple, transparent journey for Gram Sahakari volunteers."
+          eyebrow={t('section.howItWorks.eyebrow')}
+          title={t('section.howItWorks.title')}
+          marathiTitle={t('section.howItWorks.marathiTitle')}
+          subtitle={t('section.howItWorks.subtitle')}
         />
         <Timeline steps={gramSahakariTimelineSteps} />
       </div>

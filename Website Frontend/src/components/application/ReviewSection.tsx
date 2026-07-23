@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 
 export type ReviewItem = {
@@ -19,6 +20,8 @@ interface ReviewSectionProps {
 
 /** Summary block for the Review step with a per-section "Edit" jump. */
 export function ReviewSection({ title, items, onEdit }: ReviewSectionProps) {
+  const { t } = useTranslation()
+
   return (
     <section className="rounded-2xl border border-border bg-white/70 p-4 shadow-soft sm:p-5">
       <header className="mb-3 flex items-center justify-between">
@@ -30,7 +33,7 @@ export function ReviewSection({ title, items, onEdit }: ReviewSectionProps) {
             className="flex items-center gap-1 text-xs font-semibold text-forest-700 transition-colors hover:text-forest-900"
           >
             <Pencil className="h-3.5 w-3.5" />
-            Edit
+            {t('app.review.edit')}
           </button>
         )}
       </header>
@@ -44,7 +47,7 @@ export function ReviewSection({ title, items, onEdit }: ReviewSectionProps) {
                 item.missing ? 'text-red-500' : 'text-ink',
               )}
             >
-              {item.missing ? 'Missing' : (item.value ?? '—')}
+              {item.missing ? t('app.review.missing') : (item.value ?? '—')}
             </dd>
           </div>
         ))}

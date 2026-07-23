@@ -23,9 +23,9 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <FeatureCard
               key={feature.id}
-              title={locale === 'mr' && feature.titleMarathi ? feature.titleMarathi : feature.title}
-              titleMarathi={feature.titleMarathi}
-              description={feature.description}
+              title={locale === 'mr' ? t(feature.titleMrKey) : t(feature.titleKey)}
+              titleMarathi={t(feature.titleMrKey)}
+              description={t(feature.descriptionKey)}
               icon={feature.icon}
               index={index}
               locale={locale}

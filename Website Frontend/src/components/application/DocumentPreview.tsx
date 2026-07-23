@@ -1,5 +1,6 @@
 import { FileCheck2 } from 'lucide-react'
 
+import { useTranslation } from '@/i18n/LanguageProvider'
 import { cn } from '@/lib/utils'
 
 interface DocumentPreviewProps {
@@ -17,6 +18,8 @@ export function DocumentPreview({
   className,
   showBadge = true,
 }: DocumentPreviewProps) {
+  const { t } = useTranslation()
+
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function DocumentPreview({
       {showBadge && (
         <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-forest-900/90 px-2 py-0.5 text-[10px] font-semibold text-white">
           <FileCheck2 className="h-3 w-3" />
-          Uploaded
+          {t('app.review.uploaded')}
         </span>
       )}
     </div>

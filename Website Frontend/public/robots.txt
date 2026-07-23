@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /verify-otp
+Disallow: /application
+Disallow: /profile
+
+Sitemap: https://kisankatta.in/sitemap.xml

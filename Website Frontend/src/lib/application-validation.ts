@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import type { TranslationKeys } from '@/i18n/translations'
 import { GENDERS, type ApplicationDTO, type UpdateApplicationBody } from '@/types/application.types'
 
 /**
@@ -20,6 +21,7 @@ const dobRefinement = (value: string): boolean => {
 /**
  * Per-field schemas. Each mirrors a backend rule so a value that passes here
  * will pass the backend's `PUT /application` validation.
+ * Messages are unused by `buildUpdatePayload` (safeParse success only).
  */
 const fieldValidators = {
   fullName: z.string().trim().min(1, 'Full name is required.'),
@@ -54,7 +56,7 @@ const fieldValidators = {
   bankName: z.string().trim().min(1, 'Bank name is required.'),
 } as const
 
-/** Full form schema used by React Hook Form's resolver. */
+/** Full form schema used by React Hook Form's resolver (English messages). */
 export const applicationFormSchema = z.object({
   fullName: fieldValidators.fullName,
   dob: fieldValidators.dob,
@@ -72,6 +74,36 @@ export const applicationFormSchema = z.object({
   bankIFSC: fieldValidators.bankIFSC,
   bankName: fieldValidators.bankName,
 })
+
+/** Localized form schema for the application wizard resolver. */
+export function createApplicationFormSchema(t: (key: TranslationKeys) => string) {
+  return z.object({
+    fullName: z.string().trim().min(1, t('validation.fullName')),
+    dob: z.string().trim().refine(dobRefinement, t('validation.dob')),
+    gender: z
+      .string()
+      .refine((v) => (GENDERS as readonly string[]).includes(v), t('validation.gender')),
+    phone: z.string(),
+    email: z.string(),
+    district: z.string().trim().min(1, t('validation.district')),
+    taluka: z.string().trim().min(1, t('validation.taluka')),
+    village: z.string().trim().min(1, t('validation.village')),
+    address: z.string().trim().min(1, t('validation.address')),
+    pincode: z.string().trim().regex(PINCODE_REGEX, t('validation.pincode')),
+    aadhaarNumber: z.string().trim().regex(AADHAAR_REGEX, t('validation.aadhaar')),
+    bankAccountHolder: z.string().trim().min(1, t('validation.bankHolder')),
+    bankAccountNumber: z
+      .string()
+      .trim()
+      .regex(BANK_ACCOUNT_REGEX, t('validation.accountNumber')),
+    bankIFSC: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(IFSC_REGEX, t('validation.ifsc')),
+    bankName: z.string().trim().min(1, t('validation.bankName')),
+  })
+}
 
 export type ApplicationFormValues = {
   fullName: string

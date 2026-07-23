@@ -1,6 +1,12 @@
 {
   "name": "Kisan Katta",
   "short_name": "Kisan Katta",
+  "description": "Empowering Maharashtra's farmers through technology — weather, mandi prices, marketplace, and community in Marathi.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -17,5 +23,6 @@
   ],
   "theme_color": "#F5F0E6",
   "background_color": "#F5F0E6",
-  "display": "standalone"
+  "display": "standalone",
+  "categories": ["agriculture", "lifestyle", "productivity"]
 }

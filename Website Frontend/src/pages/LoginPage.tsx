@@ -1,60 +1,78 @@
 import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { LoginCard } from '@/components/auth/LoginCard'
-import { getErrorMessage } from '@/lib/api-error'
+import { Seo } from '@/components/common/Seo'
 import { useAuth } from '@/hooks/useAuth'
 import { useSendOtp } from '@/hooks/useOtp'
+import { useTranslation } from '@/i18n/LanguageProvider'
+import { resolveAuthRedirect } from '@/lib/application-entry'
+import { getErrorMessage } from '@/lib/api-error'
+
+type LoginLocationState = { from?: string }
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { t } = useTranslation()
   const { isAuthenticated, loading } = useAuth()
   const sendOtp = useSendOtp()
 
-  // Authenticated users never need the login screen.
+  const from = resolveAuthRedirect((location.state as LoginLocationState | null)?.from)
+
+  // Authenticated users never need the login screen — resume their flow.
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate('/application', { replace: true })
+      navigate(from, { replace: true })
     }
-  }, [loading, isAuthenticated, navigate])
+  }, [loading, isAuthenticated, navigate, from])
 
   const handleSubmit = (mobile: string): void => {
+    if (sendOtp.isPending) return
     sendOtp.mutate(mobile, {
       onSuccess: (result) => {
         navigate('/verify-otp', {
-          state: { mobile, devOtp: result.otp ?? '' },
+          state: { mobile, devOtp: result.otp ?? '', from },
         })
       },
     })
   }
 
   return (
-    <AuthLayout
-      title="Gram Sahakari Portal"
-      subtitle="Enter your mobile number to continue"
-      footer={
-        <p className="text-xs text-white/70 lg:text-muted-foreground">
-          By continuing, you agree to our{' '}
-          <Link to="/terms-and-conditions" className="font-medium underline-offset-2 hover:underline">
-            Terms
-          </Link>{' '}
-          &{' '}
-          <Link to="/privacy-policy" className="font-medium underline-offset-2 hover:underline">
-            Privacy Policy
-          </Link>
-        </p>
-      }
-    >
-      <LoginCard
-        onSubmit={handleSubmit}
-        loading={sendOtp.isPending}
-        serverError={
-          sendOtp.isError
-            ? getErrorMessage(sendOtp.error, 'Unable to send OTP. Please try again.')
-            : null
-        }
+    <>
+      <Seo
+        title={t('seo.login.title')}
+        description={t('seo.login.description')}
+        path="/login"
+        noindex
       />
-    </AuthLayout>
+      <AuthLayout
+        title={t('auth.login.title')}
+        subtitle={t('auth.login.subtitle')}
+        footer={
+          <p className="text-xs text-white/70 lg:text-muted-foreground">
+            {t('auth.login.agreePrefix')}{' '}
+            <Link to="/terms-and-conditions" className="font-medium underline-offset-2 hover:underline">
+              {t('auth.login.terms')}
+            </Link>{' '}
+            &{' '}
+            <Link to="/privacy-policy" className="font-medium underline-offset-2 hover:underline">
+              {t('auth.login.privacy')}
+            </Link>
+          </p>
+        }
+      >
+        <LoginCard
+          onSubmit={handleSubmit}
+          loading={sendOtp.isPending}
+          serverError={
+            sendOtp.isError
+              ? getErrorMessage(sendOtp.error, t('auth.login.sendError'))
+              : null
+          }
+        />
+      </AuthLayout>
+    </>
   )
 }

@@ -46,8 +46,8 @@ export function InteractiveCard({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onPointerDown={handlePointerDown}
       className={cn(
-        'relative overflow-hidden rounded-2xl shadow-soft transition-shadow duration-300',
-        !disabled && 'hover:shadow-card active:shadow-lift',
+        'relative overflow-hidden rounded-2xl border border-transparent shadow-soft transition-[box-shadow,border-color] duration-300',
+        !disabled && 'hover:border-border/60 hover:shadow-card active:shadow-soft',
         className,
       )}
       {...props}

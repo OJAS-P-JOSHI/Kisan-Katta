@@ -9,10 +9,11 @@ import {
   Smartphone,
   Users,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
+import { ApplyLink } from '@/components/ApplyLink'
 import { PageHero } from '@/components/common/SectionTitle'
 import { OptimizedImage } from '@/components/common/OptimizedImage'
+import { Seo } from '@/components/common/Seo'
 import { CTASection } from '@/components/CTASection'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Timeline } from '@/components/Timeline'
@@ -23,29 +24,34 @@ import {
   gramSahakariTimelineSteps,
   villageImpactStats,
 } from '@/data/gram-sahakari'
-import { unsplash } from '@/data/images'
+import { brandAssets } from '@/data/images'
+import { useTranslation } from '@/i18n/LanguageProvider'
+import type { TranslationKeys } from '@/i18n/translations'
 import { fadeUp, staggerContainer, defaultTransition } from '@/lib/motion'
 
 const benefitIcons = [Award, Heart, Users, BadgeCheck]
 
-const requirements = [
-  { icon: MapPin, text: 'Resident of Maharashtra with strong local village ties' },
-  { icon: Smartphone, text: 'Own a smartphone and basic familiarity with mobile apps' },
-  { icon: GraduationCap, text: 'Minimum education: 10th pass (preferred but not mandatory)' },
-  { icon: Clock, text: 'Willing to dedicate 2–4 hours per week to helping farmers' },
-  { icon: Heart, text: 'Passion for agriculture and community service' },
+const requirements: { icon: typeof MapPin; textKey: TranslationKeys }[] = [
+  { icon: MapPin, textKey: 'become.req.resident' },
+  { icon: Smartphone, textKey: 'become.req.smartphone' },
+  { icon: GraduationCap, textKey: 'become.req.education' },
+  { icon: Clock, textKey: 'become.req.hours' },
+  { icon: Heart, textKey: 'become.req.passion' },
 ]
 
 export function BecomeGramSahakariPage() {
+  const { t } = useTranslation()
+
   return (
     <PageLayout>
+      <Seo title={t('seo.become.title')} description={t('seo.become.description')} path="/become-gram-sahakari" />
       <PageHero
-        title="Become a Gram Sahakari"
-        marathiTitle="ग्राम सहकारी बना"
-        subtitle="Join our network of village volunteers empowering farmers across Maharashtra with digital tools."
+        title={t('become.heroTitle')}
+        marathiTitle={t('become.heroMarathi')}
+        subtitle={t('become.heroSubtitle')}
       >
         <Button asChild size="lg" variant="secondary">
-          <Link to="/contact">Start Application</Link>
+          <ApplyLink>{t('become.startApplication')}</ApplyLink>
         </Button>
       </PageHero>
 
@@ -58,20 +64,17 @@ export function BecomeGramSahakariPage() {
             variants={fadeUp}
             transition={defaultTransition}
           >
-            <h2 className="text-2xl font-bold text-ink sm:text-3xl">Who is a Gram Sahakari?</h2>
+            <h2 className="text-2xl font-bold text-ink sm:text-3xl">{t('become.whoTitle')}</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground sm:text-lg">
-              A Gram Sahakari is a trusted volunteer from your village or taluka who helps farmers
-              install and use the Kisan Katta app. They are the human connection between technology
-              and tradition — guiding farmers, answering questions, and ensuring every member of the
-              community benefits from digital farming tools.
+              {t('become.whoBody')}
             </p>
-            <div className="mt-6 overflow-hidden rounded-2xl shadow-card">
+            <div className="mt-6 overflow-hidden rounded-2xl shadow-card ring-1 ring-border/40">
               <OptimizedImage
-                src={unsplash.farmland}
-                alt="Green farmland in Maharashtra"
-                width={800}
-                height={450}
-                className="aspect-video w-full object-cover"
+                src={brandAssets.hero}
+                alt={t('become.farmlandAlt')}
+                width={1200}
+                height={675}
+                className="aspect-video w-full object-cover object-center"
               />
             </div>
           </motion.div>
@@ -82,13 +85,13 @@ export function BecomeGramSahakariPage() {
             viewport={{ once: true }}
             variants={staggerContainer}
           >
-            <h2 className="mb-5 text-2xl font-bold text-ink sm:text-3xl">Benefits</h2>
+            <h2 className="mb-5 text-2xl font-bold text-ink sm:text-3xl">{t('become.benefitsTitle')}</h2>
             <div className="space-y-3">
               {gramSahakariBenefits.map((benefit, index) => {
                 const Icon = benefitIcons[index] ?? Award
                 return (
                   <motion.div
-                    key={benefit.title}
+                    key={benefit.titleKey}
                     variants={fadeUp}
                     transition={{ ...defaultTransition, delay: index * 0.08 }}
                   >
@@ -98,9 +101,9 @@ export function BecomeGramSahakariPage() {
                           <Icon className="h-6 w-6" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-ink">{benefit.title}</h3>
+                          <h3 className="font-semibold text-ink">{t(benefit.titleKey)}</h3>
                           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                            {benefit.description}
+                            {t(benefit.descriptionKey)}
                           </p>
                         </div>
                       </CardContent>
@@ -116,18 +119,18 @@ export function BecomeGramSahakariPage() {
       <section className="section-padding bg-white">
         <div className="container-wide">
           <h2 className="mb-6 text-center text-2xl font-bold text-ink sm:mb-8 sm:text-3xl">
-            Requirements
+            {t('become.requirementsTitle')}
           </h2>
           <div className="mx-auto max-w-2xl space-y-3">
-            {requirements.map(({ icon: Icon, text }) => (
+            {requirements.map(({ icon: Icon, textKey }) => (
               <div
-                key={text}
+                key={textKey}
                 className="flex items-center gap-4 rounded-2xl border border-border/60 bg-cream p-4 sm:p-5"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
                   <Icon className="h-5 w-5" />
                 </div>
-                <p className="text-[15px] text-slate sm:text-base">{text}</p>
+                <p className="text-[15px] text-slate sm:text-base">{t(textKey)}</p>
               </div>
             ))}
           </div>
@@ -137,16 +140,16 @@ export function BecomeGramSahakariPage() {
       <section className="section-padding bg-cream">
         <div className="container-wide">
           <h2 className="mb-8 text-center text-2xl font-bold text-ink sm:mb-10 sm:text-3xl">
-            Village Impact
+            {t('become.impactTitle')}
           </h2>
           <div className="mx-auto grid max-w-3xl grid-cols-3 gap-4">
             {villageImpactStats.map((stat) => (
               <div
-                key={stat.label}
+                key={stat.labelKey}
                 className="rounded-2xl bg-white p-5 text-center shadow-soft sm:p-6"
               >
                 <p className="text-2xl font-bold text-forest-900 sm:text-3xl">{stat.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{stat.label}</p>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{t(stat.labelKey)}</p>
               </div>
             ))}
           </div>
@@ -156,22 +159,22 @@ export function BecomeGramSahakariPage() {
       <section className="section-padding bg-white">
         <div className="container-wide">
           <h2 className="mb-8 text-center text-2xl font-bold text-ink sm:mb-10 sm:text-3xl">
-            Application Process
+            {t('become.processTitle')}
           </h2>
           <Timeline steps={gramSahakariTimelineSteps} />
           <div className="mt-10 text-center">
             <Button asChild size="lg">
-              <Link to="/contact">Start Application</Link>
+              <ApplyLink>{t('become.startApplication')}</ApplyLink>
             </Button>
           </div>
         </div>
       </section>
 
       <CTASection
-        title="Ready to Make a Difference in Your Village?"
-        description="Start your application today and join Maharashtra's growing network of Gram Sahakari volunteers."
-        primaryLabel="Start Application"
-        primaryHref="/contact"
+        title={t('become.ctaTitle')}
+        description={t('become.ctaDescription')}
+        primaryLabel={t('become.startApplication')}
+        primaryHref="/application"
       />
     </PageLayout>
   )

@@ -90,6 +90,12 @@ export function Footer() {
                   ))}
                 </address>
               </li>
+              <li className="text-sm text-muted-foreground">
+                <p className="font-medium text-ink">{t('contact.hours')}</p>
+                <p className="mt-0.5">
+                  {t(contactInfo.hours.daysKey)} · {t(contactInfo.hours.timeKey)}
+                </p>
+              </li>
             </ul>
           </div>
         </div>

@@ -16,7 +16,7 @@ export function WhyChooseSection() {
         <SectionTitle
           eyebrow={t('section.why.eyebrow')}
           title={t('section.why.title')}
-          marathiTitle="शेतकरी किसान कatta का निवडतात"
+          marathiTitle={t('section.why.marathiTitle')}
           subtitle={t('section.why.subtitle')}
         />
 
@@ -29,7 +29,7 @@ export function WhyChooseSection() {
         >
           {whyChooseItems.map((item, index) => (
             <motion.div
-              key={item.title}
+              key={item.titleKey}
               variants={fadeUp}
               transition={{ ...defaultTransition, delay: index * 0.08 }}
             >
@@ -37,9 +37,9 @@ export function WhyChooseSection() {
                 <div className="flex h-full gap-4 rounded-2xl border border-border/60 bg-cream p-5 sm:p-6">
                   <CheckCircle2 className="h-6 w-6 shrink-0 text-forest-700" />
                   <div>
-                    <h3 className="font-semibold text-ink">{item.title}</h3>
+                    <h3 className="font-semibold text-ink">{t(item.titleKey)}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
+                      {t(item.descriptionKey)}
                     </p>
                   </div>
                 </div>
