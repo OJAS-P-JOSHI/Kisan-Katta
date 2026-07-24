@@ -16,3 +16,13 @@ export const APP_ENV: string = import.meta.env.VITE_APP_ENV ?? 'development'
 
 /** Convenience flag used to surface the dev OTP in the UI. */
 export const IS_DEV: boolean = APP_ENV === 'development'
+
+/**
+ * Public website origin used for QR verification links.
+ * Example: https://kisan-katta.vercel.app
+ * Falls back to `window.location.origin` in the browser when unset.
+ */
+export const WEBSITE_URL: string = (
+  import.meta.env.VITE_WEBSITE_URL ??
+  (typeof window !== 'undefined' ? window.location.origin : '')
+).replace(/\/$/, '')

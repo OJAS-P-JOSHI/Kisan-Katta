@@ -5,8 +5,11 @@ import {
   getAnalyticsHandler,
   getApplicationHandler,
   getDashboardHandler,
+  getFarmerHandler,
   getMeAdminHandler,
+  getSystemInfoHandler,
   listApplicationsHandler,
+  listFarmersHandler,
   listPaymentsHandler,
   listVolunteersHandler,
 } from "./admin.controller";
@@ -52,9 +55,27 @@ router.get(
 );
 
 router.get(
+  "/farmers",
+  requireAdminPermission("farmers"),
+  asyncHandler(listFarmersHandler)
+);
+
+router.get(
+  "/farmers/:id",
+  requireAdminPermission("farmers"),
+  asyncHandler(getFarmerHandler)
+);
+
+router.get(
   "/payments",
   requireAdminPermission("payments"),
   asyncHandler(listPaymentsHandler)
+);
+
+router.get(
+  "/system",
+  requireAdminPermission("settings"),
+  asyncHandler(getSystemInfoHandler)
 );
 
 export default router;

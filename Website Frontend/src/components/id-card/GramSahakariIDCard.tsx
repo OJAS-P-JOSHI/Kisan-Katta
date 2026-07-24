@@ -3,7 +3,6 @@ import {
   Download,
   FileText,
   Loader2,
-  Printer,
   Share2,
 } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
@@ -11,7 +10,9 @@ import { useCallback, useRef, useState } from 'react'
 import { IDCardFace } from '@/components/id-card/IDCardFace'
 import { useToast } from '@/components/common/Toast'
 import { Button } from '@/components/ui/button'
+import { useIdCardLocale } from '@/hooks/useIdCardLocale'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import type { Locale } from '@/i18n/types'
 import {
   buildIDCardPayload,
   isIDCardEligible,
@@ -20,13 +21,12 @@ import {
   copyText,
   downloadCardPdf,
   downloadCardPng,
-  printCard,
   shareCard,
 } from '@/lib/id-card-export'
 import type { ApplicationDTO } from '@/types/application.types'
 import { cn } from '@/lib/utils'
 
-type BusyAction = 'png' | 'pdf' | 'print' | 'share' | 'copy' | null
+type BusyAction = 'png' | 'pdf' | 'share' | 'copy' | null
 
 interface GramSahakariIDCardProps {
   application: ApplicationDTO
@@ -46,13 +46,15 @@ export function GramSahakariIDCard({
   className,
   showHeading = true,
 }: GramSahakariIDCardProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
+  const { cardLocale, setCardLocale } = useIdCardLocale()
   const { success, error: toastError } = useToast()
   const cardRef = useRef<HTMLDivElement>(null)
   const [busy, setBusy] = useState<BusyAction>(null)
 
+  // Dates stay in a fixed (non-translated) format — card locale only affects labels.
   const payload = isIDCardEligible(application)
-    ? buildIDCardPayload(application, locale)
+    ? buildIDCardPayload(application, 'en')
     : null
 
   const run = useCallback(
@@ -84,83 +86,127 @@ export function GramSahakariIDCard({
         </div>
       )}
 
-      <IDCardFace ref={cardRef} payload={payload} />
+      <IDCardFace ref={cardRef} payload={payload} locale={cardLocale} />
 
-      <div className="flex flex-wrap gap-2">
-        <ActionButton
-          label={t('idCard.downloadPng')}
-          busy={busy === 'png'}
-          disabled={Boolean(busy)}
-          icon={Download}
-          onClick={() =>
-            void run('png', async () => {
-              await downloadCardPng(cardRef.current!, payload.volunteerId)
-              success(t('idCard.downloadedPng'))
-            })
-          }
-        />
-        <ActionButton
-          label={t('idCard.downloadPdf')}
-          busy={busy === 'pdf'}
-          disabled={Boolean(busy)}
-          icon={FileText}
-          onClick={() =>
-            void run('pdf', async () => {
-              await downloadCardPdf(cardRef.current!, payload.volunteerId)
-              success(t('idCard.downloadedPdf'))
-            })
-          }
-        />
-        <ActionButton
-          label={t('idCard.print')}
-          busy={busy === 'print'}
-          disabled={Boolean(busy)}
-          icon={Printer}
-          variant="outline"
-          onClick={() =>
-            void run('print', () => {
-              printCard(cardRef.current!, t('idCard.title'))
-            })
-          }
-        />
-        <ActionButton
-          label={t('idCard.share')}
-          busy={busy === 'share'}
-          disabled={Boolean(busy)}
-          icon={Share2}
-          variant="outline"
-          onClick={() =>
-            void run('share', async () => {
-              const result = await shareCard(
-                cardRef.current!,
-                payload.volunteerId,
-                payload.verificationUrl,
-              )
-              if (result === 'copied') success(t('idCard.shareCopied'))
-              else success(t('idCard.shared'))
-            })
-          }
-        />
-        <ActionButton
-          label={t('idCard.copyId')}
-          busy={busy === 'copy'}
-          disabled={Boolean(busy)}
-          icon={Copy}
-          variant="outline"
-          onClick={() =>
-            void run('copy', async () => {
-              await copyText(payload.volunteerId)
-              success(t('idCard.copied'))
-            })
-          }
-        />
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">
+          {t('idCard.exportLanguage')}
+        </p>
+        <IdCardLanguageToggle value={cardLocale} onChange={setCardLocale} />
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <ActionButton
+            label={t('idCard.downloadPng')}
+            busy={busy === 'png'}
+            disabled={Boolean(busy)}
+            icon={Download}
+            onClick={() =>
+              void run('png', async () => {
+                await downloadCardPng(cardRef.current!, payload.volunteerId)
+                success(t('idCard.downloadedPng'))
+              })
+            }
+          />
+          <ActionButton
+            label={t('idCard.downloadPdf')}
+            title={t('idCard.pdfRecommended')}
+            busy={busy === 'pdf'}
+            disabled={Boolean(busy)}
+            icon={FileText}
+            onClick={() =>
+              void run('pdf', async () => {
+                await downloadCardPdf(cardRef.current!, payload.volunteerId)
+                success(t('idCard.downloadedPdf'))
+              })
+            }
+          />
+          <ActionButton
+            label={t('idCard.share')}
+            busy={busy === 'share'}
+            disabled={Boolean(busy)}
+            icon={Share2}
+            variant="outline"
+            onClick={() =>
+              void run('share', async () => {
+                const result = await shareCard(
+                  cardRef.current!,
+                  payload.volunteerId,
+                  payload.verificationUrl,
+                )
+                if (result === 'copied') success(t('idCard.shareCopied'))
+                else success(t('idCard.shared'))
+              })
+            }
+          />
+          <ActionButton
+            label={t('idCard.copyId')}
+            busy={busy === 'copy'}
+            disabled={Boolean(busy)}
+            icon={Copy}
+            variant="outline"
+            onClick={() =>
+              void run('copy', async () => {
+                await copyText(payload.volunteerId)
+                success(t('idCard.copied'))
+              })
+            }
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">{t('idCard.pdfHint')}</p>
       </div>
     </section>
   )
 }
 
+function IdCardLanguageToggle({
+  value,
+  onChange,
+}: {
+  value: Locale
+  onChange: (locale: Locale) => void
+}) {
+  const { t } = useTranslation()
+  const options: { code: Locale; label: string }[] = [
+    { code: 'en', label: t('idCard.langEnglish') },
+    { code: 'mr', label: t('idCard.langMarathi') },
+  ]
+
+  return (
+    <div
+      className="inline-flex rounded-full bg-forest-50 p-0.5"
+      role="radiogroup"
+      aria-label={t('idCard.exportLanguage')}
+    >
+      {options.map(({ code, label }) => {
+        const active = value === code
+        return (
+          <button
+            key={code}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(code)}
+            className={cn(
+              'min-h-9 rounded-full px-3.5 text-sm font-semibold transition-colors',
+              code === 'mr' && 'font-marathi',
+              active
+                ? 'bg-white text-forest-900 shadow-soft'
+                : 'text-steel hover:text-forest-900',
+            )}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function ActionButton({
   label,
+  title,
   icon: Icon,
   onClick,
   busy,
@@ -168,6 +214,7 @@ function ActionButton({
   variant = 'default',
 }: {
   label: string
+  title?: string
   icon: typeof Download
   onClick: () => void
   busy: boolean
@@ -181,6 +228,7 @@ function ActionButton({
       variant={variant}
       disabled={disabled}
       onClick={onClick}
+      title={title}
       className="min-h-10"
     >
       {busy ? (

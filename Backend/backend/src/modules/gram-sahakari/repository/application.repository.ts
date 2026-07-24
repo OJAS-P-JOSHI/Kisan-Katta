@@ -3,6 +3,7 @@ import { GramSahakariApplication } from "../gram-sahakari.model";
 import { BLOCKING_APPLICATION_STATUSES } from "../gram-sahakari.constants";
 import type { IGramSahakariApplication } from "../interfaces/application.interface";
 import type { AdminApplicationsQuery } from "../types/application.types";
+import { buildExcludeUnstartedDraftsFilter } from "../utils/application-progress";
 
 export const findApplicationByUserId = (
   userId: string
@@ -24,11 +25,13 @@ export const findBlockingApplicationByUserId = (
 
 export const createDraftApplication = (
   userId: string,
-  applicationNumber: string
+  applicationNumber: string,
+  phone: string
 ): Promise<IGramSahakariApplication> =>
   GramSahakariApplication.create({
     userId: new Types.ObjectId(userId),
     applicationNumber,
+    phone,
   });
 
 export const findApplicationByNumber = (
@@ -49,6 +52,7 @@ export const findApplications = async (
   query: AdminApplicationsQuery
 ): Promise<{ items: IGramSahakariApplication[]; total: number }> => {
   const filter: Record<string, unknown> = {};
+  const andConditions: Record<string, unknown>[] = [];
 
   if (query.district) {
     filter.district = query.district;
@@ -90,6 +94,16 @@ export const findApplications = async (
       { village: searchRegex },
       { taluka: searchRegex },
     ];
+  }
+
+  // Default: hide placeholder DRAFTs (status=DRAFT && !hasStartedApplication()).
+  // Opt in with showDrafts=true to include empty placeholders.
+  if (!query.showDrafts) {
+    andConditions.push(buildExcludeUnstartedDraftsFilter());
+  }
+
+  if (andConditions.length > 0) {
+    filter.$and = andConditions;
   }
 
   const page = query.page ?? 1;

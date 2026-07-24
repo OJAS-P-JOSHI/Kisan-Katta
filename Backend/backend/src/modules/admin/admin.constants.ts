@@ -18,6 +18,7 @@ export const ADMIN_PERMISSIONS = [
   "applications",
   "payments",
   "volunteers",
+  "farmers",
   "analytics",
   "settings",
   "reports",
@@ -34,6 +35,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
     "applications",
     "payments",
     "volunteers",
+    "farmers",
     "analytics",
     "settings",
     "reports",
@@ -43,11 +45,19 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
     "applications",
     "payments",
     "volunteers",
+    "farmers",
     "analytics",
     "reports",
   ],
-  SUPPORT: ["dashboard", "applications", "volunteers"],
-  READ_ONLY: ["dashboard", "applications", "volunteers", "analytics", "reports"],
+  SUPPORT: ["dashboard", "applications", "volunteers", "farmers"],
+  READ_ONLY: [
+    "dashboard",
+    "applications",
+    "volunteers",
+    "farmers",
+    "analytics",
+    "reports",
+  ],
 };
 
 /** First SUPER_ADMIN — seeded idempotently on boot. */

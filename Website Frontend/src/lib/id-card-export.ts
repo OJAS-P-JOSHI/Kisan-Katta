@@ -1,11 +1,41 @@
 import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 
+/** Internal capture scale — on-screen size unchanged; exports stay crisp at 400% / PVC print. */
 const CAPTURE_PIXEL_RATIO = 3
 
+/**
+ * Wait until local images inside the card have decoded so exports stay sharp
+ * (photo, logo, signature, QR).
+ */
+async function waitForImages(node: HTMLElement): Promise<void> {
+  const images = Array.from(node.querySelectorAll('img'))
+  await Promise.all(
+    images.map(async (img) => {
+      try {
+        if (typeof img.decode === 'function') {
+          await img.decode()
+          return
+        }
+      } catch {
+        /* decode can reject for broken URLs — fall through */
+      }
+      if (img.complete && img.naturalWidth > 0) return
+      await new Promise<void>((resolve) => {
+        const done = () => resolve()
+        img.addEventListener('load', done, { once: true })
+        img.addEventListener('error', done, { once: true })
+      })
+    }),
+  )
+}
+
 async function captureNode(node: HTMLElement): Promise<string> {
-  // Wait a frame so fonts/images settle before rasterizing.
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+  await waitForImages(node)
+  // Two frames so fonts/layout settle before rasterizing at 3×.
+  await new Promise<void>((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+  )
 
   return toPng(node, {
     cacheBust: true,
@@ -57,65 +87,9 @@ export async function downloadCardPdf(node: HTMLElement, volunteerId: string): P
   const x = (pageW - w) / 2
   const y = margin + 8
 
-  pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST')
+  // NONE = no recompression of the 3× PNG — sharpest PVC / laminate result.
+  pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'NONE')
   pdf.save(`${volunteerId}-gram-sahakari-id.pdf`)
-}
-
-export function printCard(node: HTMLElement, title: string): void {
-  const clone = node.cloneNode(true) as HTMLElement
-  clone.style.width = `${node.offsetWidth}px`
-  clone.style.maxWidth = '100%'
-
-  const win = window.open('', '_blank', 'noopener,noreferrer,width=720,height=900')
-  if (!win) {
-    // Popup blocked — fall back to printing the current page section.
-    window.print()
-    return
-  }
-
-  const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-    .map((el) => el.outerHTML)
-    .join('\n')
-
-  win.document.write(`<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>${title}</title>
-  ${styles}
-  <style>
-    @page { margin: 12mm; }
-    body {
-      margin: 0;
-      padding: 16px;
-      background: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      font-family: Poppins, system-ui, sans-serif;
-    }
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  </style>
-</head>
-<body></body>
-</html>`)
-  win.document.close()
-  win.document.body.appendChild(clone)
-
-  const cleanup = () => {
-    try {
-      win.close()
-    } catch {
-      /* ignore */
-    }
-  }
-
-  win.onafterprint = cleanup
-  // Give images a moment to paint in the print window.
-  window.setTimeout(() => {
-    win.focus()
-    win.print()
-  }, 350)
 }
 
 export async function shareCard(

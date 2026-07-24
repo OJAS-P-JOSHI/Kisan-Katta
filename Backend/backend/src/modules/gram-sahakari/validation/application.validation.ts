@@ -6,7 +6,6 @@ import {
   DOCUMENT_TYPES,
   GENDERS,
   IFSC_REGEX,
-  INDIAN_PHONE_REGEX,
   PAYMENT_STATUSES,
   PINCODE_REGEX,
 } from "../gram-sahakari.constants";
@@ -23,11 +22,6 @@ export const parseWithZod = <T>(schema: z.ZodType<T>, data: unknown): T => {
 };
 
 const optionalTrimmedString = z.string().trim().min(1).optional();
-
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(INDIAN_PHONE_REGEX, "Phone must be a valid Indian mobile number.");
 
 const aadhaarSchema = z
   .string()
@@ -53,7 +47,7 @@ const dobSchema = z
 export const updateApplicationSchema = z
   .object({
     fullName: optionalTrimmedString,
-    phone: phoneSchema.optional(),
+    // Phone is never accepted from the client — it is the verified AuthUser.mobile.
     email: z.string().trim().email("Email must be valid.").optional(),
     gender: z.enum(GENDERS).optional(),
     dob: dobSchema.optional(),
@@ -76,11 +70,20 @@ export const updateApplicationSchema = z
 
 export const documentTypeSchema = z.enum(DOCUMENT_TYPES);
 
+/** Query-string friendly boolean (`true`/`false`/`1`/`0`). */
+const booleanQueryParam = z.preprocess((value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (value === true || value === "true" || value === "1") return true;
+  if (value === false || value === "false" || value === "0") return false;
+  return value;
+}, z.boolean().optional());
+
 export const adminApplicationsQuerySchema = z.object({
   district: z.string().trim().min(1).optional(),
   status: z.enum(APPLICATION_STATUSES).optional(),
   paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
   search: z.string().trim().min(1).optional(),
+  showDrafts: booleanQueryParam,
   fromDate: z
     .string()
     .trim()

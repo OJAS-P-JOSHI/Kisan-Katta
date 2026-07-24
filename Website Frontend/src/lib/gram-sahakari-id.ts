@@ -1,9 +1,8 @@
 import type { ApplicationDTO, ApplicationStatus, PaymentStatus } from '@/types/application.types'
+import { WEBSITE_URL } from '@/config/env'
 
 /** Card schema version — bump when layout/fields change for verification clients. */
 export const ID_CARD_VERSION = '1.0' as const
-
-export const VERIFY_BASE_URL = 'https://kisankatta.in/verify' as const
 
 export type IDCardPayload = {
   volunteerId: string
@@ -63,8 +62,13 @@ export function toVolunteerId(applicationNumber: string): string {
   return `GS-MH-${cleaned || '0000-000000'}`
 }
 
+/** Public verification URL — never hardcode a production domain. */
 export function buildVerificationUrl(volunteerId: string): string {
-  return `${VERIFY_BASE_URL}/${encodeURIComponent(volunteerId)}`
+  const base =
+    WEBSITE_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : '')
+  const origin = base.replace(/\/$/, '')
+  return `${origin}/verify/${encodeURIComponent(volunteerId)}`
 }
 
 /** Mask mobile for display: +91******3210 or ******3210 */
@@ -93,7 +97,6 @@ export function formatIssueDate(iso: string | null | undefined, locale: 'en' | '
 
 /**
  * Build the structured payload used by the card UI and QR payload.
- * Future backend verification can validate the same volunteerId + applicationNumber.
  */
 export function buildIDCardPayload(
   app: ApplicationDTO,
@@ -125,7 +128,6 @@ export function buildIDCardPayload(
 
 /**
  * Compact QR payload — URL-first so scanners open verification.
- * Query params carry machine-readable fields for a future verify API.
  */
 export function buildQRContent(payload: IDCardPayload): string {
   const url = new URL(payload.verificationUrl)

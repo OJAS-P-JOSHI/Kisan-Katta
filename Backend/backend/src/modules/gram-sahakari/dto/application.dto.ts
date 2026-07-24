@@ -17,6 +17,8 @@ export interface ApplicationDTO {
   status: ApplicationStatus;
   fullName: string | null;
   phone: string | null;
+  /** Verified login mobile — same value as `phone` (admin-facing alias). */
+  phoneNumber: string | null;
   email: string | null;
   gender: Gender | null;
   dob: string | null;
@@ -58,6 +60,8 @@ export interface ApplicationSummaryDTO {
   status: ApplicationStatus;
   fullName: string | null;
   phone: string | null;
+  /** Verified login mobile — same value as `phone` (admin-facing alias). */
+  phoneNumber: string | null;
   district: string | null;
   taluka: string | null;
   village: string | null;

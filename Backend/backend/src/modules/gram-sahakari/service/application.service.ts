@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { resolveDistrict } from "../../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../../utils/AppError";
 import type { UserRole } from "../../auth/auth.constants";
+import { AuthUser } from "../../auth/auth.model";
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
@@ -38,6 +39,75 @@ import type {
 import { toCloudinaryDocumentDTO } from "../dto/application.dto";
 
 // ---------------------------------------------------------------------------
+// Verified phone helpers
+// ---------------------------------------------------------------------------
+
+const getAuthUserMobile = async (userId: string): Promise<string> => {
+  const user = await AuthUser.findById(userId).select("mobile").lean();
+  if (!user?.mobile) {
+    throw new AppError("Authenticated user mobile not found.", 500);
+  }
+  return user.mobile;
+};
+
+/**
+ * Batch-resolve verified mobiles for applications missing `phone`.
+ * Keyed by application id.
+ */
+export const resolveApplicationPhones = async (
+  applications: IGramSahakariApplication[]
+): Promise<Map<string, string | null>> => {
+  const phones = new Map<string, string | null>();
+  const missingUserIds = new Set<string>();
+
+  for (const app of applications) {
+    const id = String(app._id);
+    if (app.phone) {
+      phones.set(id, app.phone);
+    } else {
+      phones.set(id, null);
+      missingUserIds.add(String(app.userId));
+    }
+  }
+
+  if (missingUserIds.size === 0) return phones;
+
+  const users = await AuthUser.find({
+    _id: { $in: [...missingUserIds].map((id) => new Types.ObjectId(id)) },
+  })
+    .select("mobile")
+    .lean();
+
+  const mobileByUserId = new Map(
+    users.map((user) => [String(user._id), user.mobile as string])
+  );
+
+  for (const app of applications) {
+    if (app.phone) continue;
+    phones.set(
+      String(app._id),
+      mobileByUserId.get(String(app.userId)) ?? null
+    );
+  }
+
+  return phones;
+};
+
+/** Lazily backfill application.phone from AuthUser when missing. */
+const ensureApplicationPhone = async (
+  application: IGramSahakariApplication & { _id: Types.ObjectId }
+): Promise<IGramSahakariApplication & { _id: Types.ObjectId }> => {
+  if (application.phone) return application;
+
+  const mobile = await getAuthUserMobile(String(application.userId));
+  const updated = await updateApplicationById(String(application._id), {
+    phone: mobile,
+  });
+  if (!updated) return { ...application, phone: mobile };
+  return updated as IGramSahakariApplication & { _id: Types.ObjectId };
+};
+
+// ---------------------------------------------------------------------------
 // DTO mappers
 // ---------------------------------------------------------------------------
 
@@ -45,11 +115,15 @@ const toIsoString = (value: Date | null | undefined): string | null =>
   value ? value.toISOString() : null;
 
 export const toApplicationDTO = (
-  application: IGramSahakariApplication
+  application: IGramSahakariApplication,
+  resolvedPhone?: string | null
 ): ApplicationDTO => {
   if (!application._id) {
     throw new AppError("Application record is missing an identifier.", 500);
   }
+
+  const phone =
+    resolvedPhone !== undefined ? resolvedPhone : application.phone;
 
   return {
     id: String(application._id),
@@ -57,7 +131,8 @@ export const toApplicationDTO = (
     userId: String(application.userId),
     status: application.status,
     fullName: application.fullName,
-    phone: application.phone,
+    phone,
+    phoneNumber: phone,
     email: application.email,
     gender: application.gender,
     dob: toIsoString(application.dob),
@@ -85,11 +160,15 @@ export const toApplicationDTO = (
 };
 
 const toApplicationSummaryDTO = (
-  application: IGramSahakariApplication
+  application: IGramSahakariApplication,
+  resolvedPhone?: string | null
 ): ApplicationSummaryDTO => {
   if (!application._id) {
     throw new AppError("Application record is missing an identifier.", 500);
   }
+
+  const phone =
+    resolvedPhone !== undefined ? resolvedPhone : application.phone;
 
   return {
     id: String(application._id),
@@ -97,7 +176,8 @@ const toApplicationSummaryDTO = (
     userId: String(application.userId),
     status: application.status,
     fullName: application.fullName,
-    phone: application.phone,
+    phone,
+    phoneNumber: phone,
     district: application.district,
     taluka: application.taluka,
     village: application.village,
@@ -136,8 +216,13 @@ export const startApplication = async (
     throw new AppError("You already have an active Gram Sahakari application.", 409);
   }
 
+  const verifiedPhone = await getAuthUserMobile(userId);
   const { applicationNumber, sequence } = await generateApplicationNumber();
-  const application = await createDraftApplication(userId, applicationNumber);
+  const application = await createDraftApplication(
+    userId,
+    applicationNumber,
+    verifiedPhone
+  );
 
   logAuditEvent({
     action: "APPLICATION_STARTED",
@@ -162,7 +247,10 @@ export const getMyApplication = async (userId: string): Promise<ApplicationDTO> 
   if (!application) {
     throw new AppError("Application not found.", 404);
   }
-  return toApplicationDTO(application as IGramSahakariApplication & { _id: Types.ObjectId });
+  const withPhone = await ensureApplicationPhone(
+    application as IGramSahakariApplication & { _id: Types.ObjectId }
+  );
+  return toApplicationDTO(withPhone);
 };
 
 export const updateMyApplication = async (
@@ -179,6 +267,11 @@ export const updateMyApplication = async (
 
   const { dob, district, bankIFSC, ...rest } = body;
   const update: Partial<IGramSahakariApplication> = { ...rest };
+
+  // Never trust client phone — keep / backfill verified AuthUser.mobile only.
+  if (!application.phone) {
+    update.phone = await getAuthUserMobile(userId);
+  }
 
   if (district) {
     const { district: canonicalDistrict } = resolveDistrict(district);
@@ -273,15 +366,22 @@ export const submitApplication = async (
 
   if (application.status === "PAYMENT_PENDING") {
     // Idempotent: already waiting for payment.
-    return toApplicationDTO(application as IGramSahakariApplication & { _id: Types.ObjectId });
+    const withPhone = await ensureApplicationPhone(
+      application as IGramSahakariApplication & { _id: Types.ObjectId }
+    );
+    return toApplicationDTO(withPhone);
   }
 
   assertDraftApplication(application);
   assertSubmitReady(application);
 
+  const phone =
+    application.phone ?? (await getAuthUserMobile(userId));
+
   const updated = await updateApplicationById(String(application._id), {
     status: "PAYMENT_PENDING",
     paymentStatus: "PENDING",
+    ...(application.phone ? {} : { phone }),
   });
 
   if (!updated) {
@@ -329,10 +429,14 @@ export const listApplications = async (
   }
 
   const { items, total } = await findApplications({ ...query, page, limit, district });
+  const phones = await resolveApplicationPhones(items);
 
   return {
     items: items.map((item) =>
-      toApplicationSummaryDTO(item as IGramSahakariApplication & { _id: Types.ObjectId })
+      toApplicationSummaryDTO(
+        item as IGramSahakariApplication & { _id: Types.ObjectId },
+        phones.get(String(item._id))
+      )
     ),
     page,
     limit,
@@ -346,7 +450,8 @@ export const getApplicationById = async (
   _actor: { userId: string; role: UserRole }
 ): Promise<ApplicationDTO> => {
   const application = await getApplicationOrThrow(applicationId);
-  return toApplicationDTO(application);
+  const withPhone = await ensureApplicationPhone(application);
+  return toApplicationDTO(withPhone);
 };
 
 export const assertApplicationOwnership = (

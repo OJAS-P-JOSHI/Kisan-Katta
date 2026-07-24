@@ -14,7 +14,6 @@ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
 export interface UpdateApplicationBody {
   fullName?: string;
-  phone?: string;
   email?: string;
   gender?: Gender;
   dob?: string;
@@ -38,6 +37,8 @@ export interface AdminApplicationsQuery {
   search?: string;
   fromDate?: string;
   toDate?: string;
+  /** When true, include empty placeholder DRAFT rows created at application start. */
+  showDrafts?: boolean;
   page?: number;
   limit?: number;
 }

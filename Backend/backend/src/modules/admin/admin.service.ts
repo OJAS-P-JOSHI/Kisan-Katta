@@ -2,8 +2,13 @@ import { Types } from "mongoose";
 import { GramSahakariApplication } from "../gram-sahakari/gram-sahakari.model";
 import { findApplications } from "../gram-sahakari/repository/application.repository";
 import {
+  buildExcludeUnstartedDraftsFilter,
+  buildHasStartedApplicationFilter,
+} from "../gram-sahakari/utils/application-progress";
+import {
   getApplicationById as getApplicationByIdService,
   listApplications as listApplicationsService,
+  resolveApplicationPhones,
 } from "../gram-sahakari/service/application.service";
 import type { AdminApplicationsQuery } from "../gram-sahakari/types/application.types";
 import type { UserRole } from "../auth/auth.constants";
@@ -29,6 +34,10 @@ import {
   touchAdminLogin,
 } from "./admin.repository";
 import { Admin } from "./admin.model";
+import {
+  countFarmers,
+  getRecentFarmerRegistrations,
+} from "./admin.farmers.service";
 
 const REGISTRATION_FEE_PAISE = 50_000; // ₹500
 
@@ -46,7 +55,11 @@ export const toAdminProfileDTO = (admin: IAdmin): AdminProfileDTO => ({
   phoneNumber: admin.phoneNumber,
   email: admin.email,
   role: admin.role,
-  permissions: admin.permissions,
+  // SUPER_ADMIN always receives the latest permission catalog (additive grants).
+  permissions:
+    admin.role === "SUPER_ADMIN"
+      ? [...ROLE_PERMISSIONS.SUPER_ADMIN]
+      : admin.permissions,
   isActive: admin.isActive,
   address: admin.address,
   lastLoginAt: admin.lastLoginAt ? admin.lastLoginAt.toISOString() : null,
@@ -144,9 +157,14 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
     todayRegistrations,
     monthRegistrations,
     recent,
+    totalFarmers,
+    recentFarmers,
   ] = await Promise.all([
     GramSahakariApplication.countDocuments({}),
-    GramSahakariApplication.countDocuments({ status: "DRAFT" }),
+    GramSahakariApplication.countDocuments({
+      status: "DRAFT",
+      ...buildHasStartedApplicationFilter(),
+    }),
     GramSahakariApplication.countDocuments({ status: "PAYMENT_PENDING" }),
     GramSahakariApplication.countDocuments({ status: "SUBMITTED" }),
     GramSahakariApplication.countDocuments({ paymentStatus: "PAID" }),
@@ -158,13 +176,15 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       status: "SUBMITTED",
       submittedAt: { $gte: startOfMonth },
     }),
-    GramSahakariApplication.find({})
+    GramSahakariApplication.find(buildExcludeUnstartedDraftsFilter())
       .sort({ createdAt: -1 })
       .limit(8)
       .select(
-        "applicationNumber fullName district status paymentStatus createdAt"
+        "applicationNumber fullName phone userId district status paymentStatus createdAt"
       )
       .lean(),
+    countFarmers(),
+    getRecentFarmerRegistrations(8),
   ]);
 
   const totalRevenuePaise = paidCount * REGISTRATION_FEE_PAISE;
@@ -172,11 +192,16 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
     paymentStatus: { $in: ["PAID", "FAILED", "PENDING", "AUTHORIZED"] },
   });
 
+  const recentAsApps = recent as unknown as IGramSahakariApplication[];
+  const recentPhones = await resolveApplicationPhones(recentAsApps);
+
   return {
     totalApplications,
     draft,
     paymentPending,
     submitted,
+    totalFarmers,
+    totalGramSahakaris: paidCount,
     totalRevenuePaise,
     totalRevenueInr: totalRevenuePaise / 100,
     todayRegistrations,
@@ -186,14 +211,27 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       payableAttempts === 0
         ? 0
         : Math.round((paidCount / payableAttempts) * 1000) / 10,
-    recentApplications: recent.map((item) => ({
-      id: String(item._id),
-      applicationNumber: item.applicationNumber,
-      fullName: item.fullName ?? null,
-      district: item.district ?? null,
-      status: item.status,
-      paymentStatus: item.paymentStatus,
-      createdAt: new Date(item.createdAt).toISOString(),
+    recentApplications: recent.map((item) => {
+      const phoneNumber = recentPhones.get(String(item._id)) ?? null;
+      return {
+        id: String(item._id),
+        applicationNumber: item.applicationNumber,
+        fullName: item.fullName ?? null,
+        phoneNumber,
+        district: item.district ?? null,
+        status: item.status,
+        paymentStatus: item.paymentStatus,
+        createdAt: new Date(item.createdAt).toISOString(),
+      };
+    }),
+    recentFarmers: recentFarmers.map((farmer) => ({
+      id: farmer.id,
+      name: farmer.name,
+      mobile: farmer.mobile,
+      district: farmer.district,
+      village: farmer.village,
+      registeredAt: farmer.registeredAt,
+      accountStatus: farmer.accountStatus,
     })),
   };
 };
@@ -285,15 +323,19 @@ export const listVolunteers = async (input: {
     limit,
   });
 
+  const phones = await resolveApplicationPhones(items);
+
   return {
     items: items.map((item) => {
       const app = item as IGramSahakariApplication & { _id: Types.ObjectId };
+      const phoneNumber = phones.get(String(app._id)) ?? null;
       return {
         id: String(app._id),
         applicationNumber: app.applicationNumber,
         volunteerId: toVolunteerId(app.applicationNumber),
         fullName: app.fullName ?? null,
-        phone: app.phone ?? null,
+        phone: phoneNumber,
+        phoneNumber,
         district: app.district ?? null,
         taluka: app.taluka ?? null,
         village: app.village ?? null,
