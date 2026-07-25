@@ -110,7 +110,7 @@ export const openRazorpayCheckout = async ({
     amount: order.amount,
     currency: order.currency,
     name: 'Kisan Katta',
-    description: `Gram Sahakari Registration — ${order.applicationNumber}`,
+    description: `Village Representative Registration — ${order.applicationNumber}`,
     order_id: order.orderId,
     handler: (response) => {
       paymentDebug('Razorpay handler(response) fired', {

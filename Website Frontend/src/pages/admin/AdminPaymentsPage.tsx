@@ -94,7 +94,7 @@ export function AdminPaymentsPage() {
     <div>
       <AdminPageHeader
         title="Payments"
-        description="Read-only payment records from Gram Sahakari applications."
+        description="Read-only payment records from Village Representative applications."
       />
 
       <AdminCard>

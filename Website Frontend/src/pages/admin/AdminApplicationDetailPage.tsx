@@ -88,7 +88,7 @@ export function AdminApplicationDetailPage() {
     <div>
       <AdminPageHeader
         title={data.applicationNumber}
-        description={data.fullName ?? 'Gram Sahakari application'}
+        description={data.fullName ?? 'Village Representative application'}
         actions={
           <Link
             to="/admin/applications"

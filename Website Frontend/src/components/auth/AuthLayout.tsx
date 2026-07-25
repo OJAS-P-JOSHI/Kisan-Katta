@@ -45,7 +45,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
               शेतकऱ्यांचे डिजिटल व्यासपीठ
             </p>
             <p className="mt-4 text-sm leading-relaxed text-white/80">
-              A trusted platform connecting farmers, Gram Sahakari, and the
+              A trusted platform connecting farmers, Village Representatives, and the
               community — empowering rural India, digitally.
             </p>
           </div>
@@ -84,7 +84,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
             <div className="mb-6 text-center sm:mb-8">
               <h1 className="text-xl font-bold text-ink sm:text-2xl">{title}</h1>
               <p className="font-marathi mt-1 text-sm text-forest-700">
-                ग्राम सहकारी पोर्टल
+                गाव प्रतिनिधी पोर्टल
               </p>
               <div className="mt-2 text-sm text-muted-foreground">{subtitle}</div>
             </div>

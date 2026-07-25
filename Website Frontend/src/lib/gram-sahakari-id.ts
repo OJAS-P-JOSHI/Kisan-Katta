@@ -111,7 +111,7 @@ export function buildIDCardPayload(
     volunteerId,
     applicationNumber: app.applicationNumber,
     applicationId: app.id,
-    fullName: (app.fullName ?? '').trim() || 'Gram Sahakari',
+    fullName: (app.fullName ?? '').trim() || 'Village Representative',
     district: (app.district ?? '').trim() || '—',
     taluka: (app.taluka ?? '').trim() || '—',
     village: (app.village ?? '').trim() || '—',

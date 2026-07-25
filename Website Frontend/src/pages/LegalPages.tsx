@@ -101,7 +101,7 @@ export function PrivacyPage() {
           items={[
             'Registration and account creation',
             'Identity verification',
-            'Gram Sahakari onboarding and application review',
+            'Village Representative onboarding and application review',
             'Providing customer support',
             'Fraud detection and prevention',
             'Meeting legal and regulatory compliance obligations',
@@ -209,20 +209,20 @@ export function TermsPage() {
     <LegalLayout
       title="Terms & Conditions"
       subtitle="The terms that govern your use of the Kisan Katta platform."
-      seoDescription="Read the Kisan Katta Terms & Conditions covering platform use, Gram Sahakari applications, payments, user responsibilities, liability, and governing law."
+      seoDescription="Read the Kisan Katta Terms & Conditions covering platform use, Village Representative applications, payments, user responsibilities, liability, and governing law."
     >
       <Section title="1. About the Platform">
         <p>
           {COMPANY_NAME} (&ldquo;Kisan Katta&rdquo;) is a digital agritech platform that provides
           farmers in Maharashtra with tools such as weather information, government market (mandi)
-          prices, community insights, a local marketplace, and the Gram Sahakari program. By
+          prices, community insights, a local marketplace, and the Village Representative program. By
           accessing or using the Platform, you agree to be bound by these Terms &amp; Conditions.
         </p>
       </Section>
 
-      <Section title="2. Gram Sahakari Applications">
+      <Section title="2. Village Representative Applications">
         <p>
-          Applications to become a Gram Sahakari are subject to review. Submitting an application
+          Applications to become a Village Representative are subject to review. Submitting an application
           does <strong>not</strong> guarantee approval. Approval is granted solely at the discretion
           of Kisan Katta, based on our verification and eligibility criteria.
         </p>
@@ -241,9 +241,9 @@ export function TermsPage() {
       </Section>
 
       <Section title="4. Payments">
-        <h3 className="mt-4 text-base font-semibold text-ink">Gram Sahakari Registration Fee — ₹500</h3>
+        <h3 className="mt-4 text-base font-semibold text-ink">Village Representative Registration Fee — ₹500</h3>
         <p>
-          A registration fee of ₹500 is charged for processing and verification of a Gram Sahakari
+          A registration fee of ₹500 is charged for processing and verification of a Village Representative
           application. This fee covers document verification and administrative processing.
         </p>
         <p>
@@ -333,7 +333,7 @@ export function RefundPage() {
     <LegalLayout
       title="Refund & Cancellation Policy"
       subtitle="How refunds and cancellations work on the Kisan Katta platform."
-      seoDescription="Kisan Katta Refund & Cancellation Policy for the Gram Sahakari registration fee and future Farmer subscription."
+      seoDescription="Kisan Katta Refund & Cancellation Policy for the Village Representative registration fee and future Farmer subscription."
     >
       <Section title="1. Overview">
         <p>
@@ -342,7 +342,7 @@ export function RefundPage() {
         </p>
       </Section>
 
-      <Section title="2. Gram Sahakari Registration Fee — ₹500">
+      <Section title="2. Village Representative Registration Fee — ₹500">
         <p>
           The ₹500 registration fee is charged for document verification and administrative
           processing.

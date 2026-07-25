@@ -3,10 +3,10 @@ export const translations = {
     'nav.home': 'Home',
     'nav.about': 'About',
     'nav.features': 'Features',
-    'nav.gramSahakari': 'Become Gram Sahakari',
+    'nav.gramSahakari': 'Become Village Representative',
     'nav.faq': 'FAQ',
     'nav.contact': 'Contact',
-    'nav.portal': 'Gram Sahakari Portal',
+    'nav.portal': 'Village Representative Portal',
     'nav.login': 'Login',
     'nav.downloadApp': 'Download App',
     'nav.apply': 'Apply',
@@ -17,7 +17,7 @@ export const translations = {
       'Weather, government mandi prices, farmer community insights, and a local marketplace — all in Marathi, built for every village in Maharashtra.',
     'hero.mobileSubheadline': 'Weather, mandi prices & marketplace — all in Marathi.',
     'hero.cta.download': 'Download App',
-    'hero.cta.gramSahakari': 'Become Gram Sahakari',
+    'hero.cta.gramSahakari': 'Become Village Representative',
     'hero.scroll': 'Scroll',
 
     'features.weather': 'Weather',
@@ -30,7 +30,7 @@ export const translations = {
     'section.quickFeatures.title': 'Quick Features',
 
     'cta.downloadApp': 'Download Kisan Katta App',
-    'cta.becomeGramSahakari': 'Become Gram Sahakari',
+    'cta.becomeGramSahakari': 'Become Village Representative',
 
     'section.about.eyebrow': 'About Us',
     'section.about.title': 'About Kisan Katta',
@@ -53,24 +53,24 @@ export const translations = {
     'section.howItWorks.title': 'How It Works',
     'section.howItWorks.marathiTitle': 'अर्ज प्रक्रिया',
     'section.howItWorks.subtitle':
-      'From application to your first farmer onboarding — a simple, transparent journey for Gram Sahakari volunteers.',
+      'From application to your first farmer onboarding — a simple, transparent journey for Village Representatives.',
 
     'section.testimonials.eyebrow': 'Testimonials',
     'section.testimonials.title': 'Voices from the Field',
     'section.testimonials.marathiTitle': 'शेतातून आलेले अनुभव',
     'section.testimonials.subtitle':
-      'Stories from farmers and Gram Sahakari volunteers across Maharashtra.',
+      'Stories from farmers and Village Representatives across Maharashtra.',
 
     'section.about.marathiTitle': 'किसान कट्टा बद्दल',
 
     'section.gramSahakari.eyebrow': 'Join the Movement',
-    'section.gramSahakari.title': 'Become a Gram Sahakari',
+    'section.gramSahakari.title': 'Become a Village Representative',
     'section.gramSahakari.subtitle':
       'Be the bridge between technology and tradition in your village. This is how Maharashtra goes digital — one village at a time.',
-    'section.gramSahakari.apply': 'Apply Now — Become Gram Sahakari',
-    'section.gramSahakari.whoTitle': 'Who is a Gram Sahakari?',
+    'section.gramSahakari.apply': 'Apply Now — Become Village Representative',
+    'section.gramSahakari.whoTitle': 'Who is a Village Representative?',
     'section.gramSahakari.whoBody':
-      'A trusted village volunteer who helps fellow farmers adopt Kisan Katta. Gram Sahakari members are the heart of our network — connecting gram panchayats, onboarding new users, and ensuring no farmer is left behind.',
+      'A trusted village volunteer who helps fellow farmers adopt Kisan Katta. Village Representatives are the heart of our network — connecting gram panchayats, onboarding new users, and ensuring no farmer is left behind.',
     'section.gramSahakari.responsibilitiesTitle': 'Responsibilities',
     'section.gramSahakari.benefitsTitle': 'Benefits',
     'section.gramSahakari.impactTitle': 'Village Impact',
@@ -78,7 +78,7 @@ export const translations = {
     'section.faq.eyebrow': 'FAQ',
     'section.faq.title': 'Frequently Asked Questions',
     'section.faq.subtitle':
-      'Quick answers to common questions about Kisan Katta and the Gram Sahakari program.',
+      'Quick answers to common questions about Kisan Katta and the Village Representative program.',
     'section.faq.viewAll': 'View All FAQs',
 
     'footer.tagline':
@@ -102,7 +102,7 @@ export const translations = {
 
     'landing.cta.title': "Ready to Join Maharashtra's Digital Farming Revolution?",
     'landing.cta.description':
-      'Download the app or become a Gram Sahakari volunteer and help farmers in your village.',
+      'Download the app or become a Village Representative and help farmers in your village.',
 
     'common.loading': 'Loading…',
     'common.tryAgain': 'Try Again',
@@ -126,14 +126,14 @@ export const translations = {
     'common.somethingWrong': 'Something went wrong. Please try again.',
     'common.brandHome': 'Kisan Katta home',
 
-    'idCard.sectionTitle': 'My Gram Sahakari Digital ID',
-    'idCard.sectionSubtitle': 'Official digital identity for verified Gram Sahakari volunteers.',
-    'idCard.title': 'Gram Sahakari Digital Identity Card',
+    'idCard.sectionTitle': 'My Village Representative Digital ID',
+    'idCard.sectionSubtitle': 'Official digital identity for verified Village Representatives.',
+    'idCard.title': 'Village Representative Digital Identity Card',
     'idCard.subtitle': 'Maharashtra Volunteer Network',
     'idCard.active': 'Active',
     'idCard.noPhoto': 'Photo',
     'idCard.name': 'Volunteer Name',
-    'idCard.volunteerId': 'Gram Sahakari ID',
+    'idCard.volunteerId': 'Village Representative ID',
     'idCard.district': 'District',
     'idCard.taluka': 'Taluka',
     'idCard.village': 'Village',
@@ -142,11 +142,11 @@ export const translations = {
     'idCard.appNo': 'Application No.',
     'idCard.verify': 'Verification',
     'idCard.authorizedBy': 'Authorized Signature',
-    'idCard.authorizedName': 'Mahesh Shridhar Chautmal',
-    'idCard.authorizedNameCoFounder': 'Bakasdhe Bhagwan Chautmal',
+    'idCard.authorizedName': 'MAHESH SHRIDHAR CHAUTMAL',
+    'idCard.authorizedNameCoFounder': 'BALASAHEB BHAGWAN CHAUTMAL',
     'idCard.authorizedOrg': 'Kisan Katta',
     'idCard.scanToVerify': 'Scan to Verify',
-    'idCard.officialFooter': 'Official Gram Sahakari Identity Card',
+    'idCard.officialFooter': 'Official Village Representative Identity Card',
     'idCard.issuedBy': 'Issued by Kisan Katta',
     'idCard.verifiedSecurity': 'Verified',
     'idCard.version': 'Card Version {{version}}',
@@ -165,10 +165,10 @@ export const translations = {
     'idCard.shareCopied': 'ID details copied — share manually if needed',
     'idCard.copied': 'Volunteer ID copied',
     'idCard.actionFailed': 'Could not complete that action. Please try again.',
-    'idCard.verifyPageTitle': 'Gram Sahakari Verification',
-    'idCard.verifyPageDescription': 'Verify a Kisan Katta Gram Sahakari digital identity.',
+    'idCard.verifyPageTitle': 'Village Representative Verification',
+    'idCard.verifyPageDescription': 'Verify a Kisan Katta Village Representative digital identity.',
     'idCard.verifyPageBody':
-      'This QR links to the official verification page for a Gram Sahakari Digital ID. Live public lookup will be enabled once the verification service is online.',
+      'This QR links to the official verification page for a Village Representative Digital ID. Live public lookup will be enabled once the verification service is online.',
     'idCard.verifyPageSoon': 'Verification service coming soon.',
 
     'auth.login.title': 'Login',
@@ -223,27 +223,27 @@ export const translations = {
     'seo.features.title': 'Features — Kisan Katta',
     'seo.features.description':
       'Explore Kisan Katta features: weather updates, government mandi prices, farmer expected prices, marketplace, and community — all in Marathi.',
-    'seo.become.title': 'Become a Gram Sahakari — Kisan Katta',
+    'seo.become.title': 'Become a Village Representative — Kisan Katta',
     'seo.become.description':
-      'Join Maharashtra’s Gram Sahakari volunteer network. Help farmers in your village adopt digital farming tools with Kisan Katta.',
+      'Join Maharashtra’s Village Representative network. Help farmers in your village adopt digital farming tools with Kisan Katta.',
     'seo.faq.title': 'FAQ — Kisan Katta',
     'seo.faq.description':
-      'Frequently asked questions about Kisan Katta, the mobile app, and the Gram Sahakari program.',
+      'Frequently asked questions about Kisan Katta, the mobile app, and the Village Representative program.',
     'seo.contact.title': 'Contact Us — Kisan Katta',
     'seo.contact.description':
-      'Get in touch with the Kisan Katta team — call, email, or visit us. We help farmers and Gram Sahakari volunteers across Maharashtra.',
-    'seo.login.title': 'Login — Gram Sahakari Portal',
-    'seo.login.description': 'Sign in with your mobile number to continue your Gram Sahakari application.',
+      'Get in touch with the Kisan Katta team — call, email, or visit us. We help farmers and Village Representatives across Maharashtra.',
+    'seo.login.title': 'Login — Village Representative Portal',
+    'seo.login.description': 'Sign in with your mobile number to continue your Village Representative application.',
     'seo.verifyOtp.title': 'Verify OTP — Kisan Katta',
     'seo.verifyOtp.description': 'Enter the one-time password sent to your mobile to complete login.',
-    'seo.application.title': 'Gram Sahakari Application',
-    'seo.application.description': 'Complete your Gram Sahakari application for the Kisan Katta network.',
+    'seo.application.title': 'Village Representative Application',
+    'seo.application.description': 'Complete your Village Representative application for the Kisan Katta network.',
     'seo.status.title': 'Application Status — Kisan Katta',
-    'seo.status.description': 'Track your Gram Sahakari application status and payment progress.',
+    'seo.status.description': 'Track your Village Representative application status and payment progress.',
     'seo.success.title': 'Application Submitted — Kisan Katta',
-    'seo.success.description': 'Your Gram Sahakari application has been submitted successfully.',
+    'seo.success.description': 'Your Village Representative application has been submitted successfully.',
     'seo.profile.title': 'Profile — Kisan Katta',
-    'seo.profile.description': 'Manage your Gram Sahakari profile on Kisan Katta.',
+    'seo.profile.description': 'Manage your Village Representative profile on Kisan Katta.',
     'seo.notFound.title': 'Page Not Found — Kisan Katta',
     'seo.notFound.description': 'The page you are looking for could not be found on Kisan Katta.',
     'seo.privacy.title': 'Privacy Policy — Kisan Katta',
@@ -252,24 +252,24 @@ export const translations = {
     'seo.terms.description': 'Terms and conditions for using the Kisan Katta website and services.',
     'seo.refund.title': 'Refund & Cancellation Policy — Kisan Katta',
     'seo.refund.description':
-      'Refund and cancellation policy for Gram Sahakari registration fees and related payments.',
+      'Refund and cancellation policy for Village Representative registration fees and related payments.',
 
-    'become.heroTitle': 'Become a Gram Sahakari',
-    'become.heroMarathi': 'ग्राम सहकारी बना',
+    'become.heroTitle': 'Become a Village Representative',
+    'become.heroMarathi': 'गाव प्रतिनिधी बना',
     'become.heroSubtitle':
       'Join our network of village volunteers empowering farmers across Maharashtra with digital tools.',
     'become.startApplication': 'Start Application',
     'become.farmlandAlt': 'Green farmland in Maharashtra',
-    'become.whoTitle': 'Who is a Gram Sahakari?',
+    'become.whoTitle': 'Who is a Village Representative?',
     'become.whoBody':
-      'A Gram Sahakari is a trusted volunteer from your village or taluka who helps farmers install and use the Kisan Katta app. They are the human connection between technology and tradition — guiding farmers, answering questions, and ensuring every member of the community benefits from digital farming tools.',
+      'A Village Representative is a trusted volunteer from your village or taluka who helps farmers install and use the Kisan Katta app. They are the human connection between technology and tradition — guiding farmers, answering questions, and ensuring every member of the community benefits from digital farming tools.',
     'become.benefitsTitle': 'Benefits',
     'become.requirementsTitle': 'Requirements',
     'become.impactTitle': 'Village Impact',
     'become.processTitle': 'Application Process',
     'become.ctaTitle': 'Ready to Make a Difference in Your Village?',
     'become.ctaDescription':
-      "Start your application today and join Maharashtra's growing network of Gram Sahakari volunteers.",
+      "Start your application today and join Maharashtra's growing network of Village Representatives.",
 
     'become.req.resident': 'Resident of Maharashtra with strong local village ties',
     'become.req.smartphone': 'Own a smartphone and basic familiarity with mobile apps',
@@ -285,13 +285,13 @@ export const translations = {
 
     'become.benefit.digitalId.title': 'Digital ID Card',
     'become.benefit.digitalId.description':
-      'Receive an official Gram Sahakari digital ID recognized across Maharashtra.',
+      'Receive an official Village Representative digital ID recognized across Maharashtra.',
     'become.benefit.serve.title': 'Serve Your Village',
     'become.benefit.serve.description':
       'Make a lasting impact by helping fellow farmers adopt digital tools.',
     'become.benefit.network.title': 'Join a Network',
     'become.benefit.network.description':
-      'Connect with 2,000+ Gram Sahakari volunteers and share best practices.',
+      'Connect with 2,000+ Village Representatives and share best practices.',
     'become.benefit.recognition.title': 'Community Recognition',
     'become.benefit.recognition.description':
       'Get recognized for your contribution to digital farming in your district.',
@@ -301,7 +301,7 @@ export const translations = {
     'become.impact.districts': 'Districts Active',
 
     'become.timeline.apply.title': 'Apply',
-    'become.timeline.apply.description': 'Submit your application to become a Gram Sahakari volunteer.',
+    'become.timeline.apply.description': 'Submit your application to become a Village Representative.',
     'become.timeline.verification.title': 'Verification',
     'become.timeline.verification.description':
       'Our team verifies your details and local village connection.',
@@ -310,21 +310,21 @@ export const translations = {
       'Complete your profile with photo, district, and village details.',
     'become.timeline.registration.title': 'Registration',
     'become.timeline.registration.description':
-      'Finalize your registration in the Gram Sahakari network.',
+      'Finalize your registration in the Village Representative network.',
     'become.timeline.approval.title': 'Approval',
     'become.timeline.approval.description': 'Receive official approval from the Kisan Katta team.',
     'become.timeline.idCard.title': 'Digital ID Card',
-    'become.timeline.idCard.description': 'Get your verified digital Gram Sahakari ID card.',
+    'become.timeline.idCard.description': 'Get your verified digital Village Representative ID card.',
     'become.timeline.start.title': 'Start Helping Farmers',
     'become.timeline.start.description': 'Begin onboarding and guiding farmers in your village.',
 
     'contact.heroTitle': 'Contact Us',
     'contact.heroMarathi': 'आमच्याशी संपर्क साधा',
     'contact.heroSubtitle':
-      "Have questions about Kisan Katta or the Gram Sahakari program? We'd love to hear from you.",
+      "Have questions about Kisan Katta or the Village Representative program? We'd love to hear from you.",
     'contact.getInTouch': 'Get in Touch',
     'contact.getInTouchBody':
-      "Whether you're a farmer, a potential Gram Sahakari volunteer, or a partner — reach out and our team will respond as soon as possible.",
+      "Whether you're a farmer, a potential Village Representative, or a partner — reach out and our team will respond as soon as possible.",
     'contact.address': 'Business Address',
     'contact.phone': 'Phone',
     'contact.email': 'Email',
@@ -371,7 +371,7 @@ export const translations = {
     'featuresPage.ctaDescription':
       'Download Kisan Katta and see how technology can transform your farming day.',
     'featuresPage.ctaDownload': 'Download App',
-    'featuresPage.ctaGram': 'Learn About Gram Sahakari',
+    'featuresPage.ctaGram': 'Learn About Village Representative',
 
     'feature.weather.title': 'Weather Updates',
     'feature.weather.titleMr': 'हवामान अद्यतने',
@@ -422,10 +422,10 @@ export const translations = {
     'testimonial.1.quote':
       'Kisan Katta helped me check mandi prices before selling my crop. I got a better rate because I knew what to expect.',
     'testimonial.2.name': 'Sanjay Deshmukh',
-    'testimonial.2.role': 'Gram Sahakari',
+    'testimonial.2.role': 'Village Representative',
     'testimonial.2.location': 'Solapur, Maharashtra',
     'testimonial.2.quote':
-      'As a Gram Sahakari, I have helped over 200 farmers in my village use the app. The Marathi interface makes it easy for everyone.',
+      'As a Village Representative, I have helped over 200 farmers in my village use the app. The Marathi interface makes it easy for everyone.',
     'testimonial.3.name': 'Sunita Jadhav',
     'testimonial.3.role': 'Cotton Farmer',
     'testimonial.3.location': 'Yavatmal, Maharashtra',
@@ -443,18 +443,18 @@ export const translations = {
       'Farmers deserve technology that respects their language, their land, and their livelihood. Kisan Katta was built for them, not for spreadsheets.',
 
     'gram.overlay': 'Help farmers in your village',
-    'gram.imageAlt': 'Gram Sahakari volunteer helping farmers in a Maharashtra village',
+    'gram.imageAlt': 'Village Representative helping farmers in a Maharashtra village',
 
     'faq.whatIs.q': 'What is Kisan Katta?',
     'faq.whatIs.a':
       'Kisan Katta is a Maharashtra-focused AgriTech platform that helps farmers access weather updates, government mandi prices, community price insights, and a local marketplace — all in Marathi.',
     'faq.whoCan.q': 'Who can use the Kisan Katta app?',
     'faq.whoCan.a':
-      'Any farmer, agricultural worker, or rural community member in Maharashtra can download and use the app for free. Gram Sahakari volunteers help onboard new users in villages.',
-    'faq.whatGram.q': 'What is a Gram Sahakari?',
+      'Any farmer, agricultural worker, or rural community member in Maharashtra can download and use the app for free. Village Representatives help onboard new users in villages.',
+    'faq.whatGram.q': 'What is a Village Representative?',
     'faq.whatGram.a':
-      'A Gram Sahakari is a trusted village volunteer who helps farmers install the app, guides them through features, promotes digital farming, and connects villages to the Kisan Katta ecosystem.',
-    'faq.howBecome.q': 'How do I become a Gram Sahakari?',
+      'A Village Representative is a trusted village volunteer who helps farmers install the app, guides them through features, promotes digital farming, and connects villages to the Kisan Katta ecosystem.',
+    'faq.howBecome.q': 'How do I become a Village Representative?',
     'faq.howBecome.a':
       'Login with your mobile number using OTP, complete the application wizard, pay the registration fee, then track your application status until approval.',
     'faq.isFree.q': 'Is the app free to use?',
@@ -468,7 +468,7 @@ export const translations = {
       'Government mandi prices are sourced from official agricultural market data. Farmer expected prices come from community submissions within your district.',
     'faq.contact.q': 'How can I contact support?',
     'faq.contact.a':
-      'You can reach us through the Contact page, email us at m.chautmal2020@gmail.com, or ask your local Gram Sahakari volunteer for assistance.',
+      'You can reach us through the Contact page, email us at m.chautmal2020@gmail.com, or ask your local Village Representative for assistance.',
 
     'about.heroTitle': 'About Kisan Katta',
     'about.heroMarathi': 'किसान कट्टा बद्दल',
@@ -486,7 +486,7 @@ export const translations = {
       'Every feature is localized for Maharashtra — 36 districts, Marathi language, and local mandi data.',
     'about.value.community.title': 'Community Powered',
     'about.value.community.description':
-      'Our Gram Sahakari network and farmer community drive the platform forward, not algorithms in a distant office.',
+      'Our Village Representative network and farmer community drive the platform forward, not algorithms in a distant office.',
     'about.value.farmer.title': 'Farmer Centric',
     'about.value.farmer.description':
       'Free for farmers, simple to use, and designed for rural connectivity — because farming is hard enough.',
@@ -522,7 +522,7 @@ export const translations = {
 
     'app.success.loading': 'Loading confirmation…',
     'app.success.title': 'Application Submitted',
-    'app.success.body': 'Your Gram Sahakari registration has been submitted successfully.',
+    'app.success.body': 'Your Village Representative registration has been submitted successfully.',
     'app.success.appNumber': 'Application Number',
     'app.success.paymentStatus': 'Payment Status',
     'app.success.amount': 'Amount',
@@ -532,8 +532,8 @@ export const translations = {
     'app.success.returnHome': 'Return Home',
     'app.success.paid': 'Paid',
 
-    'app.profile.title': 'Gram Sahakari Application',
-    'app.profile.marathi': 'ग्राम सहकारी अर्ज',
+    'app.profile.title': 'Village Representative Application',
+    'app.profile.marathi': 'गाव प्रतिनिधी अर्ज',
     'app.profile.comingSoon': 'Profile management is coming soon.',
     'app.profile.backToApp': 'Back to Application',
 
@@ -639,10 +639,10 @@ export const translations = {
     'nav.home': 'मुख्यपृष्ठ',
     'nav.about': 'आमच्याबद्दल',
     'nav.features': 'वैशिष्ट्ये',
-    'nav.gramSahakari': 'ग्राम सहकारी बना',
+    'nav.gramSahakari': 'गाव प्रतिनिधी बना',
     'nav.faq': 'प्रश्नोत्तरे',
     'nav.contact': 'संपर्क',
-    'nav.portal': 'ग्राम सहकारी पोर्टल',
+    'nav.portal': 'गाव प्रतिनिधी पोर्टल',
     'nav.login': 'लॉगिन',
     'nav.downloadApp': 'अॅप डाउनलोड करा',
     'nav.apply': 'अर्ज करा',
@@ -653,7 +653,7 @@ export const translations = {
       'हवामान, सरकारी बाजार भाव, शेतकरी समुदाय अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व काही मराठीत, महाराष्ट्रातील प्रत्येक गावासाठी.',
     'hero.mobileSubheadline': 'हवामान, बाजार भाव आणि बाजारपेठ — सर्व मराठीत.',
     'hero.cta.download': 'अॅप डाउनलोड करा',
-    'hero.cta.gramSahakari': 'ग्राम सहकारी बना',
+    'hero.cta.gramSahakari': 'गाव प्रतिनिधी बना',
     'hero.scroll': 'स्क्रोल करा',
 
     'features.weather': 'हवामान',
@@ -666,7 +666,7 @@ export const translations = {
     'section.quickFeatures.title': 'त्वरित वैशिष्ट्ये',
 
     'cta.downloadApp': 'किसान कट्टा अॅप डाउनलोड करा',
-    'cta.becomeGramSahakari': 'ग्राम सहकारी बना',
+    'cta.becomeGramSahakari': 'गाव प्रतिनिधी बना',
 
     'section.about.eyebrow': 'आमच्याबद्दल',
     'section.about.title': 'किसान कट्टा बद्दल',
@@ -689,24 +689,24 @@ export const translations = {
     'section.howItWorks.title': 'कसे काम करते',
     'section.howItWorks.marathiTitle': 'अर्ज प्रक्रिया',
     'section.howItWorks.subtitle':
-      'अर्जापासून पहिल्या शेतकरी ऑनबोर्डिंगपर्यंत — ग्राम सहकारी स्वयंसेवकांसाठी सोपी, पारदर्शक वाटचाल.',
+      'अर्जापासून पहिल्या शेतकरी ऑनबोर्डिंगपर्यंत — गाव प्रतिनिधीांसाठी सोपी, पारदर्शक वाटचाल.',
 
     'section.testimonials.eyebrow': 'अनुभव',
     'section.testimonials.title': 'शेतातून आलेले आवाज',
     'section.testimonials.marathiTitle': 'शेतातून आलेले अनुभव',
     'section.testimonials.subtitle':
-      'महाराष्ट्रातील शेतकरी आणि ग्राम सहकारी स्वयंसेवकांच्या कथा.',
+      'महाराष्ट्रातील शेतकरी आणि गाव प्रतिनिधीांच्या कथा.',
 
     'section.about.marathiTitle': 'किसान कट्टा बद्दल',
 
     'section.gramSahakari.eyebrow': 'चळवळीत सामील व्हा',
-    'section.gramSahakari.title': 'ग्राम सहकारी बना',
+    'section.gramSahakari.title': 'गाव प्रतिनिधी बना',
     'section.gramSahakari.subtitle':
       'तुमच्या गावात तंत्रज्ञान आणि परंपरा यांचा पुल बना. महाराष्ट्र अशाच प्रकारे डिजिटल होतो — एक गाव एक वेळ.',
-    'section.gramSahakari.apply': 'अर्ज करा — ग्राम सहकारी बना',
-    'section.gramSahakari.whoTitle': 'ग्राम सहकारी कोण?',
+    'section.gramSahakari.apply': 'अर्ज करा — गाव प्रतिनिधी बना',
+    'section.gramSahakari.whoTitle': 'गाव प्रतिनिधी कोण?',
     'section.gramSahakari.whoBody':
-      'हा विश्वासू गाव स्वयंसेवक आहे जो सहशेतकऱ्यांना किसान कट्टा स्वीकारायला मदत करतो. ग्राम सहकारी आमच्या नेटवर्कचे हृदय आहेत — ग्रामपंचायती जोडणे, नवीन वापरकर्ते सामील करणे आणि कोणताही शेतकरी मागे राहणार नाही याची काळजी घेणे.',
+      'हा विश्वासू गाव स्वयंसेवक आहे जो सहशेतकऱ्यांना किसान कट्टा स्वीकारायला मदत करतो. गाव प्रतिनिधी आमच्या नेटवर्कचे हृदय आहेत — ग्रामपंचायती जोडणे, नवीन वापरकर्ते सामील करणे आणि कोणताही शेतकरी मागे राहणार नाही याची काळजी घेणे.',
     'section.gramSahakari.responsibilitiesTitle': 'जबाबदाऱ्या',
     'section.gramSahakari.benefitsTitle': 'फायदे',
     'section.gramSahakari.impactTitle': 'गावावरील प्रभाव',
@@ -714,7 +714,7 @@ export const translations = {
     'section.faq.eyebrow': 'प्रश्नोत्तरे',
     'section.faq.title': 'वारंवार विचारले जाणारे प्रश्न',
     'section.faq.subtitle':
-      'किसान कट्टा आणि ग्राम सहकारी कार्यक्रमाबद्दल सामान्य प्रश्नांची उत्तरे.',
+      'किसान कट्टा आणि गाव प्रतिनिधी कार्यक्रमाबद्दल सामान्य प्रश्नांची उत्तरे.',
     'section.faq.viewAll': 'सर्व प्रश्नोत्तरे पहा',
 
     'footer.tagline':
@@ -738,7 +738,7 @@ export const translations = {
 
     'landing.cta.title': 'महाराष्ट्राच्या डिजिटल शेती क्रांतीत सामील व्हाल?',
     'landing.cta.description':
-      'अॅप डाउनलोड करा किंवा ग्राम सहकारी स्वयंसेवक बना आणि तुमच्या गावातील शेतकऱ्यांना मदत करा.',
+      'अॅप डाउनलोड करा किंवा गाव प्रतिनिधी बना आणि तुमच्या गावातील शेतकऱ्यांना मदत करा.',
 
     'common.loading': 'लोड होत आहे…',
     'common.tryAgain': 'पुन्हा प्रयत्न करा',
@@ -762,14 +762,14 @@ export const translations = {
     'common.somethingWrong': 'काहीतरी चुकीचे झाले. कृपया पुन्हा प्रयत्न करा.',
     'common.brandHome': 'किसान कट्टा मुख्यपृष्ठ',
 
-    'idCard.sectionTitle': 'माझे ग्राम सहकारी डिजिटल ओळखपत्र',
-    'idCard.sectionSubtitle': 'पडताळणी झालेल्या ग्राम सहकारी स्वयंसेवकांसाठी अधिकृत डिजिटल ओळख.',
-    'idCard.title': 'ग्राम सहकारी डिजिटल ओळखपत्र',
+    'idCard.sectionTitle': 'माझे गाव प्रतिनिधी डिजिटल ओळखपत्र',
+    'idCard.sectionSubtitle': 'पडताळणी झालेल्या गाव प्रतिनिधीांसाठी अधिकृत डिजिटल ओळख.',
+    'idCard.title': 'गाव प्रतिनिधी डिजिटल ओळखपत्र',
     'idCard.subtitle': 'महाराष्ट्र स्वयंसेवक नेटवर्क',
     'idCard.active': 'सक्रिय',
     'idCard.noPhoto': 'फोटो',
     'idCard.name': 'स्वयंसेवकाचे नाव',
-    'idCard.volunteerId': 'ग्राम सहकारी आयडी',
+    'idCard.volunteerId': 'गाव प्रतिनिधी आयडी',
     'idCard.district': 'जिल्हा',
     'idCard.taluka': 'तालुका',
     'idCard.village': 'गाव',
@@ -778,11 +778,11 @@ export const translations = {
     'idCard.appNo': 'अर्ज क्रमांक',
     'idCard.verify': 'पडताळणी',
     'idCard.authorizedBy': 'अधिकृत स्वाक्षरी',
-    'idCard.authorizedName': 'Mahesh Shridhar Chautmal',
-    'idCard.authorizedNameCoFounder': 'Bakasdhe Bhagwan Chautmal',
+    'idCard.authorizedName': 'MAHESH SHRIDHAR CHAUTMAL',
+    'idCard.authorizedNameCoFounder': 'BALASAHEB BHAGWAN CHAUTMAL',
     'idCard.authorizedOrg': 'Kisan Katta',
     'idCard.scanToVerify': 'पडताळणीसाठी स्कॅन करा',
-    'idCard.officialFooter': 'अधिकृत ग्राम सहकारी ओळखपत्र',
+    'idCard.officialFooter': 'अधिकृत गाव प्रतिनिधी ओळखपत्र',
     'idCard.issuedBy': 'किसान कट्टा द्वारे जारी',
     'idCard.verifiedSecurity': 'पडताळलेले',
     'idCard.version': 'कार्ड आवृत्ती {{version}}',
@@ -801,8 +801,8 @@ export const translations = {
     'idCard.shareCopied': 'आयडी तपशील कॉपी झाले — आवश्यक असल्यास स्वतः शेअर करा',
     'idCard.copied': 'स्वयंसेवक आयडी कॉपी झाली',
     'idCard.actionFailed': 'ही क्रिया पूर्ण होऊ शकली नाही. कृपया पुन्हा प्रयत्न करा.',
-    'idCard.verifyPageTitle': 'ग्राम सहकारी पडताळणी',
-    'idCard.verifyPageDescription': 'किसान कट्टा ग्राम सहकारी डिजिटल ओळखपत्राची पडताळणी करा.',
+    'idCard.verifyPageTitle': 'गाव प्रतिनिधी पडताळणी',
+    'idCard.verifyPageDescription': 'किसान कट्टा गाव प्रतिनिधी डिजिटल ओळखपत्राची पडताळणी करा.',
     'idCard.verifyPageBody':
       'हा QR अधिकृत पडताळणी पृष्ठाशी जोडतो. पडताळणी सेवा सुरू झाल्यावर सार्वजनिक तपासणी उपलब्ध होईल.',
     'idCard.verifyPageSoon': 'पडताळणी सेवा लवकरच येत आहे.',
@@ -859,27 +859,27 @@ export const translations = {
     'seo.features.title': 'वैशिष्ट्ये — किसान कट्टा',
     'seo.features.description':
       'किसान कट्टाची वैशिष्ट्ये पहा: हवामान अद्यतने, सरकारी बाजार भाव, अपेक्षित भाव, बाजारपेठ आणि समुदाय — सर्व मराठीत.',
-    'seo.become.title': 'ग्राम सहकारी बना — किसान कट्टा',
+    'seo.become.title': 'गाव प्रतिनिधी बना — किसान कट्टा',
     'seo.become.description':
-      'महाराष्ट्राच्या ग्राम सहकारी स्वयंसेवक नेटवर्कमध्ये सामील व्हा. तुमच्या गावातील शेतकऱ्यांना डिजिटल शेती साधने स्वीकारायला मदत करा.',
+      'महाराष्ट्राच्या गाव प्रतिनिधी नेटवर्कमध्ये सामील व्हा. तुमच्या गावातील शेतकऱ्यांना डिजिटल शेती साधने स्वीकारायला मदत करा.',
     'seo.faq.title': 'प्रश्नोत्तरे — किसान कट्टा',
     'seo.faq.description':
-      'किसान कट्टा, मोबाइल अॅप आणि ग्राम सहकारी कार्यक्रमाबद्दल वारंवार विचारले जाणारे प्रश्न.',
+      'किसान कट्टा, मोबाइल अॅप आणि गाव प्रतिनिधी कार्यक्रमाबद्दल वारंवार विचारले जाणारे प्रश्न.',
     'seo.contact.title': 'संपर्क — किसान कट्टा',
     'seo.contact.description':
-      'किसान कट्टा टीमशी संपर्क साधा — कॉल, ईमेल किंवा भेट. आम्ही महाराष्ट्रातील शेतकरी व ग्राम सहकारी स्वयंसेवकांना मदत करतो.',
-    'seo.login.title': 'लॉगिन — ग्राम सहकारी पोर्टल',
-    'seo.login.description': 'तुमचा ग्राम सहकारी अर्ज सुरू ठेवण्यासाठी मोबाइल नंबरने साइन इन करा.',
+      'किसान कट्टा टीमशी संपर्क साधा — कॉल, ईमेल किंवा भेट. आम्ही महाराष्ट्रातील शेतकरी व गाव प्रतिनिधीांना मदत करतो.',
+    'seo.login.title': 'लॉगिन — गाव प्रतिनिधी पोर्टल',
+    'seo.login.description': 'तुमचा गाव प्रतिनिधी अर्ज सुरू ठेवण्यासाठी मोबाइल नंबरने साइन इन करा.',
     'seo.verifyOtp.title': 'OTP पडताळा — किसान कट्टा',
     'seo.verifyOtp.description': 'लॉगिन पूर्ण करण्यासाठी मोबाइलवर आलेला वन-टाइम पासवर्ड टाका.',
-    'seo.application.title': 'ग्राम सहकारी अर्ज',
-    'seo.application.description': 'किसान कट्टा नेटवर्कसाठी तुमचा ग्राम सहकारी अर्ज पूर्ण करा.',
+    'seo.application.title': 'गाव प्रतिनिधी अर्ज',
+    'seo.application.description': 'किसान कट्टा नेटवर्कसाठी तुमचा गाव प्रतिनिधी अर्ज पूर्ण करा.',
     'seo.status.title': 'अर्ज स्थिती — किसान कट्टा',
-    'seo.status.description': 'तुमच्या ग्राम सहकारी अर्जाची स्थिती आणि पेमेंट प्रगती ट्रॅक करा.',
+    'seo.status.description': 'तुमच्या गाव प्रतिनिधी अर्जाची स्थिती आणि पेमेंट प्रगती ट्रॅक करा.',
     'seo.success.title': 'अर्ज सादर झाला — किसान कट्टा',
-    'seo.success.description': 'तुमचा ग्राम सहकारी अर्ज यशस्वीरित्या सादर झाला आहे.',
+    'seo.success.description': 'तुमचा गाव प्रतिनिधी अर्ज यशस्वीरित्या सादर झाला आहे.',
     'seo.profile.title': 'प्रोफाइल — किसान कट्टा',
-    'seo.profile.description': 'किसान कट्टावर तुमचे ग्राम सहकारी प्रोफाइल व्यवस्थापित करा.',
+    'seo.profile.description': 'किसान कट्टावर तुमचे गाव प्रतिनिधी प्रोफाइल व्यवस्थापित करा.',
     'seo.notFound.title': 'पृष्ठ सापडले नाही — किसान कट्टा',
     'seo.notFound.description': 'तुम्ही शोधत असलेले पृष्ठ किसान कट्टावर सापडले नाही.',
     'seo.privacy.title': 'गोपनीयता धोरण — किसान कट्टा',
@@ -888,24 +888,24 @@ export const translations = {
     'seo.terms.description': 'किसान कट्टा वेबसाइट व सेवा वापरण्यासाठी अटी व शर्ती.',
     'seo.refund.title': 'परतावा व रद्दीकरण धोरण — किसान कट्टा',
     'seo.refund.description':
-      'ग्राम सहकारी नोंदणी शुल्क व संबंधित पेमेंटसाठी परतावा व रद्दीकरण धोरण.',
+      'गाव प्रतिनिधी नोंदणी शुल्क व संबंधित पेमेंटसाठी परतावा व रद्दीकरण धोरण.',
 
-    'become.heroTitle': 'ग्राम सहकारी बना',
-    'become.heroMarathi': 'ग्राम सहकारी बना',
+    'become.heroTitle': 'गाव प्रतिनिधी बना',
+    'become.heroMarathi': 'गाव प्रतिनिधी बना',
     'become.heroSubtitle':
       'महाराष्ट्रातील शेतकऱ्यांना डिजिटल साधनांनी सक्षम करणाऱ्या गाव स्वयंसेवक नेटवर्कमध्ये सामील व्हा.',
     'become.startApplication': 'अर्ज सुरू करा',
     'become.farmlandAlt': 'महाराष्ट्रातील हिरवी शेतजमीन',
-    'become.whoTitle': 'ग्राम सहकारी कोण?',
+    'become.whoTitle': 'गाव प्रतिनिधी कोण?',
     'become.whoBody':
-      'ग्राम सहकारी हा तुमच्या गावातील किंवा तालुक्यातील विश्वासू स्वयंसेवक आहे जो शेतकऱ्यांना किसान कट्टा अॅप इन्स्टॉल व वापरण्यास मदत करतो. ते तंत्रज्ञान आणि परंपरा यांच्यातील मानवी दुवा आहेत — शेतकऱ्यांना मार्गदर्शन करणे, प्रश्न सोडवणे आणि समुदायातील प्रत्येकाला डिजिटल शेती साधनांचा फायदा मिळेल याची खात्री करणे.',
+      'गाव प्रतिनिधी हा तुमच्या गावातील किंवा तालुक्यातील विश्वासू स्वयंसेवक आहे जो शेतकऱ्यांना किसान कट्टा अॅप इन्स्टॉल व वापरण्यास मदत करतो. ते तंत्रज्ञान आणि परंपरा यांच्यातील मानवी दुवा आहेत — शेतकऱ्यांना मार्गदर्शन करणे, प्रश्न सोडवणे आणि समुदायातील प्रत्येकाला डिजिटल शेती साधनांचा फायदा मिळेल याची खात्री करणे.',
     'become.benefitsTitle': 'फायदे',
     'become.requirementsTitle': 'आवश्यकता',
     'become.impactTitle': 'गावावरील प्रभाव',
     'become.processTitle': 'अर्ज प्रक्रिया',
     'become.ctaTitle': 'तुमच्या गावात बदल घडवायला तयार आहात?',
     'become.ctaDescription':
-      'आजच अर्ज सुरू करा आणि महाराष्ट्राच्या वाढत्या ग्राम सहकारी स्वयंसेवक नेटवर्कमध्ये सामील व्हा.',
+      'आजच अर्ज सुरू करा आणि महाराष्ट्राच्या वाढत्या गाव प्रतिनिधी नेटवर्कमध्ये सामील व्हा.',
 
     'become.req.resident': 'महाराष्ट्रातील रहिवासी व गावाशी मजबूत स्थानिक नाते',
     'become.req.smartphone': 'स्मार्टफोन असावा व मोबाइल अॅपची मूलभूत ओळख असावी',
@@ -921,13 +921,13 @@ export const translations = {
 
     'become.benefit.digitalId.title': 'डिजिटल ओळखपत्र',
     'become.benefit.digitalId.description':
-      'महाराष्ट्रभर मान्यता असलेले अधिकृत ग्राम सहकारी डिजिटल ओळखपत्र मिळवा.',
+      'महाराष्ट्रभर मान्यता असलेले अधिकृत गाव प्रतिनिधी डिजिटल ओळखपत्र मिळवा.',
     'become.benefit.serve.title': 'तुमच्या गावाची सेवा करा',
     'become.benefit.serve.description':
       'सहशेतकऱ्यांना डिजिटल साधने स्वीकारायला मदत करून दीर्घकाळ टिकणारा प्रभाव पाडा.',
     'become.benefit.network.title': 'नेटवर्कमध्ये सामील व्हा',
     'become.benefit.network.description':
-      '२,०००+ ग्राम सहकारी स्वयंसेवकांशी जोडा आणि उत्तम पद्धती शेअर करा.',
+      '२,०००+ गाव प्रतिनिधीांशी जोडा आणि उत्तम पद्धती शेअर करा.',
     'become.benefit.recognition.title': 'समुदाय मान्यता',
     'become.benefit.recognition.description':
       'तुमच्या जिल्ह्यातील डिजिटल शेतीतील योगदानासाठी मान्यता मिळवा.',
@@ -937,7 +937,7 @@ export const translations = {
     'become.impact.districts': 'सक्रिय जिल्हे',
 
     'become.timeline.apply.title': 'अर्ज करा',
-    'become.timeline.apply.description': 'ग्राम सहकारी स्वयंसेवक होण्यासाठी अर्ज सादर करा.',
+    'become.timeline.apply.description': 'गाव प्रतिनिधी होण्यासाठी अर्ज सादर करा.',
     'become.timeline.verification.title': 'पडताळणी',
     'become.timeline.verification.description':
       'आमची टीम तुमच्या तपशीलांची व गावाशी असलेल्या संबंधाची पडताळणी करते.',
@@ -946,21 +946,21 @@ export const translations = {
       'फोटो, जिल्हा आणि गाव तपशीलांसह प्रोफाइल पूर्ण करा.',
     'become.timeline.registration.title': 'नोंदणी',
     'become.timeline.registration.description':
-      'ग्राम सहकारी नेटवर्कमध्ये तुमची नोंदणी पूर्ण करा.',
+      'गाव प्रतिनिधी नेटवर्कमध्ये तुमची नोंदणी पूर्ण करा.',
     'become.timeline.approval.title': 'मंजुरी',
     'become.timeline.approval.description': 'किसान कट्टा टीमकडून अधिकृत मंजुरी मिळवा.',
     'become.timeline.idCard.title': 'डिजिटल ओळखपत्र',
-    'become.timeline.idCard.description': 'पडताळलेले डिजिटल ग्राम सहकारी ओळखपत्र मिळवा.',
+    'become.timeline.idCard.description': 'पडताळलेले डिजिटल गाव प्रतिनिधी ओळखपत्र मिळवा.',
     'become.timeline.start.title': 'शेतकऱ्यांना मदत सुरू करा',
     'become.timeline.start.description': 'तुमच्या गावातील शेतकऱ्यांना सामील करणे व मार्गदर्शन सुरू करा.',
 
     'contact.heroTitle': 'संपर्क',
     'contact.heroMarathi': 'आमच्याशी संपर्क साधा',
     'contact.heroSubtitle':
-      'किसान कट्टा किंवा ग्राम सहकारी कार्यक्रमाबद्दल प्रश्न आहेत? आम्हाला तुमच्याकडून ऐकायला आवडेल.',
+      'किसान कट्टा किंवा गाव प्रतिनिधी कार्यक्रमाबद्दल प्रश्न आहेत? आम्हाला तुमच्याकडून ऐकायला आवडेल.',
     'contact.getInTouch': 'संपर्क साधा',
     'contact.getInTouchBody':
-      'तुम्ही शेतकरी असाल, संभाव्य ग्राम सहकारी स्वयंसेवक असाल किंवा भागीदार असाल — संपर्क साधा; आमची टीम शक्य तितक्या लवकर उत्तर देईल.',
+      'तुम्ही शेतकरी असाल, संभाव्य गाव प्रतिनिधी असाल किंवा भागीदार असाल — संपर्क साधा; आमची टीम शक्य तितक्या लवकर उत्तर देईल.',
     'contact.address': 'व्यवसाय पत्ता',
     'contact.phone': 'फोन',
     'contact.email': 'ईमेल',
@@ -1007,7 +1007,7 @@ export const translations = {
     'featuresPage.ctaDescription':
       'किसान कट्टा डाउनलोड करा आणि तंत्रज्ञान तुमच्या शेतीच्या दिवसाला कसा बदलू शकते ते पहा.',
     'featuresPage.ctaDownload': 'अॅप डाउनलोड करा',
-    'featuresPage.ctaGram': 'ग्राम सहकारीबद्दल जाणून घ्या',
+    'featuresPage.ctaGram': 'गाव प्रतिनिधीबद्दल जाणून घ्या',
 
     'feature.weather.title': 'हवामान अद्यतने',
     'feature.weather.titleMr': 'हवामान अद्यतने',
@@ -1058,10 +1058,10 @@ export const translations = {
     'testimonial.1.quote':
       'पिक विकण्यापूर्वी बाजार भाव तपासण्यासाठी किसान कट्टाने मला मदत केली. काय अपेक्षा करावी हे माहित असल्याने मला चांगला दर मिळाला.',
     'testimonial.2.name': 'संजय देशमुख',
-    'testimonial.2.role': 'ग्राम सहकारी',
+    'testimonial.2.role': 'गाव प्रतिनिधी',
     'testimonial.2.location': 'सोलापूर, महाराष्ट्र',
     'testimonial.2.quote':
-      'ग्राम सहकारी म्हणून मी माझ्या गावातील २०० हून अधिक शेतकऱ्यांना अॅप वापरण्यास मदत केली आहे. मराठी इंटरफेसमुळे सर्वांना सोपे जाते.',
+      'गाव प्रतिनिधी म्हणून मी माझ्या गावातील २०० हून अधिक शेतकऱ्यांना अॅप वापरण्यास मदत केली आहे. मराठी इंटरफेसमुळे सर्वांना सोपे जाते.',
     'testimonial.3.name': 'सुनीता जाधव',
     'testimonial.3.role': 'कापूस शेतकरी',
     'testimonial.3.location': 'यवतमाळ, महाराष्ट्र',
@@ -1079,18 +1079,18 @@ export const translations = {
       'शेतकऱ्यांना अशी तंत्रज्ञानाची गरज आहे जी त्यांची भाषा, जमीन आणि उपजीविका यांचा आदर करते. किसान कट्टा त्यांच्यासाठी बांधले — स्प्रेडशीटसाठी नाही.',
 
     'gram.overlay': 'तुमच्या गावातील शेतकऱ्यांना मदत करा',
-    'gram.imageAlt': 'महाराष्ट्रातील गावात शेतकऱ्यांना मदत करणारा ग्राम सहकारी स्वयंसेवक',
+    'gram.imageAlt': 'महाराष्ट्रातील गावात शेतकऱ्यांना मदत करणारा गाव प्रतिनिधी',
 
     'faq.whatIs.q': 'किसान कट्टा म्हणजे काय?',
     'faq.whatIs.a':
       'किसान कट्टा हे महाराष्ट्र-केंद्रित अ‍ॅग्रीटेक व्यासपीठ आहे जे शेतकऱ्यांना हवामान अद्यतने, सरकारी बाजार भाव, समुदाय भाव अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व मराठीत — उपलब्ध करून देते.',
     'faq.whoCan.q': 'किसान कट्टा अॅप कोण वापरू शकतो?',
     'faq.whoCan.a':
-      'महाराष्ट्रातील कोणताही शेतकरी, शेतमजूर किंवा ग्रामीण समुदाय सदस्य अॅप मोफत डाउनलोड व वापरू शकतो. ग्राम सहकारी स्वयंसेवक गावांमध्ये नवीन वापरकर्त्यांना सामील करण्यास मदत करतात.',
-    'faq.whatGram.q': 'ग्राम सहकारी म्हणजे काय?',
+      'महाराष्ट्रातील कोणताही शेतकरी, शेतमजूर किंवा ग्रामीण समुदाय सदस्य अॅप मोफत डाउनलोड व वापरू शकतो. गाव प्रतिनिधी गावांमध्ये नवीन वापरकर्त्यांना सामील करण्यास मदत करतात.',
+    'faq.whatGram.q': 'गाव प्रतिनिधी म्हणजे काय?',
     'faq.whatGram.a':
-      'ग्राम सहकारी हा विश्वासू गाव स्वयंसेवक आहे जो शेतकऱ्यांना अॅप इन्स्टॉल करण्यास मदत करतो, वैशिष्ट्ये समजावतो, डिजिटल शेतीचा प्रसार करतो आणि गावे किसान कट्टा परिसंस्थेशी जोडतो.',
-    'faq.howBecome.q': 'मी ग्राम सहकारी कसा होऊ?',
+      'गाव प्रतिनिधी हा विश्वासू गाव स्वयंसेवक आहे जो शेतकऱ्यांना अॅप इन्स्टॉल करण्यास मदत करतो, वैशिष्ट्ये समजावतो, डिजिटल शेतीचा प्रसार करतो आणि गावे किसान कट्टा परिसंस्थेशी जोडतो.',
+    'faq.howBecome.q': 'मी गाव प्रतिनिधी कसा होऊ?',
     'faq.howBecome.a':
       'मोबाइल OTP ने लॉगिन करा, अर्ज विझार्ड पूर्ण करा, नोंदणी शुल्क भरा आणि मंजुरीपर्यंत अर्जाची स्थिती ट्रॅक करा.',
     'faq.isFree.q': 'अॅप वापरणे मोफत आहे का?',
@@ -1104,7 +1104,7 @@ export const translations = {
       'सरकारी बाजार भाव अधिकृत कृषी बाजार डेटावरून घेतले जातात. शेतकऱ्यांचा अपेक्षित भाव तुमच्या जिल्ह्यातील समुदाय सबमिशनमधून येतो.',
     'faq.contact.q': 'सहाय्याशी कसा संपर्क साधू?',
     'faq.contact.a':
-      'तुम्ही संपर्क पृष्ठावरून आमच्याशी संपर्क साधू शकता, m.chautmal2020@gmail.com वर ईमेल करू शकता किंवा स्थानिक ग्राम सहकारी स्वयंसेवकाची मदत घेऊ शकता.',
+      'तुम्ही संपर्क पृष्ठावरून आमच्याशी संपर्क साधू शकता, m.chautmal2020@gmail.com वर ईमेल करू शकता किंवा स्थानिक गाव प्रतिनिधीाची मदत घेऊ शकता.',
 
     'about.heroTitle': 'किसान कट्टा बद्दल',
     'about.heroMarathi': 'किसान कट्टा बद्दल',
@@ -1122,7 +1122,7 @@ export const translations = {
       'प्रत्येक वैशिष्ट्य महाराष्ट्रासाठी स्थानिकीकृत आहे — ३६ जिल्हे, मराठी भाषा आणि स्थानिक बाजार डेटा.',
     'about.value.community.title': 'समुदाय आधारित',
     'about.value.community.description':
-      'आमचे ग्राम सहकारी नेटवर्क आणि शेतकरी समुदाय व्यासपीठ पुढे नेतात — दूरच्या ऑफिसमधील अल्गोरिदम नाही.',
+      'आमचे गाव प्रतिनिधी नेटवर्क आणि शेतकरी समुदाय व्यासपीठ पुढे नेतात — दूरच्या ऑफिसमधील अल्गोरिदम नाही.',
     'about.value.farmer.title': 'शेतकरी केंद्रित',
     'about.value.farmer.description':
       'शेतकऱ्यांसाठी मोफत, वापरण्यास सोपे आणि ग्रामीण कनेक्टिव्हिटीसाठी डिझाइन केले — कारण शेती आधीच कठीण आहे.',
@@ -1159,7 +1159,7 @@ export const translations = {
 
     'app.success.loading': 'पुष्टीकरण लोड होत आहे…',
     'app.success.title': 'अर्ज सादर झाला',
-    'app.success.body': 'तुमची ग्राम सहकारी नोंदणी यशस्वीरित्या सादर झाली आहे.',
+    'app.success.body': 'तुमची गाव प्रतिनिधी नोंदणी यशस्वीरित्या सादर झाली आहे.',
     'app.success.appNumber': 'अर्ज क्रमांक',
     'app.success.paymentStatus': 'पेमेंट स्थिती',
     'app.success.amount': 'रक्कम',
@@ -1169,8 +1169,8 @@ export const translations = {
     'app.success.returnHome': 'मुख्यपृष्ठावर परत',
     'app.success.paid': 'भरले',
 
-    'app.profile.title': 'ग्राम सहकारी अर्ज',
-    'app.profile.marathi': 'ग्राम सहकारी अर्ज',
+    'app.profile.title': 'गाव प्रतिनिधी अर्ज',
+    'app.profile.marathi': 'गाव प्रतिनिधी अर्ज',
     'app.profile.comingSoon': 'प्रोफाइल व्यवस्थापन लवकरच येत आहे.',
     'app.profile.backToApp': 'अर्जाकडे परत',
 

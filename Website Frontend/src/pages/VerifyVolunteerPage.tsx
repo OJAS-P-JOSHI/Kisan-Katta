@@ -48,7 +48,7 @@ function VerifiedCard({ data }: { data: VerificationSuccess }) {
         Verified Volunteer
       </p>
       <p className="mt-1 text-sm text-steel" role="status">
-        This Gram Sahakari identity is authentic.
+        This Village Representative identity is authentic.
       </p>
 
       <div className="mt-6 flex flex-col items-center">
@@ -152,8 +152,8 @@ export function VerifyVolunteerPage() {
           : 'Volunteer Not Found — Kisan Katta'
 
   const seoDescription = data?.verified
-    ? `Official verification for Gram Sahakari ${data.volunteerId} (${data.name}).`
-    : 'Official Kisan Katta Gram Sahakari Digital Verification Portal.'
+    ? `Official verification for Village Representative ${data.volunteerId} (${data.name}).`
+    : 'Official Kisan Katta Village Representative Digital Verification Portal.'
 
   return (
     <>
@@ -187,7 +187,7 @@ export function VerifyVolunteerPage() {
               Official Portal
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-              Gram Sahakari Verification
+              Village Representative Verification
             </h1>
             <p className="mt-2 text-sm text-steel">
               Official Volunteer Verification Portal

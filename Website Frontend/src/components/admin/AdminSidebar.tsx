@@ -18,7 +18,7 @@ const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/farmers', label: 'Farmers', icon: Sprout },
   { to: '/admin/applications', label: 'Applications', icon: FileText },
-  { to: '/admin/gram-sahakaris', label: 'Gram Sahakaris', icon: IdCard },
+  { to: '/admin/gram-sahakaris', label: 'Village Representatives', icon: IdCard },
   { to: '/admin/payments', label: 'Payments', icon: CreditCard },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports', label: 'Reports', icon: FileText },

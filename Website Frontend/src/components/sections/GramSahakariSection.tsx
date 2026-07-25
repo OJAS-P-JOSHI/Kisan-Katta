@@ -36,7 +36,7 @@ export function GramSahakariSection() {
         <SectionTitle
           eyebrow={t('section.gramSahakari.eyebrow')}
           title={t('section.gramSahakari.title')}
-          marathiTitle="ग्राम सहकारी बना"
+          marathiTitle="गाव प्रतिनिधी बना"
           subtitle={t('section.gramSahakari.subtitle')}
         />
 

@@ -20,18 +20,19 @@ const CARD_SHADOW = '0 8px 28px -10px rgb(26 77 46 / 0.14)'
 const PHOTO_SHADOW = '0 2px 10px -2px rgb(26 77 46 / 0.12)'
 
 /**
- * Designations are always English on both EN and MR cards (client requirement).
- * Do not pass these through i18n.
+ * Role + designation stay English on both EN and MR cards (client requirement).
  */
 const ROLE_FOUNDER = 'Founder'
 const ROLE_CO_FOUNDER = 'Co-Founder'
+const ROLE_FOUNDER_DESIGNATION = 'Founder / Director'
+const ROLE_CO_FOUNDER_DESIGNATION = 'Co-Founder / Director'
 
 /** Display size for QR; generator still renders at 2× for crisp exports. */
 const QR_DISPLAY_PX = 120
 
 /**
  * Pure visual face of the Digital ID — captured for PNG/PDF.
- * Version 3: mobile-only (≤768px) photo | QR top row; md+ keeps Version 2.
+ * Mobile (≤768px) polish only; md+ Version 2 column layout unchanged.
  */
 export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function IDCardFace(
   { payload, locale, className },
@@ -52,26 +53,28 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
       )}
       style={{ boxShadow: CARD_SHADOW }}
     >
-      {/* Top brand bar */}
-      <div className="relative z-10 flex items-center gap-3 border-b border-forest-100 bg-forest-900 px-5 py-3.5">
+      {/* Top brand bar — mobile: wrap title, badge pinned top-right */}
+      <div className="relative z-10 flex items-start gap-2.5 border-b border-forest-100 bg-forest-900 px-4 py-3 md:items-center md:gap-3 md:px-5 md:py-3.5">
         <img
           src={brandAssets.logo}
           alt=""
           width={40}
           height={40}
-          className="h-10 w-10 rounded-full bg-white object-cover ring-2 ring-white/25"
+          className="mt-0.5 h-9 w-9 shrink-0 rounded-full bg-white object-cover ring-2 ring-white/25 md:mt-0 md:h-10 md:w-10"
           crossOrigin="anonymous"
         />
-        <div className="min-w-0 flex-1 text-white">
+        <div className="min-w-0 flex-1 pr-1 text-white">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-forest-100">
             Kisan Katta
           </p>
-          <h2 className="truncate text-sm font-bold leading-snug sm:text-[15px]">
+          <h2 className="text-[13px] font-bold leading-snug text-balance md:truncate md:text-[15px] md:leading-snug">
             {t('idCard.title')}
           </h2>
-          <p className="text-[11px] text-white/70">{t('idCard.subtitle')}</p>
+          <p className="mt-0.5 text-[10px] leading-snug text-white/70 md:mt-0 md:text-[11px]">
+            {t('idCard.subtitle')}
+          </p>
         </div>
-        <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full bg-white px-2.5 text-[10px] font-bold uppercase tracking-wide text-forest-800">
+        <span className="inline-flex h-7 shrink-0 items-center gap-1.5 self-start rounded-full bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-forest-800 md:px-2.5 md:text-[10px]">
           <span
             className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-forest-500"
             aria-hidden
@@ -82,21 +85,21 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
 
       {/*
         Body layout
-        - Mobile (≤768px / <md): Version 3 — Photo | QR row, then full-width identity
-        - md+: Version 2 — Photo+QR column | identity column (unchanged)
+        - Mobile (≤768px / <md): Photo | QR row, then full-width identity
+        - md+: Photo+QR column | identity column (unchanged)
       */}
-      <div className="relative z-10 grid grid-cols-2 items-start gap-x-4 gap-y-4 p-5 md:grid-cols-[120px_1fr] md:gap-5">
-        {/* Subtle watermark — stays behind content, never overlaps readability */}
+      <div className="relative z-10 grid grid-cols-2 items-start gap-x-3 gap-y-5 p-4 md:grid-cols-[120px_1fr] md:gap-5 md:p-5">
+        {/* Watermark — very low opacity so it never competes with content */}
         <img
           src={brandAssets.logo}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-44 w-44 -translate-x-1/2 -translate-y-1/2 select-none object-contain opacity-[0.038]"
+          className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 select-none object-contain opacity-[0.02] md:h-44 md:w-44 md:opacity-[0.038]"
           crossOrigin="anonymous"
         />
 
-        {/* Profile photo (+ verification badge) */}
-        <div className="relative z-10 mx-auto w-full max-w-[160px] md:mx-0 md:w-[120px] md:max-w-none">
+        {/* Profile photo — slightly larger on mobile, top-aligned with QR */}
+        <div className="relative z-10 w-full justify-self-stretch md:mx-0 md:w-[120px] md:max-w-none md:justify-self-start">
           <div
             className="relative aspect-square w-full overflow-hidden rounded-lg bg-forest-50"
             style={{
@@ -123,7 +126,7 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
           </div>
 
           <div
-            className="absolute -bottom-1.5 -right-1.5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-white"
+            className="absolute -bottom-1.5 -right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-forest-100 bg-white md:h-9 md:w-9"
             style={{ boxShadow: PHOTO_SHADOW }}
             title={t('idCard.verifiedSecurity')}
             aria-label={t('idCard.verifiedSecurity')}
@@ -131,18 +134,18 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
             <img
               src={brandAssets.logo}
               alt=""
-              className="h-6 w-6 rounded-full object-cover opacity-90"
+              className="h-5 w-5 rounded-full object-cover opacity-90 md:h-6 md:w-6"
               crossOrigin="anonymous"
             />
             <ShieldCheck
-              className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 text-forest-700"
+              className="absolute -right-0.5 -top-0.5 h-3 w-3 text-forest-700 md:h-3.5 md:w-3.5"
               aria-hidden
               strokeWidth={2.5}
             />
           </div>
         </div>
 
-        {/* QR — mobile: right of photo; md+: under photo in left column */}
+        {/* QR — top-aligned with photo; label centered underneath */}
         <div className="relative z-10 flex w-full flex-col items-center gap-1.5 self-start md:col-start-1 md:w-[120px] md:justify-self-start md:pt-1">
           <div
             className="rounded-lg border border-forest-100 bg-white p-1.5"
@@ -154,26 +157,26 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
                 alt=""
                 width={QR_DISPLAY_PX}
                 height={QR_DISPLAY_PX}
-                className="h-[120px] w-[120px] max-md:h-[112px] max-md:w-[112px]"
+                className="h-[120px] w-[120px] max-md:h-[116px] max-md:w-[116px]"
               />
             ) : (
-              <div className="flex h-[120px] w-[120px] items-center justify-center bg-forest-50 text-[10px] text-steel max-md:h-[112px] max-md:w-[112px]">
+              <div className="flex h-[120px] w-[120px] items-center justify-center bg-forest-50 text-[10px] text-steel max-md:h-[116px] max-md:w-[116px]">
                 QR
               </div>
             )}
           </div>
-          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-forest-800">
+          <p className="max-w-[116px] text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.1em] text-forest-800 md:max-w-none md:text-[10px] md:tracking-[0.12em]">
             {t('idCard.scanToVerify')}
           </p>
         </div>
 
-        {/* Identity — full width under photo|QR on mobile; right column on md+ */}
-        <div className="relative z-10 col-span-2 min-w-0 space-y-3.5 md:col-span-1 md:col-start-2 md:row-span-2 md:row-start-1">
+        {/* Identity — more breathing room on mobile; values may wrap */}
+        <div className="relative z-10 col-span-2 min-w-0 space-y-4 md:col-span-1 md:col-start-2 md:row-span-2 md:row-start-1 md:space-y-3.5">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-steel">
               {t('idCard.name')}
             </p>
-            <p className="mt-1 truncate text-xl font-bold leading-tight tracking-tight text-ink sm:text-[22px]">
+            <p className="mt-1 text-lg font-bold leading-snug tracking-tight text-ink break-words md:truncate md:text-xl md:leading-tight lg:text-[22px]">
               {payload.fullName}
             </p>
           </div>
@@ -182,12 +185,12 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-steel">
               {t('idCard.volunteerId')}
             </p>
-            <p className="mt-1 font-mono text-[15px] font-bold tracking-wide text-forest-900 sm:text-base">
+            <p className="mt-1 break-all font-mono text-[14px] font-bold tracking-wide text-forest-900 md:text-base">
               {payload.volunteerId}
             </p>
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-3.5 md:gap-x-4 md:gap-y-3">
             <Field label={t('idCard.district')} value={payload.district} />
             <Field label={t('idCard.taluka')} value={payload.taluka} />
             <Field label={t('idCard.village')} value={payload.village} />
@@ -198,20 +201,20 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
         </div>
       </div>
 
-      {/* Dual authorization — equal Founder / Co-Founder columns */}
-      <div className="relative z-10 border-t border-forest-100 bg-[#FAFBFA] px-4 py-3.5 sm:px-5">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      {/* Dual authorization — continuous; roomier on mobile */}
+      <div className="relative z-10 border-t border-forest-100 bg-[#FAFBFA] px-4 py-4 md:px-5 md:py-3.5">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 md:gap-6">
           <AuthorityBlock
-            authorizedBy={t('idCard.authorizedBy')}
             role={ROLE_FOUNDER}
+            designation={ROLE_FOUNDER_DESIGNATION}
             signatureSrc={brandAssets.signature}
             signatureFit="width"
             name={t('idCard.authorizedName')}
             org={t('idCard.authorizedOrg')}
           />
           <AuthorityBlock
-            authorizedBy={t('idCard.authorizedBy')}
             role={ROLE_CO_FOUNDER}
+            designation={ROLE_CO_FOUNDER_DESIGNATION}
             signatureSrc={brandAssets.signatureCoFounder}
             signatureFit="height"
             signatureRotateDeg={-8}
@@ -221,12 +224,12 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
         </div>
       </div>
 
-      {/* Professional credential footer */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-forest-100 bg-white px-5 py-2">
-        <p className="text-[10px] font-medium text-steel">
+      {/* Footer — stacks cleanly on narrow screens */}
+      <div className="relative z-10 flex flex-col gap-1 border-t border-forest-100 bg-white px-4 py-2.5 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-3 md:gap-y-1 md:px-5 md:py-2">
+        <p className="text-[10px] font-medium leading-snug text-steel">
           {t('idCard.officialFooter')}
         </p>
-        <p className="text-[10px] text-steel">
+        <p className="text-[10px] leading-snug text-steel">
           {t('idCard.issuedBy')}
           <span className="mx-1.5 text-mist">·</span>
           {t('idCard.version', { version: payload.version })}
@@ -238,45 +241,45 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
   )
 })
 
-/** Always-English role labels — never use Marathi font for designations. */
+/**
+ * Authorization column — continuous with the card (no boxed outline).
+ * Hierarchy: Role → signature → designation → NAME → org.
+ * English role/designation on Marathi cards.
+ */
 function AuthorityBlock({
-  authorizedBy,
   role,
+  designation,
   signatureSrc,
   signatureFit,
   signatureRotateDeg = 0,
   name,
   org,
 }: {
-  authorizedBy: string
   role: string
+  designation: string
   signatureSrc: string
-  /** width = wide founder stroke; height = tall co-founder stroke */
   signatureFit: 'width' | 'height'
   signatureRotateDeg?: number
   name: string
   org: string
 }) {
   return (
-    <div className="flex min-w-0 flex-col rounded-lg border border-forest-100/90 bg-white px-2.5 py-2 sm:px-3">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-steel sm:text-[10px] sm:tracking-[0.14em]">
-        {authorizedBy}
-      </p>
-      <p className="mt-0.5 font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-forest-800">
+    <div className="flex min-w-0 flex-col">
+      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-forest-800">
         {role}
       </p>
 
-      {/* Identical signing slot for both columns — signatures centered, left-aligned with name */}
-      <div className="mt-2.5 mb-0.5 flex h-[72px] items-center justify-start overflow-visible">
+      {/* Mobile: slightly smaller signatures + tighter slot; md+: prior sizes */}
+      <div className="mt-2 mb-0 flex h-[48px] items-end justify-start overflow-visible md:mt-1.5 md:h-[62px]">
         <img
           src={signatureSrc}
           alt=""
           className={cn(
             'object-contain object-left',
-            /* Founder: wide stroke — cap by width */
-            signatureFit === 'width' && 'h-auto w-auto max-w-[140px]',
-            /* Co-Founder: ~18% larger than prior 60px height cap — never stretch */
-            signatureFit === 'height' && 'h-auto w-auto max-h-[71px] max-w-full',
+            signatureFit === 'width' &&
+              'h-auto w-auto max-w-[105px] md:max-w-[122px]',
+            signatureFit === 'height' &&
+              'h-auto w-auto max-h-[52px] max-w-full md:max-h-[62px]',
           )}
           style={
             signatureRotateDeg
@@ -292,11 +295,15 @@ function AuthorityBlock({
         />
       </div>
 
-      <p className="truncate text-[11px] font-semibold leading-tight text-ink sm:text-[12px]">
+      <p className="mt-2 font-sans text-[9px] font-medium leading-snug tracking-wide text-steel md:mt-1 md:text-[10px]">
+        {designation}
+      </p>
+      <p className="mt-1 font-sans text-[10px] font-bold uppercase leading-snug tracking-wide text-ink break-words md:mt-0.5 md:truncate md:text-[12px]">
         {name}
       </p>
-      <p className="mt-px font-sans text-[10px] leading-tight text-steel">{role}</p>
-      <p className="mt-px text-[10px] font-semibold leading-tight text-forest-800">{org}</p>
+      <p className="mt-1 text-[10px] font-semibold leading-tight text-forest-800 md:mt-0.5">
+        {org}
+      </p>
     </div>
   )
 }
@@ -311,14 +318,16 @@ function Field({
   mono?: boolean
 }) {
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 overflow-hidden">
       <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-steel">
         {label}
       </dt>
       <dd
         className={cn(
-          'mt-1 truncate text-[13px] font-semibold leading-snug text-ink',
-          mono && 'font-mono tracking-wide',
+          'mt-1 text-[13px] font-semibold leading-snug text-ink',
+          /* Mobile: wrap long district/village names; md+: single-line truncate */
+          'break-words hyphens-auto md:truncate md:hyphens-none',
+          mono && 'font-mono tracking-wide break-all md:break-normal',
         )}
       >
         {value}

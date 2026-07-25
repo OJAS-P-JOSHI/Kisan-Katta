@@ -121,7 +121,7 @@ export function AdminApplicationsPage() {
     <div>
       <AdminPageHeader
         title="Applications"
-        description="Search, filter, and review Gram Sahakari applications."
+        description="Search, filter, and review Village Representative applications."
       />
 
       <AdminCard>

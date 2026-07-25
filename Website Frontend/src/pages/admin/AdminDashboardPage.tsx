@@ -32,7 +32,7 @@ export function AdminDashboardPage() {
           </span>
         </h1>
         <p className="mt-2 max-w-xl text-sm text-steel">
-          Farmers, Gram Sahakaris, applications, and revenue at a glance.
+          Farmers, Village Representatives, applications, and revenue at a glance.
         </p>
       </div>
 
@@ -51,7 +51,7 @@ export function AdminDashboardPage() {
           tone="green"
         />
         <StatCard
-          label="Total Gram Sahakaris"
+          label="Total Village Representatives"
           value={isLoading ? '—' : (data?.totalGramSahakaris ?? 0)}
           tone="green"
         />

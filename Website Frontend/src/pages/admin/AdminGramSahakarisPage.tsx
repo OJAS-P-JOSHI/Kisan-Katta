@@ -102,7 +102,7 @@ export function AdminGramSahakarisPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Gram Sahakaris"
+        title="Village Representatives"
         description="Approved volunteers with completed registration and payment."
       />
 
@@ -133,7 +133,7 @@ export function AdminGramSahakarisPage() {
           rows={data?.items ?? []}
           loading={isLoading || (isFetching && !data)}
           rowKey={(row) => row.id}
-          emptyTitle="No approved Gram Sahakaris yet"
+          emptyTitle="No approved Village Representatives yet"
         />
         <Pagination
           page={data?.page ?? page}

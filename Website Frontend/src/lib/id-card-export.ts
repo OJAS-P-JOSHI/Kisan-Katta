@@ -108,8 +108,8 @@ export async function shareCard(
 
   if (nav.share && nav.canShare?.({ files: [file] })) {
     await nav.share({
-      title: 'Gram Sahakari Digital ID',
-      text: `Kisan Katta Gram Sahakari ID: ${volunteerId}`,
+      title: 'Village Representative Digital ID',
+      text: `Kisan Katta Village Representative ID: ${volunteerId}`,
       files: [file],
       url: verificationUrl,
     })
@@ -118,8 +118,8 @@ export async function shareCard(
 
   if (nav.share) {
     await nav.share({
-      title: 'Gram Sahakari Digital ID',
-      text: `Kisan Katta Gram Sahakari ID: ${volunteerId}\n${verificationUrl}`,
+      title: 'Village Representative Digital ID',
+      text: `Kisan Katta Village Representative ID: ${volunteerId}\n${verificationUrl}`,
       url: verificationUrl,
     })
     return 'shared'
