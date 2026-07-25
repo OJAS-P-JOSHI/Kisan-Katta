@@ -23,8 +23,12 @@ export const brandAssets = {
    * change required if the filename stays the same. See IMAGE_SOURCES.md.
    */
   gramSahakari: '/gram-sahakari.webp',
-  /** Official founder signature for Digital ID authorization block */
+  /**
+   * Official signatures for Digital ID authorization block.
+   * Final assets live at `/public/sign.png` and `/public/sign2.png`.
+   */
   signature: '/sign.png',
+  signatureCoFounder: '/sign2.png',
 } as const
 
 /** Royalty-free Unsplash agriculture imagery (commercial use) — secondary accents only. */
