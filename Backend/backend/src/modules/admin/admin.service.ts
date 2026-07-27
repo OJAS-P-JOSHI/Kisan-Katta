@@ -38,6 +38,7 @@ import {
   countFarmers,
   getRecentFarmerRegistrations,
 } from "./admin.farmers.service";
+import { getDashboardRewardStats } from "../rewards/reward.service";
 
 const REGISTRATION_FEE_PAISE = 50_000; // ₹500
 
@@ -159,6 +160,7 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
     recent,
     totalFarmers,
     recentFarmers,
+    rewardStats,
   ] = await Promise.all([
     GramSahakariApplication.countDocuments({}),
     GramSahakariApplication.countDocuments({
@@ -185,6 +187,7 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       .lean(),
     countFarmers(),
     getRecentFarmerRegistrations(8),
+    getDashboardRewardStats(),
   ]);
 
   const totalRevenuePaise = paidCount * REGISTRATION_FEE_PAISE;
@@ -233,6 +236,11 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       registeredAt: farmer.registeredAt,
       accountStatus: farmer.accountStatus,
     })),
+    rewardsPaidThisMonth: rewardStats.rewardsPaidThisMonth,
+    rewardsPaidThisMonthAmount: rewardStats.rewardsPaidThisMonthAmount,
+    pendingRewards: rewardStats.pendingRewards,
+    pendingRewardsAmount: rewardStats.pendingRewardsAmount,
+    topRewardedRepresentatives: rewardStats.topRewardedRepresentatives,
   };
 };
 

@@ -82,7 +82,72 @@ export function AdminDashboardPage() {
           value={isLoading ? '—' : `${data?.paymentSuccessRate ?? 0}%`}
           tone="blue"
         />
+        <StatCard
+          label="Rewards Paid This Month"
+          value={
+            isLoading
+              ? '—'
+              : `${data?.rewardsPaidThisMonth ?? 0} · ${formatInr(data?.rewardsPaidThisMonthAmount ?? 0)}`
+          }
+          tone="green"
+        />
+        <StatCard
+          label="Pending Rewards"
+          value={
+            isLoading
+              ? '—'
+              : `${data?.pendingRewards ?? 0} · ${formatInr(data?.pendingRewardsAmount ?? 0)}`
+          }
+          tone="amber"
+        />
       </div>
+
+      {(data?.topRewardedRepresentatives?.length ?? 0) > 0 || isLoading ? (
+        <AdminCard
+          title="Top Rewarded Village Representatives"
+          className="mt-5"
+          action={
+            <Link
+              to="/admin/rewards"
+              className="text-xs font-semibold text-forest-700 hover:underline"
+            >
+              Manage rewards
+            </Link>
+          }
+          padded={false}
+        >
+          {isLoading ? (
+            <div className="p-4">
+              <TableSkeleton rows={3} />
+            </div>
+          ) : (
+            <ul className="divide-y divide-mist">
+              {(data?.topRewardedRepresentatives ?? []).map((row) => (
+                <li key={row.applicationId}>
+                  <Link
+                    to={`/admin/applications/${row.applicationId}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-forest-50/40 sm:px-5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-ink">
+                        {row.villageRepresentativeName}
+                      </p>
+                      <p className="truncate text-xs text-steel">
+                        {row.volunteerId}
+                        {row.district ? ` · ${row.district}` : ''}
+                        {` · ${row.rewardCount} reward${row.rewardCount === 1 ? '' : 's'}`}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold tabular-nums text-forest-800">
+                      {formatInr(row.totalAmount)}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </AdminCard>
+      ) : null}
 
       <div className="mt-5 grid gap-4 lg:mt-6 lg:grid-cols-2">
         <AdminCard

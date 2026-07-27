@@ -56,6 +56,18 @@ export type DashboardSummary = {
     registeredAt: string
     accountStatus: 'ACTIVE' | 'INACTIVE'
   }>
+  rewardsPaidThisMonth: number
+  rewardsPaidThisMonthAmount: number
+  pendingRewards: number
+  pendingRewardsAmount: number
+  topRewardedRepresentatives: Array<{
+    applicationId: string
+    villageRepresentativeName: string
+    volunteerId: string
+    district: string | null
+    totalAmount: number
+    rewardCount: number
+  }>
 }
 
 export type AnalyticsSummary = {

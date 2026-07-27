@@ -104,6 +104,16 @@ const AdminPaymentsPage = lazy(() =>
     default: m.AdminPaymentsPage,
   })),
 )
+const AdminRewardsPage = lazy(() =>
+  import('@/pages/admin/AdminRewardsPage').then((m) => ({
+    default: m.AdminRewardsPage,
+  })),
+)
+const AdminRewardDetailPage = lazy(() =>
+  import('@/pages/admin/AdminRewardDetailPage').then((m) => ({
+    default: m.AdminRewardDetailPage,
+  })),
+)
 const AdminAnalyticsPage = lazy(() =>
   import('@/pages/admin/AdminAnalyticsPage').then((m) => ({
     default: m.AdminAnalyticsPage,
@@ -201,6 +211,8 @@ export function App() {
             <Route path="applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="gram-sahakaris" element={<AdminGramSahakarisPage />} />
             <Route path="payments" element={<AdminPaymentsPage />} />
+            <Route path="rewards" element={<AdminRewardsPage />} />
+            <Route path="rewards/:id" element={<AdminRewardDetailPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />

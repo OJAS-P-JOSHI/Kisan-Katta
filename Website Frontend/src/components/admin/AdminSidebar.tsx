@@ -2,6 +2,7 @@ import {
   BarChart3,
   CreditCard,
   FileText,
+  Gift,
   IdCard,
   LayoutDashboard,
   LogOut,
@@ -16,10 +17,11 @@ import { cn } from '@/lib/utils'
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/farmers', label: 'Farmers', icon: Sprout },
   { to: '/admin/applications', label: 'Applications', icon: FileText },
   { to: '/admin/gram-sahakaris', label: 'Village Representatives', icon: IdCard },
+  { to: '/admin/farmers', label: 'Farmers', icon: Sprout },
   { to: '/admin/payments', label: 'Payments', icon: CreditCard },
+  { to: '/admin/rewards', label: 'Rewards', icon: Gift },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports', label: 'Reports', icon: FileText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },

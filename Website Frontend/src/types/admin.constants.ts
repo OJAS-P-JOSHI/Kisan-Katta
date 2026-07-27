@@ -15,6 +15,7 @@ export const ADMIN_PERMISSIONS = [
   'payments',
   'volunteers',
   'farmers',
+  'rewards',
   'analytics',
   'settings',
   'reports',
