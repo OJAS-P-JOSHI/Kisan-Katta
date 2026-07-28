@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router/js-tabs';
-import type { ColorValue } from 'react-native';
+import { StyleSheet, type ColorValue } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '@/constants';
 import { palette, spacing, useAppTheme } from '@/theme';
@@ -21,13 +22,15 @@ function TabIcon({
       name={name}
       color={color}
       size={focused ? 26 : 24}
-      style={{ marginBottom: 1 }}
+      style={{ marginBottom: 2 }}
     />
   );
 }
 
 export default function TabsLayout() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const bottomPad = Math.max(insets.bottom, spacing.sm);
 
   return (
     <Tabs
@@ -37,16 +40,16 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.outlineVariant,
-          borderTopWidth: 1,
-          height: 64,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: 58 + bottomPad,
           paddingTop: spacing.sm,
-          paddingBottom: spacing.sm,
+          paddingBottom: bottomPad,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
           marginTop: 2,
-          letterSpacing: 0.1,
+          letterSpacing: 0.15,
         },
         tabBarItemStyle: {
           paddingVertical: 2,

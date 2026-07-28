@@ -6,7 +6,7 @@ import { Card, Divider, Text } from 'react-native-paper';
 
 import { BrandLeaves } from '@/components/BrandLeaves';
 import { strings } from '@/constants';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { cardSurface, iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
 import type { CurrentWeather } from '../weather.types';
@@ -18,17 +18,12 @@ type StatItemProps = { icon: IconName; value: string; label: string; theme: AppT
 
 const StatItem = memo(function StatItem({ icon, value, label, theme }: StatItemProps) {
   return (
-    <View style={[stat.item, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <View style={[stat.iconWrap, { backgroundColor: theme.colors.surface }]}>
+    <View style={[stat.item, { backgroundColor: palette.green50 }]}>
+      <View style={[stat.iconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
         <MaterialCommunityIcons name={icon} size={iconSize.sm} color={theme.colors.primary} />
       </View>
-      <Text style={[typography.sectionTitle, { color: theme.colors.onSurface, fontSize: 14 }]}>
-        {value}
-      </Text>
-      <Text
-        style={[typography.caption, { color: theme.colors.onSurfaceVariant, textAlign: 'center' }]}
-        numberOfLines={2}
-      >
+      <Text style={stat.value}>{value}</Text>
+      <Text style={[stat.label, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
         {label}
       </Text>
     </View>
@@ -39,24 +34,37 @@ const stat = StyleSheet.create({
   item: {
     flex: 1,
     alignItems: 'center',
-    gap: 3,
-    paddingVertical: spacing.sm + 2,
+    gap: 6,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    minHeight: 96,
   },
   iconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.sm,
+    width: 32,
+    height: 32,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  value: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '700',
+    color: palette.green900,
+    letterSpacing: -0.2,
+  },
+  label: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
 
 type WeatherCardProps = {
   weather: CurrentWeather;
   todayRainChance?: number;
-  /** Dynamic farming advice from `getFarmingAdvice`. */
   farmingAdvice?: string;
 };
 
@@ -70,34 +78,24 @@ export const WeatherCard = memo(function WeatherCard({
   return (
     <Card mode="elevated" style={[styles.card, cardSurface]}>
       <View style={[styles.heroBand, { backgroundColor: theme.colors.primaryContainer }]}>
+        <View style={styles.heroWash} />
         <BrandLeaves variant="weather" />
         <View style={styles.topRow}>
           <View style={styles.iconBlock}>
             <View style={[styles.iconCircle, { backgroundColor: theme.colors.surface }]}>
               <MaterialCommunityIcons
                 name={getWeatherIcon(weather.condition)}
-                size={48}
+                size={56}
                 color={theme.colors.primary}
               />
             </View>
-            <Text
-              style={[
-                typography.sectionTitle,
-                { color: theme.colors.onPrimaryContainer, marginTop: spacing.sm },
-              ]}
-              numberOfLines={2}
-            >
+            <Text style={styles.condition} numberOfLines={2}>
               {translateCondition(weather.condition)}
             </Text>
           </View>
           <View style={styles.tempBlock}>
-            <Text style={[styles.tempText, { color: theme.colors.onPrimaryContainer }]}>
-              {Math.round(weather.temperatureC)}°
-            </Text>
-            <Text
-              style={[typography.body, { color: theme.colors.onPrimaryContainer, opacity: 0.85 }]}
-              numberOfLines={2}
-            >
+            <Text style={styles.tempText}>{Math.round(weather.temperatureC)}°</Text>
+            <Text style={styles.feelsLike} numberOfLines={2}>
               {w.feelsLikeShort} {Math.round(weather.feelsLikeC)}°C
             </Text>
           </View>
@@ -106,7 +104,9 @@ export const WeatherCard = memo(function WeatherCard({
 
       <Card.Content style={styles.body}>
         <View style={styles.windRow}>
-          <MaterialCommunityIcons name="compass-outline" size={iconSize.sm} color={theme.colors.primary} />
+          <View style={[styles.windIcon, { backgroundColor: theme.colors.primaryContainer }]}>
+            <MaterialCommunityIcons name="compass-outline" size={iconSize.sm} color={theme.colors.primary} />
+          </View>
           <Text
             style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500', flex: 1 }]}
             numberOfLines={2}
@@ -127,24 +127,14 @@ export const WeatherCard = memo(function WeatherCard({
         <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
         <View style={styles.statsRow}>
-          <StatItem
-            icon="water-percent"
-            value={`${weather.humidity}%`}
-            label={w.humidity}
-            theme={theme}
-          />
+          <StatItem icon="water-percent" value={`${weather.humidity}%`} label={w.humidity} theme={theme} />
           <StatItem
             icon="weather-windy"
             value={`${Math.round(weather.windKph)} km/h`}
             label={w.windSpeed}
             theme={theme}
           />
-          <StatItem
-            icon="cloud-outline"
-            value={`${weather.cloud}%`}
-            label={w.cloudCover}
-            theme={theme}
-          />
+          <StatItem icon="cloud-outline" value={`${weather.cloud}%`} label={w.cloudCover} theme={theme} />
         </View>
 
         <View style={[styles.statsRow, { marginTop: spacing.sm }]}>
@@ -184,48 +174,78 @@ export const WeatherCard = memo(function WeatherCard({
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   heroBand: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.lg + 4,
+    paddingBottom: spacing.lg,
     position: 'relative',
     overflow: 'hidden',
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  iconBlock: { alignItems: 'flex-start', flex: 1, paddingRight: spacing.sm },
+  heroWash: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(255,255,255,0.28)',
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  iconBlock: { alignItems: 'flex-start', flex: 1, minWidth: 0 },
   iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tempBlock: { alignItems: 'flex-end', maxWidth: '42%' },
-  tempText: {
-    fontSize: 58,
+  condition: {
+    marginTop: spacing.sm,
+    fontSize: 15,
+    lineHeight: 20,
     fontWeight: '600',
-    lineHeight: 62,
-    letterSpacing: -1.5,
+    color: palette.green900,
   },
-  body: { paddingTop: spacing.md, paddingBottom: spacing.md },
+  tempBlock: { alignItems: 'flex-end', maxWidth: '46%' },
+  tempText: {
+    fontSize: 64,
+    fontWeight: '700',
+    lineHeight: 68,
+    letterSpacing: -1.8,
+    color: palette.green900,
+  },
+  feelsLike: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
+    color: palette.green900,
+    opacity: 0.75,
+    textAlign: 'right',
+  },
+  body: { paddingTop: spacing.lg, paddingBottom: spacing.md, gap: spacing.sm },
   windRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.sm,
+  },
+  windIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   farmerMsg: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    borderRadius: radius.md,
-    marginBottom: spacing.sm,
+    paddingVertical: spacing.md,
+    borderRadius: radius.lg,
   },
-  divider: { marginVertical: spacing.md },
+  divider: { marginVertical: spacing.sm },
   statsRow: { flexDirection: 'row', gap: spacing.sm },
   footerRow: {
     flexDirection: 'row',
@@ -233,5 +253,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: spacing.xs,
     flexWrap: 'wrap',
+    marginTop: spacing.xs,
   },
 });

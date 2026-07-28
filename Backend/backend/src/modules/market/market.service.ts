@@ -1,4 +1,3 @@
-import dns from "node:dns/promises";
 import { env } from "../../config/env";
 import { normalizeDistrictName, resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../utils/AppError";
@@ -17,13 +16,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const FAVOURITES_LIMIT = 100;
 const GOV_API_URL = `${env.marketApiBaseUrl}/resource/${env.marketDatasetId}`;
 const DEFAULT_RECENT_DAYS = 20;
+const IS_DEV = process.env.NODE_ENV !== "production";
 
-interface FavouritesDebugContext {
-  crop: string;
-  district: string;
-  mappedCrop: string;
-  url: string;
-  params: Record<string, string | number>;
+/** Request context for structured error logs only — never dumped as raw param objects. */
+interface GovRequestContext {
+  commodity?: string;
+  district?: string;
 }
 
 interface CacheEntry {
@@ -32,6 +30,21 @@ interface CacheEntry {
 }
 
 const cache = new Map<string, CacheEntry>();
+
+const marketLog = {
+  info: (message: string, meta?: Record<string, unknown>): void => {
+    // eslint-disable-next-line no-console
+    console.log(`[market] ${message}`, meta ?? "");
+  },
+  warn: (message: string, meta?: Record<string, unknown>): void => {
+    // eslint-disable-next-line no-console
+    console.warn(`[market] ${message}`, meta ?? "");
+  },
+  error: (message: string, meta?: Record<string, unknown>): void => {
+    // eslint-disable-next-line no-console
+    console.error(`[market] ${message}`, meta ?? "");
+  },
+};
 
 const toNumber = (value: string | number | undefined): number => {
   const parsed = Number(value);
@@ -66,9 +79,6 @@ const parseArrivalDate = (value: string | undefined): Date | null => {
 };
 
 const filterRecentGovRecords = (records: GovMarketRecord[]): GovMarketRecord[] => {
-  // eslint-disable-next-line no-console
-  console.log("Government records received:", records.length);
-
   if (records.length === 0) return [];
 
   const recentDays = getRecentDaysWindow();
@@ -77,22 +87,11 @@ const filterRecentGovRecords = (records: GovMarketRecord[]): GovMarketRecord[] =
   cutoffDate.setDate(today.getDate() - recentDays);
   cutoffDate.setHours(0, 0, 0, 0);
 
-  // eslint-disable-next-line no-console
-  console.log("Today's date:", today.toISOString());
-  // eslint-disable-next-line no-console
-  console.log("Cutoff date:", cutoffDate.toISOString());
-
-  const filtered = records.filter((record) => {
+  return records.filter((record) => {
     const arrivalDate = parseArrivalDate(record.Arrival_Date);
     if (!arrivalDate) return false;
     return arrivalDate >= cutoffDate;
   });
-
-  // eslint-disable-next-line no-console
-  console.log("Records after recent filter:", filtered.length);
-  // eslint-disable-next-line no-console
-  console.log("Government records after filtering:", filtered.length);
-  return filtered;
 };
 
 const keepLatestRecordPerMandi = (records: GovMarketRecord[]): GovMarketRecord[] => {
@@ -106,8 +105,6 @@ const keepLatestRecordPerMandi = (records: GovMarketRecord[]): GovMarketRecord[]
     latestPerMandi.push(record);
   }
 
-  // eslint-disable-next-line no-console
-  console.log("Records after latest mandi filter:", latestPerMandi.length);
   return latestPerMandi;
 };
 
@@ -202,34 +199,58 @@ const buildGovApiUrl = (params: Record<string, string | number>): string => {
   return url.toString();
 };
 
+const extractErrorMeta = (error: unknown): Record<string, unknown> => {
+  if (!(error instanceof Error)) {
+    return { message: String(error) };
+  }
+
+  const meta: Record<string, unknown> = {
+    name: error.name,
+    message: error.message,
+  };
+
+  const withCode = error as Error & { code?: string; cause?: unknown };
+  if (withCode.code) meta.code = withCode.code;
+  if (withCode.cause instanceof Error) {
+    meta.cause = withCode.cause.message;
+  } else if (withCode.cause != null) {
+    meta.cause = String(withCode.cause);
+  }
+
+  if (IS_DEV && error.stack) {
+    meta.stack = error.stack;
+  }
+
+  return meta;
+};
+
 const mapGovApiError = (
   error: unknown,
-  debugContext: FavouritesDebugContext | null = null
+  context: GovRequestContext | null = null
 ): AppError => {
   if (error instanceof Error && error.name === "AbortError") {
-    // eslint-disable-next-line no-console
-    console.error("Government API timeout:", error.message);
-    if (debugContext) {
-      // eslint-disable-next-line no-console
-      console.error("Timeout details:", {
-        crop: debugContext.crop,
-        district: debugContext.district,
-        url: debugContext.url,
-        params: debugContext.params,
-        retryNumber: "N/A",
-      });
-    }
+    marketLog.error("Government API timeout", {
+      ...extractErrorMeta(error),
+      commodity: context?.commodity,
+      district: context?.district,
+    });
     return new AppError("Government market data service timed out", 504);
   }
 
   if (error instanceof Error) {
-    // eslint-disable-next-line no-console
-    console.error("Government API unavailable:", error.message);
+    marketLog.error("Government API unavailable", {
+      ...extractErrorMeta(error),
+      commodity: context?.commodity,
+      district: context?.district,
+    });
     return new AppError("Government market data service is unavailable", 503);
   }
 
-  // eslint-disable-next-line no-console
-  console.error("Government API unexpected error:", error);
+  marketLog.error("Government API unexpected error", {
+    ...extractErrorMeta(error),
+    commodity: context?.commodity,
+    district: context?.district,
+  });
   return new AppError("Unexpected error while fetching market prices", 500);
 };
 
@@ -262,70 +283,27 @@ const buildGovFilters = (
 
 const fetchMarketPricesFromGov = async (
   query: MarketPricesQuery,
-  debugContext: FavouritesDebugContext | null = null
+  context: GovRequestContext | null = null
 ): Promise<MarketPriceDTO[]> => {
   if (!env.marketApiKey) {
     throw new AppError("Government market data API key is not configured", 500);
   }
 
   const params = buildGovFilters(query);
+  const requestContext: GovRequestContext = {
+    commodity: context?.commodity ?? query.commodity,
+    district: context?.district ?? query.district,
+  };
   const start = Date.now();
-  // eslint-disable-next-line no-console
-  console.log("Government API request:", params);
 
-  if (debugContext) {
-    // eslint-disable-next-line no-console
-    console.log("Government API URL:", GOV_API_URL);
-    // eslint-disable-next-line no-console
-    console.log("Government API Params:", params);
-    // eslint-disable-next-line no-console
-    console.log("Timeout:", REQUEST_TIMEOUT_MS);
-  }
-
-  const timerLabel = `Gov API ${debugContext?.mappedCrop ?? query.commodity ?? "unknown"}`;
+  marketLog.info("Government API request started", {
+    commodity: requestContext.commodity,
+    district: requestContext.district,
+    limit: query.limit,
+  });
 
   try {
-    if (debugContext) {
-      // eslint-disable-next-line no-console
-      console.time(timerLabel);
-    }
-
     const finalUrl = buildGovApiUrl(params);
-
-    // eslint-disable-next-line no-console
-    console.log("================================================");
-    // eslint-disable-next-line no-console
-    console.log("FINAL GOV URL");
-    // eslint-disable-next-line no-console
-    console.log(finalUrl);
-    // eslint-disable-next-line no-console
-    console.log("================================================");
-
-    // eslint-disable-next-line no-console
-    console.log("Axios timeout:", REQUEST_TIMEOUT_MS);
-    // eslint-disable-next-line no-console
-    console.log("Node version:", process.version);
-    // eslint-disable-next-line no-console
-    console.log("Platform:", process.platform);
-
-    const host = new URL(GOV_API_URL).hostname;
-
-    // eslint-disable-next-line no-console
-    console.time("DNS Lookup");
-
-    const dnsResult = await dns.lookup(host, {
-      all: true,
-    });
-
-    // eslint-disable-next-line no-console
-    console.timeEnd("DNS Lookup");
-
-    // eslint-disable-next-line no-console
-    console.log("DNS Result:", dnsResult);
-
-    // eslint-disable-next-line no-console
-    console.time("Axios Request");
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -336,112 +314,87 @@ const fetchMarketPricesFromGov = async (
       clearTimeout(timeoutId);
     }
 
-    // eslint-disable-next-line no-console
-    console.timeEnd("Axios Request");
-
-    // eslint-disable-next-line no-console
-    console.log("Response status:", response.status);
-    // eslint-disable-next-line no-console
-    console.log("Response server:", response.headers.get("server"));
-    // eslint-disable-next-line no-console
-    console.log("Response content-length:", response.headers.get("content-length"));
-    // eslint-disable-next-line no-console
-    console.log("Response content-type:", response.headers.get("content-type"));
-
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        // eslint-disable-next-line no-console
-        console.error("Government API invalid key:", response.status);
+        marketLog.error("Government API invalid key", {
+          httpStatus: response.status,
+          commodity: requestContext.commodity,
+          district: requestContext.district,
+          durationMs: Date.now() - start,
+        });
         throw new AppError("Government market data API key is invalid", 500);
       }
 
-      // eslint-disable-next-line no-console
-      console.error("Government API unavailable:", response.statusText);
+      marketLog.error("Government API HTTP failure", {
+        httpStatus: response.status,
+        statusText: response.statusText,
+        commodity: requestContext.commodity,
+        district: requestContext.district,
+        durationMs: Date.now() - start,
+      });
       throw new AppError("Government market data service is unavailable", 503);
     }
 
     const responseData = (await response.json()) as GovApiResponse;
-
-    if (debugContext) {
-      // eslint-disable-next-line no-console
-      console.timeEnd(timerLabel);
-      // eslint-disable-next-line no-console
-      console.log("HTTP Status:", response.status);
-      // eslint-disable-next-line no-console
-      console.log("Records Returned:", responseData.records?.length);
-      // eslint-disable-next-line no-console
-      console.log("Total:", responseData.total);
-      // eslint-disable-next-line no-console
-      console.log("Count:", responseData.count);
-      // eslint-disable-next-line no-console
-      console.log("First Raw Record:");
-      // eslint-disable-next-line no-console
-      console.dir(responseData.records?.[0], { depth: null });
-    }
-
     const elapsedMs = Date.now() - start;
-    // eslint-disable-next-line no-console
-    console.log(`Government API response in ${elapsedMs}ms`);
 
     if (!Array.isArray(responseData.records)) {
+      marketLog.error("Government API unexpected payload", {
+        commodity: requestContext.commodity,
+        district: requestContext.district,
+        durationMs: elapsedMs,
+      });
       throw new AppError("Unexpected response from government market data API", 502);
     }
 
+    const receivedCount = responseData.records.length;
     const recentRecords = filterRecentGovRecords(responseData.records);
     const latestPerMandiRecords = keepLatestRecordPerMandi(recentRecords);
-
     const mappedRecords = latestPerMandiRecords.map(toMarketPriceDTO);
 
-    if (debugContext) {
-      // eslint-disable-next-line no-console
-      console.log("Mapped DTO Count:", mappedRecords.length);
-      // eslint-disable-next-line no-console
-      console.log("First DTO:");
-      // eslint-disable-next-line no-console
-      console.dir(mappedRecords[0], { depth: null });
+    if (receivedCount === 0 || mappedRecords.length === 0) {
+      marketLog.warn("No recent government market records", {
+        commodity: requestContext.commodity,
+        district: requestContext.district,
+        received: receivedCount,
+        afterFilter: recentRecords.length,
+        uniqueMandis: mappedRecords.length,
+        durationMs: elapsedMs,
+      });
+    } else {
+      marketLog.info("Government API success", {
+        commodity: requestContext.commodity,
+        district: requestContext.district,
+        received: receivedCount,
+        afterFilter: recentRecords.length,
+        uniqueMandis: mappedRecords.length,
+        durationMs: elapsedMs,
+      });
     }
 
     return mappedRecords;
   } catch (error) {
-    if (debugContext) {
-      // eslint-disable-next-line no-console
-      console.timeEnd(timerLabel);
-    }
-
-    if (error instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.error("GOVERNMENT API ERROR");
-      // eslint-disable-next-line no-console
-      console.error({
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
-    }
-
     if (error instanceof AppError) {
       throw error;
     }
-    throw mapGovApiError(error, debugContext);
+    throw mapGovApiError(error, requestContext);
   }
 };
 
 export const getMarketPrices = async (
   query: MarketPricesQuery,
-  debugContext: FavouritesDebugContext | null = null
+  context: GovRequestContext | null = null
 ): Promise<MarketPriceDTO[]> => {
   const cacheKey = buildCacheKey(query);
   const cached = cache.get(cacheKey);
 
   if (cached && cached.expiresAt > Date.now()) {
-    // eslint-disable-next-line no-console
-    console.log("Market cache hit:", cacheKey);
+    marketLog.info("Market cache hit", { cacheKey });
     return cached.data;
   }
 
-  // eslint-disable-next-line no-console
-  console.log("Market cache miss:", cacheKey);
-  const data = sortByModalPriceDesc(await fetchMarketPricesFromGov(query, debugContext));
+  marketLog.info("Market cache miss", { cacheKey });
+  const data = sortByModalPriceDesc(await fetchMarketPricesFromGov(query, context));
   cache.set(cacheKey, { data, expiresAt: Date.now() + CACHE_TTL_MS });
   return data;
 };
@@ -458,10 +411,13 @@ export const getCropMarketIntelligence = async (
   const commodity = query.commodity.trim();
   const apiDistrict = resolveGovDistrictForApi(district);
   const districtCandidates = resolveGovDistrictCandidates(district);
-  const records = await getMarketPrices({
-    ...query,
-    district: apiDistrict,
-  });
+  const records = await getMarketPrices(
+    {
+      ...query,
+      district: apiDistrict,
+    },
+    { commodity, district }
+  );
   const matched = records.filter(
     (item) =>
       matchesFavoriteCrop(item.commodity, commodity) &&
@@ -472,37 +428,12 @@ export const getCropMarketIntelligence = async (
 
 const fetchFavoriteCropPrices = async (
   state: string,
-  originalDistrict: string,
+  _originalDistrict: string,
   apiDistrict: string,
   districtCandidates: string[],
   crop: string
 ): Promise<MarketPriceDTO[]> => {
   const commodity = crop.trim();
-
-  // eslint-disable-next-line no-console
-  console.log("Original District:", originalDistrict);
-  // eslint-disable-next-line no-console
-  console.log("Mapped District:", apiDistrict);
-  // eslint-disable-next-line no-console
-  console.log("Original crop:", crop);
-  // eslint-disable-next-line no-console
-  console.log("Final crop sent to Government API:", commodity);
-
-  const params = buildGovFilters({
-    state,
-    district: apiDistrict,
-    commodity,
-    limit: FAVOURITES_LIMIT,
-    offset: 0,
-  });
-
-  const debugContext: FavouritesDebugContext = {
-    crop,
-    district: apiDistrict,
-    mappedCrop: commodity,
-    url: GOV_API_URL,
-    params,
-  };
 
   const data = await getMarketPrices(
     {
@@ -512,7 +443,7 @@ const fetchFavoriteCropPrices = async (
       limit: FAVOURITES_LIMIT,
       offset: 0,
     },
-    debugContext
+    { commodity, district: apiDistrict }
   );
   const matched = data.filter(
     (item) =>
@@ -520,44 +451,30 @@ const fetchFavoriteCropPrices = async (
       matchesFavoriteDistrict(item.district, districtCandidates)
   );
 
-  // eslint-disable-next-line no-console
-  console.log(`Crop completed: ${crop} - Returned ${matched.length} records`);
-
   return sortByModalPriceDesc(matched);
 };
 
 export const getFavoriteMarketPrices = async (
   userId: string
 ): Promise<MarketPriceDTO[]> => {
-  // eslint-disable-next-line no-console
-  console.log("========== MARKET FAVOURITES START ==========");
-  // eslint-disable-next-line no-console
-  console.log("Authenticated User ID:", userId);
-
   const profile = await getProfile(userId);
-
-  // eslint-disable-next-line no-console
-  console.log("Profile:", profile);
-  // eslint-disable-next-line no-console
-  console.log("District:", profile.district);
-  // eslint-disable-next-line no-console
-  console.log("Favourite Crops:", profile.favoriteCrops);
-
   const favoriteCrops = profile.favoriteCrops.map((crop) => crop.trim()).filter(Boolean);
 
   if (favoriteCrops.length === 0) {
-    // eslint-disable-next-line no-console
-    console.log("Returning favourites: 0");
-    // eslint-disable-next-line no-console
-    console.log("========== MARKET FAVOURITES END ==========");
+    marketLog.info("Market favourites empty", { userId });
     return [];
   }
 
   const state = DEFAULT_STATE;
   const originalDistrict = profile.district.trim();
-
   const apiDistrict = resolveGovDistrictForApi(originalDistrict);
   const districtCandidates = resolveGovDistrictCandidates(originalDistrict);
+
+  marketLog.info("Market favourites fetch started", {
+    userId,
+    district: originalDistrict,
+    cropCount: favoriteCrops.length,
+  });
 
   const groupedByCrop = new Map<string, MarketPriceDTO[]>();
   const cropResults = await Promise.allSettled(
@@ -587,36 +504,35 @@ export const getFavoriteMarketPrices = async (
 
     lastFailure = result.reason;
     groupedByCrop.set(cropKey, []);
-    // eslint-disable-next-line no-console
-    console.error(`Crop failed: ${crop}`, result.reason);
+    marketLog.error("Market favourites crop failed", {
+      crop,
+      district: originalDistrict,
+      ...extractErrorMeta(result.reason),
+    });
   });
 
   if (successCount === 0) {
     if (lastFailure instanceof AppError) {
       throw lastFailure;
     }
-    throw mapGovApiError(lastFailure);
+    throw mapGovApiError(lastFailure, {
+      district: originalDistrict,
+    });
   }
-
-  // eslint-disable-next-line no-console
-  console.log("Total arrays:", groupedByCrop.size);
-  // eslint-disable-next-line no-console
-  console.log(
-    "Array lengths:",
-    [...groupedByCrop.values()].map((arr) => arr.length)
-  );
 
   const ordered: MarketPriceDTO[] = [];
   for (const crop of favoriteCrops) {
     const cropKey = normalizeText(crop);
     ordered.push(...(groupedByCrop.get(cropKey) ?? []));
   }
-  // eslint-disable-next-line no-console
-  console.log("Merged Records:", ordered.length);
-  // eslint-disable-next-line no-console
-  console.log("Returning favourites:", ordered.length);
-  // eslint-disable-next-line no-console
-  console.log("========== MARKET FAVOURITES END ==========");
+
+  marketLog.info("Market favourites fetch completed", {
+    userId,
+    district: originalDistrict,
+    cropsSucceeded: successCount,
+    cropsTotal: favoriteCrops.length,
+    records: ordered.length,
+  });
 
   return ordered;
 };

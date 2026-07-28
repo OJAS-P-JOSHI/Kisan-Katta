@@ -1,11 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Chip, Divider, Text } from 'react-native-paper';
+import { Card, Divider, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
-import { translateCropName } from '@/features/market/market.translate';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { getCropDisplayParts, getCropEmoji } from '@/features/market/market.translate';
+import { cardSurface, iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 
 type FavouriteCropsCardProps = {
   /** All profile favourite crops — never filtered by market availability. */
@@ -14,11 +14,21 @@ type FavouriteCropsCardProps = {
 };
 
 const FavouriteCropChip = memo(function FavouriteCropChip({ crop }: { crop: string }) {
-  const label = useMemo(() => translateCropName(crop), [crop]);
+  const parts = useMemo(() => getCropDisplayParts(crop), [crop]);
+  const emoji = useMemo(() => getCropEmoji(crop), [crop]);
+
   return (
-    <Chip compact mode="flat" style={styles.chip} textStyle={styles.chipText}>
-      {label}
-    </Chip>
+    <View style={styles.chip}>
+      <Text style={styles.chipEmoji}>{emoji}</Text>
+      <View style={styles.chipTextBlock}>
+        <Text style={styles.chipMr} numberOfLines={2}>
+          {parts.marathi}
+        </Text>
+        <Text style={styles.chipEn} numberOfLines={2}>
+          {parts.english}
+        </Text>
+      </View>
+    </View>
   );
 });
 
@@ -39,7 +49,7 @@ export const FavouriteCropsCard = memo(function FavouriteCropsCard({
 
   return (
     <Card mode="elevated" style={[styles.card, cardSurface]}>
-      <Card.Content>
+      <Card.Content style={styles.content}>
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
             <MaterialCommunityIcons name="leaf" size={iconSize.md} color={theme.colors.primary} />
@@ -79,7 +89,11 @@ export const FavouriteCropsCard = memo(function FavouriteCropsCard({
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  content: {
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
   },
   header: {
     flexDirection: 'row',
@@ -87,25 +101,51 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  titleBlock: { flex: 1, gap: 2, minWidth: 0 },
-  divider: { marginVertical: spacing.sm },
+  titleBlock: { flex: 1, gap: 3, minWidth: 0 },
+  divider: { marginVertical: spacing.md },
   chipWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
   chip: {
-    borderRadius: radius.pill,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: palette.green50,
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.green100,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    minHeight: 52,
     maxWidth: '100%',
   },
-  chipText: {
-    fontSize: 12,
-    lineHeight: 16,
+  chipEmoji: {
+    fontSize: 20,
+    lineHeight: 24,
+  },
+  chipTextBlock: {
+    flexShrink: 1,
+    gap: 1,
+    minWidth: 0,
+  },
+  chipMr: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    color: palette.green900,
+  },
+  chipEn: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '500',
+    color: palette.steel,
   },
 });

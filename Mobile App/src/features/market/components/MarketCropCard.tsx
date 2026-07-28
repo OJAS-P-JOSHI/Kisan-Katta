@@ -3,10 +3,8 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   LayoutAnimation,
-  Platform,
   Pressable,
   StyleSheet,
-  UIManager,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -27,10 +25,6 @@ import {
 } from '@/theme';
 
 import { MarketMandiRow } from './MarketMandiRow';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 export type { MarketCropCardModel } from '@/features/market/market.types';
 export type { MarketCropCardState } from '@/features/market/market.types';

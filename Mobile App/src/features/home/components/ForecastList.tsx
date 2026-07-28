@@ -78,27 +78,27 @@ export const ForecastList = memo(function ForecastList({
 });
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.md },
+  container: { marginBottom: spacing.lg },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
-  titleText: { flex: 1 },
+  titleText: { flex: 1, gap: 2 },
   titleIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
+    width: 32,
+    height: 32,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   forecastCard: {
     marginHorizontal: spacing.md,
   },
-  forecastContent: { paddingVertical: spacing.sm, paddingHorizontal: 0 },
-  scrollContent: { paddingHorizontal: spacing.sm, gap: spacing.sm },
+  forecastContent: { paddingVertical: spacing.md, paddingHorizontal: 0 },
+  scrollContent: { paddingHorizontal: spacing.md, gap: spacing.sm },
   errorCard: { marginHorizontal: spacing.md },
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 });

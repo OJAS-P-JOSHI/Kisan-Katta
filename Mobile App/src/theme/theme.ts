@@ -1,5 +1,5 @@
 import { DefaultTheme as NavigationDefaultTheme } from 'expo-router';
-import type { ViewStyle } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
 import { MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
 import { lightColors, palette } from './colors';
@@ -27,17 +27,17 @@ export const radius = {
 export const elevation = {
   soft: {
     shadowColor: palette.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
   card: {
     shadowColor: palette.ink,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
   },
 } as const;
 
@@ -48,6 +48,8 @@ export const elevation = {
 export const cardSurface: ViewStyle = {
   borderRadius: radius.xl,
   overflow: 'hidden',
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: palette.mist,
   ...elevation.card,
 };
 

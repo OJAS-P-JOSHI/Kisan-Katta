@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
-import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
+import { iconSize, palette, radius, spacing, useAppTheme } from '@/theme';
 
 import type { ForecastDay } from '../weather.types';
 import { formatDayShort, getWeatherIcon } from '../weather.utils';
@@ -22,16 +22,16 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
       style={[
         styles.item,
         isToday
-          ? { backgroundColor: theme.colors.primaryContainer }
-          : { backgroundColor: theme.colors.surfaceVariant },
+          ? { backgroundColor: theme.colors.primaryContainer, borderColor: palette.green100 }
+          : { backgroundColor: palette.green50, borderColor: palette.mist },
       ]}
     >
       <Text
         style={[
-          typography.caption,
+          styles.dayLabel,
           {
             color: isToday ? theme.colors.primary : theme.colors.onSurfaceVariant,
-            fontWeight: isToday ? '600' : '500',
+            fontWeight: isToday ? '700' : '500',
           },
         ]}
       >
@@ -46,17 +46,14 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
         />
       </View>
 
-      <Text style={[typography.sectionTitle, { color: palette.amber700, fontSize: 15 }]}>
-        {Math.round(day.maxTempC)}°
-      </Text>
-
-      <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, fontSize: 14 }]}>
+      <Text style={styles.maxTemp}>{Math.round(day.maxTempC)}°</Text>
+      <Text style={[styles.minTemp, { color: theme.colors.onSurfaceVariant }]}>
         {Math.round(day.minTempC)}°
       </Text>
 
       <View style={styles.rainRow}>
         <MaterialCommunityIcons name="water-outline" size={iconSize.xs} color={theme.colors.primary} />
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+        <Text style={[styles.rainText, { color: theme.colors.onSurfaceVariant }]}>
           {day.dailyChanceOfRain}%
         </Text>
       </View>
@@ -66,20 +63,39 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
 
 const styles = StyleSheet.create({
   item: {
-    width: 74,
+    width: 84,
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.md,
+    gap: 6,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  dayLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.2,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: spacing.xs,
+    marginVertical: 2,
+  },
+  maxTemp: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '700',
+    color: palette.green900,
+    letterSpacing: -0.3,
+  },
+  minTemp: {
+    fontSize: 13,
+    lineHeight: 16,
+    fontWeight: '500',
   },
   rainRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
+  rainText: { fontSize: 11, lineHeight: 14, fontWeight: '500' },
 });

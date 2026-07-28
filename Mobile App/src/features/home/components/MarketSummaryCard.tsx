@@ -1,18 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback, useMemo, useState } from 'react';
-import {
-  LayoutAnimation,
-  Platform,
-  Pressable,
-  StyleSheet,
-  UIManager,
-  View,
-} from 'react-native';
+import { LayoutAnimation, Pressable, StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
 import { getArrivalFreshness } from '@/features/market/market.freshness';
-import { translateCropName } from '@/features/market/market.translate';
+import { getCropDisplayParts, getCropEmoji } from '@/features/market/market.translate';
 import type { MarketCropCardModel } from '@/features/market/market.types';
 import {
   cardSurface,
@@ -25,10 +18,6 @@ import {
 } from '@/theme';
 
 import { MarketSummarySkeleton } from './MarketSummarySkeleton';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const HOME_VISIBLE_CROP_COUNT = 4;
 
@@ -43,40 +32,15 @@ type MarketSummaryCardProps = {
 
 const formatPrice = (value: number): string => `₹${value.toLocaleString('en-IN')}`;
 
-const getCropIcon = (crop: string): keyof typeof MaterialCommunityIcons.glyphMap => {
-  const value = crop.toLowerCase();
-  if (value.includes('onion')) return 'food-apple-outline';
-  if (value.includes('tomato')) return 'fruit-cherries';
-  if (value.includes('banana')) return 'food-apple-outline';
-  if (value.includes('wheat') || value.includes('gram') || value.includes('grain')) return 'barley';
-  if (value.includes('turmeric')) return 'leaf-circle-outline';
-  if (value.includes('cotton')) return 'flower-pollen-outline';
-  return 'sprout';
-};
-
 const MiniBadge = memo(function MiniBadge({
   label,
   tone,
 }: {
   label: string;
-  tone: 'best' | 'today' | 'gov' | 'neutral';
+  tone: 'best' | 'today';
 }) {
-  const bg =
-    tone === 'best'
-      ? palette.green100
-      : tone === 'today'
-        ? palette.green50
-        : tone === 'gov'
-          ? palette.blue100
-          : palette.mist;
-  const color =
-    tone === 'best'
-      ? palette.green900
-      : tone === 'today'
-        ? palette.green700
-        : tone === 'gov'
-          ? palette.blue800
-          : palette.slate;
+  const bg = tone === 'best' ? '#F5E6A8' : palette.green100;
+  const color = tone === 'best' ? '#7A6210' : palette.green900;
 
   return (
     <View style={[styles.miniBadge, { backgroundColor: bg }]}>
@@ -88,9 +52,8 @@ const MiniBadge = memo(function MiniBadge({
 });
 
 const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCardModel }) {
-  const theme = useAppTheme();
-  const label = useMemo(() => translateCropName(item.crop), [item.crop]);
-  const iconName = useMemo(() => getCropIcon(item.crop), [item.crop]);
+  const parts = useMemo(() => getCropDisplayParts(item.crop), [item.crop]);
+  const emoji = useMemo(() => getCropEmoji(item.crop), [item.crop]);
   const price = item.data?.highestPrice;
   const mandi = item.data?.markets[0]?.market;
   const freshness = useMemo(() => {
@@ -99,26 +62,20 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
   }, [item.data]);
 
   return (
-    <View style={[styles.rowShell, { backgroundColor: palette.green50 }]}>
-      <View style={styles.rowLeft}>
-        <View style={[styles.cropIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-          <MaterialCommunityIcons name={iconName} size={iconSize.sm} color={theme.colors.primary} />
-        </View>
-        <Text numberOfLines={2} style={[styles.cropName, { color: theme.colors.onSurface }]}>
-          {label}
-        </Text>
-      </View>
-
-      <Text style={styles.heroPrice} numberOfLines={1}>
-        {price != null ? formatPrice(price) : '—'}
-      </Text>
-
-      <View style={styles.rowRight}>
-        {mandi ? (
-          <Text numberOfLines={2} style={styles.mandiName}>
-            {mandi}
+    <Pressable
+      accessibilityRole="text"
+      style={({ pressed }) => [styles.rowShell, pressed && styles.rowPressed]}
+    >
+      <View style={styles.rowTop}>
+        <Text style={styles.rowEmoji}>{emoji}</Text>
+        <View style={styles.cropTextBlock}>
+          <Text style={styles.cropMr} numberOfLines={2}>
+            {parts.marathi}
           </Text>
-        ) : null}
+          <Text style={styles.cropEn} numberOfLines={2}>
+            {parts.english}
+          </Text>
+        </View>
         <View style={styles.badgeCluster}>
           <MiniBadge label={strings.home.marketBestShort} tone="best" />
           {freshness === 'today' ? (
@@ -126,7 +83,17 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
           ) : null}
         </View>
       </View>
-    </View>
+
+      <Text style={styles.heroPrice} numberOfLines={1}>
+        {price != null ? formatPrice(price) : '—'}
+      </Text>
+
+      {mandi ? (
+        <Text numberOfLines={2} style={styles.mandiName}>
+          {mandi}
+        </Text>
+      ) : null}
+    </Pressable>
   );
 });
 
@@ -158,23 +125,27 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
     return <MarketSummarySkeleton />;
   }
 
+  const cardHeader = (
+    <View style={styles.header}>
+      <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
+        <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.primary} />
+      </View>
+      <View style={styles.titleBlock}>
+        <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={2}>
+          {strings.home.marketTitle}
+        </Text>
+        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
+          {strings.home.marketSubtitle}
+        </Text>
+      </View>
+    </View>
+  );
+
   if (favoriteCropsCount === 0) {
     return (
       <Card mode="elevated" style={[styles.card, cardSurface]}>
-        <Card.Content>
-          <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-              <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.primary} />
-            </View>
-            <View style={styles.titleBlock}>
-              <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={2}>
-                {strings.home.marketTitle}
-              </Text>
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
-                {strings.home.marketSubtitle}
-              </Text>
-            </View>
-          </View>
+        <Card.Content style={styles.content}>
+          {cardHeader}
           <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
           <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
             {strings.home.marketNoFavourites}
@@ -205,20 +176,8 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
 
   return (
     <Card mode="elevated" style={[styles.card, cardSurface]}>
-      <Card.Content>
-        <View style={styles.header}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-            <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.primary} />
-          </View>
-          <View style={styles.titleBlock}>
-            <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={2}>
-              {strings.home.marketTitle}
-            </Text>
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
-              {strings.home.marketSubtitle}
-            </Text>
-          </View>
-        </View>
+      <Card.Content style={styles.content}>
+        {cardHeader}
 
         <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
@@ -266,7 +225,10 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  content: {
+    paddingVertical: spacing.md,
   },
   header: {
     flexDirection: 'row',
@@ -274,92 +236,95 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  titleBlock: { flex: 1, gap: 2, minWidth: 0 },
+  titleBlock: { flex: 1, gap: 3, minWidth: 0 },
   divider: { marginVertical: spacing.md },
-  list: { gap: spacing.sm },
+  list: { gap: spacing.md },
   rowShell: {
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: radius.xl,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     gap: spacing.sm,
+    backgroundColor: palette.green50,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: palette.mist,
+    borderColor: palette.green100,
   },
-  rowLeft: {
-    flex: 1.15,
-    minWidth: 0,
+  rowPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.995 }],
+  },
+  rowTop: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+    alignItems: 'flex-start',
+    gap: spacing.sm,
   },
-  cropIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+  rowEmoji: {
+    fontSize: 22,
+    lineHeight: 28,
+    marginTop: 1,
   },
-  cropName: {
+  cropTextBlock: {
     flex: 1,
     minWidth: 0,
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
+    gap: 2,
   },
-  heroPrice: {
-    flexShrink: 0,
-    fontSize: 20,
-    lineHeight: 24,
+  cropMr: {
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: '700',
-    color: palette.green700,
-    letterSpacing: -0.3,
-    minWidth: 72,
-    textAlign: 'center',
+    color: palette.ink,
+    letterSpacing: -0.2,
   },
-  rowRight: {
-    flex: 1,
-    minWidth: 0,
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  mandiName: {
+  cropEn: {
     fontSize: 12,
     lineHeight: 16,
+    fontWeight: '500',
+    color: palette.steel,
+  },
+  heroPrice: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    color: palette.green700,
+    letterSpacing: -0.6,
+  },
+  mandiName: {
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: '600',
     color: palette.blue800,
-    textAlign: 'right',
   },
   badgeCluster: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
     gap: 4,
+    maxWidth: '36%',
   },
   miniBadge: {
     borderRadius: radius.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   miniBadgeText: {
     fontSize: 10,
     lineHeight: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   moreButton: {
-    minHeight: 44,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: palette.green50,
   },
   morePressed: { opacity: 0.7 },
   moreText: {
@@ -371,6 +336,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    paddingVertical: spacing.sm,
   },
   errorText: { flex: 1, minWidth: 0 },
 });

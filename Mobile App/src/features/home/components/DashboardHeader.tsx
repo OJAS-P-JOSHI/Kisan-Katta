@@ -94,14 +94,14 @@ const styles = StyleSheet.create({
   wrapper: {
     marginHorizontal: spacing.md,
     marginTop: spacing.xs,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
     position: 'relative',
   },
   logo: {
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
-    gap: 2,
+    gap: 3,
     paddingRight: spacing.xs,
   },
   locationRow: {
@@ -121,9 +121,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   locationIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: radius.sm,
+    width: 26,
+    height: 26,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
