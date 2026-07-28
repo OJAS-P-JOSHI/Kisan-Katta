@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 
-import type { MarketCropCardModel } from '../components/MarketCropCard';
+import type { MarketCropCardModel } from '../market.types';
 import {
   dedupeFavoriteCrops,
   resolveGovDistrict,

@@ -1,6 +1,11 @@
 import { api } from '@/services/api';
 
-import type { MarketPrice, MarketPricesResponse } from './market.types';
+import type {
+  CropMarketIntelligence,
+  CropMarketIntelligenceResponse,
+  MarketPrice,
+  MarketPricesResponse,
+} from './market.types';
 
 /**
  * Our backend's market endpoint, relative to the shared client's configured
@@ -8,6 +13,7 @@ import type { MarketPrice, MarketPricesResponse } from './market.types';
  * called directly.
  */
 const MARKET_PRICES_ENDPOINT = '/api/v1/market/prices';
+const MARKET_INTELLIGENCE_ENDPOINT = '/api/v1/market/intelligence';
 const MARKET_FAVOURITES_ENDPOINT = '/api/v1/market/favourites';
 
 const DEFAULT_STATE = 'Maharashtra';
@@ -39,6 +45,29 @@ export const getMarketPricesForCrop = async ({
   offset?: number;
 }): Promise<MarketPrice[]> => {
   const response = await api.get<MarketPricesResponse>(MARKET_PRICES_ENDPOINT, {
+    params: { state, district, commodity, limit, offset },
+  });
+  return response.data.data;
+};
+
+/**
+ * Crop market intelligence — all mandis + server summary for one district+commodity.
+ * One request per crop; reuses backend cache shared with /prices.
+ */
+export const getCropMarketIntelligence = async ({
+  district,
+  commodity,
+  state = DEFAULT_STATE,
+  limit = 100,
+  offset = 0,
+}: {
+  district: string;
+  commodity: string;
+  state?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<CropMarketIntelligence> => {
+  const response = await api.get<CropMarketIntelligenceResponse>(MARKET_INTELLIGENCE_ENDPOINT, {
     params: { state, district, commodity, limit, offset },
   });
   return response.data.data;

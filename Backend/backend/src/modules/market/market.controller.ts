@@ -1,7 +1,15 @@
 import { Request, Response } from "express";
 import { getAuthUser } from "../auth/auth.middleware";
-import { getFavoriteMarketPrices, getMarketPrices } from "./market.service";
-import { MarketPriceDTO, MarketPricesQuery } from "./market.types";
+import {
+  getCropMarketIntelligence,
+  getFavoriteMarketPrices,
+  getMarketPrices,
+} from "./market.service";
+import {
+  CropMarketIntelligenceDTO,
+  MarketPriceDTO,
+  MarketPricesQuery,
+} from "./market.types";
 import { ApiSuccessResponse } from "../../types/api-response";
 import { AppError } from "../../utils/AppError";
 
@@ -12,6 +20,14 @@ const parseStringParam = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const parseRequiredStringParam = (value: unknown, name: string): string => {
+  const parsed = parseStringParam(value);
+  if (!parsed) {
+    throw new AppError(`${name} is required`, 400);
+  }
+  return parsed;
 };
 
 const parseLimit = (value: unknown): number => {
@@ -46,6 +62,27 @@ export const getPrices = async (
 ): Promise<void> => {
   const query = parseQuery(req);
   const data = await getMarketPrices(query);
+  res.status(200).json({
+    success: true,
+    data,
+  });
+};
+
+/** GET /api/v1/market/intelligence — multi-mandi crop summary (sorted, with aggregates). */
+export const getIntelligence = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<CropMarketIntelligenceDTO>>
+): Promise<void> => {
+  const district = parseRequiredStringParam(req.query.district, "district");
+  const commodity = parseRequiredStringParam(req.query.commodity, "commodity");
+  const query: MarketPricesQuery & { district: string; commodity: string } = {
+    state: parseStringParam(req.query.state) ?? "Maharashtra",
+    district,
+    commodity,
+    limit: parseLimit(req.query.limit ?? 100),
+    offset: parseOffset(req.query.offset),
+  };
+  const data = await getCropMarketIntelligence(query);
   res.status(200).json({
     success: true,
     data,

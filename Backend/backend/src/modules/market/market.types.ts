@@ -13,6 +13,21 @@ export interface MarketPriceDTO {
   maxPrice: number;
 }
 
+/**
+ * Crop-level market intelligence for a district+commodity pair.
+ * Markets are sorted by modalPrice descending (highest first).
+ * Summary fields are computed server-side.
+ */
+export interface CropMarketIntelligenceDTO {
+  commodity: string;
+  district: string;
+  markets: MarketPriceDTO[];
+  highestPrice: number;
+  lowestPrice: number;
+  averageModalPrice: number;
+  marketCount: number;
+}
+
 // Validated/normalized query parameters accepted by GET /api/v1/market/prices.
 export interface MarketPricesQuery {
   state?: string;

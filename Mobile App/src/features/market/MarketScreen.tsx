@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
@@ -7,14 +7,17 @@ import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
 import { spacing, typography, useAppTheme } from '@/theme';
 
-import { MarketCropCard, type MarketCropCardModel } from './components/MarketCropCard';
+import { MarketCropCard } from './components/MarketCropCard';
 import { useFavouriteMarketCards } from './hooks/useFavouriteMarketCards';
 import { normalizeCrop } from './market.favourites.store';
+import type { MarketCropCardModel } from './market.types';
 
 const getItemKey = (item: MarketCropCardModel): string => normalizeCrop(item.crop);
 
 export default function MarketScreen() {
   const theme = useAppTheme();
+  const [expandedCrop, setExpandedCrop] = useState<string | null>(null);
+
   const {
     cards,
     favoriteCrops,
@@ -34,11 +37,20 @@ export default function MarketScreen() {
     [retryCrop],
   );
 
+  const handleToggleExpand = useCallback((crop: string) => {
+    setExpandedCrop((current) => (current === crop ? null : crop));
+  }, []);
+
   const renderItem = useCallback(
     ({ item }: { item: MarketCropCardModel }) => (
-      <MarketCropCard item={item} onRetry={handleRetry} />
+      <MarketCropCard
+        item={item}
+        expanded={expandedCrop === item.crop}
+        onToggleExpand={handleToggleExpand}
+        onRetry={handleRetry}
+      />
     ),
-    [handleRetry],
+    [expandedCrop, handleRetry, handleToggleExpand],
   );
 
   if (profileLoading && !profile) {

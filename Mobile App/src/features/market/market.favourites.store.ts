@@ -3,9 +3,8 @@ import { create } from 'zustand';
 import { strings } from '@/constants';
 
 import { getMarketErrorMessage } from './market.errors';
-import type { MarketCropCardModel } from './components/MarketCropCard';
-import { getMarketPricesForCrop } from './market.service';
-import type { MarketPrice } from './market.types';
+import { getCropMarketIntelligence } from './market.service';
+import type { MarketCropCardModel } from './market.types';
 
 const STATE = 'Maharashtra';
 const REQUEST_LIMIT = 100;
@@ -22,11 +21,12 @@ const GOV_DISTRICT_ALIASES: Record<string, string> = {
 
 export const resolveGovDistrict = (
   district: string,
-): { apiDistrict: string; candidates: string[] } => {
-  const normalized = normalizeDistrict(district);
-  const apiDistrict = GOV_DISTRICT_ALIASES[normalized] ?? district.trim();
-  const candidates = Array.from(new Set([apiDistrict, district.trim()]));
-  return { apiDistrict, candidates };
+): { apiDistrict: string; candidates: string[]; profileDistrict: string } => {
+  const profileDistrict = district.trim();
+  const normalized = normalizeDistrict(profileDistrict);
+  const apiDistrict = GOV_DISTRICT_ALIASES[normalized] ?? profileDistrict;
+  const candidates = Array.from(new Set([apiDistrict, profileDistrict]));
+  return { apiDistrict, candidates, profileDistrict };
 };
 
 export const dedupeFavoriteCrops = (crops: readonly string[]): string[] => {
@@ -43,22 +43,6 @@ export const dedupeFavoriteCrops = (crops: readonly string[]): string[] => {
   return deduped;
 };
 
-const findTopRecordForCrop = (
-  records: MarketPrice[],
-  crop: string,
-  districtCandidates: string[],
-): MarketPrice | null => {
-  const cropKey = normalizeCrop(crop);
-  return (
-    records.find((record) => {
-      if (normalizeCrop(record.commodity) !== cropKey) return false;
-      return districtCandidates.some(
-        (district) => normalizeDistrict(record.district) === normalizeDistrict(district),
-      );
-    }) ?? null
-  );
-};
-
 const createInitialCards = (crops: string[]): MarketCropCardModel[] =>
   crops.map((crop) => ({
     crop,
@@ -69,7 +53,7 @@ const createInitialCards = (crops: string[]): MarketCropCardModel[] =>
     lastUpdatedAt: null,
   }));
 
-type DistrictResolution = { apiDistrict: string; candidates: string[] };
+type DistrictResolution = { apiDistrict: string; candidates: string[]; profileDistrict: string };
 
 type FavouriteMarketState = {
   cards: MarketCropCardModel[];
@@ -165,22 +149,22 @@ export const useFavouriteMarketStore = create<FavouriteMarketState>((set, get) =
     }
 
     try {
-      const records = await getMarketPricesForCrop({
+      const intelligence = await getCropMarketIntelligence({
         state: STATE,
-        district: districtResolution.apiDistrict,
+        district: districtResolution.profileDistrict,
         commodity: crop,
         limit: REQUEST_LIMIT,
         offset: 0,
       });
-      const topRecord = findTopRecordForCrop(records, crop, districtResolution.candidates);
       const isLatestRequest =
         requestVersionRef.current === requestVersion && inFlightRef.current.get(crop) === token;
       if (!isLatestRequest) return;
 
+      const hasMarkets = intelligence.marketCount > 0 && intelligence.markets.length > 0;
       updateCard((current) => ({
         ...current,
-        state: topRecord ? 'success' : 'empty',
-        data: topRecord,
+        state: hasMarkets ? 'success' : 'empty',
+        data: hasMarkets ? intelligence : null,
         error: null,
         isRefreshing: false,
         lastUpdatedAt: Date.now(),
@@ -234,10 +218,13 @@ export const useFavouriteMarketStore = create<FavouriteMarketState>((set, get) =
   },
 }));
 
-/** Crops with a successful market price record — Home summary source of truth filter. */
+/** Crops with valid market intelligence — Home summary filter. */
 export const selectPricedFavouriteCards = (
   cards: readonly MarketCropCardModel[],
-): MarketCropCardModel[] => cards.filter((card) => card.state === 'success' && card.data !== null);
+): MarketCropCardModel[] =>
+  cards.filter(
+    (card) => card.state === 'success' && card.data !== null && card.data.marketCount > 0,
+  );
 
 export const selectFavouriteCardsLoading = (
   cards: readonly MarketCropCardModel[],

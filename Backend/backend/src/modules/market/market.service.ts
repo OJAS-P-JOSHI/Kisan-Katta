@@ -3,7 +3,13 @@ import { env } from "../../config/env";
 import { normalizeDistrictName, resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../utils/AppError";
 import { getProfile } from "../profile/profile.service";
-import { GovApiResponse, GovMarketRecord, MarketPriceDTO, MarketPricesQuery } from "./market.types";
+import {
+  CropMarketIntelligenceDTO,
+  GovApiResponse,
+  GovMarketRecord,
+  MarketPriceDTO,
+  MarketPricesQuery,
+} from "./market.types";
 
 const DEFAULT_STATE = "Maharashtra";
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -147,6 +153,46 @@ const toMarketPriceDTO = (record: GovMarketRecord): MarketPriceDTO => ({
   minPrice: toNumber(record.Min_Price),
   maxPrice: toNumber(record.Max_Price),
 });
+
+/** Highest modal price first — production default for market intelligence. */
+const sortByModalPriceDesc = (records: MarketPriceDTO[]): MarketPriceDTO[] =>
+  [...records].sort((a, b) => b.modalPrice - a.modalPrice);
+
+/**
+ * Builds crop intelligence summary from already-filtered mandi rows.
+ * Empty markets → zeroed summary (callers may treat marketCount === 0 as empty).
+ */
+export const buildCropMarketIntelligence = (
+  commodity: string,
+  district: string,
+  records: MarketPriceDTO[]
+): CropMarketIntelligenceDTO => {
+  const markets = sortByModalPriceDesc(records);
+  const marketCount = markets.length;
+
+  if (marketCount === 0) {
+    return {
+      commodity,
+      district,
+      markets: [],
+      highestPrice: 0,
+      lowestPrice: 0,
+      averageModalPrice: 0,
+      marketCount: 0,
+    };
+  }
+
+  const sum = markets.reduce((acc, item) => acc + item.modalPrice, 0);
+  return {
+    commodity,
+    district,
+    markets,
+    highestPrice: markets[0]?.modalPrice ?? 0,
+    lowestPrice: markets[marketCount - 1]?.modalPrice ?? 0,
+    averageModalPrice: Math.round(sum / marketCount),
+    marketCount,
+  };
+};
 
 const buildGovApiUrl = (params: Record<string, string | number>): string => {
   const url = new URL(GOV_API_URL);
@@ -395,9 +441,33 @@ export const getMarketPrices = async (
 
   // eslint-disable-next-line no-console
   console.log("Market cache miss:", cacheKey);
-  const data = await fetchMarketPricesFromGov(query, debugContext);
+  const data = sortByModalPriceDesc(await fetchMarketPricesFromGov(query, debugContext));
   cache.set(cacheKey, { data, expiresAt: Date.now() + CACHE_TTL_MS });
   return data;
+};
+
+/**
+ * District + commodity market intelligence.
+ * Reuses the same cached gov fetch as GET /prices (one request per crop).
+ * Accepts either the profile district or the gov alias; maps to the API name for fetch.
+ */
+export const getCropMarketIntelligence = async (
+  query: MarketPricesQuery & { district: string; commodity: string }
+): Promise<CropMarketIntelligenceDTO> => {
+  const district = query.district.trim();
+  const commodity = query.commodity.trim();
+  const apiDistrict = resolveGovDistrictForApi(district);
+  const districtCandidates = resolveGovDistrictCandidates(district);
+  const records = await getMarketPrices({
+    ...query,
+    district: apiDistrict,
+  });
+  const matched = records.filter(
+    (item) =>
+      matchesFavoriteCrop(item.commodity, commodity) &&
+      matchesFavoriteDistrict(item.district, districtCandidates)
+  );
+  return buildCropMarketIntelligence(commodity, district, matched);
 };
 
 const fetchFavoriteCropPrices = async (
@@ -453,7 +523,7 @@ const fetchFavoriteCropPrices = async (
   // eslint-disable-next-line no-console
   console.log(`Crop completed: ${crop} - Returned ${matched.length} records`);
 
-  return matched;
+  return sortByModalPriceDesc(matched);
 };
 
 export const getFavoriteMarketPrices = async (
