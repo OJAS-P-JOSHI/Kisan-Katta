@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
-import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
+import { useFavouriteMarketCards } from '@/features/market/hooks/useFavouriteMarketCards';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { useCurrentWeather } from './hooks/useCurrentWeather';
@@ -15,7 +15,9 @@ import { useForecast } from './hooks/useForecast';
 import { useWeatherAlerts } from './hooks/useWeatherAlerts';
 
 import { DashboardHeader } from './components/DashboardHeader';
+import { FavouriteCropsCard } from './components/FavouriteCropsCard';
 import { ForecastList } from './components/ForecastList';
+import { MarketSummaryCard } from './components/MarketSummaryCard';
 import { PlaceholderCard } from './components/PlaceholderCard';
 import { WeatherAlertCard } from './components/WeatherAlertCard';
 import { WeatherCard } from './components/WeatherCard';
@@ -60,7 +62,17 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: profile, refresh: refreshProfile } = useMyProfile();
+  const {
+    profile,
+    pricedCards,
+    favoriteCrops,
+    loading: marketLoading,
+    settled: marketSettled,
+    profileLoading,
+    profileError,
+    refresh: refreshMarket,
+  } = useFavouriteMarketCards();
+
   const district = profile?.district;
 
   const { data: weather, loading: weatherLoading, error: weatherError, refresh: refreshWeather } =
@@ -73,11 +85,11 @@ export default function HomeScreen() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refreshProfile(), refreshWeather(), refreshForecast(), refreshAlerts()]);
+      await Promise.all([refreshMarket(), refreshWeather(), refreshForecast(), refreshAlerts()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshProfile, refreshWeather, refreshForecast, refreshAlerts]);
+  }, [refreshMarket, refreshWeather, refreshForecast, refreshAlerts]);
 
   const todayRainChance =
     forecast.length > 0 ? forecast[0].dailyChanceOfRain : undefined;
@@ -92,6 +104,11 @@ export default function HomeScreen() {
         hasAlerts,
       })
     : undefined;
+
+  const marketError =
+    profileError && pricedCards.length === 0
+      ? profileError
+      : null;
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
@@ -159,18 +176,22 @@ export default function HomeScreen() {
           onRetry={refreshForecast}
         />
 
-        <PlaceholderCard
-          icon="leaf"
-          title={strings.home.cropsTitle}
-          subtitle={strings.home.cropsSubtitle}
-          message={strings.home.cropsComing}
+        <FavouriteCropsCard
+          crops={favoriteCrops}
+          loading={profileLoading && !profile}
         />
-        <PlaceholderCard
-          icon="chart-line"
-          title={strings.home.marketTitle}
-          subtitle={strings.home.marketSubtitle}
-          message={strings.home.marketComing}
+
+        <MarketSummaryCard
+          pricedCards={pricedCards}
+          favoriteCropsCount={favoriteCrops.length}
+          loading={marketLoading}
+          settled={marketSettled}
+          error={marketError}
+          onRetry={() => {
+            void refreshMarket();
+          }}
         />
+
         <PlaceholderCard
           icon="file-document-outline"
           title={strings.home.govTitle}
