@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { strings } from '@/constants';
+
 import { getCurrentWeather } from '../weather.service';
 import type { CurrentWeather } from '../weather.types';
 
@@ -22,7 +24,7 @@ export function useCurrentWeather(district: string | undefined): UseCurrentWeath
       const data = await getCurrentWeather(district);
       setState({ data, loading: false, error: null });
     } catch {
-      setState((s) => ({ ...s, loading: false, error: 'Unable to load weather data' }));
+      setState((s) => ({ ...s, loading: false, error: strings.home.weatherError }));
     }
   }, [district]);
 

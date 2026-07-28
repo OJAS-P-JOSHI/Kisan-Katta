@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { strings } from '@/constants';
+
 import { getForecast } from '../weather.service';
 import type { ForecastDay } from '../weather.types';
 
@@ -24,7 +26,7 @@ export function useForecast(district: string | undefined): UseForecastReturn {
       const data = await getForecast(district);
       setForecast(data);
     } catch {
-      setError('Unable to load forecast');
+      setError(strings.home.forecastError);
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLeaves } from '@/components/BrandLeaves';
 import { OrganicBackground } from '@/components/OrganicBackground';
-import { getMaharashtraCropLabel, strings } from '@/constants';
+import { strings } from '@/constants';
+import { getCropLabel, useCrops } from '@/features/crop';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import {
   buttonSurface,
@@ -23,6 +24,19 @@ import { ProfileAvatar } from './components/ProfileAvatar';
 import { useMyProfile } from './hooks/useMyProfile';
 import { useProfilePhoto } from './hooks/useProfilePhoto';
 import { profileStrings } from './profile.strings';
+import type { ProfileResponseDTO } from './profile.types';
+
+function displayDistrict(profile: ProfileResponseDTO): string {
+  return profile.location?.district?.name || profile.district || '—';
+}
+
+function displayTaluka(profile: ProfileResponseDTO): string {
+  return profile.location?.taluka?.name || profile.taluka || '—';
+}
+
+function displayVillage(profile: ProfileResponseDTO): string {
+  return profile.location?.village?.name || profile.village || '—';
+}
 
 function InfoRow({
   icon,
@@ -56,6 +70,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const { data: profile, loading, error, refresh } = useMyProfile();
+  const { data: crops } = useCrops();
   const { displayUri, isBusy, showPhotoActions } = useProfilePhoto({
     profileImage: profile?.profileImage,
     refreshProfile: refresh,
@@ -106,11 +121,11 @@ export default function ProfileScreen() {
           <Text style={[typography.largeHeading, { color: theme.colors.onBackground, textAlign: 'center' }]}>
             {profile?.name ?? '—'}
           </Text>
-          {profile?.district ? (
+          {profile && (profile.district || profile.location?.district?.name) ? (
             <View style={styles.metaRow}>
               <MaterialCommunityIcons name="map-marker" size={iconSize.sm} color={theme.colors.primary} />
               <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-                {profile.district}
+                {displayDistrict(profile)}
               </Text>
             </View>
           ) : null}
@@ -145,12 +160,13 @@ export default function ProfileScreen() {
         ) : profile ? (
           <Card mode="elevated" style={[styles.card, cardSurface]}>
             <Card.Content style={styles.cardContent}>
-              <InfoRow icon="map-marker-outline" label="District" value={profile.district} />
-              <InfoRow icon="home-outline" label="Village" value={`${profile.village}, ${profile.taluka}`} />
+              <InfoRow icon="map-marker-outline" label={profileStrings.labels.district} value={displayDistrict(profile)} />
+              <InfoRow icon="map-outline" label={profileStrings.labels.taluka} value={displayTaluka(profile)} />
+              <InfoRow icon="home-outline" label={profileStrings.labels.village} value={displayVillage(profile)} />
               <InfoRow
                 icon="sprout-outline"
-                label="Favourite Crops"
-                value={profile.favoriteCrops.map(getMaharashtraCropLabel).join(', ')}
+                label={profileStrings.labels.favoriteCrops}
+                value={profile.favoriteCrops.map((crop) => getCropLabel(crop, crops)).join(', ')}
               />
             </Card.Content>
           </Card>

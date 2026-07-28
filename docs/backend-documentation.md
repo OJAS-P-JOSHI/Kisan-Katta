@@ -35,6 +35,8 @@ There is **no README**, **no `.env.example`**, **no Dockerfile**, and **no CI co
 | `backfill:application-numbers` | Backfill `applicationNumber` |
 | `migrate:phase-5a3` | Legacy status → three-state model |
 | `payment:reset` | Local-only payment state reset (refuses production) |
+| `generate:location-master` | Rebuild `src/data/location-master.json` from the LGD Excel |
+| `generate:crop-master` | Rebuild `src/data/crop-master.json` from Agmarknet commodity list |
 
 ---
 
@@ -68,11 +70,15 @@ Backend/
 └── backend/
     ├── package.json, tsconfig.json, vitest.config.ts
     ├── .env                          # gitignored; no .env.example
-    ├── scripts/                      # migrations, seeds, QA harnesses
+    ├── data/                         # Source LGD Excel + Agmarknet crop list
+    ├── scripts/                      # migrations, seeds, QA, master generators
     ├── tests/                        # payment, business-flow, application-number
     └── src/
         ├── server.ts                 # Boot: DB → seed admin → schedulers → listen
         ├── app.ts                    # Express factory + middleware chain
+        ├── data/
+        │   ├── location-master.json  # Generated LGD hierarchy (District→Taluka→Village)
+        │   └── crop-master.json      # Generated Agmarknet Crop Master (393 crops)
         ├── config/
         │   ├── env.ts
         │   ├── database.ts
@@ -97,7 +103,9 @@ Backend/
             ├── weather/
             ├── farmer-price/
             ├── gram-sahakari/        # sub-foldered (Village Representative)
-            └── payment/              # sub-foldered (Razorpay engine)
+            ├── payment/              # sub-foldered (Razorpay engine)
+            ├── location/             # read-only LGD Location Master (no DB)
+            └── crop/                 # read-only Agmarknet Crop Master (no DB)
 ```
 
 ---
@@ -246,14 +254,60 @@ OTP login, JWT, identity middleware. See [Authentication](#authentication).
 
 ## profile ✅
 
-Farmer profile CRUD + Cloudinary photo.
+Farmer profile CRUD + Cloudinary photo. Location is validated against the **Location Master** (LGD). `favoriteCrops` is validated against the **Crop Master** (Agmarknet).
 
 | Field | Notes |
 |---|---|
 | Collection | `farmer_profiles` |
-| Key fields | `userId` (unique), name, district, taluka, village, `favoriteCrops` (1–10), `language` (`mr`/`en`/`hi`), `profileImage` |
-| Create | 409 if exists; sets `AuthUser.isProfileCompleted = true` |
+| Key fields | `userId` (unique), name, `district`/`taluka`/`village` (strings), optional `districtCode`/`talukaCode`/`villageCode`/`villageNameMr`, `favoriteCrops` (1–10 canonical Agmarknet names), `language` (`mr`/`en`/`hi`), `profileImage` |
+| Create | 409 if exists; LGD hierarchy required; sets `AuthUser.isProfileCompleted = true` |
+| Update | Re-validates full hierarchy whenever any location field is sent |
 | Images | Folder `kisan-katta/profile`, `c_limit` 800 px; upload-then-DB with Cloudinary rollback |
+
+### Location integration
+
+Validation order (via `resolveLocationHierarchy` in the Location module):
+
+```
+District (code or name)
+  → Taluka belongs to district (code or name)
+    → Village belongs to taluka (code or name)
+```
+
+- New clients may send `districtCode` / `talukaCode` / `villageCode`.
+- Legacy clients (mobile) may still send only name strings.
+- Codes win when both code and name are provided for the same level.
+- District name aliases map historical names (e.g. `Ahmednagar` → LGD `Ahilyanagar`).
+- Stored string fields remain **LGD English names** so marketplace / market / farmer-price keep reading `profile.district` as a string (no migration of those modules).
+- Optional code fields are null on legacy documents until the farmer updates location.
+
+### Response shape
+
+`GET /api/v1/profile/me` returns flat name strings (mobile-compatible) **and** a structured `location` object:
+
+```json
+{
+  "district": "Ahilyanagar",
+  "taluka": "Akole",
+  "village": "Aabitkhind",
+  "location": {
+    "district": { "code": 466, "name": "Ahilyanagar" },
+    "taluka": { "code": 4201, "name": "Akole" },
+    "village": { "code": 557293, "name": "Aabitkhind", "nameMr": "आबीतखिंड" }
+  }
+}
+```
+
+Invalid hierarchy → **400** with a precise message (`Invalid district`, `Taluka does not belong to district`, etc.). Never 500 for bad location input.
+
+### Crop integration
+
+`favoriteCrops` is validated via `assertKnownCrops` in the Crop module:
+
+- Each entry must resolve to a known Agmarknet commodity name in `crop-master.json`.
+- Legacy profile labels (e.g. `Kanda (Onion)`, `Kapus (Cotton)`) are accepted and normalized to canonical names on write.
+- Unknown crops → **400** (`Unknown crop(s) in favoriteCrops: "..."`).
+- Stored values remain **exact Agmarknet English strings** (market APIs depend on them).
 
 ---
 
@@ -361,9 +415,211 @@ No “my vote” endpoint — mobile uses local SecureStore cache.
 
 ---
 
+## location ✅ (Location Master)
+
+Read-only Maharashtra **LGD (Local Government Directory)** hierarchy. No MongoDB — data is generated from the official Excel into `src/data/location-master.json` and loaded once into memory.
+
+See dedicated section: [Location Module](#location-module).
+
+---
+
+## crop ✅ (Crop Master)
+
+Read-only **Agmarknet commodity catalog**. No MongoDB — data is generated from `allCropNames.txt` into `src/data/crop-master.json` and loaded once into memory.
+
+See dedicated section: [Crop Module](#crop-module).
+
+---
+
 ## Modules that do not exist
 
 Checked and absent as standalone modules: **digital ID issuance**, **notifications**, **community/posts**, **orders**, **crop advisory**, **schemes**, **chat/messaging**. Analytics lives inside `admin`. Digital ID is only a reserved metadata field — see [Digital ID](#digital-id).
+
+> Note: Weather / marketplace district coordinates on the backend still use `maharashtraDistrictCoordinates.ts`. Mobile Profile location and crops already use Location Master and Crop Master APIs (`features/location`, `features/crop`).
+
+---
+
+# Location Module
+
+Foundational **Location Master** for Maharashtra. Built so Profile, Registration, Village Representative, Weather, Marketplace, Community, Analytics, Notifications, and Search can later share one official geo source.
+
+### Source data
+
+| Item | Value |
+|---|---|
+| Excel | `Backend/backend/data/Villageof_Specific_State_2026-07-27_23-37-41.xlsx` |
+| Generator | `Backend/backend/scripts/generate-location-master.ts` |
+| Command | `npm run generate:location-master` |
+| Output | `Backend/backend/src/data/location-master.json` |
+
+Excel **Sub-District** columns are mapped to project **Taluka** everywhere (names, types, routes, JSON keys).
+
+Relevant Excel columns consumed: District Code/Name, Sub-District Code/Name → Taluka, Village Code, Village Name (English + Local), Village Category, Village Status. Ignored: S.No., Village Version, Census codes, Remark.
+
+### Generated JSON shape
+
+Hierarchical (not flattened):
+
+```json
+[
+  {
+    "districtCode": 466,
+    "districtName": "Ahilyanagar",
+    "talukas": [
+      {
+        "talukaCode": 4201,
+        "talukaName": "Akole",
+        "villages": [
+          {
+            "villageCode": 557293,
+            "name": "Aabitkhind",
+            "nameMr": "आबीतखिंड",
+            "category": "Rural",
+            "status": "Inhabitant"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+Districts, talukas, and villages are sorted alphabetically. The generator validates district / taluka / village code uniqueness and prints warnings for anomalies (never silently drops code conflicts beyond duplicate village codes).
+
+### Architecture
+
+| File | Role |
+|---|---|
+| `modules/location/location.types.ts` | Master + DTO interfaces |
+| `modules/location/location.service.ts` | Load JSON once; `districtByCode` / `talukaByCode` maps; list helpers |
+| `modules/location/location.controller.ts` | Parse path codes; 404 on bad input |
+| `modules/location/location.routes.ts` | Public GET routes |
+| `modules/location/index.ts` | Public exports |
+
+- **No database**, no writes, no auth required.
+- JSON imported once at module load; request handlers never re-read the file.
+- Lookups are O(1) via in-memory Maps.
+
+### Endpoints — `/api/v1/location`
+
+Envelope: `{ success: true, data: [...] }`.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/districts` | All districts `{ code, name }` |
+| GET | `/talukas/:districtCode` | Talukas for a district `{ code, name }` |
+| GET | `/villages/:talukaCode` | Villages for a taluka `{ code, name, nameMr, category, status }` |
+
+Invalid / unknown codes → **404** with message `Invalid district code` or `Invalid taluka code` (never 500 for bad input).
+
+### Statistics (from last generation)
+
+| Metric | Value |
+|---|---|
+| Districts | 35 |
+| Talukas | 358 |
+| Villages | 44,868 |
+| JSON size | ~9.05 MB |
+
+### Future use
+
+Profile create/update already validates against this master via `resolveLocationHierarchy`. Gram Sahakari registration, marketplace district filters, weather district resolution, analytics breakdowns, and notifications should eventually consume these endpoints (or the in-process service helpers) instead of remaining hardcoded Maharashtra lists. **Mobile Profile already uses Location Master APIs** (`features/location`).
+
+---
+
+# Crop Module
+
+Foundational **Crop Master** for Agmarknet commodities. Built so Favourite Crops, Market, Farmer Price, Marketplace, Crop Search, Recommendations, AI, and Analytics can share one canonical crop source.
+
+### Source data
+
+| Item | Value |
+|---|---|
+| Text file | `Backend/backend/data/allCropNames.txt` |
+| Generator | `Backend/backend/scripts/generate-crop-master.ts` |
+| Command | `npm run generate:crop-master` |
+| Output | `Backend/backend/src/data/crop-master.json` |
+
+Agmarknet commodity `name` values are **never renamed, translated, or replaced** — they must match market APIs exactly.
+
+Marathi labels (`nameMr`) were seeded from the verified curated Maharashtra crop labels that previously lived in the mobile app (now removed). Crops without a verified translation keep `nameMr: ""`. Translations are embedded directly in `crop-master.json` (single source of truth — no separate translations file).
+
+### Deduplication rules
+
+The generator normalizes formatting duplicates only:
+
+- **Case-insensitive** — e.g. `kutki` + `Kutki` → keep `Kutki`
+- **Spacing before `(`** — e.g. `Groundnut(Split)` + `Groundnut (Split)` → keep `Groundnut (Split)`
+
+Genuinely different commodities (different wording) are kept as separate entries.
+
+### Generated JSON shape
+
+Flat array, sorted alphabetically by `name`:
+
+```json
+[
+  {
+    "cropId": 259,
+    "name": "Onion",
+    "nameMr": "कांदा",
+    "normalized": "onion",
+    "search": ["Onion", "कांदा", "kanda", "Kanda (Onion)"]
+  }
+]
+```
+
+| Field | Purpose |
+|---|---|
+| `cropId` | Sequential integer ID (1-based); use `cropId` everywhere, never generic `id` |
+| `name` | Canonical Agmarknet commodity string |
+| `nameMr` | Verified Marathi label (empty when untranslated) |
+| `normalized` | Lowercase key for O(1) lookup |
+| `search` | English + Marathi + romanized aliases for ranked search and legacy resolution |
+
+### Architecture
+
+| File | Role |
+|---|---|
+| `modules/crop/crop.types.ts` | Master + DTO interfaces |
+| `modules/crop/crop.service.ts` | Load JSON once; `cropById` / `cropByName` / `searchTermIndex` maps |
+| `modules/crop/crop.controller.ts` | List + search handlers |
+| `modules/crop/crop.routes.ts` | Public GET routes |
+| `modules/crop/index.ts` | Public exports |
+
+- **No database**, no writes, no auth required.
+- JSON imported once at module load; request handlers never re-read the file.
+- Lookups are O(1) via in-memory Maps; search uses an inverted index plus ranked substring matching.
+
+### Endpoints — `/api/v1/crops`
+
+Envelope: `{ success: true, data: [...] }`.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/` | All crops `{ cropId, name, nameMr }` |
+| GET | `/search?q=...` | Ranked search (English, Marathi, aliases). Optional `limit` (1–100, default 50) |
+
+Missing or empty `q` → **400**. Unknown query with no matches → **200** with empty array.
+
+### Statistics (from last generation)
+
+| Metric | Value |
+|---|---|
+| Original entries (raw file) | 424 |
+| Formatting duplicates removed | 31 |
+| Final crop count | 393 |
+| With Marathi (`nameMr`) | 64 |
+| Untranslated | 329 |
+| JSON size | ~59 KB |
+
+### Validation integration
+
+Profile create/update validates `favoriteCrops` via `assertKnownCrops()` — resolves legacy labels to canonical Agmarknet names and rejects unknown crops with **400**.
+
+### Future use
+
+Market, farmer-price, marketplace, and AI features should eventually consume these endpoints (or in-process helpers) instead of any remaining hardcoded lists. **Mobile Profile and marketplace crop pickers already use Crop Master APIs.**
 
 ---
 
@@ -493,6 +749,21 @@ All success responses use `{ success: true, data }` unless noted. Errors: `{ suc
 | GET | `/polls/:pollId` |
 | POST | `/polls/:pollId/vote` |
 | GET | `/history/:crop` |
+
+### Location — `/api/v1/location` (public, read-only LGD)
+
+| Method | Path | Auth |
+|---|---|---|
+| GET | `/districts` | none |
+| GET | `/talukas/:districtCode` | none |
+| GET | `/villages/:talukaCode` | none |
+
+### Crops — `/api/v1/crops` (public, read-only Agmarknet)
+
+| Method | Path | Auth |
+|---|---|---|
+| GET | `/` | none |
+| GET | `/search?q=...` | none |
 
 ### Gram Sahakari — `/api/v1/gram-sahakari`
 

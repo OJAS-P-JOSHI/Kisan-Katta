@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Chip, Divider, Text } from 'react-native-paper';
 
+import { strings } from '@/constants';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -31,21 +32,21 @@ export const PlaceholderCard = memo(function PlaceholderCard({
             <MaterialCommunityIcons name={icon} size={iconSize.md} color={theme.colors.primary} />
           </View>
           <View style={styles.titleBlock}>
-            <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
+            <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={2}>
               {title}
             </Text>
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
               {subtitle}
             </Text>
           </View>
         </View>
         <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
         <View style={styles.body}>
-          <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
+          <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]} numberOfLines={3}>
             {message}
           </Text>
           <Chip compact mode="outlined" style={styles.chip} textStyle={styles.chipText}>
-            Coming Soon
+            {strings.home.comingSoon}
           </Chip>
         </View>
       </Card.Content>

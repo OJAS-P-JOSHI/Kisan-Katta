@@ -71,7 +71,7 @@ Mobile App/
     │   └── marketplace-*.tsx         # Create, edit, detail, browse, saved, my listings
     ├── components/                   # Shared UI (BrandLeaves, Dropdown, EmptyState, …)
     ├── config/environment.ts         # Sole env consumer
-    ├── constants/                    # strings, Maharashtra districts/crops, Agmarknet list
+    ├── constants/                    # strings, language.ts (profile language + crop limit)
     ├── features/
     │   ├── auth/
     │   ├── community/                # Empty directory (legacy residue)
@@ -324,7 +324,9 @@ No bare stub screens exist. Stub-like UI is limited to `PlaceholderCard` on Home
 | `market.errors.ts` | English market error mapping |
 | `weather.utils.ts` | Icon mapping, rain/humidity/UV labels, greeting, day format |
 | `farmer-price.utils.ts` | Rupee format, diff chip, remaining progress, price sanitize |
-| `constants/maharashtraCrops.ts` | Crop normalize/label/resolve; build-time Agmarknet assert |
+| `features/crop/` | Crop Master API — list, search, labels (`getCropLabel`) |
+| `features/location/` | Location Master API — districts, talukas, villages |
+| `constants/language.ts` | `SUPPORTED_LANGUAGES`, `DEFAULT_LANGUAGE`, `MAX_FAVOURITE_CROPS` |
 
 ---
 

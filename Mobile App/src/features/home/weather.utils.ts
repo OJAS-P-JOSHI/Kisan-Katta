@@ -1,8 +1,19 @@
 /**
- * Pure utility functions for weather display.
- * All farmer-friendly text and icon mapping lives here.
- * No React imports — safe to use anywhere.
+ * Pure utility functions for weather display icons / formatting.
+ * Localization & farming advice live in `weather.localization.ts`.
  */
+
+import { strings } from '@/constants';
+
+export {
+  getFarmingAdvice,
+  getGreetingByTime,
+  translateCondition,
+  translateWindDirection,
+  translateWeatherCondition,
+  type FarmingAdviceInput,
+  type GreetingByTime,
+} from './weather.localization';
 
 /** Subset of MaterialCommunityIcons names used for weather conditions. */
 export type WeatherIconName =
@@ -34,40 +45,47 @@ export const getWeatherIcon = (condition: string): WeatherIconName => {
 
 /** Returns a farmer-friendly rain advisory based on daily chance of rain (%). */
 export const getRainMessage = (chance: number): string => {
-  if (chance >= 80) return 'Heavy rain likely – plan field work carefully';
-  if (chance >= 50) return 'Rain expected today';
-  if (chance >= 20) return 'Possible light rain today';
-  return 'No rain expected today';
+  const { weather } = strings.home;
+  if (chance >= 80) return weather.rainHeavy;
+  if (chance >= 50) return weather.rainLikely;
+  if (chance >= 20) return weather.rainPossible;
+  return weather.rainNone;
 };
 
 /** Returns a short farmer-friendly humidity label. */
 export const getHumidityLabel = (humidity: number): string => {
-  if (humidity >= 90) return 'Very high – fungal disease risk';
-  if (humidity >= 75) return 'High humidity';
-  if (humidity >= 50) return 'Moderate humidity';
-  return 'Low humidity';
+  const { weather } = strings.home;
+  if (humidity >= 90) return weather.humidityVeryHigh;
+  if (humidity >= 75) return weather.humidityHigh;
+  if (humidity >= 50) return weather.humidityModerate;
+  return weather.humidityLow;
 };
 
 /** Returns a short UV index advisory. */
 export const getUVLabel = (uv: number): string => {
-  if (uv >= 11) return 'Extreme UV';
-  if (uv >= 8) return 'Very high UV';
-  if (uv >= 6) return 'High UV';
-  if (uv >= 3) return 'Moderate UV';
-  return 'Low UV';
+  const { weather } = strings.home;
+  if (uv >= 11) return weather.uvExtreme;
+  if (uv >= 8) return weather.uvVeryHigh;
+  if (uv >= 6) return weather.uvHigh;
+  if (uv >= 3) return weather.uvModerate;
+  return weather.uvLow;
 };
 
-/** Returns a time-aware greeting. */
-export const getGreeting = (): string => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  return 'Good Evening';
+/** Formats a date string ("2026-07-02") to a short Marathi weekday ("सोम"). */
+export const formatDayShort = (dateStr: string): string => {
+  const day = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`).getDay();
+  const { weekdays } = strings.home.forecast;
+  const map = [
+    weekdays.sun,
+    weekdays.mon,
+    weekdays.tue,
+    weekdays.wed,
+    weekdays.thu,
+    weekdays.fri,
+    weekdays.sat,
+  ] as const;
+  return map[day] ?? weekdays.sun;
 };
-
-/** Formats a date string ("2026-07-02") to a short weekday name ("Mon"). */
-export const formatDayShort = (dateStr: string): string =>
-  new Date(dateStr).toLocaleDateString('en-IN', { weekday: 'short' });
 
 /** Formats a lastUpdated string ("2026-07-02 07:15") to "07:15 AM". */
 export const formatUpdatedTime = (lastUpdated: string): string => {

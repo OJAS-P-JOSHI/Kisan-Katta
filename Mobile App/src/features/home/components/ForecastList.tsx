@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 
+import { strings } from '@/constants';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import type { ForecastDay } from '../weather.types';
@@ -32,12 +33,12 @@ export const ForecastList = memo(function ForecastList({
         <View style={[styles.titleIcon, { backgroundColor: theme.colors.primaryContainer }]}>
           <MaterialCommunityIcons name="calendar-week" size={iconSize.sm} color={theme.colors.primary} />
         </View>
-        <View>
+        <View style={styles.titleText}>
           <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
-            7-Day Forecast
+            {strings.home.forecast.title}
           </Text>
-          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-            Daily outlook for your district
+          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
+            {strings.home.forecast.subtitle}
           </Text>
         </View>
       </View>
@@ -51,7 +52,7 @@ export const ForecastList = memo(function ForecastList({
               {error}
             </Text>
             <Button compact mode="text" onPress={onRetry}>
-              Retry
+              {strings.home.retry}
             </Button>
           </Card.Content>
         </Card>
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,
   },
+  titleText: { flex: 1 },
   titleIcon: {
     width: 28,
     height: 28,

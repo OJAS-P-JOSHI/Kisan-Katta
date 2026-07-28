@@ -1,22 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Chip, HelperText, Modal, Portal, Snackbar, Text, TextInput } from 'react-native-paper';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Button, Chip, HelperText, Modal, Portal, Snackbar, Text, TextInput } from 'react-native-paper';
 
-import { AGMARKNET_COMMODITIES } from '@/constants/agmarknetCommodities';
-import {
-  getMaharashtraCropLabel,
-  MAHARASHTRA_CROPS,
-  MAHARASHTRA_CROP_BY_VALUE,
-  MAHARASHTRA_CROP_VALUES,
-  type MaharashtraCrop,
-} from '@/constants/maharashtraCrops';
-import { radius, spacing, useAppTheme } from '@/theme';
+import { getCropLabel, useCropSearch, useCrops, type CropListItem } from '@/features/crop';
+import { radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { profileStrings } from '../profile.strings';
 
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 200;
 const TOUCH_MIN = 48;
 
 export type CropMultiSelectProps = {
@@ -27,38 +20,6 @@ export type CropMultiSelectProps = {
   max: number;
   error?: string;
   disabled?: boolean;
-};
-
-type MatchRank = 0 | 1 | 2;
-
-const getCommodityMatchRank = (commodity: string, query: string): MatchRank | null => {
-  const haystack = commodity.toLowerCase();
-  const label = MAHARASHTRA_CROP_BY_VALUE.get(commodity)?.label.toLowerCase() ?? '';
-
-  if (haystack === query || label === query) return 0;
-  if (haystack.startsWith(query) || label.startsWith(query)) return 1;
-  if (haystack.includes(query) || label.includes(query)) return 2;
-  return null;
-};
-
-/** Ranked Agmarknet search: exact → startsWith → contains, then A–Z within each rank. */
-const filterRankedAgmarknet = (query: string): string[] => {
-  if (!query) return [];
-
-  const matched: { value: string; rank: MatchRank }[] = [];
-  for (const commodity of AGMARKNET_COMMODITIES) {
-    if (MAHARASHTRA_CROP_VALUES.has(commodity)) continue;
-    const rank = getCommodityMatchRank(commodity, query);
-    if (rank === null) continue;
-    matched.push({ value: commodity, rank });
-  }
-
-  matched.sort((a, b) => {
-    if (a.rank !== b.rank) return a.rank - b.rank;
-    return a.value.localeCompare(b.value);
-  });
-
-  return matched.map((item) => item.value);
 };
 
 type CropRowProps = {
@@ -100,8 +61,8 @@ const CropRow = memo(function CropRow({ label, selected, disabled, onPress }: Cr
 });
 
 /**
- * Hybrid favourite-crop picker: curated Maharashtra crops up front,
- * full Agmarknet search below. Always stores exact Agmarknet values.
+ * Favourite-crop multi-select backed by Crop Master APIs.
+ * Browse = GET /crops; search = GET /crops/search (backend aliases).
  */
 export function CropMultiSelect({
   label,
@@ -118,17 +79,41 @@ export function CropMultiSelect({
   const [snackbar, setSnackbar] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(cropSearch, SEARCH_DEBOUNCE_MS);
 
-  const atLimit = selected.length >= max;
-  const query = debouncedSearch.trim().toLowerCase();
+  const {
+    data: allCrops,
+    loading: cropsLoading,
+    error: cropsError,
+    refresh: refreshCrops,
+  } = useCrops();
+
+  const query = debouncedSearch.trim();
   const isSearching = query.length > 0;
 
-  const filteredResults = useMemo(() => filterRankedAgmarknet(query), [query]);
+  const {
+    data: searchResults,
+    loading: searchLoading,
+    error: searchError,
+    refresh: refreshSearch,
+  } = useCropSearch(isSearching ? query : null);
+
+  const atLimit = selected.length >= max;
+
+  /** Crops with verified Marathi — shown as the browse/recommended section. */
+  const recommended = useMemo(
+    () => allCrops.filter((c) => c.nameMr.trim().length > 0),
+    [allCrops],
+  );
+
+  const labelFor = useCallback(
+    (name: string): string => getCropLabel(name, allCrops),
+    [allCrops],
+  );
 
   const summary =
     selected.length === 0
       ? ''
       : selected.length === 1
-        ? getMaharashtraCropLabel(selected[0]!)
+        ? labelFor(selected[0]!)
         : profileStrings.crops.selectedSummary(selected.length);
 
   const toggle = useCallback(
@@ -158,52 +143,49 @@ export function CropMultiSelect({
     setCropSearch('');
   }, []);
 
-  const renderRecommended = useCallback(
-    ({ item }: { item: MaharashtraCrop }) => {
-      const isSelected = selected.includes(item.value);
+  const renderCrop = useCallback(
+    ({ item }: { item: CropListItem }) => {
+      const isSelected = selected.includes(item.name);
       const canSelect = isSelected || !atLimit;
       return (
         <CropRow
-          label={item.label}
+          label={getCropLabel(item)}
           selected={isSelected}
           disabled={!canSelect}
-          onPress={() => toggle(item.value)}
+          onPress={() => toggle(item.name)}
         />
       );
     },
     [atLimit, selected, toggle],
   );
 
-  const renderResult = useCallback(
-    ({ item }: { item: string }) => {
-      const isSelected = selected.includes(item);
-      const canSelect = isSelected || !atLimit;
-      return (
-        <CropRow
-          label={getMaharashtraCropLabel(item)}
-          selected={isSelected}
-          disabled={!canSelect}
-          onPress={() => toggle(item)}
-        />
-      );
-    },
-    [atLimit, selected, toggle],
-  );
-
-  const showEmptyResults = isSearching && filteredResults.length === 0;
+  const showEmptyResults = isSearching && !searchLoading && !searchError && searchResults.length === 0;
+  const listBusy = isSearching ? searchLoading : cropsLoading;
+  const listError = isSearching ? searchError : cropsError;
+  const onRetry = isSearching ? refreshSearch : refreshCrops;
 
   return (
     <View>
+      <View style={styles.fieldHeader}>
+        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500' }]}>
+          {label}
+        </Text>
+        <Text style={[typography.caption, { color: theme.colors.primary, fontWeight: '600' }]}>
+          {profileStrings.crops.selectedCount(selected.length, max)}
+        </Text>
+      </View>
+
       <Pressable onPress={() => !disabled && setVisible(true)} disabled={disabled}>
         <View pointerEvents="none">
           <TextInput
             mode="outlined"
-            dense
-            label={`${label} (${selected.length}/${max})`}
+            label={undefined}
             value={summary}
             placeholder={profileStrings.crops.fieldPlaceholder}
             editable={false}
             error={!!error}
+            outlineStyle={styles.inputOutline}
+            style={styles.input}
             right={<TextInput.Icon icon="chevron-down" />}
           />
         </View>
@@ -221,11 +203,11 @@ export function CropMultiSelect({
             <Chip
               key={value}
               mode="flat"
-              compact
               onClose={disabled ? undefined : () => remove(value)}
-              style={styles.chip}
+              style={[styles.chip, { backgroundColor: theme.colors.primaryContainer }]}
+              textStyle={[styles.chipText, { color: theme.colors.onPrimaryContainer }]}
             >
-              {profileStrings.crops.chipPrefix} {getMaharashtraCropLabel(value)}
+              {profileStrings.crops.chipPrefix} {labelFor(value)}
             </Chip>
           ))}
         </View>
@@ -243,23 +225,6 @@ export function CropMultiSelect({
             {label}
           </Text>
 
-          <Text variant="labelLarge" style={[styles.sectionHeader, { color: theme.colors.primary }]}>
-            {profileStrings.crops.recommendedTitle}
-          </Text>
-
-          <FlatList
-            data={MAHARASHTRA_CROPS}
-            keyExtractor={(item) => item.id}
-            style={styles.recommendedList}
-            keyboardShouldPersistTaps="handled"
-            initialNumToRender={12}
-            maxToRenderPerBatch={16}
-            windowSize={6}
-            renderItem={renderRecommended}
-          />
-
-          <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
           <TextInput
             mode="outlined"
             dense
@@ -275,7 +240,21 @@ export function CropMultiSelect({
             style={styles.search}
           />
 
-          {isSearching ? (
+          {listBusy ? (
+            <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+          ) : listError ? (
+            <View style={styles.empty}>
+              <Text
+                variant="bodyMedium"
+                style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
+              >
+                {listError}
+              </Text>
+              <Button mode="text" onPress={() => void onRetry()} style={styles.retry}>
+                {profileStrings.crops.retry}
+              </Button>
+            </View>
+          ) : isSearching ? (
             <>
               <Text
                 variant="labelLarge"
@@ -304,18 +283,48 @@ export function CropMultiSelect({
                 </View>
               ) : (
                 <FlatList
-                  data={filteredResults}
-                  keyExtractor={(item) => item}
+                  data={searchResults}
+                  keyExtractor={(item) => String(item.cropId)}
                   style={styles.resultsList}
                   keyboardShouldPersistTaps="handled"
                   initialNumToRender={16}
                   maxToRenderPerBatch={20}
                   windowSize={8}
-                  renderItem={renderResult}
+                  renderItem={renderCrop}
                 />
               )}
             </>
-          ) : null}
+          ) : (
+            <>
+              <Text
+                variant="labelLarge"
+                style={[styles.sectionHeader, { color: theme.colors.primary }]}
+              >
+                {profileStrings.crops.recommendedTitle}
+              </Text>
+              {recommended.length === 0 ? (
+                <View style={styles.empty}>
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
+                  >
+                    {profileStrings.crops.emptyList}
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={recommended}
+                  keyExtractor={(item) => String(item.cropId)}
+                  style={styles.recommendedList}
+                  keyboardShouldPersistTaps="handled"
+                  initialNumToRender={12}
+                  maxToRenderPerBatch={16}
+                  windowSize={6}
+                  renderItem={renderCrop}
+                />
+              )}
+            </>
+          )}
         </Modal>
 
         <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
@@ -327,14 +336,34 @@ export function CropMultiSelect({
 }
 
 const styles = StyleSheet.create({
+  fieldHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+    paddingHorizontal: 2,
+  },
+  input: { backgroundColor: 'transparent' },
+  inputOutline: { borderRadius: radius.lg },
   helper: { marginTop: 0, marginBottom: 0 },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.xs,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
-  chip: { marginBottom: 2, borderRadius: radius.pill },
+  chip: {
+    marginBottom: 0,
+    borderRadius: radius.pill,
+    minHeight: 36,
+    paddingHorizontal: spacing.xs,
+    justifyContent: 'center',
+  },
+  chipText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginVertical: 4,
+  },
   modal: {
     marginHorizontal: spacing.md,
     borderRadius: radius.lg,
@@ -348,14 +377,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     fontWeight: '700',
   },
-  recommendedList: { flexGrow: 1, flexShrink: 1, maxHeight: 280 },
-  resultsList: { flexGrow: 1, flexShrink: 1, maxHeight: 220 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: spacing.sm,
-  },
+  recommendedList: { flexGrow: 1, flexShrink: 1, maxHeight: 360 },
+  resultsList: { flexGrow: 1, flexShrink: 1, maxHeight: 360 },
   search: { marginBottom: spacing.sm, borderRadius: radius.md },
   empty: { paddingVertical: spacing.md, paddingHorizontal: spacing.md },
+  loader: { marginVertical: spacing.lg },
+  retry: { marginTop: spacing.sm },
   option: {
     minHeight: TOUCH_MIN,
     flexDirection: 'row',

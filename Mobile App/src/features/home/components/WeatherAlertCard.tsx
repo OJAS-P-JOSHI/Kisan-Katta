@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text } from 'react-native-paper';
 
+import { strings } from '@/constants';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
@@ -53,6 +54,8 @@ type WeatherAlertCardProps = {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  /** Dynamic farming advice shown when there are no active alerts. */
+  farmingAdvice?: string;
 };
 
 export const WeatherAlertCard = memo(function WeatherAlertCard({
@@ -60,6 +63,7 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
   loading,
   error,
   onRetry,
+  farmingAdvice,
 }: WeatherAlertCardProps) {
   const theme = useAppTheme();
 
@@ -76,7 +80,7 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
             {error}
           </Text>
           <Button compact mode="text" onPress={onRetry}>
-            Retry
+            {strings.home.retry}
           </Button>
         </Card.Content>
       </Card>
@@ -94,11 +98,17 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
             <MaterialCommunityIcons name="check-circle-outline" size={iconSize.lg} color={theme.colors.primary} />
           </View>
           <View style={styles.noAlertText}>
-            <Text style={[typography.sectionTitle, { color: theme.colors.onPrimaryContainer }]}>
-              No active weather alerts
+            <Text
+              style={[typography.sectionTitle, { color: theme.colors.onPrimaryContainer }]}
+              numberOfLines={2}
+            >
+              {strings.home.alerts.noneTitle}
             </Text>
-            <Text style={[typography.caption, { color: theme.colors.onPrimaryContainer, opacity: 0.9 }]}>
-              Sky is clear – good time to work outdoors
+            <Text
+              style={[typography.caption, { color: theme.colors.onPrimaryContainer, opacity: 0.9 }]}
+              numberOfLines={2}
+            >
+              {farmingAdvice ?? strings.home.alerts.noneSubtitle}
             </Text>
           </View>
         </Card.Content>
@@ -114,7 +124,7 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
             <MaterialCommunityIcons name="alert-outline" size={iconSize.sm} color={theme.colors.secondary} />
           </View>
           <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
-            Weather Alerts
+            {strings.home.alerts.title}
           </Text>
         </View>
 

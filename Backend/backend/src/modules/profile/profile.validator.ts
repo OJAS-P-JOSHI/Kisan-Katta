@@ -1,4 +1,5 @@
 import { AppError } from "../../utils/AppError";
+import { assertKnownCrops } from "../crop/crop.service";
 import { SUPPORTED_LANGUAGES } from "./profile.types";
 import type { CreateProfileBody, SupportedLanguage, UpdateProfileBody } from "./profile.types";
 
@@ -13,8 +14,42 @@ const requireString = (value: unknown, field: string): string => {
   return value.trim();
 };
 
+const optionalNonEmptyString = (value: unknown, field: string): string | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new AppError(`${field} must be a non-empty string when provided.`, 400);
+  }
+  return value.trim();
+};
+
+/**
+ * Accepts a positive integer LGD code from JSON number or numeric string.
+ * Returns undefined when the field is absent.
+ */
+const optionalLgdCode = (value: unknown, field: string): number | undefined => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  if (typeof value === "number") {
+    if (!Number.isSafeInteger(value) || value <= 0) {
+      throw new AppError(`${field} must be a positive integer LGD code.`, 400);
+    }
+    return value;
+  }
+
+  if (typeof value === "string" && /^\d+$/.test(value.trim())) {
+    const parsed = Number(value.trim());
+    if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+      throw new AppError(`${field} must be a positive integer LGD code.`, 400);
+    }
+    return parsed;
+  }
+
+  throw new AppError(`${field} must be a positive integer LGD code.`, 400);
+};
+
 const validateLanguage = (value: unknown): SupportedLanguage => {
-  // Explicit comparison is the most TypeScript-strict-compatible approach
   if (value !== "mr" && value !== "en" && value !== "hi") {
     throw new AppError(
       `language must be one of: ${SUPPORTED_LANGUAGES.join(", ")}.`,
@@ -38,32 +73,104 @@ const validateFavoriteCrops = (value: unknown): string[] => {
     }
     crops.push(item.trim());
   }
-  return crops;
+  // Resolve to canonical Agmarknet names; reject unknown crops (legacy labels accepted).
+  return assertKnownCrops(crops);
+};
+
+const hasDistrict = (body: CreateProfileBody | UpdateProfileBody): boolean =>
+  body.districtCode !== undefined ||
+  (typeof body.district === "string" && body.district.length > 0);
+
+const hasTaluka = (body: CreateProfileBody | UpdateProfileBody): boolean =>
+  body.talukaCode !== undefined ||
+  (typeof body.taluka === "string" && body.taluka.length > 0);
+
+const hasVillage = (body: CreateProfileBody | UpdateProfileBody): boolean =>
+  body.villageCode !== undefined ||
+  (typeof body.village === "string" && body.village.length > 0);
+
+/**
+ * Create requires a full hierarchy: district + taluka + village
+ * (each via code and/or name).
+ */
+const assertCompleteLocationForCreate = (body: CreateProfileBody): void => {
+  if (!hasDistrict(body)) {
+    throw new AppError(
+      "Missing district: provide districtCode or district name.",
+      400
+    );
+  }
+  if (!hasTaluka(body)) {
+    throw new AppError(
+      "Missing taluka: provide talukaCode or taluka name.",
+      400
+    );
+  }
+  if (!hasVillage(body)) {
+    throw new AppError(
+      "Missing village: provide villageCode or village name.",
+      400
+    );
+  }
 };
 
 // ---------------------------------------------------------------------------
 // Exported validators
 // ---------------------------------------------------------------------------
 
-export const validateCreateProfile = (body: Record<string, unknown>): CreateProfileBody => ({
-  name: requireString(body["name"], "name"),
-  district: requireString(body["district"], "district"),
-  taluka: requireString(body["taluka"], "taluka"),
-  village: requireString(body["village"], "village"),
-  favoriteCrops: validateFavoriteCrops(body["favoriteCrops"]),
-  // language defaults to "mr" when omitted
-  language: body["language"] !== undefined ? validateLanguage(body["language"]) : "mr",
-});
+export const validateCreateProfile = (
+  body: Record<string, unknown>
+): CreateProfileBody => {
+  const result: CreateProfileBody = {
+    name: requireString(body["name"], "name"),
+    favoriteCrops: validateFavoriteCrops(body["favoriteCrops"]),
+    language: body["language"] !== undefined ? validateLanguage(body["language"]) : "mr",
+  };
 
-export const validateUpdateProfile = (body: Record<string, unknown>): UpdateProfileBody => {
+  const district = optionalNonEmptyString(body["district"], "district");
+  const taluka = optionalNonEmptyString(body["taluka"], "taluka");
+  const village = optionalNonEmptyString(body["village"], "village");
+  const districtCode = optionalLgdCode(body["districtCode"], "districtCode");
+  const talukaCode = optionalLgdCode(body["talukaCode"], "talukaCode");
+  const villageCode = optionalLgdCode(body["villageCode"], "villageCode");
+
+  if (district !== undefined) result.district = district;
+  if (taluka !== undefined) result.taluka = taluka;
+  if (village !== undefined) result.village = village;
+  if (districtCode !== undefined) result.districtCode = districtCode;
+  if (talukaCode !== undefined) result.talukaCode = talukaCode;
+  if (villageCode !== undefined) result.villageCode = villageCode;
+
+  assertCompleteLocationForCreate(result);
+  return result;
+};
+
+export const validateUpdateProfile = (
+  body: Record<string, unknown>
+): UpdateProfileBody => {
   const result: UpdateProfileBody = {};
 
   if (body["name"] !== undefined) result.name = requireString(body["name"], "name");
-  if (body["district"] !== undefined) result.district = requireString(body["district"], "district");
-  if (body["taluka"] !== undefined) result.taluka = requireString(body["taluka"], "taluka");
-  if (body["village"] !== undefined) result.village = requireString(body["village"], "village");
-  if (body["favoriteCrops"] !== undefined) result.favoriteCrops = validateFavoriteCrops(body["favoriteCrops"]);
-  if (body["language"] !== undefined) result.language = validateLanguage(body["language"]);
+  if (body["favoriteCrops"] !== undefined) {
+    result.favoriteCrops = validateFavoriteCrops(body["favoriteCrops"]);
+  }
+  if (body["language"] !== undefined) {
+    result.language = validateLanguage(body["language"]);
+  }
+
+  const district = optionalNonEmptyString(body["district"], "district");
+  const taluka = optionalNonEmptyString(body["taluka"], "taluka");
+  const village = optionalNonEmptyString(body["village"], "village");
+  const districtCode = optionalLgdCode(body["districtCode"], "districtCode");
+  const talukaCode = optionalLgdCode(body["talukaCode"], "talukaCode");
+  const villageCode = optionalLgdCode(body["villageCode"], "villageCode");
+
+  if (district !== undefined) result.district = district;
+  if (taluka !== undefined) result.taluka = taluka;
+  if (village !== undefined) result.village = village;
+  if (districtCode !== undefined) result.districtCode = districtCode;
+  if (talukaCode !== undefined) result.talukaCode = talukaCode;
+  if (villageCode !== undefined) result.villageCode = villageCode;
 
   if (Object.keys(result).length === 0) {
     throw new AppError("At least one field must be provided to update.", 400);

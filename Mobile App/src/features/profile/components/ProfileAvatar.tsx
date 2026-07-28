@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, Image, Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
 import { radius, spacing, useAppTheme } from '@/theme';
 
 import { profileStrings } from '../profile.strings';
 
-const AVATAR_SIZE = 116;
+const DEFAULT_AVATAR_SIZE = 116;
 const TOUCH_TARGET = 48;
 
 type ProfileAvatarProps = {
@@ -14,6 +15,8 @@ type ProfileAvatarProps = {
   imageUri: string | null;
   uploading?: boolean;
   disabled?: boolean;
+  /** Visual diameter in dp. Defaults to 116. */
+  size?: number;
   onPress: () => void;
 };
 
@@ -32,11 +35,41 @@ export function ProfileAvatar({
   imageUri,
   uploading = false,
   disabled = false,
+  size = DEFAULT_AVATAR_SIZE,
   onPress,
 }: ProfileAvatarProps) {
   const theme = useAppTheme();
   const initial = getInitial(name);
   const busy = uploading || disabled;
+  const hasImage = Boolean(imageUri);
+  const pulse = useRef(new Animated.Value(1)).current;
+  const badgeSize = Math.round(size * 0.28);
+  const iconGlyph = Math.round(size * 0.48);
+
+  useEffect(() => {
+    if (hasImage || busy) {
+      pulse.setValue(1);
+      return;
+    }
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1.06,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [busy, hasImage, pulse]);
 
   return (
     <Pressable
@@ -51,33 +84,64 @@ export function ProfileAvatar({
         busy ? styles.disabled : null,
       ]}
     >
-      <View
-        style={[
-          styles.avatar,
-          {
-            backgroundColor: theme.colors.primary,
-            borderColor: theme.colors.surface,
-          },
-        ]}
-      >
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} accessibilityIgnoresInvertColors />
-        ) : initial ? (
-          <Text variant="displaySmall" style={[styles.initial, { color: theme.colors.onPrimary }]}>
-            {initial}
-          </Text>
-        ) : (
-          <MaterialCommunityIcons name="account" size={56} color={theme.colors.onPrimary} />
-        )}
+      <View style={[styles.avatarWrap, { width: size + 8, height: size + 8 }]}>
+        <View
+          style={[
+            styles.avatar,
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              backgroundColor: theme.colors.primary,
+              borderColor: theme.colors.surface,
+            },
+          ]}
+        >
+          <Animated.View style={[styles.avatarInner, !hasImage ? { transform: [{ scale: pulse }] } : null]}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} accessibilityIgnoresInvertColors />
+            ) : initial ? (
+              <Text
+                variant="displaySmall"
+                style={[styles.initial, { color: theme.colors.onPrimary, fontSize: Math.round(size * 0.38) }]}
+              >
+                {initial}
+              </Text>
+            ) : (
+              <MaterialCommunityIcons name="account" size={iconGlyph} color={theme.colors.onPrimary} />
+            )}
+          </Animated.View>
 
-        {uploading ? (
-          <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.45)' }]}>
-            <ActivityIndicator animating size="small" color={theme.colors.onPrimary} />
-            <Text variant="labelSmall" style={{ color: theme.colors.onPrimary, marginTop: spacing.xs }}>
-              {profileStrings.photo.uploading}
-            </Text>
-          </View>
-        ) : null}
+          {uploading ? (
+            <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.45)' }]}>
+              <ActivityIndicator animating size="small" color={theme.colors.onPrimary} />
+              <Text variant="labelSmall" style={{ color: theme.colors.onPrimary, marginTop: spacing.xs }}>
+                {profileStrings.photo.uploading}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
+        <View
+          style={[
+            styles.cameraBadge,
+            {
+              width: badgeSize,
+              height: badgeSize,
+              borderRadius: badgeSize / 2,
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.primaryContainer,
+              right: 0,
+              bottom: 0,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="camera-outline"
+            size={Math.round(badgeSize * 0.55)}
+            color={theme.colors.primary}
+          />
+        </View>
       </View>
     </Pressable>
   );
@@ -96,14 +160,22 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.9,
   },
+  avatarWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
   avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 3,
+  },
+  avatarInner: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
     width: '100%',
@@ -116,5 +188,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
   },
 });

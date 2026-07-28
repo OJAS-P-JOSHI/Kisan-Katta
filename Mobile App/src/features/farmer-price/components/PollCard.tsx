@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, type ReactNode } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { ProgressBar, Text } from 'react-native-paper';
 
-import { getMaharashtraCropLabel } from '@/constants';
+import { getCropLabel, useCrops } from '@/features/crop';
 import {
   elevation,
   palette,
@@ -63,6 +63,7 @@ function MetaChip({
 
 function PollCardComponent({ poll, children, onViewComments }: PollCardProps) {
   const theme = useAppTheme();
+  const { data: crops } = useCrops();
   const appear = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -73,7 +74,7 @@ function PollCardComponent({ poll, children, onViewComments }: PollCardProps) {
     }).start();
   }, [appear]);
 
-  const cropLabel = getMaharashtraCropLabel(poll.crop) || poll.crop;
+  const cropLabel = getCropLabel(poll.crop, crops) || poll.crop;
   const showGovUnavailable = !poll.governmentPriceAvailable;
   const showCommunityUnavailable = !poll.minimumVotesReached;
   const showDiff =

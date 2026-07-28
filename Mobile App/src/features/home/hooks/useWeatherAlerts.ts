@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { strings } from '@/constants';
+
 import { getWeatherAlerts } from '../weather.service';
 import type { WeatherAlert } from '../weather.types';
 
@@ -22,7 +24,7 @@ export function useWeatherAlerts(district: string | undefined): UseWeatherAlerts
       const data = await getWeatherAlerts(district);
       setState({ data, loading: false, error: null });
     } catch {
-      setState((s) => ({ ...s, loading: false, error: 'Unable to load weather alerts' }));
+      setState((s) => ({ ...s, loading: false, error: strings.home.alertsError }));
     }
   }, [district]);
 

@@ -1,0 +1,3674 @@
+[
+  {
+    "cropId": 1,
+    "name": "Absinthe",
+    "nameMr": "",
+    "normalized": "absinthe",
+    "search": [
+      "Absinthe"
+    ]
+  },
+  {
+    "cropId": 2,
+    "name": "Ajwan",
+    "nameMr": "",
+    "normalized": "ajwan",
+    "search": [
+      "Ajwan"
+    ]
+  },
+  {
+    "cropId": 3,
+    "name": "Alasande Gram",
+    "nameMr": "",
+    "normalized": "alasande gram",
+    "search": [
+      "Alasande Gram"
+    ]
+  },
+  {
+    "cropId": 4,
+    "name": "Almond(Badam)",
+    "nameMr": "",
+    "normalized": "almond (badam)",
+    "search": [
+      "Almond(Badam)"
+    ]
+  },
+  {
+    "cropId": 5,
+    "name": "Alsandikai",
+    "nameMr": "",
+    "normalized": "alsandikai",
+    "search": [
+      "Alsandikai"
+    ]
+  },
+  {
+    "cropId": 6,
+    "name": "Amaranthus",
+    "nameMr": "",
+    "normalized": "amaranthus",
+    "search": [
+      "Amaranthus"
+    ]
+  },
+  {
+    "cropId": 7,
+    "name": "Ambada Seed",
+    "nameMr": "",
+    "normalized": "ambada seed",
+    "search": [
+      "Ambada Seed"
+    ]
+  },
+  {
+    "cropId": 8,
+    "name": "Ambady/Mesta",
+    "nameMr": "",
+    "normalized": "ambady/mesta",
+    "search": [
+      "Ambady/Mesta"
+    ]
+  },
+  {
+    "cropId": 9,
+    "name": "Ambady/Mesta/Patson",
+    "nameMr": "",
+    "normalized": "ambady/mesta/patson",
+    "search": [
+      "Ambady/Mesta/Patson"
+    ]
+  },
+  {
+    "cropId": 10,
+    "name": "Amla(Nelli Kai)",
+    "nameMr": "",
+    "normalized": "amla (nelli kai)",
+    "search": [
+      "Amla(Nelli Kai)"
+    ]
+  },
+  {
+    "cropId": 11,
+    "name": "Amphophalus",
+    "nameMr": "",
+    "normalized": "amphophalus",
+    "search": [
+      "Amphophalus"
+    ]
+  },
+  {
+    "cropId": 12,
+    "name": "Amranthas Red",
+    "nameMr": "",
+    "normalized": "amranthas red",
+    "search": [
+      "Amranthas Red"
+    ]
+  },
+  {
+    "cropId": 13,
+    "name": "Antawala",
+    "nameMr": "",
+    "normalized": "antawala",
+    "search": [
+      "Antawala"
+    ]
+  },
+  {
+    "cropId": 14,
+    "name": "Anthorium",
+    "nameMr": "",
+    "normalized": "anthorium",
+    "search": [
+      "Anthorium"
+    ]
+  },
+  {
+    "cropId": 15,
+    "name": "Apple",
+    "nameMr": "",
+    "normalized": "apple",
+    "search": [
+      "Apple"
+    ]
+  },
+  {
+    "cropId": 16,
+    "name": "Apricot(Jardalu/Khumani)",
+    "nameMr": "",
+    "normalized": "apricot (jardalu/khumani)",
+    "search": [
+      "Apricot(Jardalu/Khumani)"
+    ]
+  },
+  {
+    "cropId": 17,
+    "name": "Arecanut(Betelnut/Supari)",
+    "nameMr": "",
+    "normalized": "arecanut (betelnut/supari)",
+    "search": [
+      "Arecanut(Betelnut/Supari)"
+    ]
+  },
+  {
+    "cropId": 18,
+    "name": "Arhar (Tur/Red Gram)(Whole)",
+    "nameMr": "",
+    "normalized": "arhar (tur/red gram) (whole)",
+    "search": [
+      "Arhar (Tur/Red Gram)(Whole)"
+    ]
+  },
+  {
+    "cropId": 19,
+    "name": "Arhar Dal(Tur Dal)",
+    "nameMr": "",
+    "normalized": "arhar dal (tur dal)",
+    "search": [
+      "Arhar Dal(Tur Dal)"
+    ]
+  },
+  {
+    "cropId": 20,
+    "name": "Asalia",
+    "nameMr": "",
+    "normalized": "asalia",
+    "search": [
+      "Asalia"
+    ]
+  },
+  {
+    "cropId": 21,
+    "name": "Ashgourd",
+    "nameMr": "",
+    "normalized": "ashgourd",
+    "search": [
+      "Ashgourd"
+    ]
+  },
+  {
+    "cropId": 22,
+    "name": "Ashwagandha",
+    "nameMr": "",
+    "normalized": "ashwagandha",
+    "search": [
+      "Ashwagandha"
+    ]
+  },
+  {
+    "cropId": 23,
+    "name": "Asparagus",
+    "nameMr": "",
+    "normalized": "asparagus",
+    "search": [
+      "Asparagus"
+    ]
+  },
+  {
+    "cropId": 24,
+    "name": "Astera",
+    "nameMr": "",
+    "normalized": "astera",
+    "search": [
+      "Astera"
+    ]
+  },
+  {
+    "cropId": 25,
+    "name": "Avare Dal",
+    "nameMr": "",
+    "normalized": "avare dal",
+    "search": [
+      "Avare Dal"
+    ]
+  },
+  {
+    "cropId": 26,
+    "name": "Bael",
+    "nameMr": "",
+    "normalized": "bael",
+    "search": [
+      "Bael"
+    ]
+  },
+  {
+    "cropId": 27,
+    "name": "Bajra(Pearl Millet/Cumbu)",
+    "nameMr": "बाजरी",
+    "normalized": "bajra (pearl millet/cumbu)",
+    "search": [
+      "Bajra(Pearl Millet/Cumbu)",
+      "बाजरी",
+      "bajri",
+      "bajra"
+    ]
+  },
+  {
+    "cropId": 28,
+    "name": "Balekai",
+    "nameMr": "",
+    "normalized": "balekai",
+    "search": [
+      "Balekai"
+    ]
+  },
+  {
+    "cropId": 29,
+    "name": "Bamboo",
+    "nameMr": "",
+    "normalized": "bamboo",
+    "search": [
+      "Bamboo"
+    ]
+  },
+  {
+    "cropId": 30,
+    "name": "Banana",
+    "nameMr": "केळी",
+    "normalized": "banana",
+    "search": [
+      "Banana",
+      "केळी",
+      "kela"
+    ]
+  },
+  {
+    "cropId": 31,
+    "name": "Banana - Green",
+    "nameMr": "",
+    "normalized": "banana - green",
+    "search": [
+      "Banana - Green"
+    ]
+  },
+  {
+    "cropId": 32,
+    "name": "Barley (Jau)",
+    "nameMr": "",
+    "normalized": "barley (jau)",
+    "search": [
+      "Barley (Jau)"
+    ]
+  },
+  {
+    "cropId": 33,
+    "name": "basil",
+    "nameMr": "",
+    "normalized": "basil",
+    "search": [
+      "basil"
+    ]
+  },
+  {
+    "cropId": 34,
+    "name": "Bay leaf (Tejpatta)",
+    "nameMr": "",
+    "normalized": "bay leaf (tejpatta)",
+    "search": [
+      "Bay leaf (Tejpatta)"
+    ]
+  },
+  {
+    "cropId": 35,
+    "name": "Beans",
+    "nameMr": "",
+    "normalized": "beans",
+    "search": [
+      "Beans"
+    ]
+  },
+  {
+    "cropId": 36,
+    "name": "Beaten Rice",
+    "nameMr": "",
+    "normalized": "beaten rice",
+    "search": [
+      "Beaten Rice"
+    ]
+  },
+  {
+    "cropId": 37,
+    "name": "Beetroot",
+    "nameMr": "",
+    "normalized": "beetroot",
+    "search": [
+      "Beetroot"
+    ]
+  },
+  {
+    "cropId": 38,
+    "name": "Bengal Gram Dal (Chana Dal)",
+    "nameMr": "",
+    "normalized": "bengal gram dal (chana dal)",
+    "search": [
+      "Bengal Gram Dal (Chana Dal)"
+    ]
+  },
+  {
+    "cropId": 39,
+    "name": "Bengal Gram(Gram)(Whole)",
+    "nameMr": "हरभरा",
+    "normalized": "bengal gram (gram) (whole)",
+    "search": [
+      "Bengal Gram(Gram)(Whole)",
+      "हरभरा",
+      "gram",
+      "chana",
+      "Gram (Harbhara)"
+    ]
+  },
+  {
+    "cropId": 40,
+    "name": "Ber(Zizyphus/Borehannu)",
+    "nameMr": "",
+    "normalized": "ber (zizyphus/borehannu)",
+    "search": [
+      "Ber(Zizyphus/Borehannu)"
+    ]
+  },
+  {
+    "cropId": 41,
+    "name": "Betal Leaves",
+    "nameMr": "",
+    "normalized": "betal leaves",
+    "search": [
+      "Betal Leaves"
+    ]
+  },
+  {
+    "cropId": 42,
+    "name": "Betelnuts",
+    "nameMr": "",
+    "normalized": "betelnuts",
+    "search": [
+      "Betelnuts"
+    ]
+  },
+  {
+    "cropId": 43,
+    "name": "Bhindi(Ladies Finger)",
+    "nameMr": "भेंडी",
+    "normalized": "bhindi (ladies finger)",
+    "search": [
+      "Bhindi(Ladies Finger)",
+      "भेंडी",
+      "bhindi",
+      "okra"
+    ]
+  },
+  {
+    "cropId": 44,
+    "name": "Bhui Amlaya",
+    "nameMr": "",
+    "normalized": "bhui amlaya",
+    "search": [
+      "Bhui Amlaya"
+    ]
+  },
+  {
+    "cropId": 45,
+    "name": "Big Gram",
+    "nameMr": "",
+    "normalized": "big gram",
+    "search": [
+      "Big Gram"
+    ]
+  },
+  {
+    "cropId": 46,
+    "name": "Binoula",
+    "nameMr": "",
+    "normalized": "binoula",
+    "search": [
+      "Binoula"
+    ]
+  },
+  {
+    "cropId": 47,
+    "name": "Bitter gourd",
+    "nameMr": "कारले",
+    "normalized": "bitter gourd",
+    "search": [
+      "Bitter gourd",
+      "कारले",
+      "karela"
+    ]
+  },
+  {
+    "cropId": 48,
+    "name": "Black Gram (Urd Beans)(Whole)",
+    "nameMr": "उडीद",
+    "normalized": "black gram (urd beans) (whole)",
+    "search": [
+      "Black Gram (Urd Beans)(Whole)",
+      "उडीद",
+      "urad",
+      "urd"
+    ]
+  },
+  {
+    "cropId": 49,
+    "name": "Black Gram Dal (Urd Dal)",
+    "nameMr": "",
+    "normalized": "black gram dal (urd dal)",
+    "search": [
+      "Black Gram Dal (Urd Dal)"
+    ]
+  },
+  {
+    "cropId": 50,
+    "name": "Black pepper",
+    "nameMr": "",
+    "normalized": "black pepper",
+    "search": [
+      "Black pepper"
+    ]
+  },
+  {
+    "cropId": 51,
+    "name": "BOP",
+    "nameMr": "",
+    "normalized": "bop",
+    "search": [
+      "BOP"
+    ]
+  },
+  {
+    "cropId": 52,
+    "name": "Borehannu",
+    "nameMr": "",
+    "normalized": "borehannu",
+    "search": [
+      "Borehannu"
+    ]
+  },
+  {
+    "cropId": 53,
+    "name": "Bottle gourd",
+    "nameMr": "दुधी भोपळा",
+    "normalized": "bottle gourd",
+    "search": [
+      "Bottle gourd",
+      "दुधी भोपळा",
+      "dudhi"
+    ]
+  },
+  {
+    "cropId": 54,
+    "name": "Brahmi",
+    "nameMr": "",
+    "normalized": "brahmi",
+    "search": [
+      "Brahmi"
+    ]
+  },
+  {
+    "cropId": 55,
+    "name": "Bran",
+    "nameMr": "",
+    "normalized": "bran",
+    "search": [
+      "Bran"
+    ]
+  },
+  {
+    "cropId": 56,
+    "name": "Brinjal",
+    "nameMr": "वांगी",
+    "normalized": "brinjal",
+    "search": [
+      "Brinjal",
+      "वांगी",
+      "baingan"
+    ]
+  },
+  {
+    "cropId": 57,
+    "name": "Broken Rice",
+    "nameMr": "",
+    "normalized": "broken rice",
+    "search": [
+      "Broken Rice"
+    ]
+  },
+  {
+    "cropId": 58,
+    "name": "Broomstick(Flower Broom)",
+    "nameMr": "",
+    "normalized": "broomstick (flower broom)",
+    "search": [
+      "Broomstick(Flower Broom)"
+    ]
+  },
+  {
+    "cropId": 59,
+    "name": "Bull",
+    "nameMr": "",
+    "normalized": "bull",
+    "search": [
+      "Bull"
+    ]
+  },
+  {
+    "cropId": 60,
+    "name": "Bullar",
+    "nameMr": "",
+    "normalized": "bullar",
+    "search": [
+      "Bullar"
+    ]
+  },
+  {
+    "cropId": 61,
+    "name": "Bunch Beans",
+    "nameMr": "",
+    "normalized": "bunch beans",
+    "search": [
+      "Bunch Beans"
+    ]
+  },
+  {
+    "cropId": 62,
+    "name": "Butter",
+    "nameMr": "",
+    "normalized": "butter",
+    "search": [
+      "Butter"
+    ]
+  },
+  {
+    "cropId": 63,
+    "name": "buttery",
+    "nameMr": "",
+    "normalized": "buttery",
+    "search": [
+      "buttery"
+    ]
+  },
+  {
+    "cropId": 64,
+    "name": "Cabbage",
+    "nameMr": "कोबी",
+    "normalized": "cabbage",
+    "search": [
+      "Cabbage",
+      "कोबी"
+    ]
+  },
+  {
+    "cropId": 65,
+    "name": "Calendula",
+    "nameMr": "",
+    "normalized": "calendula",
+    "search": [
+      "Calendula"
+    ]
+  },
+  {
+    "cropId": 66,
+    "name": "Calf",
+    "nameMr": "",
+    "normalized": "calf",
+    "search": [
+      "Calf"
+    ]
+  },
+  {
+    "cropId": 67,
+    "name": "Cane",
+    "nameMr": "",
+    "normalized": "cane",
+    "search": [
+      "Cane"
+    ]
+  },
+  {
+    "cropId": 68,
+    "name": "Capsicum",
+    "nameMr": "",
+    "normalized": "capsicum",
+    "search": [
+      "Capsicum"
+    ]
+  },
+  {
+    "cropId": 69,
+    "name": "Cardamom",
+    "nameMr": "",
+    "normalized": "cardamom",
+    "search": [
+      "Cardamom"
+    ]
+  },
+  {
+    "cropId": 70,
+    "name": "Cardamoms",
+    "nameMr": "",
+    "normalized": "cardamoms",
+    "search": [
+      "Cardamoms"
+    ]
+  },
+  {
+    "cropId": 71,
+    "name": "Carnation",
+    "nameMr": "",
+    "normalized": "carnation",
+    "search": [
+      "Carnation"
+    ]
+  },
+  {
+    "cropId": 72,
+    "name": "Carrot",
+    "nameMr": "",
+    "normalized": "carrot",
+    "search": [
+      "Carrot"
+    ]
+  },
+  {
+    "cropId": 73,
+    "name": "Cashew Kernel",
+    "nameMr": "",
+    "normalized": "cashew kernel",
+    "search": [
+      "Cashew Kernel"
+    ]
+  },
+  {
+    "cropId": 74,
+    "name": "Cashewnuts",
+    "nameMr": "काजू",
+    "normalized": "cashewnuts",
+    "search": [
+      "Cashewnuts",
+      "काजू",
+      "cashew",
+      "kaju"
+    ]
+  },
+  {
+    "cropId": 75,
+    "name": "Castor Oil",
+    "nameMr": "",
+    "normalized": "castor oil",
+    "search": [
+      "Castor Oil"
+    ]
+  },
+  {
+    "cropId": 76,
+    "name": "Castor Seed",
+    "nameMr": "एरंडी",
+    "normalized": "castor seed",
+    "search": [
+      "Castor Seed",
+      "एरंडी",
+      "castor",
+      "erandi"
+    ]
+  },
+  {
+    "cropId": 77,
+    "name": "Cauliflower",
+    "nameMr": "फुलकोबी",
+    "normalized": "cauliflower",
+    "search": [
+      "Cauliflower",
+      "फुलकोबी"
+    ]
+  },
+  {
+    "cropId": 78,
+    "name": "Chakotha",
+    "nameMr": "",
+    "normalized": "chakotha",
+    "search": [
+      "Chakotha"
+    ]
+  },
+  {
+    "cropId": 79,
+    "name": "Chapparad Avare",
+    "nameMr": "",
+    "normalized": "chapparad avare",
+    "search": [
+      "Chapparad Avare"
+    ]
+  },
+  {
+    "cropId": 80,
+    "name": "Chennangi (Whole)",
+    "nameMr": "",
+    "normalized": "chennangi (whole)",
+    "search": [
+      "Chennangi (Whole)"
+    ]
+  },
+  {
+    "cropId": 81,
+    "name": "Chennangi Dal",
+    "nameMr": "",
+    "normalized": "chennangi dal",
+    "search": [
+      "Chennangi Dal"
+    ]
+  },
+  {
+    "cropId": 82,
+    "name": "Cherry",
+    "nameMr": "",
+    "normalized": "cherry",
+    "search": [
+      "Cherry"
+    ]
+  },
+  {
+    "cropId": 83,
+    "name": "Chikoos(Sapota)",
+    "nameMr": "चिकू",
+    "normalized": "chikoos (sapota)",
+    "search": [
+      "Chikoos(Sapota)",
+      "चिकू",
+      "chikoo",
+      "sapota"
+    ]
+  },
+  {
+    "cropId": 84,
+    "name": "Chili Red",
+    "nameMr": "",
+    "normalized": "chili red",
+    "search": [
+      "Chili Red"
+    ]
+  },
+  {
+    "cropId": 85,
+    "name": "Chilly Capsicum",
+    "nameMr": "",
+    "normalized": "chilly capsicum",
+    "search": [
+      "Chilly Capsicum"
+    ]
+  },
+  {
+    "cropId": 86,
+    "name": "Chow Chow",
+    "nameMr": "",
+    "normalized": "chow chow",
+    "search": [
+      "Chow Chow"
+    ]
+  },
+  {
+    "cropId": 87,
+    "name": "Chrysanthemum",
+    "nameMr": "",
+    "normalized": "chrysanthemum",
+    "search": [
+      "Chrysanthemum"
+    ]
+  },
+  {
+    "cropId": 88,
+    "name": "Chrysanthemum(Loose)",
+    "nameMr": "",
+    "normalized": "chrysanthemum (loose)",
+    "search": [
+      "Chrysanthemum(Loose)"
+    ]
+  },
+  {
+    "cropId": 89,
+    "name": "Cinamon(Dalchini)",
+    "nameMr": "",
+    "normalized": "cinamon (dalchini)",
+    "search": [
+      "Cinamon(Dalchini)"
+    ]
+  },
+  {
+    "cropId": 90,
+    "name": "Cloves",
+    "nameMr": "",
+    "normalized": "cloves",
+    "search": [
+      "Cloves"
+    ]
+  },
+  {
+    "cropId": 91,
+    "name": "Cluster beans",
+    "nameMr": "गवार",
+    "normalized": "cluster beans",
+    "search": [
+      "Cluster beans",
+      "गवार",
+      "gavar"
+    ]
+  },
+  {
+    "cropId": 92,
+    "name": "Coca",
+    "nameMr": "",
+    "normalized": "coca",
+    "search": [
+      "Coca"
+    ]
+  },
+  {
+    "cropId": 93,
+    "name": "Cock",
+    "nameMr": "",
+    "normalized": "cock",
+    "search": [
+      "Cock"
+    ]
+  },
+  {
+    "cropId": 94,
+    "name": "Cocoa",
+    "nameMr": "",
+    "normalized": "cocoa",
+    "search": [
+      "Cocoa"
+    ]
+  },
+  {
+    "cropId": 95,
+    "name": "Coconut",
+    "nameMr": "नारळ",
+    "normalized": "coconut",
+    "search": [
+      "Coconut",
+      "नारळ",
+      "nariyal"
+    ]
+  },
+  {
+    "cropId": 96,
+    "name": "Coconut Oil",
+    "nameMr": "",
+    "normalized": "coconut oil",
+    "search": [
+      "Coconut Oil"
+    ]
+  },
+  {
+    "cropId": 97,
+    "name": "Coconut Seed",
+    "nameMr": "",
+    "normalized": "coconut seed",
+    "search": [
+      "Coconut Seed"
+    ]
+  },
+  {
+    "cropId": 98,
+    "name": "Coffee",
+    "nameMr": "",
+    "normalized": "coffee",
+    "search": [
+      "Coffee"
+    ]
+  },
+  {
+    "cropId": 99,
+    "name": "Colacasia",
+    "nameMr": "",
+    "normalized": "colacasia",
+    "search": [
+      "Colacasia"
+    ]
+  },
+  {
+    "cropId": 100,
+    "name": "Copra",
+    "nameMr": "",
+    "normalized": "copra",
+    "search": [
+      "Copra"
+    ]
+  },
+  {
+    "cropId": 101,
+    "name": "Coriander(Leaves)",
+    "nameMr": "कोथिंबीर",
+    "normalized": "coriander (leaves)",
+    "search": [
+      "Coriander(Leaves)",
+      "कोथिंबीर",
+      "coriander",
+      "dhania"
+    ]
+  },
+  {
+    "cropId": 102,
+    "name": "Corriander seed",
+    "nameMr": "",
+    "normalized": "corriander seed",
+    "search": [
+      "Corriander seed"
+    ]
+  },
+  {
+    "cropId": 103,
+    "name": "Cotton",
+    "nameMr": "कापूस",
+    "normalized": "cotton",
+    "search": [
+      "Cotton",
+      "कापूस",
+      "kapus",
+      "Kapus (Cotton)"
+    ]
+  },
+  {
+    "cropId": 104,
+    "name": "Cotton Seed",
+    "nameMr": "",
+    "normalized": "cotton seed",
+    "search": [
+      "Cotton Seed"
+    ]
+  },
+  {
+    "cropId": 105,
+    "name": "Cow",
+    "nameMr": "",
+    "normalized": "cow",
+    "search": [
+      "Cow"
+    ]
+  },
+  {
+    "cropId": 106,
+    "name": "Cowpea (Lobia/Karamani)",
+    "nameMr": "चवळी",
+    "normalized": "cowpea (lobia/karamani)",
+    "search": [
+      "Cowpea (Lobia/Karamani)",
+      "चवळी",
+      "lobia",
+      "chavli"
+    ]
+  },
+  {
+    "cropId": 107,
+    "name": "Cowpea(Veg)",
+    "nameMr": "",
+    "normalized": "cowpea (veg)",
+    "search": [
+      "Cowpea(Veg)"
+    ]
+  },
+  {
+    "cropId": 108,
+    "name": "Cucumbar(Kheera)",
+    "nameMr": "काकडी",
+    "normalized": "cucumbar (kheera)",
+    "search": [
+      "Cucumbar(Kheera)",
+      "काकडी",
+      "cucumber",
+      "kheera"
+    ]
+  },
+  {
+    "cropId": 109,
+    "name": "Cummin Seed(Jeera)",
+    "nameMr": "",
+    "normalized": "cummin seed (jeera)",
+    "search": [
+      "Cummin Seed(Jeera)"
+    ]
+  },
+  {
+    "cropId": 110,
+    "name": "Custard Apple (Sharifa)",
+    "nameMr": "सीताफळ",
+    "normalized": "custard apple (sharifa)",
+    "search": [
+      "Custard Apple (Sharifa)",
+      "सीताफळ",
+      "sitaphal"
+    ]
+  },
+  {
+    "cropId": 111,
+    "name": "Daila(Chandni)",
+    "nameMr": "",
+    "normalized": "daila (chandni)",
+    "search": [
+      "Daila(Chandni)"
+    ]
+  },
+  {
+    "cropId": 112,
+    "name": "Dal (Avare)",
+    "nameMr": "",
+    "normalized": "dal (avare)",
+    "search": [
+      "Dal (Avare)"
+    ]
+  },
+  {
+    "cropId": 113,
+    "name": "Dalda",
+    "nameMr": "",
+    "normalized": "dalda",
+    "search": [
+      "Dalda"
+    ]
+  },
+  {
+    "cropId": 114,
+    "name": "Delha",
+    "nameMr": "",
+    "normalized": "delha",
+    "search": [
+      "Delha"
+    ]
+  },
+  {
+    "cropId": 115,
+    "name": "Dhaincha",
+    "nameMr": "",
+    "normalized": "dhaincha",
+    "search": [
+      "Dhaincha"
+    ]
+  },
+  {
+    "cropId": 116,
+    "name": "dhawai flowers",
+    "nameMr": "",
+    "normalized": "dhawai flowers",
+    "search": [
+      "dhawai flowers"
+    ]
+  },
+  {
+    "cropId": 117,
+    "name": "dried mango",
+    "nameMr": "",
+    "normalized": "dried mango",
+    "search": [
+      "dried mango"
+    ]
+  },
+  {
+    "cropId": 118,
+    "name": "Drumstick",
+    "nameMr": "शेवगा",
+    "normalized": "drumstick",
+    "search": [
+      "Drumstick",
+      "शेवगा",
+      "shevga"
+    ]
+  },
+  {
+    "cropId": 119,
+    "name": "Dry Chillies",
+    "nameMr": "सुकी मिरची",
+    "normalized": "dry chillies",
+    "search": [
+      "Dry Chillies",
+      "सुकी मिरची",
+      "mirchi"
+    ]
+  },
+  {
+    "cropId": 120,
+    "name": "Dry Fodder",
+    "nameMr": "",
+    "normalized": "dry fodder",
+    "search": [
+      "Dry Fodder"
+    ]
+  },
+  {
+    "cropId": 121,
+    "name": "Dry Grapes",
+    "nameMr": "",
+    "normalized": "dry grapes",
+    "search": [
+      "Dry Grapes"
+    ]
+  },
+  {
+    "cropId": 122,
+    "name": "Duck",
+    "nameMr": "",
+    "normalized": "duck",
+    "search": [
+      "Duck"
+    ]
+  },
+  {
+    "cropId": 123,
+    "name": "Duster Beans",
+    "nameMr": "",
+    "normalized": "duster beans",
+    "search": [
+      "Duster Beans"
+    ]
+  },
+  {
+    "cropId": 124,
+    "name": "Egg",
+    "nameMr": "",
+    "normalized": "egg",
+    "search": [
+      "Egg"
+    ]
+  },
+  {
+    "cropId": 125,
+    "name": "Egyptian Clover(Barseem)",
+    "nameMr": "",
+    "normalized": "egyptian clover (barseem)",
+    "search": [
+      "Egyptian Clover(Barseem)"
+    ]
+  },
+  {
+    "cropId": 126,
+    "name": "Elephant Yam (Suran)",
+    "nameMr": "",
+    "normalized": "elephant yam (suran)",
+    "search": [
+      "Elephant Yam (Suran)"
+    ]
+  },
+  {
+    "cropId": 127,
+    "name": "Elephant Yam(Suran)/Amorphophallus",
+    "nameMr": "",
+    "normalized": "elephant yam (suran)/amorphophallus",
+    "search": [
+      "Elephant Yam(Suran)/Amorphophallus"
+    ]
+  },
+  {
+    "cropId": 128,
+    "name": "Field Pea",
+    "nameMr": "",
+    "normalized": "field pea",
+    "search": [
+      "Field Pea"
+    ]
+  },
+  {
+    "cropId": 129,
+    "name": "Fig(Anjura/Anjeer)",
+    "nameMr": "",
+    "normalized": "fig (anjura/anjeer)",
+    "search": [
+      "Fig(Anjura/Anjeer)"
+    ]
+  },
+  {
+    "cropId": 130,
+    "name": "Firewood",
+    "nameMr": "",
+    "normalized": "firewood",
+    "search": [
+      "Firewood"
+    ]
+  },
+  {
+    "cropId": 131,
+    "name": "Fish",
+    "nameMr": "",
+    "normalized": "fish",
+    "search": [
+      "Fish"
+    ]
+  },
+  {
+    "cropId": 132,
+    "name": "Flower Broom",
+    "nameMr": "",
+    "normalized": "flower broom",
+    "search": [
+      "Flower Broom"
+    ]
+  },
+  {
+    "cropId": 133,
+    "name": "Foxtail Millet(Navane)",
+    "nameMr": "",
+    "normalized": "foxtail millet (navane)",
+    "search": [
+      "Foxtail Millet(Navane)"
+    ]
+  },
+  {
+    "cropId": 134,
+    "name": "French Beans (Frasbean)",
+    "nameMr": "",
+    "normalized": "french beans (frasbean)",
+    "search": [
+      "French Beans (Frasbean)"
+    ]
+  },
+  {
+    "cropId": 135,
+    "name": "Galgal(Lemon)",
+    "nameMr": "",
+    "normalized": "galgal (lemon)",
+    "search": [
+      "Galgal(Lemon)"
+    ]
+  },
+  {
+    "cropId": 136,
+    "name": "Garlic",
+    "nameMr": "लसूण",
+    "normalized": "garlic",
+    "search": [
+      "Garlic",
+      "लसूण"
+    ]
+  },
+  {
+    "cropId": 137,
+    "name": "Ghee",
+    "nameMr": "",
+    "normalized": "ghee",
+    "search": [
+      "Ghee"
+    ]
+  },
+  {
+    "cropId": 138,
+    "name": "Giloy",
+    "nameMr": "",
+    "normalized": "giloy",
+    "search": [
+      "Giloy"
+    ]
+  },
+  {
+    "cropId": 139,
+    "name": "Gingelly Oil",
+    "nameMr": "",
+    "normalized": "gingelly oil",
+    "search": [
+      "Gingelly Oil"
+    ]
+  },
+  {
+    "cropId": 140,
+    "name": "Ginger(Dry)",
+    "nameMr": "",
+    "normalized": "ginger (dry)",
+    "search": [
+      "Ginger(Dry)"
+    ]
+  },
+  {
+    "cropId": 141,
+    "name": "Ginger(Green)",
+    "nameMr": "आले",
+    "normalized": "ginger (green)",
+    "search": [
+      "Ginger(Green)",
+      "आले",
+      "adrak",
+      "ginger"
+    ]
+  },
+  {
+    "cropId": 142,
+    "name": "Gladiolus Bulb",
+    "nameMr": "",
+    "normalized": "gladiolus bulb",
+    "search": [
+      "Gladiolus Bulb"
+    ]
+  },
+  {
+    "cropId": 143,
+    "name": "Gladiolus Cut Flower",
+    "nameMr": "",
+    "normalized": "gladiolus cut flower",
+    "search": [
+      "Gladiolus Cut Flower"
+    ]
+  },
+  {
+    "cropId": 144,
+    "name": "Goat",
+    "nameMr": "",
+    "normalized": "goat",
+    "search": [
+      "Goat"
+    ]
+  },
+  {
+    "cropId": 145,
+    "name": "Gram Raw(Chholia)",
+    "nameMr": "",
+    "normalized": "gram raw (chholia)",
+    "search": [
+      "Gram Raw(Chholia)"
+    ]
+  },
+  {
+    "cropId": 146,
+    "name": "Gramflour",
+    "nameMr": "",
+    "normalized": "gramflour",
+    "search": [
+      "Gramflour"
+    ]
+  },
+  {
+    "cropId": 147,
+    "name": "Grapes",
+    "nameMr": "द्राक्षे",
+    "normalized": "grapes",
+    "search": [
+      "Grapes",
+      "द्राक्षे",
+      "draksha"
+    ]
+  },
+  {
+    "cropId": 148,
+    "name": "Green Avare (W)",
+    "nameMr": "",
+    "normalized": "green avare (w)",
+    "search": [
+      "Green Avare (W)"
+    ]
+  },
+  {
+    "cropId": 149,
+    "name": "Green Chilli",
+    "nameMr": "हिरवी मिरची",
+    "normalized": "green chilli",
+    "search": [
+      "Green Chilli",
+      "हिरवी मिरची"
+    ]
+  },
+  {
+    "cropId": 150,
+    "name": "Green Fodder",
+    "nameMr": "",
+    "normalized": "green fodder",
+    "search": [
+      "Green Fodder"
+    ]
+  },
+  {
+    "cropId": 151,
+    "name": "Green Gram (Moong)(Whole)",
+    "nameMr": "मूग",
+    "normalized": "green gram (moong) (whole)",
+    "search": [
+      "Green Gram (Moong)(Whole)",
+      "मूग",
+      "moong"
+    ]
+  },
+  {
+    "cropId": 152,
+    "name": "Green Gram Dal (Moong Dal)",
+    "nameMr": "",
+    "normalized": "green gram dal (moong dal)",
+    "search": [
+      "Green Gram Dal (Moong Dal)"
+    ]
+  },
+  {
+    "cropId": 153,
+    "name": "Green Peas",
+    "nameMr": "",
+    "normalized": "green peas",
+    "search": [
+      "Green Peas"
+    ]
+  },
+  {
+    "cropId": 154,
+    "name": "Ground Nut Oil",
+    "nameMr": "",
+    "normalized": "ground nut oil",
+    "search": [
+      "Ground Nut Oil"
+    ]
+  },
+  {
+    "cropId": 155,
+    "name": "Ground Nut Seed",
+    "nameMr": "",
+    "normalized": "ground nut seed",
+    "search": [
+      "Ground Nut Seed"
+    ]
+  },
+  {
+    "cropId": 156,
+    "name": "Groundnut",
+    "nameMr": "भुईमूग",
+    "normalized": "groundnut",
+    "search": [
+      "Groundnut",
+      "भुईमूग"
+    ]
+  },
+  {
+    "cropId": 157,
+    "name": "Groundnut (Split)",
+    "nameMr": "",
+    "normalized": "groundnut (split)",
+    "search": [
+      "Groundnut (Split)"
+    ]
+  },
+  {
+    "cropId": 158,
+    "name": "Groundnut pods (raw)",
+    "nameMr": "",
+    "normalized": "groundnut pods (raw)",
+    "search": [
+      "Groundnut pods (raw)"
+    ]
+  },
+  {
+    "cropId": 159,
+    "name": "Guar",
+    "nameMr": "",
+    "normalized": "guar",
+    "search": [
+      "Guar"
+    ]
+  },
+  {
+    "cropId": 160,
+    "name": "Guar Seed(Cluster Beans Seed)",
+    "nameMr": "",
+    "normalized": "guar seed (cluster beans seed)",
+    "search": [
+      "Guar Seed(Cluster Beans Seed)"
+    ]
+  },
+  {
+    "cropId": 161,
+    "name": "Guava",
+    "nameMr": "पेरू",
+    "normalized": "guava",
+    "search": [
+      "Guava",
+      "पेरू"
+    ]
+  },
+  {
+    "cropId": 162,
+    "name": "Gudmar",
+    "nameMr": "",
+    "normalized": "gudmar",
+    "search": [
+      "Gudmar"
+    ]
+  },
+  {
+    "cropId": 163,
+    "name": "Guggal",
+    "nameMr": "",
+    "normalized": "guggal",
+    "search": [
+      "Guggal"
+    ]
+  },
+  {
+    "cropId": 164,
+    "name": "gulli",
+    "nameMr": "",
+    "normalized": "gulli",
+    "search": [
+      "gulli"
+    ]
+  },
+  {
+    "cropId": 165,
+    "name": "Gur(Jaggery)",
+    "nameMr": "",
+    "normalized": "gur (jaggery)",
+    "search": [
+      "Gur(Jaggery)"
+    ]
+  },
+  {
+    "cropId": 166,
+    "name": "Gurellu",
+    "nameMr": "",
+    "normalized": "gurellu",
+    "search": [
+      "Gurellu"
+    ]
+  },
+  {
+    "cropId": 167,
+    "name": "Haralekai",
+    "nameMr": "",
+    "normalized": "haralekai",
+    "search": [
+      "Haralekai"
+    ]
+  },
+  {
+    "cropId": 168,
+    "name": "He Buffalo",
+    "nameMr": "",
+    "normalized": "he buffalo",
+    "search": [
+      "He Buffalo"
+    ]
+  },
+  {
+    "cropId": 169,
+    "name": "Hen",
+    "nameMr": "",
+    "normalized": "hen",
+    "search": [
+      "Hen"
+    ]
+  },
+  {
+    "cropId": 170,
+    "name": "Hippe Seed",
+    "nameMr": "",
+    "normalized": "hippe seed",
+    "search": [
+      "Hippe Seed"
+    ]
+  },
+  {
+    "cropId": 171,
+    "name": "Honey",
+    "nameMr": "",
+    "normalized": "honey",
+    "search": [
+      "Honey"
+    ]
+  },
+  {
+    "cropId": 172,
+    "name": "Honge seed",
+    "nameMr": "",
+    "normalized": "honge seed",
+    "search": [
+      "Honge seed"
+    ]
+  },
+  {
+    "cropId": 173,
+    "name": "Hybrid Cumbu",
+    "nameMr": "",
+    "normalized": "hybrid cumbu",
+    "search": [
+      "Hybrid Cumbu"
+    ]
+  },
+  {
+    "cropId": 174,
+    "name": "Indian Beans (Seam)",
+    "nameMr": "",
+    "normalized": "indian beans (seam)",
+    "search": [
+      "Indian Beans (Seam)"
+    ]
+  },
+  {
+    "cropId": 175,
+    "name": "Indian Colza(Sarson)",
+    "nameMr": "",
+    "normalized": "indian colza (sarson)",
+    "search": [
+      "Indian Colza(Sarson)"
+    ]
+  },
+  {
+    "cropId": 176,
+    "name": "Isabgul (Psyllium)",
+    "nameMr": "",
+    "normalized": "isabgul (psyllium)",
+    "search": [
+      "Isabgul (Psyllium)"
+    ]
+  },
+  {
+    "cropId": 177,
+    "name": "Jack Fruit",
+    "nameMr": "फणस",
+    "normalized": "jack fruit",
+    "search": [
+      "Jack Fruit",
+      "फणस",
+      "jackfruit",
+      "phanas"
+    ]
+  },
+  {
+    "cropId": 178,
+    "name": "Jack Fruit(Ripe)",
+    "nameMr": "",
+    "normalized": "jack fruit (ripe)",
+    "search": [
+      "Jack Fruit(Ripe)"
+    ]
+  },
+  {
+    "cropId": 179,
+    "name": "Jaffri",
+    "nameMr": "",
+    "normalized": "jaffri",
+    "search": [
+      "Jaffri"
+    ]
+  },
+  {
+    "cropId": 180,
+    "name": "Jaggery",
+    "nameMr": "",
+    "normalized": "jaggery",
+    "search": [
+      "Jaggery"
+    ]
+  },
+  {
+    "cropId": 181,
+    "name": "Jamamkhan",
+    "nameMr": "",
+    "normalized": "jamamkhan",
+    "search": [
+      "Jamamkhan"
+    ]
+  },
+  {
+    "cropId": 182,
+    "name": "Jamun(Narale Hannu)",
+    "nameMr": "",
+    "normalized": "jamun (narale hannu)",
+    "search": [
+      "Jamun(Narale Hannu)"
+    ]
+  },
+  {
+    "cropId": 183,
+    "name": "Jarbara",
+    "nameMr": "",
+    "normalized": "jarbara",
+    "search": [
+      "Jarbara"
+    ]
+  },
+  {
+    "cropId": 184,
+    "name": "Jasmine",
+    "nameMr": "",
+    "normalized": "jasmine",
+    "search": [
+      "Jasmine"
+    ]
+  },
+  {
+    "cropId": 185,
+    "name": "Javi",
+    "nameMr": "",
+    "normalized": "javi",
+    "search": [
+      "Javi"
+    ]
+  },
+  {
+    "cropId": 186,
+    "name": "Jowar(Sorghum)",
+    "nameMr": "ज्वारी",
+    "normalized": "jowar (sorghum)",
+    "search": [
+      "Jowar(Sorghum)",
+      "ज्वारी",
+      "jowar"
+    ]
+  },
+  {
+    "cropId": 187,
+    "name": "Jute",
+    "nameMr": "",
+    "normalized": "jute",
+    "search": [
+      "Jute"
+    ]
+  },
+  {
+    "cropId": 188,
+    "name": "Jute Seed",
+    "nameMr": "",
+    "normalized": "jute seed",
+    "search": [
+      "Jute Seed"
+    ]
+  },
+  {
+    "cropId": 189,
+    "name": "Kabuli Chana(Chickpeas-White)",
+    "nameMr": "",
+    "normalized": "kabuli chana (chickpeas-white)",
+    "search": [
+      "Kabuli Chana(Chickpeas-White)"
+    ]
+  },
+  {
+    "cropId": 190,
+    "name": "Kacholam",
+    "nameMr": "",
+    "normalized": "kacholam",
+    "search": [
+      "Kacholam"
+    ]
+  },
+  {
+    "cropId": 191,
+    "name": "Kakada",
+    "nameMr": "",
+    "normalized": "kakada",
+    "search": [
+      "Kakada"
+    ]
+  },
+  {
+    "cropId": 192,
+    "name": "Kalmegh",
+    "nameMr": "",
+    "normalized": "kalmegh",
+    "search": [
+      "Kalmegh"
+    ]
+  },
+  {
+    "cropId": 193,
+    "name": "Kankambra",
+    "nameMr": "",
+    "normalized": "kankambra",
+    "search": [
+      "Kankambra"
+    ]
+  },
+  {
+    "cropId": 194,
+    "name": "Karamani",
+    "nameMr": "",
+    "normalized": "karamani",
+    "search": [
+      "Karamani"
+    ]
+  },
+  {
+    "cropId": 195,
+    "name": "karanja seeds",
+    "nameMr": "",
+    "normalized": "karanja seeds",
+    "search": [
+      "karanja seeds"
+    ]
+  },
+  {
+    "cropId": 196,
+    "name": "Karbuja(Musk Melon)",
+    "nameMr": "खरबूज",
+    "normalized": "karbuja (musk melon)",
+    "search": [
+      "Karbuja(Musk Melon)",
+      "खरबूज",
+      "kharbooja"
+    ]
+  },
+  {
+    "cropId": 197,
+    "name": "Kartali (Kantola)",
+    "nameMr": "",
+    "normalized": "kartali (kantola)",
+    "search": [
+      "Kartali (Kantola)"
+    ]
+  },
+  {
+    "cropId": 198,
+    "name": "Kharif Mash",
+    "nameMr": "",
+    "normalized": "kharif mash",
+    "search": [
+      "Kharif Mash"
+    ]
+  },
+  {
+    "cropId": 199,
+    "name": "Khoya",
+    "nameMr": "",
+    "normalized": "khoya",
+    "search": [
+      "Khoya"
+    ]
+  },
+  {
+    "cropId": 200,
+    "name": "Kinnow",
+    "nameMr": "",
+    "normalized": "kinnow",
+    "search": [
+      "Kinnow"
+    ]
+  },
+  {
+    "cropId": 201,
+    "name": "Knool Khol",
+    "nameMr": "",
+    "normalized": "knool khol",
+    "search": [
+      "Knool Khol"
+    ]
+  },
+  {
+    "cropId": 202,
+    "name": "Kodo Millet(Varagu)",
+    "nameMr": "",
+    "normalized": "kodo millet (varagu)",
+    "search": [
+      "Kodo Millet(Varagu)"
+    ]
+  },
+  {
+    "cropId": 203,
+    "name": "Kooth",
+    "nameMr": "",
+    "normalized": "kooth",
+    "search": [
+      "Kooth"
+    ]
+  },
+  {
+    "cropId": 204,
+    "name": "Kuchur",
+    "nameMr": "",
+    "normalized": "kuchur",
+    "search": [
+      "Kuchur"
+    ]
+  },
+  {
+    "cropId": 205,
+    "name": "Kulthi(Horse Gram)",
+    "nameMr": "कुळीथ",
+    "normalized": "kulthi (horse gram)",
+    "search": [
+      "Kulthi(Horse Gram)",
+      "कुळीथ",
+      "kulith"
+    ]
+  },
+  {
+    "cropId": 206,
+    "name": "Kutki",
+    "nameMr": "",
+    "normalized": "kutki",
+    "search": [
+      "Kutki"
+    ]
+  },
+  {
+    "cropId": 207,
+    "name": "Ladies Finger",
+    "nameMr": "",
+    "normalized": "ladies finger",
+    "search": [
+      "Ladies Finger"
+    ]
+  },
+  {
+    "cropId": 208,
+    "name": "Lak(Teora)",
+    "nameMr": "",
+    "normalized": "lak (teora)",
+    "search": [
+      "Lak(Teora)"
+    ]
+  },
+  {
+    "cropId": 209,
+    "name": "Leafy Vegetable",
+    "nameMr": "",
+    "normalized": "leafy vegetable",
+    "search": [
+      "Leafy Vegetable"
+    ]
+  },
+  {
+    "cropId": 210,
+    "name": "Lemon",
+    "nameMr": "लिंबू",
+    "normalized": "lemon",
+    "search": [
+      "Lemon",
+      "लिंबू",
+      "limbu"
+    ]
+  },
+  {
+    "cropId": 211,
+    "name": "Lentil (Masur)(Whole)",
+    "nameMr": "मसूर",
+    "normalized": "lentil (masur) (whole)",
+    "search": [
+      "Lentil (Masur)(Whole)",
+      "मसूर",
+      "masur",
+      "masoor"
+    ]
+  },
+  {
+    "cropId": 212,
+    "name": "Lilly",
+    "nameMr": "",
+    "normalized": "lilly",
+    "search": [
+      "Lilly"
+    ]
+  },
+  {
+    "cropId": 213,
+    "name": "Lime",
+    "nameMr": "",
+    "normalized": "lime",
+    "search": [
+      "Lime"
+    ]
+  },
+  {
+    "cropId": 214,
+    "name": "Linseed",
+    "nameMr": "अळशी",
+    "normalized": "linseed",
+    "search": [
+      "Linseed",
+      "अळशी",
+      "alsi"
+    ]
+  },
+  {
+    "cropId": 215,
+    "name": "Lint",
+    "nameMr": "",
+    "normalized": "lint",
+    "search": [
+      "Lint"
+    ]
+  },
+  {
+    "cropId": 216,
+    "name": "liquor turmeric",
+    "nameMr": "",
+    "normalized": "liquor turmeric",
+    "search": [
+      "liquor turmeric"
+    ]
+  },
+  {
+    "cropId": 217,
+    "name": "Litchi",
+    "nameMr": "",
+    "normalized": "litchi",
+    "search": [
+      "Litchi"
+    ]
+  },
+  {
+    "cropId": 218,
+    "name": "Little gourd (Kundru)",
+    "nameMr": "",
+    "normalized": "little gourd (kundru)",
+    "search": [
+      "Little gourd (Kundru)"
+    ]
+  },
+  {
+    "cropId": 219,
+    "name": "Long Melon(Kakri)",
+    "nameMr": "",
+    "normalized": "long melon (kakri)",
+    "search": [
+      "Long Melon(Kakri)"
+    ]
+  },
+  {
+    "cropId": 220,
+    "name": "Lotus",
+    "nameMr": "",
+    "normalized": "lotus",
+    "search": [
+      "Lotus"
+    ]
+  },
+  {
+    "cropId": 221,
+    "name": "Lotus Sticks",
+    "nameMr": "",
+    "normalized": "lotus sticks",
+    "search": [
+      "Lotus Sticks"
+    ]
+  },
+  {
+    "cropId": 222,
+    "name": "Lukad",
+    "nameMr": "",
+    "normalized": "lukad",
+    "search": [
+      "Lukad"
+    ]
+  },
+  {
+    "cropId": 223,
+    "name": "Mace",
+    "nameMr": "",
+    "normalized": "mace",
+    "search": [
+      "Mace"
+    ]
+  },
+  {
+    "cropId": 224,
+    "name": "Mahedi",
+    "nameMr": "",
+    "normalized": "mahedi",
+    "search": [
+      "Mahedi"
+    ]
+  },
+  {
+    "cropId": 225,
+    "name": "Mahua",
+    "nameMr": "",
+    "normalized": "mahua",
+    "search": [
+      "Mahua"
+    ]
+  },
+  {
+    "cropId": 226,
+    "name": "Mahua Seed(Hippe seed)",
+    "nameMr": "",
+    "normalized": "mahua seed (hippe seed)",
+    "search": [
+      "Mahua Seed(Hippe seed)"
+    ]
+  },
+  {
+    "cropId": 227,
+    "name": "Maida Atta",
+    "nameMr": "",
+    "normalized": "maida atta",
+    "search": [
+      "Maida Atta"
+    ]
+  },
+  {
+    "cropId": 228,
+    "name": "Maize",
+    "nameMr": "मका",
+    "normalized": "maize",
+    "search": [
+      "Maize",
+      "मका"
+    ]
+  },
+  {
+    "cropId": 229,
+    "name": "Mango",
+    "nameMr": "आंबा",
+    "normalized": "mango",
+    "search": [
+      "Mango",
+      "आंबा",
+      "aam"
+    ]
+  },
+  {
+    "cropId": 230,
+    "name": "Mango (Raw-Ripe)",
+    "nameMr": "",
+    "normalized": "mango (raw-ripe)",
+    "search": [
+      "Mango (Raw-Ripe)"
+    ]
+  },
+  {
+    "cropId": 231,
+    "name": "mango powder",
+    "nameMr": "",
+    "normalized": "mango powder",
+    "search": [
+      "mango powder"
+    ]
+  },
+  {
+    "cropId": 232,
+    "name": "Maragensu",
+    "nameMr": "",
+    "normalized": "maragensu",
+    "search": [
+      "Maragensu"
+    ]
+  },
+  {
+    "cropId": 233,
+    "name": "Marasebu",
+    "nameMr": "",
+    "normalized": "marasebu",
+    "search": [
+      "Marasebu"
+    ]
+  },
+  {
+    "cropId": 234,
+    "name": "Marget",
+    "nameMr": "",
+    "normalized": "marget",
+    "search": [
+      "Marget"
+    ]
+  },
+  {
+    "cropId": 235,
+    "name": "Marigold(Calcutta)",
+    "nameMr": "",
+    "normalized": "marigold (calcutta)",
+    "search": [
+      "Marigold(Calcutta)"
+    ]
+  },
+  {
+    "cropId": 236,
+    "name": "Marigold(loose)",
+    "nameMr": "",
+    "normalized": "marigold (loose)",
+    "search": [
+      "Marigold(loose)"
+    ]
+  },
+  {
+    "cropId": 237,
+    "name": "Mash",
+    "nameMr": "",
+    "normalized": "mash",
+    "search": [
+      "Mash"
+    ]
+  },
+  {
+    "cropId": 238,
+    "name": "Mashrooms",
+    "nameMr": "",
+    "normalized": "mashrooms",
+    "search": [
+      "Mashrooms"
+    ]
+  },
+  {
+    "cropId": 239,
+    "name": "Masur Dal",
+    "nameMr": "",
+    "normalized": "masur dal",
+    "search": [
+      "Masur Dal"
+    ]
+  },
+  {
+    "cropId": 240,
+    "name": "Mataki",
+    "nameMr": "मटकी",
+    "normalized": "mataki",
+    "search": [
+      "Mataki",
+      "मटकी",
+      "matki"
+    ]
+  },
+  {
+    "cropId": 241,
+    "name": "Methi Seeds",
+    "nameMr": "",
+    "normalized": "methi seeds",
+    "search": [
+      "Methi Seeds"
+    ]
+  },
+  {
+    "cropId": 242,
+    "name": "Methi(Leaves)",
+    "nameMr": "मेथी",
+    "normalized": "methi (leaves)",
+    "search": [
+      "Methi(Leaves)",
+      "मेथी",
+      "methi"
+    ]
+  },
+  {
+    "cropId": 243,
+    "name": "Millets",
+    "nameMr": "",
+    "normalized": "millets",
+    "search": [
+      "Millets"
+    ]
+  },
+  {
+    "cropId": 244,
+    "name": "Mint(Pudina)",
+    "nameMr": "",
+    "normalized": "mint (pudina)",
+    "search": [
+      "Mint(Pudina)"
+    ]
+  },
+  {
+    "cropId": 245,
+    "name": "Moath Dal",
+    "nameMr": "",
+    "normalized": "moath dal",
+    "search": [
+      "Moath Dal"
+    ]
+  },
+  {
+    "cropId": 246,
+    "name": "Mousambi(Sweet Lime)",
+    "nameMr": "मोसंबी",
+    "normalized": "mousambi (sweet lime)",
+    "search": [
+      "Mousambi(Sweet Lime)",
+      "मोसंबी",
+      "mosambi"
+    ]
+  },
+  {
+    "cropId": 247,
+    "name": "Muesli",
+    "nameMr": "",
+    "normalized": "muesli",
+    "search": [
+      "Muesli"
+    ]
+  },
+  {
+    "cropId": 248,
+    "name": "Muleti",
+    "nameMr": "",
+    "normalized": "muleti",
+    "search": [
+      "Muleti"
+    ]
+  },
+  {
+    "cropId": 249,
+    "name": "Mustard",
+    "nameMr": "मोहरी",
+    "normalized": "mustard",
+    "search": [
+      "Mustard",
+      "मोहरी"
+    ]
+  },
+  {
+    "cropId": 250,
+    "name": "Mustard Oil",
+    "nameMr": "",
+    "normalized": "mustard oil",
+    "search": [
+      "Mustard Oil"
+    ]
+  },
+  {
+    "cropId": 251,
+    "name": "Myrobolan(Harad)",
+    "nameMr": "",
+    "normalized": "myrobolan (harad)",
+    "search": [
+      "Myrobolan(Harad)"
+    ]
+  },
+  {
+    "cropId": 252,
+    "name": "Nearle Hannu",
+    "nameMr": "",
+    "normalized": "nearle hannu",
+    "search": [
+      "Nearle Hannu"
+    ]
+  },
+  {
+    "cropId": 253,
+    "name": "Neem Seed",
+    "nameMr": "",
+    "normalized": "neem seed",
+    "search": [
+      "Neem Seed"
+    ]
+  },
+  {
+    "cropId": 254,
+    "name": "Nelli Kai",
+    "nameMr": "",
+    "normalized": "nelli kai",
+    "search": [
+      "Nelli Kai"
+    ]
+  },
+  {
+    "cropId": 255,
+    "name": "nigella",
+    "nameMr": "",
+    "normalized": "nigella",
+    "search": [
+      "nigella"
+    ]
+  },
+  {
+    "cropId": 256,
+    "name": "nigella seeds",
+    "nameMr": "",
+    "normalized": "nigella seeds",
+    "search": [
+      "nigella seeds"
+    ]
+  },
+  {
+    "cropId": 257,
+    "name": "Niger Seed (Ramtil)",
+    "nameMr": "खुरासणी",
+    "normalized": "niger seed (ramtil)",
+    "search": [
+      "Niger Seed (Ramtil)",
+      "खुरासणी",
+      "niger"
+    ]
+  },
+  {
+    "cropId": 258,
+    "name": "Nutmeg",
+    "nameMr": "",
+    "normalized": "nutmeg",
+    "search": [
+      "Nutmeg"
+    ]
+  },
+  {
+    "cropId": 259,
+    "name": "Onion",
+    "nameMr": "कांदा",
+    "normalized": "onion",
+    "search": [
+      "Onion",
+      "कांदा",
+      "kanda",
+      "Kanda (Onion)"
+    ]
+  },
+  {
+    "cropId": 260,
+    "name": "Onion Green",
+    "nameMr": "",
+    "normalized": "onion green",
+    "search": [
+      "Onion Green"
+    ]
+  },
+  {
+    "cropId": 261,
+    "name": "Orange",
+    "nameMr": "संत्रे",
+    "normalized": "orange",
+    "search": [
+      "Orange",
+      "संत्रे",
+      "santra"
+    ]
+  },
+  {
+    "cropId": 262,
+    "name": "Orchid",
+    "nameMr": "",
+    "normalized": "orchid",
+    "search": [
+      "Orchid"
+    ]
+  },
+  {
+    "cropId": 263,
+    "name": "Other green and fresh vegetables",
+    "nameMr": "",
+    "normalized": "other green and fresh vegetables",
+    "search": [
+      "Other green and fresh vegetables"
+    ]
+  },
+  {
+    "cropId": 264,
+    "name": "Other Pulses",
+    "nameMr": "",
+    "normalized": "other pulses",
+    "search": [
+      "Other Pulses"
+    ]
+  },
+  {
+    "cropId": 265,
+    "name": "Ox",
+    "nameMr": "",
+    "normalized": "ox",
+    "search": [
+      "Ox"
+    ]
+  },
+  {
+    "cropId": 266,
+    "name": "Paddy(Basmati)",
+    "nameMr": "",
+    "normalized": "paddy (basmati)",
+    "search": [
+      "Paddy(Basmati)"
+    ]
+  },
+  {
+    "cropId": 267,
+    "name": "Paddy(Common)",
+    "nameMr": "",
+    "normalized": "paddy (common)",
+    "search": [
+      "Paddy(Common)"
+    ]
+  },
+  {
+    "cropId": 268,
+    "name": "Paddy(Dhan)(Basmati)",
+    "nameMr": "",
+    "normalized": "paddy (dhan) (basmati)",
+    "search": [
+      "Paddy(Dhan)(Basmati)"
+    ]
+  },
+  {
+    "cropId": 269,
+    "name": "Paddy(Dhan)(Common)",
+    "nameMr": "भात / धान",
+    "normalized": "paddy (dhan) (common)",
+    "search": [
+      "Paddy(Dhan)(Common)",
+      "भात / धान",
+      "paddy",
+      "dhan"
+    ]
+  },
+  {
+    "cropId": 270,
+    "name": "Palash flowers",
+    "nameMr": "",
+    "normalized": "palash flowers",
+    "search": [
+      "Palash flowers"
+    ]
+  },
+  {
+    "cropId": 271,
+    "name": "Papaya",
+    "nameMr": "पपई",
+    "normalized": "papaya",
+    "search": [
+      "Papaya",
+      "पपई"
+    ]
+  },
+  {
+    "cropId": 272,
+    "name": "Papaya (Raw)",
+    "nameMr": "",
+    "normalized": "papaya (raw)",
+    "search": [
+      "Papaya (Raw)"
+    ]
+  },
+  {
+    "cropId": 273,
+    "name": "Patti Calcutta",
+    "nameMr": "",
+    "normalized": "patti calcutta",
+    "search": [
+      "Patti Calcutta"
+    ]
+  },
+  {
+    "cropId": 274,
+    "name": "Pea Pod/Pea Cod/हरी मटर",
+    "nameMr": "",
+    "normalized": "pea pod/pea cod/हरी मटर",
+    "search": [
+      "Pea Pod/Pea Cod/हरी मटर",
+      "हरी",
+      "मटर"
+    ]
+  },
+  {
+    "cropId": 275,
+    "name": "Peach",
+    "nameMr": "",
+    "normalized": "peach",
+    "search": [
+      "Peach"
+    ]
+  },
+  {
+    "cropId": 276,
+    "name": "Pear(Marasebu)",
+    "nameMr": "",
+    "normalized": "pear (marasebu)",
+    "search": [
+      "Pear(Marasebu)"
+    ]
+  },
+  {
+    "cropId": 277,
+    "name": "Peas cod",
+    "nameMr": "",
+    "normalized": "peas cod",
+    "search": [
+      "Peas cod"
+    ]
+  },
+  {
+    "cropId": 278,
+    "name": "Peas Wet",
+    "nameMr": "",
+    "normalized": "peas wet",
+    "search": [
+      "Peas Wet"
+    ]
+  },
+  {
+    "cropId": 279,
+    "name": "Peas(Dry)",
+    "nameMr": "",
+    "normalized": "peas (dry)",
+    "search": [
+      "Peas(Dry)"
+    ]
+  },
+  {
+    "cropId": 280,
+    "name": "Pegeon Pea (Arhar Fali)",
+    "nameMr": "",
+    "normalized": "pegeon pea (arhar fali)",
+    "search": [
+      "Pegeon Pea (Arhar Fali)"
+    ]
+  },
+  {
+    "cropId": 281,
+    "name": "Pepper garbled",
+    "nameMr": "",
+    "normalized": "pepper garbled",
+    "search": [
+      "Pepper garbled"
+    ]
+  },
+  {
+    "cropId": 282,
+    "name": "Pepper ungarbled",
+    "nameMr": "",
+    "normalized": "pepper ungarbled",
+    "search": [
+      "Pepper ungarbled"
+    ]
+  },
+  {
+    "cropId": 283,
+    "name": "Persimon(Japani Fal)",
+    "nameMr": "",
+    "normalized": "persimon (japani fal)",
+    "search": [
+      "Persimon(Japani Fal)"
+    ]
+  },
+  {
+    "cropId": 284,
+    "name": "Pigs",
+    "nameMr": "",
+    "normalized": "pigs",
+    "search": [
+      "Pigs"
+    ]
+  },
+  {
+    "cropId": 285,
+    "name": "Pineapple",
+    "nameMr": "",
+    "normalized": "pineapple",
+    "search": [
+      "Pineapple"
+    ]
+  },
+  {
+    "cropId": 286,
+    "name": "pippali",
+    "nameMr": "",
+    "normalized": "pippali",
+    "search": [
+      "pippali"
+    ]
+  },
+  {
+    "cropId": 287,
+    "name": "Plum",
+    "nameMr": "",
+    "normalized": "plum",
+    "search": [
+      "Plum"
+    ]
+  },
+  {
+    "cropId": 288,
+    "name": "Pointed gourd (Parval)",
+    "nameMr": "",
+    "normalized": "pointed gourd (parval)",
+    "search": [
+      "Pointed gourd (Parval)"
+    ]
+  },
+  {
+    "cropId": 289,
+    "name": "Polherb",
+    "nameMr": "",
+    "normalized": "polherb",
+    "search": [
+      "Polherb"
+    ]
+  },
+  {
+    "cropId": 290,
+    "name": "Pomegranate",
+    "nameMr": "डाळिंब",
+    "normalized": "pomegranate",
+    "search": [
+      "Pomegranate",
+      "डाळिंब",
+      "dalimb"
+    ]
+  },
+  {
+    "cropId": 291,
+    "name": "poppy seeds",
+    "nameMr": "",
+    "normalized": "poppy seeds",
+    "search": [
+      "poppy seeds"
+    ]
+  },
+  {
+    "cropId": 292,
+    "name": "Potato",
+    "nameMr": "बटाटा",
+    "normalized": "potato",
+    "search": [
+      "Potato",
+      "बटाटा"
+    ]
+  },
+  {
+    "cropId": 293,
+    "name": "Pumpkin",
+    "nameMr": "भोपळा",
+    "normalized": "pumpkin",
+    "search": [
+      "Pumpkin",
+      "भोपळा"
+    ]
+  },
+  {
+    "cropId": 294,
+    "name": "Pundi",
+    "nameMr": "",
+    "normalized": "pundi",
+    "search": [
+      "Pundi"
+    ]
+  },
+  {
+    "cropId": 295,
+    "name": "Pundi Seed",
+    "nameMr": "",
+    "normalized": "pundi seed",
+    "search": [
+      "Pundi Seed"
+    ]
+  },
+  {
+    "cropId": 296,
+    "name": "Pupadia",
+    "nameMr": "",
+    "normalized": "pupadia",
+    "search": [
+      "Pupadia"
+    ]
+  },
+  {
+    "cropId": 297,
+    "name": "Raddish",
+    "nameMr": "",
+    "normalized": "raddish",
+    "search": [
+      "Raddish"
+    ]
+  },
+  {
+    "cropId": 298,
+    "name": "Ragi (Finger Millet)",
+    "nameMr": "नाचणी",
+    "normalized": "ragi (finger millet)",
+    "search": [
+      "Ragi (Finger Millet)",
+      "नाचणी",
+      "ragi"
+    ]
+  },
+  {
+    "cropId": 299,
+    "name": "Raibel",
+    "nameMr": "",
+    "normalized": "raibel",
+    "search": [
+      "Raibel"
+    ]
+  },
+  {
+    "cropId": 300,
+    "name": "Rajgir",
+    "nameMr": "",
+    "normalized": "rajgir",
+    "search": [
+      "Rajgir"
+    ]
+  },
+  {
+    "cropId": 301,
+    "name": "Ram",
+    "nameMr": "",
+    "normalized": "ram",
+    "search": [
+      "Ram"
+    ]
+  },
+  {
+    "cropId": 302,
+    "name": "Rat Tail Radish (Mogari)",
+    "nameMr": "",
+    "normalized": "rat tail radish (mogari)",
+    "search": [
+      "Rat Tail Radish (Mogari)"
+    ]
+  },
+  {
+    "cropId": 303,
+    "name": "Ratanjot",
+    "nameMr": "",
+    "normalized": "ratanjot",
+    "search": [
+      "Ratanjot"
+    ]
+  },
+  {
+    "cropId": 304,
+    "name": "Raya",
+    "nameMr": "",
+    "normalized": "raya",
+    "search": [
+      "Raya"
+    ]
+  },
+  {
+    "cropId": 305,
+    "name": "Red Gram",
+    "nameMr": "",
+    "normalized": "red gram",
+    "search": [
+      "Red Gram"
+    ]
+  },
+  {
+    "cropId": 306,
+    "name": "Red gram split/Arhar dal/Tur dal",
+    "nameMr": "",
+    "normalized": "red gram split/arhar dal/tur dal",
+    "search": [
+      "Red gram split/Arhar dal/Tur dal"
+    ]
+  },
+  {
+    "cropId": 307,
+    "name": "Red gram/Arhar/Tur(whole)",
+    "nameMr": "तूर",
+    "normalized": "red gram/arhar/tur (whole)",
+    "search": [
+      "Red gram/Arhar/Tur(whole)",
+      "तूर",
+      "tur",
+      "arhar",
+      "Tur (Pigeon Pea)"
+    ]
+  },
+  {
+    "cropId": 308,
+    "name": "Resinwood",
+    "nameMr": "",
+    "normalized": "resinwood",
+    "search": [
+      "Resinwood"
+    ]
+  },
+  {
+    "cropId": 309,
+    "name": "Riccbcan",
+    "nameMr": "",
+    "normalized": "riccbcan",
+    "search": [
+      "Riccbcan"
+    ]
+  },
+  {
+    "cropId": 310,
+    "name": "Rice",
+    "nameMr": "तांदूळ",
+    "normalized": "rice",
+    "search": [
+      "Rice",
+      "तांदूळ",
+      "bhaat",
+      "Rice (Bhaat)"
+    ]
+  },
+  {
+    "cropId": 311,
+    "name": "Ridgeguard(Tori)",
+    "nameMr": "",
+    "normalized": "ridgeguard (tori)",
+    "search": [
+      "Ridgeguard(Tori)"
+    ]
+  },
+  {
+    "cropId": 312,
+    "name": "Rose(Local)",
+    "nameMr": "",
+    "normalized": "rose (local)",
+    "search": [
+      "Rose(Local)"
+    ]
+  },
+  {
+    "cropId": 313,
+    "name": "Rose(loose)",
+    "nameMr": "",
+    "normalized": "rose (loose)",
+    "search": [
+      "Rose(loose)"
+    ]
+  },
+  {
+    "cropId": 314,
+    "name": "Rose(Tata)",
+    "nameMr": "",
+    "normalized": "rose (tata)",
+    "search": [
+      "Rose(Tata)"
+    ]
+  },
+  {
+    "cropId": 315,
+    "name": "Round gourd",
+    "nameMr": "",
+    "normalized": "round gourd",
+    "search": [
+      "Round gourd"
+    ]
+  },
+  {
+    "cropId": 316,
+    "name": "Rubber",
+    "nameMr": "",
+    "normalized": "rubber",
+    "search": [
+      "Rubber"
+    ]
+  },
+  {
+    "cropId": 317,
+    "name": "Sabu Dan",
+    "nameMr": "",
+    "normalized": "sabu dan",
+    "search": [
+      "Sabu Dan"
+    ]
+  },
+  {
+    "cropId": 318,
+    "name": "Safflower",
+    "nameMr": "करडई",
+    "normalized": "safflower",
+    "search": [
+      "Safflower",
+      "करडई"
+    ]
+  },
+  {
+    "cropId": 319,
+    "name": "Saffron",
+    "nameMr": "",
+    "normalized": "saffron",
+    "search": [
+      "Saffron"
+    ]
+  },
+  {
+    "cropId": 320,
+    "name": "Sajje",
+    "nameMr": "",
+    "normalized": "sajje",
+    "search": [
+      "Sajje"
+    ]
+  },
+  {
+    "cropId": 321,
+    "name": "Same/Savi",
+    "nameMr": "",
+    "normalized": "same/savi",
+    "search": [
+      "Same/Savi"
+    ]
+  },
+  {
+    "cropId": 322,
+    "name": "Sanai/Sunhemp",
+    "nameMr": "",
+    "normalized": "sanai/sunhemp",
+    "search": [
+      "Sanai/Sunhemp"
+    ]
+  },
+  {
+    "cropId": 323,
+    "name": "sanay",
+    "nameMr": "",
+    "normalized": "sanay",
+    "search": [
+      "sanay"
+    ]
+  },
+  {
+    "cropId": 324,
+    "name": "Sarasum",
+    "nameMr": "",
+    "normalized": "sarasum",
+    "search": [
+      "Sarasum"
+    ]
+  },
+  {
+    "cropId": 325,
+    "name": "Season Leaves",
+    "nameMr": "",
+    "normalized": "season leaves",
+    "search": [
+      "Season Leaves"
+    ]
+  },
+  {
+    "cropId": 326,
+    "name": "Seemebadnekai",
+    "nameMr": "",
+    "normalized": "seemebadnekai",
+    "search": [
+      "Seemebadnekai"
+    ]
+  },
+  {
+    "cropId": 327,
+    "name": "Seetapal",
+    "nameMr": "",
+    "normalized": "seetapal",
+    "search": [
+      "Seetapal"
+    ]
+  },
+  {
+    "cropId": 328,
+    "name": "Sesamum(Sesame,Gingelly,Til)",
+    "nameMr": "तीळ",
+    "normalized": "sesamum (sesame,gingelly,til)",
+    "search": [
+      "Sesamum(Sesame,Gingelly,Til)",
+      "तीळ",
+      "til",
+      "sesame"
+    ]
+  },
+  {
+    "cropId": 329,
+    "name": "She Buffalo",
+    "nameMr": "",
+    "normalized": "she buffalo",
+    "search": [
+      "She Buffalo"
+    ]
+  },
+  {
+    "cropId": 330,
+    "name": "She Goat",
+    "nameMr": "",
+    "normalized": "she goat",
+    "search": [
+      "She Goat"
+    ]
+  },
+  {
+    "cropId": 331,
+    "name": "Sheep",
+    "nameMr": "",
+    "normalized": "sheep",
+    "search": [
+      "Sheep"
+    ]
+  },
+  {
+    "cropId": 332,
+    "name": "Siddota",
+    "nameMr": "",
+    "normalized": "siddota",
+    "search": [
+      "Siddota"
+    ]
+  },
+  {
+    "cropId": 333,
+    "name": "Skin And Hide",
+    "nameMr": "",
+    "normalized": "skin and hide",
+    "search": [
+      "Skin And Hide"
+    ]
+  },
+  {
+    "cropId": 334,
+    "name": "Snakeguard",
+    "nameMr": "",
+    "normalized": "snakeguard",
+    "search": [
+      "Snakeguard"
+    ]
+  },
+  {
+    "cropId": 335,
+    "name": "Soanf",
+    "nameMr": "",
+    "normalized": "soanf",
+    "search": [
+      "Soanf"
+    ]
+  },
+  {
+    "cropId": 336,
+    "name": "Soapnut(Antawala/Retha)",
+    "nameMr": "",
+    "normalized": "soapnut (antawala/retha)",
+    "search": [
+      "Soapnut(Antawala/Retha)"
+    ]
+  },
+  {
+    "cropId": 337,
+    "name": "Soji",
+    "nameMr": "",
+    "normalized": "soji",
+    "search": [
+      "Soji"
+    ]
+  },
+  {
+    "cropId": 338,
+    "name": "Sompu",
+    "nameMr": "",
+    "normalized": "sompu",
+    "search": [
+      "Sompu"
+    ]
+  },
+  {
+    "cropId": 339,
+    "name": "Soyabean",
+    "nameMr": "सोयाबीन",
+    "normalized": "soyabean",
+    "search": [
+      "Soyabean",
+      "सोयाबीन",
+      "soybean",
+      "Soybean Oilseed"
+    ]
+  },
+  {
+    "cropId": 340,
+    "name": "spikenard",
+    "nameMr": "",
+    "normalized": "spikenard",
+    "search": [
+      "spikenard"
+    ]
+  },
+  {
+    "cropId": 341,
+    "name": "Spinach",
+    "nameMr": "पालक",
+    "normalized": "spinach",
+    "search": [
+      "Spinach",
+      "पालक"
+    ]
+  },
+  {
+    "cropId": 342,
+    "name": "Spiny Gourd / Kartali(Kantola)",
+    "nameMr": "",
+    "normalized": "spiny gourd / kartali (kantola)",
+    "search": [
+      "Spiny Gourd / Kartali(Kantola)"
+    ]
+  },
+  {
+    "cropId": 343,
+    "name": "Sponge gourd",
+    "nameMr": "",
+    "normalized": "sponge gourd",
+    "search": [
+      "Sponge gourd"
+    ]
+  },
+  {
+    "cropId": 344,
+    "name": "Squash(Chappal Kadoo)",
+    "nameMr": "",
+    "normalized": "squash (chappal kadoo)",
+    "search": [
+      "Squash(Chappal Kadoo)"
+    ]
+  },
+  {
+    "cropId": 345,
+    "name": "stevia",
+    "nameMr": "",
+    "normalized": "stevia",
+    "search": [
+      "stevia"
+    ]
+  },
+  {
+    "cropId": 346,
+    "name": "stone pulverizer",
+    "nameMr": "",
+    "normalized": "stone pulverizer",
+    "search": [
+      "stone pulverizer"
+    ]
+  },
+  {
+    "cropId": 347,
+    "name": "Sugar",
+    "nameMr": "",
+    "normalized": "sugar",
+    "search": [
+      "Sugar"
+    ]
+  },
+  {
+    "cropId": 348,
+    "name": "Sugarcane",
+    "nameMr": "ऊस",
+    "normalized": "sugarcane",
+    "search": [
+      "Sugarcane",
+      "ऊस"
+    ]
+  },
+  {
+    "cropId": 349,
+    "name": "Sunflower",
+    "nameMr": "सूर्यफूल",
+    "normalized": "sunflower",
+    "search": [
+      "Sunflower",
+      "सूर्यफूल"
+    ]
+  },
+  {
+    "cropId": 350,
+    "name": "Sunflower Seed",
+    "nameMr": "",
+    "normalized": "sunflower seed",
+    "search": [
+      "Sunflower Seed"
+    ]
+  },
+  {
+    "cropId": 351,
+    "name": "Sunflower/Sunflower Seed",
+    "nameMr": "",
+    "normalized": "sunflower/sunflower seed",
+    "search": [
+      "Sunflower/Sunflower Seed"
+    ]
+  },
+  {
+    "cropId": 352,
+    "name": "Sunhemp",
+    "nameMr": "",
+    "normalized": "sunhemp",
+    "search": [
+      "Sunhemp"
+    ]
+  },
+  {
+    "cropId": 353,
+    "name": "Suram",
+    "nameMr": "",
+    "normalized": "suram",
+    "search": [
+      "Suram"
+    ]
+  },
+  {
+    "cropId": 354,
+    "name": "Surat Beans (Papadi)",
+    "nameMr": "",
+    "normalized": "surat beans (papadi)",
+    "search": [
+      "Surat Beans (Papadi)"
+    ]
+  },
+  {
+    "cropId": 355,
+    "name": "Suva (Dill Seed)",
+    "nameMr": "",
+    "normalized": "suva (dill seed)",
+    "search": [
+      "Suva (Dill Seed)"
+    ]
+  },
+  {
+    "cropId": 356,
+    "name": "Suvarna Gadde",
+    "nameMr": "",
+    "normalized": "suvarna gadde",
+    "search": [
+      "Suvarna Gadde"
+    ]
+  },
+  {
+    "cropId": 357,
+    "name": "Sweet Potato",
+    "nameMr": "रताळे",
+    "normalized": "sweet potato",
+    "search": [
+      "Sweet Potato",
+      "रताळे",
+      "ratalu"
+    ]
+  },
+  {
+    "cropId": 358,
+    "name": "Sweet Pumpkin",
+    "nameMr": "",
+    "normalized": "sweet pumpkin",
+    "search": [
+      "Sweet Pumpkin"
+    ]
+  },
+  {
+    "cropId": 359,
+    "name": "T.V. Cumbu",
+    "nameMr": "",
+    "normalized": "t.v. cumbu",
+    "search": [
+      "T.V. Cumbu"
+    ]
+  },
+  {
+    "cropId": 360,
+    "name": "Tamarind Fruit",
+    "nameMr": "",
+    "normalized": "tamarind fruit",
+    "search": [
+      "Tamarind Fruit"
+    ]
+  },
+  {
+    "cropId": 361,
+    "name": "Tamarind Seed",
+    "nameMr": "",
+    "normalized": "tamarind seed",
+    "search": [
+      "Tamarind Seed"
+    ]
+  },
+  {
+    "cropId": 362,
+    "name": "Tapioca",
+    "nameMr": "",
+    "normalized": "tapioca",
+    "search": [
+      "Tapioca"
+    ]
+  },
+  {
+    "cropId": 363,
+    "name": "Taramira",
+    "nameMr": "",
+    "normalized": "taramira",
+    "search": [
+      "Taramira"
+    ]
+  },
+  {
+    "cropId": 364,
+    "name": "Tea",
+    "nameMr": "",
+    "normalized": "tea",
+    "search": [
+      "Tea"
+    ]
+  },
+  {
+    "cropId": 365,
+    "name": "Tender Coconut",
+    "nameMr": "",
+    "normalized": "tender coconut",
+    "search": [
+      "Tender Coconut"
+    ]
+  },
+  {
+    "cropId": 366,
+    "name": "Thinai (Italian Millet)",
+    "nameMr": "",
+    "normalized": "thinai (italian millet)",
+    "search": [
+      "Thinai (Italian Millet)"
+    ]
+  },
+  {
+    "cropId": 367,
+    "name": "Thogrikai",
+    "nameMr": "",
+    "normalized": "thogrikai",
+    "search": [
+      "Thogrikai"
+    ]
+  },
+  {
+    "cropId": 368,
+    "name": "Thondekai",
+    "nameMr": "",
+    "normalized": "thondekai",
+    "search": [
+      "Thondekai"
+    ]
+  },
+  {
+    "cropId": 369,
+    "name": "Tinda",
+    "nameMr": "",
+    "normalized": "tinda",
+    "search": [
+      "Tinda"
+    ]
+  },
+  {
+    "cropId": 370,
+    "name": "Tobacco",
+    "nameMr": "",
+    "normalized": "tobacco",
+    "search": [
+      "Tobacco"
+    ]
+  },
+  {
+    "cropId": 371,
+    "name": "Tomato",
+    "nameMr": "टोमॅटो",
+    "normalized": "tomato",
+    "search": [
+      "Tomato",
+      "टोमॅटो"
+    ]
+  },
+  {
+    "cropId": 372,
+    "name": "Torchwood",
+    "nameMr": "",
+    "normalized": "torchwood",
+    "search": [
+      "Torchwood"
+    ]
+  },
+  {
+    "cropId": 373,
+    "name": "Toria",
+    "nameMr": "",
+    "normalized": "toria",
+    "search": [
+      "Toria"
+    ]
+  },
+  {
+    "cropId": 374,
+    "name": "Tube Flower",
+    "nameMr": "",
+    "normalized": "tube flower",
+    "search": [
+      "Tube Flower"
+    ]
+  },
+  {
+    "cropId": 375,
+    "name": "Tube Rose(Double)",
+    "nameMr": "",
+    "normalized": "tube rose (double)",
+    "search": [
+      "Tube Rose(Double)"
+    ]
+  },
+  {
+    "cropId": 376,
+    "name": "Tube Rose(Loose)",
+    "nameMr": "",
+    "normalized": "tube rose (loose)",
+    "search": [
+      "Tube Rose(Loose)"
+    ]
+  },
+  {
+    "cropId": 377,
+    "name": "Tube Rose(Single)",
+    "nameMr": "",
+    "normalized": "tube rose (single)",
+    "search": [
+      "Tube Rose(Single)"
+    ]
+  },
+  {
+    "cropId": 378,
+    "name": "Tulip",
+    "nameMr": "",
+    "normalized": "tulip",
+    "search": [
+      "Tulip"
+    ]
+  },
+  {
+    "cropId": 379,
+    "name": "Turmeric",
+    "nameMr": "हळद",
+    "normalized": "turmeric",
+    "search": [
+      "Turmeric",
+      "हळद",
+      "haldi"
+    ]
+  },
+  {
+    "cropId": 380,
+    "name": "Turmeric (raw)",
+    "nameMr": "",
+    "normalized": "turmeric (raw)",
+    "search": [
+      "Turmeric (raw)"
+    ]
+  },
+  {
+    "cropId": 381,
+    "name": "Turnip",
+    "nameMr": "",
+    "normalized": "turnip",
+    "search": [
+      "Turnip"
+    ]
+  },
+  {
+    "cropId": 382,
+    "name": "vadang",
+    "nameMr": "",
+    "normalized": "vadang",
+    "search": [
+      "vadang"
+    ]
+  },
+  {
+    "cropId": 383,
+    "name": "Walnut",
+    "nameMr": "",
+    "normalized": "walnut",
+    "search": [
+      "Walnut"
+    ]
+  },
+  {
+    "cropId": 384,
+    "name": "Water Melon",
+    "nameMr": "टरबूज",
+    "normalized": "water melon",
+    "search": [
+      "Water Melon",
+      "टरबूज",
+      "watermelon"
+    ]
+  },
+  {
+    "cropId": 385,
+    "name": "Wheat",
+    "nameMr": "गहू",
+    "normalized": "wheat",
+    "search": [
+      "Wheat",
+      "गहू"
+    ]
+  },
+  {
+    "cropId": 386,
+    "name": "Wheat Atta",
+    "nameMr": "",
+    "normalized": "wheat atta",
+    "search": [
+      "Wheat Atta"
+    ]
+  },
+  {
+    "cropId": 387,
+    "name": "White Muesli",
+    "nameMr": "",
+    "normalized": "white muesli",
+    "search": [
+      "White Muesli"
+    ]
+  },
+  {
+    "cropId": 388,
+    "name": "White Peas",
+    "nameMr": "",
+    "normalized": "white peas",
+    "search": [
+      "White Peas"
+    ]
+  },
+  {
+    "cropId": 389,
+    "name": "White Pumpkin",
+    "nameMr": "",
+    "normalized": "white pumpkin",
+    "search": [
+      "White Pumpkin"
+    ]
+  },
+  {
+    "cropId": 390,
+    "name": "Wood",
+    "nameMr": "",
+    "normalized": "wood",
+    "search": [
+      "Wood"
+    ]
+  },
+  {
+    "cropId": 391,
+    "name": "Wool",
+    "nameMr": "",
+    "normalized": "wool",
+    "search": [
+      "Wool"
+    ]
+  },
+  {
+    "cropId": 392,
+    "name": "Yam",
+    "nameMr": "",
+    "normalized": "yam",
+    "search": [
+      "Yam"
+    ]
+  },
+  {
+    "cropId": 393,
+    "name": "Yam (Ratalu)",
+    "nameMr": "",
+    "normalized": "yam (ratalu)",
+    "search": [
+      "Yam (Ratalu)"
+    ]
+  }
+]

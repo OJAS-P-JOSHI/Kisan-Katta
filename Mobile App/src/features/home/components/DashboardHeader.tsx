@@ -6,7 +6,7 @@ import { Text } from 'react-native-paper';
 import { BrandLeaves } from '@/components/BrandLeaves';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
-import { getGreeting } from '../weather.utils';
+import { getGreetingByTime } from '../weather.localization';
 
 export type DashboardHeaderProps = {
   /** Farmer's name from the authenticated profile (`GET /api/v1/profile/me`). */
@@ -25,11 +25,12 @@ export const DashboardHeader = memo(function DashboardHeader({
   district,
 }: DashboardHeaderProps) {
   const theme = useAppTheme();
-  const greeting = getGreeting();
+  const { text: greetingText, emoji: greetingEmoji } = getGreetingByTime();
   const hasLocation = !!(village || taluka || district);
 
-  const primaryLocation = district || taluka || village || '';
-  const detailParts = [village, taluka].filter(
+  // Village-first hierarchy: village → taluka · district
+  const primaryLocation = village || taluka || district || '';
+  const detailParts = [taluka, district].filter(
     (part) => !!part && part !== primaryLocation,
   );
   const locationDetail = detailParts.join(' · ');
@@ -47,12 +48,12 @@ export const DashboardHeader = memo(function DashboardHeader({
         />
 
         <View style={styles.textBlock}>
-          <Text style={[typography.caption, styles.greeting, { color: theme.colors.onSurfaceVariant }]}>
-            {greeting} 👋
+          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+            {greetingText} {greetingEmoji}
           </Text>
           <Text
             style={[typography.largeHeading, { color: theme.colors.onBackground }]}
-            numberOfLines={1}
+            numberOfLines={2}
           >
             {name}
           </Text>
@@ -68,14 +69,14 @@ export const DashboardHeader = memo(function DashboardHeader({
               <View style={styles.locationTextBlock}>
                 <Text
                   style={[typography.body, { color: theme.colors.onSurface, fontWeight: '500' }]}
-                  numberOfLines={1}
+                  numberOfLines={2}
                 >
                   {primaryLocation}
                 </Text>
                 {locationDetail ? (
                   <Text
                     style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}
-                    numberOfLines={1}
+                    numberOfLines={2}
                   >
                     {locationDetail}
                   </Text>
@@ -112,9 +113,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
     paddingRight: spacing.xs,
-  },
-  greeting: {
-    textTransform: 'capitalize',
   },
   locationRow: {
     flexDirection: 'row',

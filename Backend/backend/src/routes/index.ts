@@ -11,6 +11,8 @@ import paymentRoutes from "../modules/payment/routes";
 import adminRoutes from "../modules/admin/admin.routes";
 import verificationRoutes from "../modules/verification/verification.routes";
 import rewardRoutes from "../modules/rewards/reward.routes";
+import locationRoutes from "../modules/location/location.routes";
+import cropRoutes from "../modules/crop/crop.routes";
 
 const router = Router();
 
@@ -26,5 +28,7 @@ router.use("/api/v1/gram-sahakari", paymentRoutes);
 router.use("/api/v1/admin", adminRoutes);
 router.use("/api/v1/admin/rewards", rewardRoutes);
 router.use("/api/v1/verify", verificationRoutes);
+router.use("/api/v1/location", locationRoutes);
+router.use("/api/v1/crops", cropRoutes);
 
 export default router;

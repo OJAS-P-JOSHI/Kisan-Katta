@@ -1,9 +1,11 @@
 import type { SupportedLanguage } from '@/constants';
 
+import type { ProfileLocationBlock } from '@/features/location/location.types';
+
 /**
- * Profile domain DTOs that exactly mirror the backend responses
- * (`Backend/backend/src/modules/profile/profile.types.ts`). Note the backend
- * uses the US spelling `favoriteCrops`.
+ * Profile domain DTOs that mirror the backend
+ * (`Backend/backend/src/modules/profile/profile.types.ts`).
+ * Backend uses the US spelling `favoriteCrops`.
  */
 
 export type ProfileImage = {
@@ -11,11 +13,18 @@ export type ProfileImage = {
   publicId: string;
 };
 
+/**
+ * Create / update body. Prefer LGD codes; names are sent for backwards
+ * compatibility with older backend consumers.
+ */
 export type CreateProfileBody = {
   name: string;
   district: string;
   taluka: string;
   village: string;
+  districtCode: number;
+  talukaCode: number;
+  villageCode: number;
   favoriteCrops: string[];
   language: SupportedLanguage;
 };
@@ -31,9 +40,20 @@ export type UploadProfileImageResponseDTO = {
 export type ProfileResponseDTO = {
   userId: string;
   name: string;
+  /** Legacy flat district name. */
   district: string;
+  /** Legacy flat taluka name. */
   taluka: string;
+  /** Legacy flat village name. */
   village: string;
+  /**
+   * Optional future Marathi flat names from backend.
+   * Prefer `location.*.nameMr` when both exist.
+   */
+  districtNameMr?: string | null;
+  talukaNameMr?: string | null;
+  /** Structured LGD location — present on new backend responses. */
+  location?: ProfileLocationBlock;
   favoriteCrops: string[];
   language: SupportedLanguage;
   profileImage: ProfileImage | null;

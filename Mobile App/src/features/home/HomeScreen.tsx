@@ -20,6 +20,7 @@ import { PlaceholderCard } from './components/PlaceholderCard';
 import { WeatherAlertCard } from './components/WeatherAlertCard';
 import { WeatherCard } from './components/WeatherCard';
 import { WeatherCardSkeleton } from './components/WeatherSkeleton';
+import { getFarmingAdvice } from './weather.localization';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -81,6 +82,17 @@ export default function HomeScreen() {
   const todayRainChance =
     forecast.length > 0 ? forecast[0].dailyChanceOfRain : undefined;
 
+  const hasAlerts = (alerts?.length ?? 0) > 0;
+  const farmingAdvice = weather
+    ? getFarmingAdvice({
+        condition: weather.condition,
+        temperatureC: weather.temperatureC,
+        rainChance: todayRainChance,
+        windKph: weather.windKph,
+        hasAlerts,
+      })
+    : undefined;
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
       <OrganicBackground />
@@ -98,10 +110,24 @@ export default function HomeScreen() {
         }
       >
         <DashboardHeader
-          name={profile?.name ?? 'Farmer'}
-          village={profile?.village}
-          taluka={profile?.taluka}
-          district={profile?.district}
+          name={profile?.name ?? strings.home.farmerFallback}
+          village={
+            profile?.location?.village?.nameMr?.trim() ||
+            profile?.location?.village?.name ||
+            profile?.village
+          }
+          taluka={
+            profile?.location?.taluka?.nameMr?.trim() ||
+            profile?.talukaNameMr?.trim() ||
+            profile?.location?.taluka?.name ||
+            profile?.taluka
+          }
+          district={
+            profile?.location?.district?.nameMr?.trim() ||
+            profile?.districtNameMr?.trim() ||
+            profile?.location?.district?.name ||
+            profile?.district
+          }
         />
 
         <SectionHeader icon="weather-partly-cloudy" title={strings.home.weatherTitle} />
@@ -111,7 +137,11 @@ export default function HomeScreen() {
         ) : weatherError && !weather ? (
           <WeatherErrorCard message={weatherError} onRetry={refreshWeather} />
         ) : weather ? (
-          <WeatherCard weather={weather} todayRainChance={todayRainChance} />
+          <WeatherCard
+            weather={weather}
+            todayRainChance={todayRainChance}
+            farmingAdvice={farmingAdvice}
+          />
         ) : null}
 
         <WeatherAlertCard
@@ -119,6 +149,7 @@ export default function HomeScreen() {
           loading={alertsLoading}
           error={alertsError}
           onRetry={refreshAlerts}
+          farmingAdvice={farmingAdvice}
         />
 
         <ForecastList

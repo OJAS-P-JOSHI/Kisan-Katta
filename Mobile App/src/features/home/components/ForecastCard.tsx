@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
+import { strings } from '@/constants';
 import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import type { ForecastDay } from '../weather.types';
@@ -34,7 +35,7 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
           },
         ]}
       >
-        {isToday ? 'Today' : formatDayShort(day.date)}
+        {isToday ? strings.home.forecast.today : formatDayShort(day.date)}
       </Text>
 
       <View style={[styles.iconWrap, { backgroundColor: theme.colors.surface }]}>

@@ -5,17 +5,13 @@ import { StyleSheet, View } from 'react-native';
 import { Card, Divider, Text } from 'react-native-paper';
 
 import { BrandLeaves } from '@/components/BrandLeaves';
+import { strings } from '@/constants';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
 import type { CurrentWeather } from '../weather.types';
-import {
-  formatUpdatedTime,
-  getHumidityLabel,
-  getRainMessage,
-  getUVLabel,
-  getWeatherIcon,
-} from '../weather.utils';
+import { translateCondition, translateWindDirection } from '../weather.localization';
+import { formatUpdatedTime, getWeatherIcon } from '../weather.utils';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 type StatItemProps = { icon: IconName; value: string; label: string; theme: AppTheme };
@@ -60,10 +56,16 @@ const stat = StyleSheet.create({
 type WeatherCardProps = {
   weather: CurrentWeather;
   todayRainChance?: number;
+  /** Dynamic farming advice from `getFarmingAdvice`. */
+  farmingAdvice?: string;
 };
 
-export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance }: WeatherCardProps) {
+export const WeatherCard = memo(function WeatherCard({
+  weather,
+  farmingAdvice,
+}: WeatherCardProps) {
   const theme = useAppTheme();
+  const { weather: w } = strings.home;
 
   return (
     <Card mode="elevated" style={[styles.card, cardSurface]}>
@@ -83,16 +85,20 @@ export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance 
                 typography.sectionTitle,
                 { color: theme.colors.onPrimaryContainer, marginTop: spacing.sm },
               ]}
+              numberOfLines={2}
             >
-              {weather.condition}
+              {translateCondition(weather.condition)}
             </Text>
           </View>
           <View style={styles.tempBlock}>
             <Text style={[styles.tempText, { color: theme.colors.onPrimaryContainer }]}>
               {Math.round(weather.temperatureC)}°
             </Text>
-            <Text style={[typography.body, { color: theme.colors.onPrimaryContainer, opacity: 0.85 }]}>
-              Feels {Math.round(weather.feelsLikeC)}°C
+            <Text
+              style={[typography.body, { color: theme.colors.onPrimaryContainer, opacity: 0.85 }]}
+              numberOfLines={2}
+            >
+              {w.feelsLikeShort} {Math.round(weather.feelsLikeC)}°C
             </Text>
           </View>
         </View>
@@ -101,19 +107,22 @@ export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance 
       <Card.Content style={styles.body}>
         <View style={styles.windRow}>
           <MaterialCommunityIcons name="compass-outline" size={iconSize.sm} color={theme.colors.primary} />
-          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500' }]}>
-            Wind direction: {weather.windDirection}
+          <Text
+            style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500', flex: 1 }]}
+            numberOfLines={2}
+          >
+            {w.windDirection}: {translateWindDirection(weather.windDirection)}
           </Text>
         </View>
 
-        {todayRainChance !== undefined && (
+        {farmingAdvice ? (
           <View style={[styles.farmerMsg, { backgroundColor: theme.colors.secondaryContainer }]}>
             <MaterialCommunityIcons name="water-outline" size={iconSize.sm} color={theme.colors.secondary} />
             <Text style={[typography.body, { color: theme.colors.onSecondaryContainer, flex: 1 }]}>
-              {getRainMessage(todayRainChance)}
+              {farmingAdvice}
             </Text>
           </View>
-        )}
+        ) : null}
 
         <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
@@ -121,19 +130,19 @@ export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance 
           <StatItem
             icon="water-percent"
             value={`${weather.humidity}%`}
-            label={getHumidityLabel(weather.humidity)}
+            label={w.humidity}
             theme={theme}
           />
           <StatItem
             icon="weather-windy"
             value={`${Math.round(weather.windKph)} km/h`}
-            label="Wind speed"
+            label={w.windSpeed}
             theme={theme}
           />
           <StatItem
             icon="cloud-outline"
             value={`${weather.cloud}%`}
-            label="Cloud cover"
+            label={w.cloudCover}
             theme={theme}
           />
         </View>
@@ -142,19 +151,19 @@ export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance 
           <StatItem
             icon="water"
             value={`${weather.precipitationMm.toFixed(1)} mm`}
-            label="Rainfall today"
+            label={w.rainfallToday}
             theme={theme}
           />
           <StatItem
             icon="white-balance-sunny"
             value={`UV ${Math.round(weather.uv)}`}
-            label={getUVLabel(weather.uv)}
+            label={w.uvIndex}
             theme={theme}
           />
           <StatItem
             icon="thermometer"
             value={`${Math.round(weather.feelsLikeC)}°C`}
-            label="Feels like"
+            label={w.feelsLike}
             theme={theme}
           />
         </View>
@@ -164,7 +173,7 @@ export const WeatherCard = memo(function WeatherCard({ weather, todayRainChance 
         <View style={styles.footerRow}>
           <MaterialCommunityIcons name="clock-outline" size={iconSize.xs} color={theme.colors.onSurfaceVariant} />
           <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-            Updated {formatUpdatedTime(weather.lastUpdated)}
+            {w.updated} {formatUpdatedTime(weather.lastUpdated)}
           </Text>
         </View>
       </Card.Content>
@@ -185,7 +194,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  iconBlock: { alignItems: 'flex-start', flex: 1 },
+  iconBlock: { alignItems: 'flex-start', flex: 1, paddingRight: spacing.sm },
   iconCircle: {
     width: 80,
     height: 80,
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tempBlock: { alignItems: 'flex-end' },
+  tempBlock: { alignItems: 'flex-end', maxWidth: '42%' },
   tempText: {
     fontSize: 58,
     fontWeight: '600',
@@ -223,5 +232,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing.xs,
+    flexWrap: 'wrap',
   },
 });

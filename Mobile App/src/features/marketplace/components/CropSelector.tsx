@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Chip, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Button, Chip, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
 
-import { AGMARKNET_COMMODITIES } from '@/constants/agmarknetCommodities';
 import {
-  getMaharashtraCropLabel,
-  MAHARASHTRA_CROP_BY_VALUE,
+  getCropLabel,
   normalizeFavoriteCrops,
-} from '@/constants/maharashtraCrops';
+  useCropSearch,
+  useCrops,
+  type CropListItem,
+} from '@/features/crop';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
+import { useDebouncedValue } from '@/features/profile/hooks/useDebouncedValue';
 import { radius, spacing, useAppTheme } from '@/theme';
 
 import { marketplaceStrings } from '../marketplace.strings';
@@ -19,48 +21,96 @@ type CropSelectorProps = {
   error?: string;
 };
 
-const getCropDisplayLabel = (cropValue: string): string =>
-  MAHARASHTRA_CROP_BY_VALUE.get(cropValue)?.label ?? cropValue;
+const SEARCH_DEBOUNCE_MS = 200;
 
+/**
+ * Marketplace crop picker — Crop Master APIs only (no hardcoded commodity lists).
+ */
 export function CropSelector({ value, onSelect, error }: CropSelectorProps) {
   const theme = useAppTheme();
   const { data: profile } = useMyProfile();
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
+
+  const {
+    data: allCrops,
+    loading: cropsLoading,
+    error: cropsError,
+    refresh: refreshCrops,
+  } = useCrops();
+
+  const query = debouncedSearch.trim();
+  const isSearching = query.length > 0;
+
+  const {
+    data: searchResults,
+    loading: searchLoading,
+    error: searchError,
+    refresh: refreshSearch,
+  } = useCropSearch(isSearching ? query : null);
 
   const favoriteCrops = useMemo(
-    () => normalizeFavoriteCrops(profile?.favoriteCrops ?? []),
-    [profile?.favoriteCrops],
+    () => normalizeFavoriteCrops(profile?.favoriteCrops ?? [], allCrops),
+    [profile?.favoriteCrops, allCrops],
   );
 
-  const allCrops = useMemo(() => [...AGMARKNET_COMMODITIES].sort((a, b) => a.localeCompare(b)), []);
+  const browseList = useMemo(() => {
+    if (isSearching) return searchResults;
+    return allCrops;
+  }, [allCrops, isSearching, searchResults]);
 
-  const filteredCrops = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return allCrops;
-    return allCrops.filter((crop) => {
-      const label = getCropDisplayLabel(crop).toLowerCase();
-      return crop.toLowerCase().includes(query) || label.includes(query);
-    });
-  }, [allCrops, search]);
+  const favoriteFiltered = useMemo(() => {
+    const favSet = new Set(favoriteCrops);
+    return browseList.filter((crop) => favSet.has(crop.name));
+  }, [browseList, favoriteCrops]);
 
-  const favoriteFiltered = useMemo(
-    () => filteredCrops.filter((crop) => favoriteCrops.includes(crop)),
-    [favoriteCrops, filteredCrops],
-  );
+  const otherFiltered = useMemo(() => {
+    const favSet = new Set(favoriteCrops);
+    return browseList.filter((crop) => !favSet.has(crop.name));
+  }, [browseList, favoriteCrops]);
 
-  const otherFiltered = useMemo(
-    () => filteredCrops.filter((crop) => !favoriteCrops.includes(crop)),
-    [favoriteCrops, filteredCrops],
-  );
+  const displayValue = value ? getCropLabel(value, allCrops) : '';
 
-  const displayValue = value ? getMaharashtraCropLabel(value) : '';
-
-  const handleSelect = (crop: string) => {
-    onSelect(crop);
+  const handleSelect = (crop: CropListItem) => {
+    onSelect(crop.name);
     setModalVisible(false);
     setSearch('');
   };
+
+  const listBusy = isSearching ? searchLoading : cropsLoading;
+  const listError = isSearching ? searchError : cropsError;
+  const onRetry = isSearching ? refreshSearch : refreshCrops;
+
+  const listData = useMemo(
+    () => [
+      ...(favoriteFiltered.length > 0
+        ? [
+            {
+              type: 'header' as const,
+              key: 'fav-header',
+              title: marketplaceStrings.create.favoriteCropsTitle,
+            },
+          ]
+        : []),
+      ...favoriteFiltered.map((crop) => ({
+        type: 'crop' as const,
+        key: `fav-${crop.cropId}`,
+        crop,
+      })),
+      {
+        type: 'header' as const,
+        key: 'all-header',
+        title: marketplaceStrings.create.allCropsTitle,
+      },
+      ...otherFiltered.map((crop) => ({
+        type: 'crop' as const,
+        key: String(crop.cropId),
+        crop,
+      })),
+    ],
+    [favoriteFiltered, otherFiltered],
+  );
 
   return (
     <View>
@@ -70,15 +120,15 @@ export function CropSelector({ value, onSelect, error }: CropSelectorProps) {
             {marketplaceStrings.create.favoriteCropsTitle}
           </Text>
           <View style={styles.chipRow}>
-            {favoriteCrops.map((crop) => (
+            {favoriteCrops.map((cropName) => (
               <Chip
-                key={`fav-${crop}`}
-                selected={value === crop}
-                onPress={() => onSelect(crop)}
+                key={`fav-${cropName}`}
+                selected={value === cropName}
+                onPress={() => onSelect(cropName)}
                 style={styles.chip}
                 compact
               >
-                {getMaharashtraCropLabel(crop)}
+                {getCropLabel(cropName, allCrops)}
               </Chip>
             ))}
           </View>
@@ -118,44 +168,55 @@ export function CropSelector({ value, onSelect, error }: CropSelectorProps) {
             style={styles.searchInput}
           />
 
-          <FlatList
-            data={[
-              ...(favoriteFiltered.length > 0
-                ? [{ type: 'header' as const, key: 'fav-header', title: marketplaceStrings.create.favoriteCropsTitle }]
-                : []),
-              ...favoriteFiltered.map((crop) => ({ type: 'crop' as const, key: `fav-${crop}`, crop })),
-              { type: 'header' as const, key: 'all-header', title: marketplaceStrings.create.allCropsTitle },
-              ...otherFiltered.map((crop) => ({ type: 'crop' as const, key: crop, crop })),
-            ]}
-            keyExtractor={(item) => item.key}
-            keyboardShouldPersistTaps="handled"
-            style={styles.list}
-            renderItem={({ item }) => {
-              if (item.type === 'header') {
+          {listBusy ? (
+            <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+          ) : listError ? (
+            <View style={styles.errorBox}>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}>
+                {listError}
+              </Text>
+              <Button mode="text" onPress={() => void onRetry()}>
+                {marketplaceStrings.listings.retry}
+              </Button>
+            </View>
+          ) : (
+            <FlatList
+              data={listData}
+              keyExtractor={(item) => item.key}
+              keyboardShouldPersistTaps="handled"
+              style={styles.list}
+              renderItem={({ item }) => {
+                if (item.type === 'header') {
+                  return (
+                    <Text
+                      variant="labelLarge"
+                      style={[styles.sectionHeader, { color: theme.colors.primary }]}
+                    >
+                      {item.title}
+                    </Text>
+                  );
+                }
+                const selected = value === item.crop.name;
                 return (
-                  <Text variant="labelLarge" style={[styles.sectionHeader, { color: theme.colors.primary }]}>
-                    {item.title}
-                  </Text>
+                  <Pressable
+                    onPress={() => handleSelect(item.crop)}
+                    style={[
+                      styles.cropRow,
+                      {
+                        backgroundColor: selected
+                          ? theme.colors.primaryContainer
+                          : theme.colors.surface,
+                      },
+                    ]}
+                  >
+                    <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>
+                      {getCropLabel(item.crop)}
+                    </Text>
+                  </Pressable>
                 );
-              }
-              const selected = value === item.crop;
-              return (
-                <Pressable
-                  onPress={() => handleSelect(item.crop)}
-                  style={[
-                    styles.cropRow,
-                    {
-                      backgroundColor: selected ? theme.colors.primaryContainer : theme.colors.surface,
-                    },
-                  ]}
-                >
-                  <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>
-                    {getCropDisplayLabel(item.crop)}
-                  </Text>
-                </Pressable>
-              );
-            }}
-          />
+              }}
+            />
+          )}
         </Modal>
       </Portal>
     </View>
@@ -182,4 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     marginBottom: spacing.xs,
   },
+  loader: { marginVertical: spacing.lg },
+  errorBox: { paddingVertical: spacing.md, alignItems: 'center', gap: spacing.sm },
 });

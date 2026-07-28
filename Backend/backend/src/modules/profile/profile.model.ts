@@ -2,6 +2,17 @@ import { Schema, model } from "mongoose";
 import { SUPPORTED_LANGUAGES } from "./profile.types";
 import type { IFarmerProfile } from "./profile.types";
 
+/**
+ * Farmer profile schema.
+ *
+ * Location storage strategy (backwards compatible, no migration):
+ *   - `district` / `taluka` / `village` remain required strings so marketplace,
+ *     market, and farmer-price keep reading `profile.district` as a string.
+ *   - Optional LGD codes + `villageNameMr` are written on create/update when
+ *     the hierarchy resolves against the Location Master.
+ *   - Legacy documents without codes continue to load; codes stay null until
+ *     the farmer next updates their location.
+ */
 const FarmerProfileSchema = new Schema<IFarmerProfile>(
   {
     // One profile per auth_user; enforced by unique index.
@@ -16,6 +27,10 @@ const FarmerProfileSchema = new Schema<IFarmerProfile>(
     district: { type: String, required: true },
     taluka: { type: String, required: true, trim: true },
     village: { type: String, required: true, trim: true },
+    districtCode: { type: Number, default: null, required: false },
+    talukaCode: { type: Number, default: null, required: false },
+    villageCode: { type: Number, default: null, required: false },
+    villageNameMr: { type: String, default: null, required: false, trim: true },
     favoriteCrops: {
       type: [String],
       required: true,

@@ -49,6 +49,8 @@ const ALIAS_MAP: Record<string, string> = {
   // Common spelling variants used in government records and forms
   "ahmadnagar":            "ahmednagar",
   "ahmadanagar":           "ahmednagar",
+  // LGD official rename (Location Master stores "Ahilyanagar")
+  "ahilyanagar":           "ahmednagar",
   "sholapur":              "solapur",    // older/alternate romanisation
   "buldana":               "buldhana",  // common misspelling
   "buldhana":              "buldhana",  // already canonical, harmless duplicate
