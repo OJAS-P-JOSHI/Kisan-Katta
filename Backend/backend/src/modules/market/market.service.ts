@@ -343,6 +343,7 @@ const fetchMarketPricesFromGov = async (
 
     const recentRecords = filterRecentGovRecords(responseData.records);
     const latestPerMandiRecords = keepLatestRecordPerMandi(recentRecords);
+
     const mappedRecords = latestPerMandiRecords.map(toMarketPriceDTO);
 
     if (debugContext) {
@@ -443,7 +444,6 @@ const fetchFavoriteCropPrices = async (
     },
     debugContext
   );
-
   const matched = data.filter(
     (item) =>
       matchesFavoriteCrop(item.commodity, commodity) &&
@@ -465,6 +465,7 @@ export const getFavoriteMarketPrices = async (
   console.log("Authenticated User ID:", userId);
 
   const profile = await getProfile(userId);
+
   // eslint-disable-next-line no-console
   console.log("Profile:", profile);
   // eslint-disable-next-line no-console
@@ -484,6 +485,7 @@ export const getFavoriteMarketPrices = async (
 
   const state = DEFAULT_STATE;
   const originalDistrict = profile.district.trim();
+
   const apiDistrict = resolveGovDistrictForApi(originalDistrict);
   const districtCandidates = resolveGovDistrictCandidates(originalDistrict);
 
@@ -499,7 +501,6 @@ export const getFavoriteMarketPrices = async (
       )
     )
   );
-
   let successCount = 0;
   let lastFailure: unknown = null;
 
@@ -540,7 +541,6 @@ export const getFavoriteMarketPrices = async (
     const cropKey = normalizeText(crop);
     ordered.push(...(groupedByCrop.get(cropKey) ?? []));
   }
-
   // eslint-disable-next-line no-console
   console.log("Merged Records:", ordered.length);
   // eslint-disable-next-line no-console

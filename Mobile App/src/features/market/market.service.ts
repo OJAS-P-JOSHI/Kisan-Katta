@@ -24,6 +24,26 @@ export const getMarketPrices = async (
   return response.data.data;
 };
 
+/** Fetches mandi prices for one district+commodity pair from our backend. */
+export const getMarketPricesForCrop = async ({
+  district,
+  commodity,
+  state = DEFAULT_STATE,
+  limit = 100,
+  offset = 0,
+}: {
+  district: string;
+  commodity: string;
+  state?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<MarketPrice[]> => {
+  const response = await api.get<MarketPricesResponse>(MARKET_PRICES_ENDPOINT, {
+    params: { state, district, commodity, limit, offset },
+  });
+  return response.data.data;
+};
+
 /** Fetches mandi prices for the authenticated farmer's favourite crops. */
 export const getFavouriteMarketPrices = async (): Promise<MarketPrice[]> => {
   const response = await api.get<MarketPricesResponse>(MARKET_FAVOURITES_ENDPOINT);

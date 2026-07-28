@@ -1,0 +1,347 @@
+{
+  "generatedAt": "2026-07-28T13:39:01.820Z",
+  "backend": "http://localhost:4000",
+  "recentDays": 20,
+  "sampleProfile": {
+    "name": "wrerwe",
+    "district": "Amravati",
+    "favoriteCrops": [
+      "Black Gram (Urd Beans)(Whole)",
+      "Bhindi(Ladies Finger)",
+      "Banana",
+      "Bengal Gram(Gram)(Whole)",
+      "Myrobolan(Harad)",
+      "Red gram split/Arhar dal/Tur dal",
+      "Pegeon Pea (Arhar Fali)",
+      "Kharif Mash",
+      "Custard Apple (Sharifa)",
+      "Karbuja(Musk Melon)"
+    ]
+  },
+  "results": [
+    {
+      "id": "1a",
+      "name": "Happy-path GET /prices (Sangli Onion)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=Onion&limit=20&offset=0",
+      "status": 200,
+      "responseBody": "{\"success\":true,\"data\":[{\"commodity\":\"Onion\",\"market\":\"Vita APMC\",\"district\":\"Sangli\",\"state\":\"Maharashtra\",\"variety\":\"Other\",\"grade\":\"Local\",\"arrivalDate\":\"27/07/2026\",\"modalPrice\":2600,\"minPrice\":2000,\"maxPrice\":2800},{\"commodity\":\"Onion\",\"market\":\"Sangli(Phale, Bhajipala Market) APMC\",\"district\":\"Sangli\",\"state\":\"Maharashtra\",\"variety\":\"Local\",\"grade\":\"Local\",\"arrivalDate\":\"27/07/2026\",\"modalPrice\":1900,\"minPrice\":1200,\"maxPrice\":2600},{\"commodity\":\"Onion\",\"market\":\"Islampur APMC\",\"district\":\"Sangli\",\"state\":\"Maharashtra\",\"variety\":\"Local\",\"grade\":\"Local\",\"arrivalDate\":\"23/07/2026\",\"modalPr…",
+      "elapsedMs": 541,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "1b",
+      "name": "Happy-path GET /favourites",
+      "request": "GET http://localhost:4000/api/v1/market/favourites Authorization: Bearer <token>",
+      "status": 200,
+      "responseBody": "{\"success\":true,\"data\":[]}",
+      "elapsedMs": 10720,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "2a",
+      "name": "Invalid query limit=0",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&limit=0",
+      "status": 400,
+      "responseBody": "{\"success\":false,\"message\":\"limit must be an integer between 1 and 100\"}",
+      "elapsedMs": 4,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "2b",
+      "name": "Invalid query limit=101",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&limit=101",
+      "status": 400,
+      "responseBody": "{\"success\":false,\"message\":\"limit must be an integer between 1 and 100\"}",
+      "elapsedMs": 13,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "2c",
+      "name": "Invalid query limit=abc",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&limit=abc",
+      "status": 400,
+      "responseBody": "{\"success\":false,\"message\":\"limit must be an integer between 1 and 100\"}",
+      "elapsedMs": 15,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "2d",
+      "name": "Invalid query offset=-1",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&offset=-1",
+      "status": 400,
+      "responseBody": "{\"success\":false,\"message\":\"offset must be an integer >= 0\"}",
+      "elapsedMs": 18,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "2e",
+      "name": "Invalid query offset=1.5",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&offset=1.5",
+      "status": 400,
+      "responseBody": "{\"success\":false,\"message\":\"offset must be an integer >= 0\"}",
+      "elapsedMs": 15,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "3",
+      "name": "Empty-result (Saffron in Sangli — typically no recent arrivals)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=Saffron&limit=50&offset=0",
+      "status": 503,
+      "responseBody": "{\"success\":false,\"message\":\"Government market data service is unavailable\"}",
+      "elapsedMs": 13824,
+      "pass": false,
+      "unexpected": "Expected 200 + []",
+      "rootCause": null,
+      "note": "non-empty — seasonal data present"
+    },
+    {
+      "id": "4",
+      "name": "Invalid commodity → empty array (not AppError)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=NotARealCropXYZ&limit=10&offset=0",
+      "status": 503,
+      "responseBody": "{\"success\":false,\"message\":\"Government market data service is unavailable\"}",
+      "elapsedMs": 11474,
+      "pass": false,
+      "unexpected": "Expected 200 + []",
+      "rootCause": "Gov filter returned data or error envelope unexpected"
+    },
+    {
+      "id": "5",
+      "name": "Invalid district on /prices → 200 + [] (no district validation)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=NotARealDistrictXYZ&commodity=Onion&limit=10&offset=0",
+      "status": 200,
+      "responseBody": "{\"success\":true,\"data\":[]}",
+      "elapsedMs": 510,
+      "pass": true,
+      "unexpected": "By design: /prices does not call resolveDistrict",
+      "rootCause": null
+    },
+    {
+      "id": "6a",
+      "name": "Legacy alias asymmetry on /prices (new name vs Aurangabad)",
+      "request": "GET new=http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Chhatrapati%20Sambhajinagar&commodity=Onion&limit=50&offset=0 | GET old=http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Aurangabad&commodity=Onion&limit=50&offset=0",
+      "status": "new=200 old=200",
+      "responseBody": "newCount=0 oldCount=0",
+      "elapsedMs": "217/221",
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "6b",
+      "name": "Favourites with legacy district profile (Chhatrapati Sambhajinagar)",
+      "request": "GET /api/v1/market/favourites for profile district=Chhatrapati Sambhajinagar",
+      "status": 200,
+      "responseBody": "{\"success\":true,\"data\":[]}",
+      "elapsedMs": 10806,
+      "pass": true,
+      "unexpected": "200 but empty — may be no recent arrivals for favourite crops",
+      "rootCause": null
+    },
+    {
+      "id": "7",
+      "name": "Missing JWT on /favourites",
+      "request": "GET http://localhost:4000/api/v1/market/favourites (no Authorization)",
+      "status": 401,
+      "responseBody": "{\"success\":false,\"message\":\"Authentication required. Please provide a valid Bearer token.\"}",
+      "elapsedMs": 3,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "8",
+      "name": "Invalid JWT on /favourites",
+      "request": "GET http://localhost:4000/api/v1/market/favourites Authorization: Bearer totally.invalid.token",
+      "status": 401,
+      "responseBody": "{\"success\":false,\"message\":\"Invalid or expired token. Please authenticate again.\"}",
+      "elapsedMs": 9,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "9",
+      "name": "Missing API key → AppError 500 (service-level probe)",
+      "request": "getMarketPrices() with MARKET_API_KEY=''",
+      "status": 500,
+      "responseBody": "{\"ok\":false,\"statusCode\":500,\"message\":\"Government market data API key is not configured\",\"elapsed\":1}",
+      "elapsedMs": 1,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "10",
+      "name": "Government timeout/unreachable → 504 or 503",
+      "request": "getMarketPrices() against https://10.255.255.1",
+      "status": 503,
+      "responseBody": "{\"ok\":false,\"statusCode\":503,\"message\":\"Government market data service is unavailable\",\"elapsed\":10736}",
+      "elapsedMs": 10736,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "11",
+      "name": "Government unavailable (DNS fail) → 503/504",
+      "request": "getMarketPrices() against this-host-does-not-exist.invalid",
+      "status": 503,
+      "responseBody": "{\"ok\":false,\"statusCode\":503,\"message\":\"Government market data service is unavailable\",\"elapsed\":52}",
+      "elapsedMs": 52,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "12",
+      "name": "Cache behaviour (3 consecutive /prices Solapur Tomato)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Solapur&commodity=Tomato&limit=40&offset=0 ×3",
+      "status": "200,200,200",
+      "responseBody": "counts=4,4,4 timesMs=1009,4,15",
+      "elapsedMs": [
+        1009,
+        4,
+        15
+      ],
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null,
+      "note": "Strong miss→hit latency pattern"
+    },
+    {
+      "id": "13",
+      "name": "Response times cache miss vs hit",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Solapur&commodity=Tomato&limit=40&offset=0",
+      "status": 200,
+      "responseBody": "t0(miss-ish)=1009ms t1=4ms t2=15ms",
+      "elapsedMs": [
+        1009,
+        4,
+        15
+      ],
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "12b",
+      "name": "Cache miss after TTL",
+      "request": "SKIPPED (SKIP_CACHE_TTL_WAIT=1)",
+      "status": null,
+      "responseBody": null,
+      "pass": true,
+      "unexpected": "Skipped 5-minute wait — set SKIP_CACHE_TTL_WAIT=0 to run",
+      "rootCause": null,
+      "note": "SKIPPED"
+    },
+    {
+      "id": "14",
+      "name": "DTO validation (MarketPriceDTO shape/types)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=Onion&limit=20&offset=0",
+      "status": 200,
+      "responseBody": "rows=3 issues=none sample={\"commodity\":\"Onion\",\"market\":\"Vita APMC\",\"district\":\"Sangli\",\"state\":\"Maharashtra\",\"variety\":\"Other\",\"grade\":\"Local\",\"arrivalDate\":\"27/07/2026\",\"modalPrice\":2600,\"minPrice\":2000,\"maxPrice\":2800}",
+      "elapsedMs": 16,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "15",
+      "name": "Duplicate mandi detection (keepLatestRecordPerMandi)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=Onion&limit=100&offset=0",
+      "status": 200,
+      "responseBody": "rows=3 uniqueMarkets=3 dupes=[]",
+      "elapsedMs": 1572,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "16",
+      "name": "Recent-date filtering (window=20d cutoff=2026-07-07)",
+      "request": "GET http://localhost:4000/api/v1/market/prices?state=Maharashtra&district=Sangli&commodity=Onion&limit=100&offset=0",
+      "status": 200,
+      "responseBody": "rows=3 oldOrInvalid=0 samples=[]",
+      "elapsedMs": 9,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "17",
+      "name": "Favourite crop ordering matches profile.favoriteCrops",
+      "request": "GET http://localhost:4000/api/v1/market/favourites profileCrops=[\"Black Gram (Urd Beans)(Whole)\",\"Bhindi(Ladies Finger)\",\"Banana\",\"Bengal Gram(Gram)(Whole)\",\"Myrobolan(Harad)\",\"Red gram split/Arhar dal/Tur dal\",\"Pegeon Pea (Arhar Fali)\",\"Kharif Mash\",\"Custard Apple (Sharifa)\",\"Karbuja(Musk Melon)\"]",
+      "status": 200,
+      "responseBody": "returnedCommodities=[]",
+      "elapsedMs": 10659,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "18",
+      "name": "Partial failure / partial empty crops on /favourites",
+      "request": "GET http://localhost:4000/api/v1/market/favourites",
+      "status": 200,
+      "responseBody": "crops=[\"Black Gram (Urd Beans)(Whole)\",\"Bhindi(Ladies Finger)\",\"Banana\",\"Bengal Gram(Gram)(Whole)\",\"Myrobolan(Harad)\",\"Red gram split/Arhar dal/Tur dal\",\"Pegeon Pea (Arhar Fali)\",\"Kharif Mash\",\"Custard Apple (Sharifa)\",\"Karbuja(Musk Melon)\"] present= missing=[\"Black Gram (Urd Beans)(Whole)\",\"Bhindi(Ladies Finger)\",\"Banana\",\"Bengal Gram(Gram)(Whole)\",\"Myrobolan(Harad)\",\"Red gram split/Arhar dal/Tur dal\",\"Pegeon Pea (Arhar Fali)\",\"Kharif Mash\",\"Custard Apple (Sharifa)\",\"Karbuja(Musk Melon)\"] totalRows=0",
+      "elapsedMs": 526,
+      "pass": true,
+      "unexpected": "All crops empty — either no recent data or all failed but at least one fulfilled with []",
+      "rootCause": null,
+      "note": "Full all-fail→error path requires fault injection; not forced here"
+    },
+    {
+      "id": "19",
+      "name": "HTTP status codes (200/400/401 sample matrix)",
+      "request": "public prices 200; bad limit 400; favourites no auth 401",
+      "status": "200,400,401",
+      "responseBody": "[{\"name\":\"public prices 200\",\"status\":200,\"expect\":200,\"body\":\"{\\\"success\\\":true,\\\"data\\\":[{\\\"commodity\\\":\\\"Onion\\\",\\\"market\\\":\\\"Vita APMC\\\",\\\"district\\\":\\\"Sangli\\\",\\\"state\\\":\\\"Maharashtra\\\",\\\"variety\\\":\\\"Other\\\",\\\"grade\\\":\\\"Local\\\",\\\"arrivalDate\\\":\\\"27/07/2026\\\",\\\"modalPrice…\",\"statusOk\":true,\"envelopeOk\":true},{\"name\":\"bad limit 400\",\"status\":400,\"expect\":400,\"body\":\"{\\\"success\\\":false,\\\"message\\\":\\\"limit must be an integer between 1 and 100\\\"}\",\"statusOk\":true,\"envelopeOk\":true},{\"name\":\"favourites no auth 401\",\"status\":401,\"expect\":401,\"body\":\"{\\\"success\\\":false,\\\"message\\\":\\\"Authenticatio…",
+      "elapsedMs": null,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "20",
+      "name": "Error/success response consistency ({success,data|message})",
+      "request": "matrix above",
+      "status": null,
+      "responseBody": "[{\"name\":\"public prices 200\",\"status\":200,\"expect\":200,\"body\":\"{\\\"success\\\":true,\\\"data\\\":[{\\\"commodity\\\":\\\"Onion\\\",\\\"market\\\":\\\"Vita APMC\\\",\\\"district\\\":\\\"Sangli\\\",\\\"state\\\":\\\"Maharashtra\\\",\\\"variety\\\":\\\"Other\\\",\\\"grade\\\":\\\"Local\\\",\\\"arrivalDate\\\":\\\"27/07/2026\\\",\\\"modalPrice…\",\"statusOk\":true,\"envelopeOk\":true},{\"name\":\"bad limit 400\",\"status\":400,\"expect\":400,\"body\":\"{\\\"success\\\":false,\\\"message\\\":\\\"limit must be an integer between 1 and 100\\\"}\",\"statusOk\":true,\"envelopeOk\":true},{\"name\":\"favourites no auth 401\",\"status\":401,\"expect\":401,\"body\":\"{\\\"success\\\":false,\\\"message\\\":\\\"Authenticatio…",
+      "elapsedMs": null,
+      "pass": true,
+      "unexpected": null,
+      "rootCause": null
+    },
+    {
+      "id": "G1",
+      "name": "Live government API smoke (Sangli Onion)",
+      "request": "GET https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24 filters Sangli Onion",
+      "status": 0,
+      "responseBody": "records=n/a first=null err=fetch failed",
+      "elapsedMs": 10500,
+      "pass": false,
+      "unexpected": "fetch failed",
+      "rootCause": "Gov network/API"
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 25,
+    "failed": 3
+  }
+}
