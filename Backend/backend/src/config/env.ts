@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 
+// Load .env for local/dev. On Railway, vars are injected into process.env;
+// dotenv is a no-op when the file is absent.
 dotenv.config();
 
 interface EnvConfig {
@@ -23,9 +25,16 @@ interface EnvConfig {
   razorpayWebhookSecret: string;
 }
 
+const parsePort = (value: string | undefined): number => {
+  // Railway always sets PORT. Prefer it over any hardcoded default.
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return 4000;
+};
+
 // Centralized, typed access to environment variables with sane defaults.
 export const env: EnvConfig = {
-  port: Number(process.env.PORT) || 4000,
+  port: parsePort(process.env.PORT),
   // "0.0.0.0" binds to every network interface (not just loopback), which is
   // what allows LAN devices (Android emulator/physical devices, other
   // machines) to reach the server. This is also the standard bind address

@@ -1,0 +1,8 @@
+# Railway uses Nixpacks. Node major is selected from (highest → lowest practical effect):
+#   1. NIXPACKS_NODE_VERSION (this file / Railway service env) — authoritative for the build image
+#   2. package.json engines.node  — npm contract; Nixpacks extracts the major (22)
+#   3. .nvmrc                    — local nvm + Nixpacks fallback
+#
+# Only the major version is honored (22, not 22.x.y). Keep all three on major 22.
+[variables]
+NIXPACKS_NODE_VERSION = "22"

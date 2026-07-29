@@ -1,12 +1,21 @@
+/**
+ * MUST be the first import in the process entrypoint.
+ * Ensures `globalThis.crypto` exists before Mongoose / mongodb load.
+ */
+import "./config/ensure-webcrypto";
+
 import os from "os";
+import type { Server } from "http";
 import { createApp } from "./app";
-import { env } from "./config/env";
-import { connectDatabase } from "./config/database";
+import { env, isProduction } from "./config/env";
+import { connectDatabase, disconnectDatabase } from "./config/database";
 import { seedSuperAdmin } from "./modules/admin/admin.service";
 import { startFarmerPriceScheduler } from "./modules/farmer-price/farmer-price.scheduler";
 import { startPaymentReconciliationScheduler } from "./modules/payment/payment.scheduler";
 
 const app = createApp();
+
+const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 // Reads this machine's LAN-reachable IPv4 addresses at runtime so the
 // startup log can point developers to a real, working URL instead of
@@ -26,10 +35,30 @@ const getLanAddresses = (): string[] => {
   return addresses;
 };
 
-// Connect to MongoDB before accepting HTTP traffic.
-// process.exit(1) is called if the DB is unreachable so the orchestrator
-// (Docker, PM2, k8s) can restart the container rather than serving 500s.
+const warnInsecureProductionConfig = (): void => {
+  if (!isProduction()) return;
+
+  if (!env.jwtSecret || env.jwtSecret === "changeme") {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[env] JWT_SECRET is missing or still the default — set a strong secret in production"
+    );
+  }
+
+  if (!env.mongodbUri || env.mongodbUri.includes("localhost")) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[env] MONGODB_URI looks like a local URI — confirm Atlas URI is set on Railway"
+    );
+  }
+};
+
 const startServer = async (): Promise<void> => {
+  warnInsecureProductionConfig();
+
+  // Connect to MongoDB before accepting HTTP traffic.
+  // process.exit(1) is called if the DB is unreachable so the orchestrator
+  // (Railway, Docker, PM2, k8s) can restart rather than serving 500s.
   await connectDatabase();
 
   // Idempotent SUPER_ADMIN bootstrap for the Admin Portal.
@@ -61,42 +90,78 @@ const startServer = async (): Promise<void> => {
     );
   }
 
-  const server = app.listen(env.port, env.host, () => {
+  // Railway injects PORT; HOST defaults to 0.0.0.0 for container networking.
+  const server: Server = app.listen(env.port, env.host, () => {
     // eslint-disable-next-line no-console
-    console.log(`Server running on: http://localhost:${env.port}`);
+    console.log(
+      `[server] Listening on http://${env.host}:${env.port} (env=${env.nodeEnv}, node=${process.version})`
+    );
 
-    // Only relevant when bound to all interfaces; a deliberately restricted
-    // HOST (e.g. 127.0.0.1) means LAN access isn't expected.
-    if (env.host === "0.0.0.0") {
+    if (env.host === "0.0.0.0" && !isProduction()) {
       const lanAddresses = getLanAddresses();
       lanAddresses.forEach((address) => {
         // eslint-disable-next-line no-console
-        console.log(`LAN: http://${address}:${env.port}`);
+        console.log(`[server] LAN: http://${address}:${env.port}`);
       });
       // eslint-disable-next-line no-console
-      console.log(`Android emulator: http://10.0.2.2:${env.port}`);
+      console.log(`[server] Android emulator: http://10.0.2.2:${env.port}`);
     }
-
-    // eslint-disable-next-line no-console
-    console.log(`Environment: ${env.nodeEnv}`);
   });
 
-  // Fail fast and visibly on unhandled issues instead of running in a broken state.
+  let isShuttingDown = false;
+
+  const shutdown = (signal: string, exitCode = 0): void => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    // eslint-disable-next-line no-console
+    console.log(`[server] ${signal} received — graceful shutdown`);
+
+    const forceTimer = setTimeout(() => {
+      // eslint-disable-next-line no-console
+      console.error("[server] Shutdown timed out — forcing exit");
+      process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+    forceTimer.unref();
+
+    server.close((closeError) => {
+      void (async () => {
+        try {
+          if (closeError) {
+            // eslint-disable-next-line no-console
+            console.error("[server] Error closing HTTP server:", closeError);
+          }
+          await disconnectDatabase();
+          // eslint-disable-next-line no-console
+          console.log("[server] Shutdown complete");
+          process.exit(closeError ? 1 : exitCode);
+        } catch (error: unknown) {
+          // eslint-disable-next-line no-console
+          console.error("[server] Error during shutdown:", error);
+          process.exit(1);
+        }
+      })();
+    });
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM", 0));
+  process.on("SIGINT", () => shutdown("SIGINT", 0));
+
   process.on("unhandledRejection", (reason) => {
     // eslint-disable-next-line no-console
-    console.error("Unhandled Rejection:", reason);
-    server.close(() => process.exit(1));
+    console.error("[server] Unhandled Rejection:", reason);
+    shutdown("unhandledRejection", 1);
   });
 
   process.on("uncaughtException", (error) => {
     // eslint-disable-next-line no-console
-    console.error("Uncaught Exception:", error);
-    server.close(() => process.exit(1));
+    console.error("[server] Uncaught Exception:", error);
+    shutdown("uncaughtException", 1);
   });
 };
 
 startServer().catch((error: unknown) => {
   // eslint-disable-next-line no-console
-  console.error("Server failed to start:", error);
+  console.error("[server] Failed to start:", error);
   process.exit(1);
 });
