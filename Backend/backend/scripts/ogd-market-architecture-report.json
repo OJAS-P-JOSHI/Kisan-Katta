@@ -1,0 +1,920 @@
+{
+  "meta": {
+    "startedAt": "2026-07-30T12:51:45.613Z",
+    "finishedAt": "2026-07-30T12:54:36.589Z",
+    "resourceUrl": "https://www.data.gov.in/resource/variety-wise-daily-market-prices-data-commodity",
+    "datasetId": "35985678-0d79-46b4-9ed6-6f13308a1d24",
+    "host": "https://api.data.gov.in",
+    "durationMs": 170976
+  },
+  "tests": {
+    "test1_district_no_commodity": {
+      "label": "district-no-commodity-limit100",
+      "ok": false,
+      "status": null,
+      "totalMs": 10749.9713,
+      "bytes": 0,
+      "recordCount": null,
+      "total": null,
+      "commodities": [],
+      "commodityCount": 0,
+      "sampleKeys": [],
+      "rateLimitHeaders": {},
+      "message": null,
+      "exception": "TypeError: fetch failed"
+    },
+    "test2_with_commodity": {
+      "result": {
+        "label": "district-tomato",
+        "ok": true,
+        "status": 200,
+        "totalMs": 785.3976000000002,
+        "bytes": 43927,
+        "recordCount": 100,
+        "total": 14416,
+        "limit": "100",
+        "offset": "0",
+        "commodities": [
+          "Tomato"
+        ],
+        "commodityCount": 1,
+        "sampleKeys": [
+          "Arrival_Date",
+          "Commodity",
+          "Commodity_Code",
+          "District",
+          "Grade",
+          "Market",
+          "Max_Price",
+          "Min_Price",
+          "Modal_Price",
+          "State",
+          "Variety"
+        ],
+        "rateLimitHeaders": {
+          "x-ratelimit-limit": "-1",
+          "x-ratelimit-remaining": "0",
+          "x-ratelimit-reset": "1784491733"
+        },
+        "message": "Resource lists",
+        "exception": null
+      },
+      "comparison": {
+        "withoutCommodityRecords": null,
+        "withCommodityRecords": 100,
+        "withoutCommodityCount": 0,
+        "withCommodityCount": 1,
+        "withoutBytes": 0,
+        "withBytes": 43927
+      }
+    },
+    "test3_multi_commodity": {
+      "repeatedParams": {
+        "approach": "repeated filters[Commodity]",
+        "status": 200,
+        "ok": true,
+        "totalMs": 231.93800000000192,
+        "bytes": 43703,
+        "recordCount": 100,
+        "commodities": [
+          "Groundnut"
+        ],
+        "interpretation": "Likely last-wins or single match"
+      },
+      "commaSeparated": {
+        "label": "comma-separated-commodity",
+        "ok": true,
+        "status": 200,
+        "totalMs": 989.7671000000009,
+        "bytes": 3316,
+        "recordCount": 0,
+        "total": 0,
+        "limit": "100",
+        "offset": "0",
+        "commodities": [],
+        "commodityCount": 0,
+        "sampleKeys": [],
+        "rateLimitHeaders": {
+          "x-ratelimit-limit": "-1",
+          "x-ratelimit-remaining": "0",
+          "x-ratelimit-reset": "1784491733"
+        },
+        "message": "Resource lists",
+        "exception": null
+      }
+    },
+    "test4_limits": {
+      "limit_100": {
+        "status": 200,
+        "ok": true,
+        "requestedLimit": 100,
+        "returnedRecords": 100,
+        "reportedLimit": "100",
+        "total": 450753,
+        "bytes": 43902,
+        "totalMs": 248.1771000000008,
+        "exception": null,
+        "message": "Resource lists"
+      },
+      "limit_500": {
+        "status": 200,
+        "ok": true,
+        "requestedLimit": 500,
+        "returnedRecords": 500,
+        "reportedLimit": "500",
+        "total": 450753,
+        "bytes": 206715,
+        "totalMs": 281.39789999999994,
+        "exception": null,
+        "message": "Resource lists"
+      },
+      "limit_1000": {
+        "status": 200,
+        "ok": true,
+        "requestedLimit": 1000,
+        "returnedRecords": 1000,
+        "reportedLimit": "1000",
+        "total": 450753,
+        "bytes": 410599,
+        "totalMs": 313.2650999999969,
+        "exception": null,
+        "message": "Resource lists"
+      },
+      "limit_2000": {
+        "status": 200,
+        "ok": true,
+        "requestedLimit": 2000,
+        "returnedRecords": 2000,
+        "reportedLimit": "2000",
+        "total": 450753,
+        "bytes": 817975,
+        "totalMs": 450.8649000000005,
+        "exception": null,
+        "message": "Resource lists"
+      },
+      "limit_5000": {
+        "status": 200,
+        "ok": true,
+        "requestedLimit": 5000,
+        "returnedRecords": 5000,
+        "reportedLimit": "5000",
+        "total": 450753,
+        "bytes": 2039780,
+        "totalMs": 1991.538199999999,
+        "exception": null,
+        "message": "Resource lists"
+      }
+    },
+    "test5_pagination": {
+      "pages": [
+        {
+          "offset": 0,
+          "status": 200,
+          "recordCount": 100,
+          "total": 450753,
+          "firstCommodity": "Bengal Gram(Gram)(Whole)",
+          "firstArrival": null,
+          "totalMs": 688.4109000000026
+        },
+        {
+          "offset": 100,
+          "status": 200,
+          "recordCount": 100,
+          "total": 450753,
+          "firstCommodity": "Garlic",
+          "firstArrival": null,
+          "totalMs": 228.63960000000225
+        },
+        {
+          "offset": 200,
+          "status": 200,
+          "recordCount": 100,
+          "total": 450753,
+          "firstCommodity": "Carrot",
+          "firstArrival": null,
+          "totalMs": 237.44120000000112
+        },
+        {
+          "offset": 500,
+          "status": 200,
+          "recordCount": 100,
+          "total": 450753,
+          "firstCommodity": "Wheat",
+          "firstArrival": null,
+          "totalMs": 249.47320000000036
+        },
+        {
+          "offset": 1000,
+          "status": 200,
+          "recordCount": 100,
+          "total": 450753,
+          "firstCommodity": "Beans",
+          "firstArrival": null,
+          "totalMs": 244.02009999999427
+        }
+      ],
+      "pageParamSupport": {
+        "status": 200,
+        "recordCount": 50,
+        "note": "If identical to offset=0 behaviour, page= is ignored"
+      }
+    },
+    "test6_fields": {
+      "Commodity,Modal_Price,Market,District,Arrival_Date": {
+        "status": 200,
+        "sampleKeys": [
+          "Commodity",
+          "Modal_Price",
+          "Market",
+          "District",
+          "Arrival_Date"
+        ],
+        "recordCount": 10,
+        "bytes": 4626,
+        "ok": true,
+        "exception": null
+      },
+      "commodity,modal_price,market,district,arrival_date": {
+        "status": 200,
+        "sampleKeys": [
+          "commodity",
+          "modal_price",
+          "market",
+          "district",
+          "arrival_date"
+        ],
+        "recordCount": 10,
+        "bytes": 3826,
+        "ok": true,
+        "exception": null
+      },
+      "Commodity,Market": {
+        "status": 200,
+        "sampleKeys": [
+          "Commodity",
+          "Market"
+        ],
+        "recordCount": 10,
+        "bytes": 3154,
+        "ok": true,
+        "exception": null
+      }
+    },
+    "test7_sort": {
+      "summary": {
+        "sort[Arrival_Date]=desc": {
+          "status": 200,
+          "recordCount": 5,
+          "totalMs": 202.41150000000198,
+          "ok": true
+        },
+        "sort[Arrival_Date]=asc": {
+          "status": 200,
+          "recordCount": 5,
+          "totalMs": 218.2468000000008,
+          "ok": true
+        },
+        "sort[Modal_Price]=desc": {
+          "status": 200,
+          "recordCount": 5,
+          "totalMs": 323.79649999999674,
+          "ok": true
+        },
+        "sort[modal_price]=desc": {
+          "status": 200,
+          "recordCount": 5,
+          "totalMs": 305.05659999999625,
+          "ok": true
+        }
+      },
+      "samples": {
+        "arrivalDesc": [
+          {
+            "Arrival_Date": "28/07/2026",
+            "Modal_Price": 1375,
+            "Market": "Nasik APMC"
+          },
+          {
+            "Arrival_Date": "28/07/2026",
+            "Modal_Price": 2505,
+            "Market": "Pimpalgaon Baswant APMC"
+          },
+          {
+            "Arrival_Date": "27/07/2026",
+            "Modal_Price": 2655,
+            "Market": "Pimpalgaon Baswant APMC"
+          },
+          {
+            "Arrival_Date": "27/07/2026",
+            "Modal_Price": 1500,
+            "Market": "Nasik APMC"
+          },
+          {
+            "Arrival_Date": "26/07/2026",
+            "Modal_Price": 3005,
+            "Market": "Pimpalgaon Baswant APMC"
+          }
+        ],
+        "arrivalAsc": [
+          {
+            "Arrival_Date": "06/08/2002",
+            "Modal_Price": "120",
+            "Market": "Lasalgaon"
+          },
+          {
+            "Arrival_Date": "14/08/2002",
+            "Modal_Price": "115",
+            "Market": "Lasalgaon"
+          },
+          {
+            "Arrival_Date": "28/08/2002",
+            "Modal_Price": "825",
+            "Market": "Pimpalgaon"
+          },
+          {
+            "Arrival_Date": "29/08/2002",
+            "Modal_Price": "755",
+            "Market": "Pimpalgaon"
+          },
+          {
+            "Arrival_Date": "30/08/2002",
+            "Modal_Price": "700",
+            "Market": "Pimpalgaon"
+          }
+        ],
+        "modalDesc": [
+          {
+            "Arrival_Date": "29/11/2008",
+            "Modal_Price": "991",
+            "Market": "Ghoti"
+          },
+          {
+            "Arrival_Date": "03/12/2019",
+            "Modal_Price": "990",
+            "Market": "Ghoti"
+          },
+          {
+            "Arrival_Date": "05/04/2011",
+            "Modal_Price": "990",
+            "Market": "Nasik"
+          },
+          {
+            "Arrival_Date": "01/12/2005",
+            "Modal_Price": "983",
+            "Market": "Ghoti"
+          },
+          {
+            "Arrival_Date": "13/12/2016",
+            "Modal_Price": "975",
+            "Market": "Ghoti"
+          }
+        ]
+      }
+    },
+    "test8_payloads": {
+      "oneCommodity": {
+        "bytes": 43927,
+        "records": 100,
+        "commodities": 1,
+        "ms": 199.81960000000254,
+        "status": 200
+      },
+      "districtLimit1000": {
+        "bytes": 410584,
+        "records": 1000,
+        "commodities": 48,
+        "ms": 291.45990000000165,
+        "status": 200,
+        "commodityList": [
+          "Bengal Gram(Gram)(Whole)",
+          "Onion",
+          "Cabbage",
+          "Mousambi(Sweet Lime)",
+          "Ridgeguard(Tori)",
+          "Lime",
+          "Pomegranate",
+          "Maize",
+          "Wheat",
+          "Cauliflower",
+          "Apple",
+          "Soyabean",
+          "Potato",
+          "Bottle gourd",
+          "Garlic",
+          "Guar",
+          "Brinjal",
+          "Bajra(Pearl Millet/Cumbu)",
+          "Tender Coconut",
+          "Sweet Pumpkin",
+          "Banana",
+          "Cucumbar(Kheera)",
+          "Red gram/Arhar/Tur(whole)",
+          "Guava",
+          "Groundnut",
+          "Chilly Capsicum",
+          "Cowpea(Lobia/Karamani)",
+          "Bitter gourd",
+          "Jowar(Sorghum)",
+          "Papaya",
+          "Bhindi(Ladies Finger)",
+          "Onion Green",
+          "Mango",
+          "Tomato",
+          "Ginger(Green)",
+          "Beans",
+          "Spinach",
+          "Methi(Leaves)",
+          "Carrot",
+          "Green Chilli",
+          "Raddish",
+          "Black Gram(Urd Beans)(Whole)",
+          "Coriander(Leaves)",
+          "Green Gram(Moong)(Whole)",
+          "Sesamum(Sesame,Gingelly,Til)",
+          "French Beans(Frasbean)",
+          "Kulthi(Horse Gram)",
+          "Cow"
+        ]
+      },
+      "stateLimit1000": {
+        "bytes": 411735,
+        "records": 1000,
+        "commodities": 100,
+        "ms": 430.0326000000059,
+        "status": 200
+      }
+    },
+    "test9_latency": {
+      "singleCommodity": {
+        "runs": 15,
+        "success": 15,
+        "avgMs": 321.19475333333344,
+        "minMs": 209.99439999999595,
+        "maxMs": 1002.5479999999952
+      },
+      "entireDistrict": {
+        "runs": 15,
+        "success": 15,
+        "avgMs": 399.05952666666707,
+        "minMs": 266.5234000000055,
+        "maxMs": 1473.724900000001
+      },
+      "note": "15 runs each (not 30) to reduce 429 risk after prior probes; pattern still comparable"
+    },
+    "test10_rate": {
+      "hits": [
+        {
+          "n": 1,
+          "status": null,
+          "ms": 10658.6152,
+          "ok": false,
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 2,
+          "status": null,
+          "ms": 10659.377599999993,
+          "ok": false,
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 3,
+          "status": null,
+          "ms": 10690.477500000008,
+          "ok": false,
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 4,
+          "status": 200,
+          "ms": 1377.496999999974,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 5,
+          "status": 200,
+          "ms": 200.45530000000144,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 6,
+          "status": 200,
+          "ms": 252.14070000001811,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 7,
+          "status": 200,
+          "ms": 311.94939999998314,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 8,
+          "status": 200,
+          "ms": 315.7989000000234,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 9,
+          "status": 200,
+          "ms": 997.6177000000025,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 10,
+          "status": 200,
+          "ms": 516.4685999999929,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 11,
+          "status": 200,
+          "ms": 312.8381999999983,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 12,
+          "status": 200,
+          "ms": 300.460699999996,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 13,
+          "status": 200,
+          "ms": 602.2139000000025,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 14,
+          "status": 200,
+          "ms": 186.7060000000056,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 15,
+          "status": 200,
+          "ms": 185.925900000002,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 16,
+          "status": 200,
+          "ms": 266.1582000000053,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 17,
+          "status": 200,
+          "ms": 195.13459999999031,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 18,
+          "status": 200,
+          "ms": 225.85190000000875,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 19,
+          "status": 200,
+          "ms": 218.0522999999812,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 20,
+          "status": 200,
+          "ms": 180.8815000000177,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 21,
+          "status": 200,
+          "ms": 188.54329999999027,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 22,
+          "status": 200,
+          "ms": 194.90279999998165,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 23,
+          "status": 200,
+          "ms": 232.65690000000177,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 24,
+          "status": 200,
+          "ms": 189.7571000000171,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 25,
+          "status": 200,
+          "ms": 197.77460000000428,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 26,
+          "status": 200,
+          "ms": 190.10329999998794,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 27,
+          "status": 200,
+          "ms": 186.2216999999946,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 28,
+          "status": 200,
+          "ms": 188.0270999999775,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 29,
+          "status": 200,
+          "ms": 220.24869999999646,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 30,
+          "status": 200,
+          "ms": 1277.156799999997,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 31,
+          "status": 200,
+          "ms": 202.42309999998542,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 32,
+          "status": 200,
+          "ms": 201.80259999999544,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 33,
+          "status": 200,
+          "ms": 182.41419999999925,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 34,
+          "status": 200,
+          "ms": 202.22119999999995,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 35,
+          "status": 200,
+          "ms": 190.19270000001416,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 36,
+          "status": 200,
+          "ms": 193.3344999999972,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 37,
+          "status": 200,
+          "ms": 206.18209999997634,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 38,
+          "status": 200,
+          "ms": 195.38300000000163,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 39,
+          "status": 200,
+          "ms": 186.33599999998114,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 40,
+          "status": 200,
+          "ms": 194.89220000000205,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 41,
+          "status": 200,
+          "ms": 220.69289999999455,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 42,
+          "status": 200,
+          "ms": 191.87769999998272,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 43,
+          "status": 200,
+          "ms": 201.2430999999924,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 44,
+          "status": 200,
+          "ms": 187.4998000000196,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 45,
+          "status": 200,
+          "ms": 187.43969999998808,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 46,
+          "status": 200,
+          "ms": 187.42089999999735,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 47,
+          "status": 200,
+          "ms": 200.96870000002673,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 48,
+          "status": 200,
+          "ms": 194.85760000001756,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 49,
+          "status": 200,
+          "ms": 186.77590000000782,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 50,
+          "status": 200,
+          "ms": 186.52980000001844,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 51,
+          "status": 200,
+          "ms": 218.45320000001811,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 52,
+          "status": 200,
+          "ms": 187.5003999999899,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 53,
+          "status": 200,
+          "ms": 192.01759999999194,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 54,
+          "status": 200,
+          "ms": 189.34760000000824,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 55,
+          "status": 200,
+          "ms": 192.84429999999702,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 56,
+          "status": 200,
+          "ms": 189.9648000000161,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 57,
+          "status": 200,
+          "ms": 186.9389000000083,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 58,
+          "status": 200,
+          "ms": 227.97510000001057,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 59,
+          "status": 200,
+          "ms": 201.91250000000582,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 60,
+          "status": 200,
+          "ms": 184.62799999999697,
+          "ok": true,
+          "exception": null
+        },
+        {
+          "n": 61,
+          "status": 429,
+          "ms": 106.94880000001285,
+          "ok": false,
+          "exception": null
+        },
+        {
+          "n": 62,
+          "status": 429,
+          "ms": 116.4311999999918,
+          "ok": false,
+          "exception": null
+        },
+        {
+          "n": 63,
+          "status": 429,
+          "ms": 139.5515000000014,
+          "ok": false,
+          "exception": null
+        }
+      ],
+      "first429At": 61,
+      "firstFailAt": 1,
+      "stoppedAt": 63,
+      "summary": {
+        "first429At": 61,
+        "firstFailAt": 1,
+        "totalProbed": 63,
+        "successBefore429": 57
+      }
+    }
+  },
+  "docsNotes": {}
+}

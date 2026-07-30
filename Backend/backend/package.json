@@ -10,7 +10,6 @@
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
     "backfill:application-numbers": "ts-node scripts/backfill-application-numbers.ts",
     "migrate:phase-5a3": "ts-node scripts/migrate-phase-5a3-business-flow.ts",
     "payment:reset": "ts-node scripts/payment-reset.ts",
@@ -38,13 +37,9 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^22.20.1",
-    "@types/supertest": "^7.2.1",
-    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",
-    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10",
     "xlsx": "^0.18.5"
   },
   "engines": {

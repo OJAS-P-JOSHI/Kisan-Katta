@@ -1,0 +1,1228 @@
+{
+  "meta": {
+    "startedAt": "2026-07-30T12:28:45.903Z",
+    "finishedAt": "2026-07-30T12:36:38.998Z",
+    "govHost": "api.data.gov.in",
+    "datasetId": "35985678-0d79-46b4-9ed6-6f13308a1d24",
+    "note": "API key redacted; requests mirror backend market.service.ts filters",
+    "durationMs": 473095
+  },
+  "tests": {
+    "test1_single": {
+      "params": {
+        "commodity": "Tomato",
+        "district": "Nashik",
+        "runs": 30
+      },
+      "summary": {
+        "total": 30,
+        "success": 25,
+        "failure": 5,
+        "timeout": 0,
+        "successPct": 83.33333333333333,
+        "failurePct": 16.666666666666668,
+        "timeoutPct": 0,
+        "avgLatencyMs": 370.2716519999999,
+        "minLatencyMs": 170.81490000000485,
+        "maxLatencyMs": 1467.7557000000015,
+        "p95LatencyMs": 1264.8505000000005,
+        "avgRecords": 100
+      },
+      "samples": [
+        {
+          "n": 1,
+          "success": false,
+          "httpStatus": null,
+          "connectionMs": null,
+          "totalMs": 10745.218299999999,
+          "recordCount": 0,
+          "timeout": false,
+          "category": "Fetch_failed",
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 2,
+          "success": false,
+          "httpStatus": null,
+          "connectionMs": null,
+          "totalMs": 10700.476,
+          "recordCount": 0,
+          "timeout": false,
+          "category": "Fetch_failed",
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 3,
+          "success": false,
+          "httpStatus": null,
+          "connectionMs": null,
+          "totalMs": 10694.999600000003,
+          "recordCount": 0,
+          "timeout": false,
+          "category": "Fetch_failed",
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 4,
+          "success": false,
+          "httpStatus": null,
+          "connectionMs": null,
+          "totalMs": 10680.5282,
+          "recordCount": 0,
+          "timeout": false,
+          "category": "Fetch_failed",
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 5,
+          "success": false,
+          "httpStatus": null,
+          "connectionMs": null,
+          "totalMs": 10672.185300000005,
+          "recordCount": 0,
+          "timeout": false,
+          "category": "Fetch_failed",
+          "exception": "TypeError: fetch failed"
+        },
+        {
+          "n": 6,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 668.0760999999984,
+          "totalMs": 675.1443999999974,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 7,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 194.41359999999986,
+          "totalMs": 196.32049999999435,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 8,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 193.0460000000021,
+          "totalMs": 194.48889999999665,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 9,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 201.55049999999756,
+          "totalMs": 208.5092999999979,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 10,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 192.87169999999605,
+          "totalMs": 203.49529999999504,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 11,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 176.1900999999998,
+          "totalMs": 177.293700000002,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 12,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 181.58610000000044,
+          "totalMs": 186.48079999999754,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 13,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 213.3850999999995,
+          "totalMs": 214.50420000000304,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 14,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 184.43130000000383,
+          "totalMs": 186.44090000000142,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 15,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 190.85540000000037,
+          "totalMs": 192.31149999999616,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 16,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 1466.7146999999968,
+          "totalMs": 1467.7557000000015,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 17,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 212.00009999999747,
+          "totalMs": 783.6791999999987,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 18,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 561.7387000000017,
+          "totalMs": 563.1051999999981,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 19,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 342.47789999999804,
+          "totalMs": 343.4038999999975,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 20,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 238.86789999999746,
+          "totalMs": 246.37170000000333,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 21,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 217.61760000000504,
+          "totalMs": 219.14700000000448,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 22,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 321.9230000000025,
+          "totalMs": 322.88760000000184,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 23,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 177.09889999999723,
+          "totalMs": 178.3269999999975,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 24,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 188.37860000000364,
+          "totalMs": 189.33140000000276,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 25,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 294.0851000000039,
+          "totalMs": 295.1819000000032,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 26,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 399.7803000000058,
+          "totalMs": 400.78369999999995,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 27,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 190.43739999999525,
+          "totalMs": 191.58959999999934,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 28,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 1263.446100000001,
+          "totalMs": 1264.8505000000005,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 29,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 183.68480000000272,
+          "totalMs": 184.57250000000204,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        },
+        {
+          "n": 30,
+          "success": true,
+          "httpStatus": 200,
+          "connectionMs": 169.60580000000482,
+          "totalMs": 170.81490000000485,
+          "recordCount": 100,
+          "timeout": false,
+          "category": null,
+          "exception": null
+        }
+      ]
+    },
+    "test2_commodities": {
+      "Tomato": {
+        "summary": {
+          "total": 20,
+          "success": 20,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 282.5888400000018,
+          "minLatencyMs": 165.31550000000425,
+          "maxLatencyMs": 1584.4379000000044,
+          "p95LatencyMs": 492.7756999999983,
+          "avgRecords": 100
+        },
+        "failureCategories": {}
+      },
+      "Potato": {
+        "summary": {
+          "total": 20,
+          "success": 15,
+          "failure": 5,
+          "timeout": 0,
+          "successPct": 75,
+          "failurePct": 25,
+          "timeoutPct": 0,
+          "avgLatencyMs": 384.2428133333344,
+          "minLatencyMs": 167.60629999999946,
+          "maxLatencyMs": 1479.9977999999974,
+          "p95LatencyMs": 1479.9977999999974,
+          "avgRecords": 100
+        },
+        "failureCategories": {
+          "HTTP_429": 4,
+          "Fetch_failed": 1
+        }
+      },
+      "Onion": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 20
+        }
+      },
+      "Soyabean": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 18,
+          "Fetch_failed": 2
+        }
+      },
+      "Groundnut": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 20
+        }
+      },
+      "Jowar": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 20
+        }
+      },
+      "Bajri": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 20
+        }
+      },
+      "Grapes": {
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        },
+        "failureCategories": {
+          "HTTP_429": 20
+        }
+      }
+    },
+    "test3_concurrency": {
+      "c1": {
+        "concurrency": 1,
+        "requests": 2,
+        "summary": {
+          "total": 2,
+          "success": 0,
+          "failure": 2,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      },
+      "c2": {
+        "concurrency": 2,
+        "requests": 4,
+        "summary": {
+          "total": 4,
+          "success": 0,
+          "failure": 4,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      },
+      "c4": {
+        "concurrency": 4,
+        "requests": 8,
+        "summary": {
+          "total": 8,
+          "success": 0,
+          "failure": 8,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      },
+      "c6": {
+        "concurrency": 6,
+        "requests": 12,
+        "summary": {
+          "total": 12,
+          "success": 0,
+          "failure": 12,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      },
+      "c8": {
+        "concurrency": 8,
+        "requests": 16,
+        "summary": {
+          "total": 16,
+          "success": 0,
+          "failure": 16,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      },
+      "c10": {
+        "concurrency": 10,
+        "requests": 20,
+        "summary": {
+          "total": 20,
+          "success": 0,
+          "failure": 20,
+          "timeout": 0,
+          "successPct": 0,
+          "failurePct": 100,
+          "timeoutPct": 0,
+          "avgLatencyMs": null,
+          "minLatencyMs": null,
+          "maxLatencyMs": null,
+          "p95LatencyMs": null,
+          "avgRecords": null
+        }
+      }
+    },
+    "test4_connection": {
+      "samples": [
+        {
+          "sample": 1,
+          "dnsMs": 223.49139999999898,
+          "tcpMs": 80.30290000000969,
+          "tlsMs": null,
+          "totalConnectMs": 15306.59540000002,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 2,
+          "dnsMs": 348.1219999999739,
+          "tcpMs": 74.53289999999106,
+          "tlsMs": null,
+          "totalConnectMs": 15426.320199999987,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 3,
+          "dnsMs": 217.8904999999795,
+          "tcpMs": 1087.4994999999763,
+          "tlsMs": 190.9554000000353,
+          "totalConnectMs": 1496.3561999999802,
+          "error": null
+        },
+        {
+          "sample": 4,
+          "dnsMs": 0.5145999999949709,
+          "tcpMs": 83.16320000000997,
+          "tlsMs": 186.82989999995334,
+          "totalConnectMs": 270.5133999999962,
+          "error": null
+        },
+        {
+          "sample": 5,
+          "dnsMs": 0.5457999999634922,
+          "tcpMs": 91.14029999997001,
+          "tlsMs": null,
+          "totalConnectMs": 15102.771799999988,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 6,
+          "dnsMs": 217.7663000000175,
+          "tcpMs": 89.03539999999339,
+          "tlsMs": null,
+          "totalConnectMs": 15308.532199999958,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 7,
+          "dnsMs": 199.15029999997932,
+          "tcpMs": 74.02010000002338,
+          "tlsMs": null,
+          "totalConnectMs": 15284.601799999946,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 8,
+          "dnsMs": 211.3300000000163,
+          "tcpMs": 92.09909999999218,
+          "tlsMs": null,
+          "totalConnectMs": 15309.142600000021,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 9,
+          "dnsMs": 180.69640000001527,
+          "tcpMs": 87.77660000004107,
+          "tlsMs": null,
+          "totalConnectMs": 15281.472899999993,
+          "error": "TCP timeout"
+        },
+        {
+          "sample": 10,
+          "dnsMs": 184.04119999997783,
+          "tcpMs": 74.03450000000885,
+          "tlsMs": null,
+          "totalConnectMs": 15263.010300000024,
+          "error": "TCP timeout"
+        }
+      ],
+      "averages": {
+        "dnsMs": 109.20254999998724,
+        "tcpMs": 585.3313499999931,
+        "tlsMs": 188.89264999999432,
+        "totalConnectMs": 883.4347999999882
+      },
+      "successPct": 20,
+      "fullHttpSample": {
+        "success": true,
+        "httpStatus": 200,
+        "connectionMs": 2651.0293999999994,
+        "totalMs": 2656.42710000003,
+        "recordCount": 100,
+        "timeout": false,
+        "category": null,
+        "exception": null
+      }
+    },
+    "test5_timeouts": {
+      "t5000": {
+        "timeoutMs": 5000,
+        "summary": {
+          "total": 8,
+          "success": 8,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 213.5934500000003,
+          "minLatencyMs": 192.6233999999822,
+          "maxLatencyMs": 231.33760000002803,
+          "p95LatencyMs": 231.33760000002803,
+          "avgRecords": 100
+        },
+        "timeoutFailures": 0,
+        "otherFailures": 0
+      },
+      "t10000": {
+        "timeoutMs": 10000,
+        "summary": {
+          "total": 8,
+          "success": 8,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 257.57521250001446,
+          "minLatencyMs": 185.30300000001444,
+          "maxLatencyMs": 517.7032999999938,
+          "p95LatencyMs": 517.7032999999938,
+          "avgRecords": 100
+        },
+        "timeoutFailures": 0,
+        "otherFailures": 0
+      },
+      "t15000": {
+        "timeoutMs": 15000,
+        "summary": {
+          "total": 8,
+          "success": 8,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 227.27006249999977,
+          "minLatencyMs": 189.5913999999757,
+          "maxLatencyMs": 284.4504999999772,
+          "p95LatencyMs": 284.4504999999772,
+          "avgRecords": 100
+        },
+        "timeoutFailures": 0,
+        "otherFailures": 0
+      },
+      "t20000": {
+        "timeoutMs": 20000,
+        "summary": {
+          "total": 8,
+          "success": 8,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 235.30298750000657,
+          "minLatencyMs": 213.62790000002133,
+          "maxLatencyMs": 300.5727000000188,
+          "p95LatencyMs": 300.5727000000188,
+          "avgRecords": 100
+        },
+        "timeoutFailures": 0,
+        "otherFailures": 0
+      },
+      "t30000": {
+        "timeoutMs": 30000,
+        "summary": {
+          "total": 8,
+          "success": 8,
+          "failure": 0,
+          "timeout": 0,
+          "successPct": 100,
+          "failurePct": 0,
+          "timeoutPct": 0,
+          "avgLatencyMs": 208.10577499998908,
+          "minLatencyMs": 184.42879999999423,
+          "maxLatencyMs": 218.46270000003278,
+          "p95LatencyMs": 218.46270000003278,
+          "avgRecords": 100
+        },
+        "timeoutFailures": 0,
+        "otherFailures": 0
+      }
+    },
+    "test6_retry": {
+      "totalSequences": 19,
+      "sequencesWithInitialFailure": 5,
+      "recoveredAmongFailures": 5,
+      "recoveryRatePct": 100,
+      "avgAttemptsWhenFailedInitially": 2.4,
+      "outcomes": [
+        {
+          "recovered": true,
+          "attempts": 4,
+          "neededRetry": true,
+          "delayMs": 5000,
+          "finalCategory": null
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 1,
+          "neededRetry": false
+        },
+        {
+          "recovered": true,
+          "attempts": 2,
+          "neededRetry": true,
+          "delayMs": 0,
+          "fromBurst": true
+        },
+        {
+          "recovered": true,
+          "attempts": 2,
+          "neededRetry": true,
+          "delayMs": 0,
+          "fromBurst": true
+        },
+        {
+          "recovered": true,
+          "attempts": 2,
+          "neededRetry": true,
+          "delayMs": 0,
+          "fromBurst": true
+        },
+        {
+          "recovered": true,
+          "attempts": 2,
+          "neededRetry": true,
+          "delayMs": 0,
+          "fromBurst": true
+        }
+      ]
+    },
+    "test7_stress": {
+      "summary": {
+        "total": 100,
+        "success": 41,
+        "failure": 59,
+        "timeout": 0,
+        "successPct": 41,
+        "failurePct": 59,
+        "timeoutPct": 0,
+        "avgLatencyMs": 286.8188634146326,
+        "minLatencyMs": 159.72299999999814,
+        "maxLatencyMs": 1216.1533000000054,
+        "p95LatencyMs": 688.3036999999895,
+        "avgRecords": 66.09756097560975
+      },
+      "connectionFailures": 2,
+      "byCommodity": {
+        "Tomato": {
+          "total": 13,
+          "success": 9,
+          "failure": 4,
+          "timeout": 0,
+          "successPct": 69.23076923076923,
+          "failurePct": 30.76923076923077,
+          "timeoutPct": 0,
+          "avgLatencyMs": 200.47475555555945,
+          "minLatencyMs": 185.15769999998156,
+          "maxLatencyMs": 224.52960000000894,
+          "p95LatencyMs": 224.52960000000894,
+          "avgRecords": 100
+        },
+        "Potato": {
+          "total": 10,
+          "success": 3,
+          "failure": 7,
+          "timeout": 0,
+          "successPct": 30,
+          "failurePct": 70,
+          "timeoutPct": 0,
+          "avgLatencyMs": 206.09960000001593,
+          "minLatencyMs": 202.0692000000272,
+          "maxLatencyMs": 211.80000000004657,
+          "p95LatencyMs": 211.80000000004657,
+          "avgRecords": 100
+        },
+        "Onion": {
+          "total": 18,
+          "success": 5,
+          "failure": 13,
+          "timeout": 0,
+          "successPct": 27.77777777777778,
+          "failurePct": 72.22222222222223,
+          "timeoutPct": 0,
+          "avgLatencyMs": 244.1701199999894,
+          "minLatencyMs": 172.49869999999646,
+          "maxLatencyMs": 432.9476999999606,
+          "p95LatencyMs": 432.9476999999606,
+          "avgRecords": 100
+        },
+        "Soyabean": {
+          "total": 12,
+          "success": 6,
+          "failure": 6,
+          "timeout": 0,
+          "successPct": 50,
+          "failurePct": 50,
+          "timeoutPct": 0,
+          "avgLatencyMs": 282.7963666666571,
+          "minLatencyMs": 199.73589999997057,
+          "maxLatencyMs": 654.1506999999983,
+          "p95LatencyMs": 654.1506999999983,
+          "avgRecords": 100
+        },
+        "Groundnut": {
+          "total": 11,
+          "success": 3,
+          "failure": 8,
+          "timeout": 0,
+          "successPct": 27.272727272727273,
+          "failurePct": 72.72727272727273,
+          "timeoutPct": 0,
+          "avgLatencyMs": 530.2008666666807,
+          "minLatencyMs": 188.71649999998044,
+          "maxLatencyMs": 1196.3168000000296,
+          "p95LatencyMs": 1196.3168000000296,
+          "avgRecords": 36.666666666666664
+        },
+        "Jowar": {
+          "total": 14,
+          "success": 8,
+          "failure": 6,
+          "timeout": 0,
+          "successPct": 57.142857142857146,
+          "failurePct": 42.857142857142854,
+          "timeoutPct": 0,
+          "avgLatencyMs": 401.86571249998815,
+          "minLatencyMs": 159.72299999999814,
+          "maxLatencyMs": 1216.1533000000054,
+          "p95LatencyMs": 1216.1533000000054,
+          "avgRecords": 0
+        },
+        "Bajri": {
+          "total": 8,
+          "success": 3,
+          "failure": 5,
+          "timeout": 0,
+          "successPct": 37.5,
+          "failurePct": 62.5,
+          "timeoutPct": 0,
+          "avgLatencyMs": 211.86286666667243,
+          "minLatencyMs": 192.56400000001304,
+          "maxLatencyMs": 248.24739999999292,
+          "p95LatencyMs": 248.24739999999292,
+          "avgRecords": 0
+        },
+        "Grapes": {
+          "total": 14,
+          "success": 4,
+          "failure": 10,
+          "timeout": 0,
+          "successPct": 28.571428571428573,
+          "failurePct": 71.42857142857143,
+          "timeoutPct": 0,
+          "avgLatencyMs": 244.56402499999967,
+          "minLatencyMs": 161.5124000000069,
+          "maxLatencyMs": 362.17619999998715,
+          "p95LatencyMs": 362.17619999998715,
+          "avgRecords": 75
+        }
+      },
+      "byDistrict": {
+        "Nashik": {
+          "total": 9,
+          "success": 3,
+          "failure": 6,
+          "timeout": 0,
+          "successPct": 33.333333333333336,
+          "failurePct": 66.66666666666667,
+          "timeoutPct": 0,
+          "avgLatencyMs": 194.25326666668602,
+          "minLatencyMs": 177.60029999999097,
+          "maxLatencyMs": 208.51420000003418,
+          "p95LatencyMs": 208.51420000003418,
+          "avgRecords": 66.66666666666667
+        },
+        "Pune": {
+          "total": 5,
+          "success": 1,
+          "failure": 4,
+          "timeout": 0,
+          "successPct": 20,
+          "failurePct": 80,
+          "timeoutPct": 0,
+          "avgLatencyMs": 654.1506999999983,
+          "minLatencyMs": 654.1506999999983,
+          "maxLatencyMs": 654.1506999999983,
+          "p95LatencyMs": 654.1506999999983,
+          "avgRecords": 100
+        },
+        "Nagpur": {
+          "total": 9,
+          "success": 4,
+          "failure": 5,
+          "timeout": 0,
+          "successPct": 44.44444444444444,
+          "failurePct": 55.55555555555556,
+          "timeoutPct": 0,
+          "avgLatencyMs": 337.3451499999792,
+          "minLatencyMs": 206.92889999999898,
+          "maxLatencyMs": 461.25659999996424,
+          "p95LatencyMs": 461.25659999996424,
+          "avgRecords": 50
+        },
+        "Sangli": {
+          "total": 15,
+          "success": 5,
+          "failure": 10,
+          "timeout": 0,
+          "successPct": 33.333333333333336,
+          "failurePct": 66.66666666666667,
+          "timeoutPct": 0,
+          "avgLatencyMs": 389.51927999999606,
+          "minLatencyMs": 164.71299999998882,
+          "maxLatencyMs": 1216.1533000000054,
+          "p95LatencyMs": 1216.1533000000054,
+          "avgRecords": 27.2
+        },
+        "Solapur": {
+          "total": 19,
+          "success": 9,
+          "failure": 10,
+          "timeout": 0,
+          "successPct": 47.36842105263158,
+          "failurePct": 52.63157894736842,
+          "timeoutPct": 0,
+          "avgLatencyMs": 248.30837777778893,
+          "minLatencyMs": 161.5124000000069,
+          "maxLatencyMs": 688.3036999999895,
+          "p95LatencyMs": 688.3036999999895,
+          "avgRecords": 59
+        },
+        "Ahmednagar": {
+          "total": 14,
+          "success": 5,
+          "failure": 9,
+          "timeout": 0,
+          "successPct": 35.714285714285715,
+          "failurePct": 64.28571428571429,
+          "timeoutPct": 0,
+          "avgLatencyMs": 198.3082999999984,
+          "minLatencyMs": 159.72299999999814,
+          "maxLatencyMs": 240.38229999999749,
+          "p95LatencyMs": 240.38229999999749,
+          "avgRecords": 60
+        },
+        "Kolhapur": {
+          "total": 10,
+          "success": 2,
+          "failure": 8,
+          "timeout": 0,
+          "successPct": 20,
+          "failurePct": 80,
+          "timeoutPct": 0,
+          "avgLatencyMs": 203.13784999999916,
+          "minLatencyMs": 197.68719999998575,
+          "maxLatencyMs": 208.58850000001257,
+          "p95LatencyMs": 208.58850000001257,
+          "avgRecords": 100
+        },
+        "Satara": {
+          "total": 19,
+          "success": 12,
+          "failure": 7,
+          "timeout": 0,
+          "successPct": 63.1578947368421,
+          "failurePct": 36.8421052631579,
+          "timeoutPct": 0,
+          "avgLatencyMs": 299.42444166665763,
+          "minLatencyMs": 191.3967999999877,
+          "maxLatencyMs": 1196.3168000000296,
+          "p95LatencyMs": 1196.3168000000296,
+          "avgRecords": 86.91666666666667
+        }
+      }
+    },
+    "test8_cache": {
+      "cold": {
+        "cache": "miss",
+        "success": false,
+        "totalMs": 118.74809999996796
+      },
+      "warm1": {
+        "cache": "hit",
+        "success": false,
+        "totalMs": 0.1
+      },
+      "warm2": {
+        "cache": "hit",
+        "success": false,
+        "totalMs": 0.1
+      },
+      "differentKeyMiss": {
+        "cache": "miss",
+        "success": false,
+        "totalMs": 89.49690000002738
+      },
+      "improvementFactor": null
+    }
+  },
+  "errorTaxonomy": {
+    "Fetch_failed": 55,
+    "HTTP_429": 205
+  },
+  "backendAnalysis": null,
+  "recommendations": null,
+  "overall": {
+    "successPct": 34.827586206896555,
+    "totalRequestsCounted": 290,
+    "successes": 101,
+    "failures": 189,
+    "avgLatencyMsFromTest1AndStress": 318.42976818181717,
+    "p95LatencyMsFromTest1AndStress": 1196.3168000000296,
+    "errorTaxonomy": {
+      "Fetch_failed": 55,
+      "HTTP_429": 205
+    },
+    "failureSampleCount": 260
+  }
+}

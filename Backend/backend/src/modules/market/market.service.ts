@@ -1,114 +1,27 @@
-import { env } from "../../config/env";
-import { normalizeDistrictName, resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
+import { resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../utils/AppError";
 import { getProfile } from "../profile/profile.service";
+import { getDistrictMarketDataset } from "./market.district";
+import {
+  filterDistrictData,
+  filterDistrictDataForCommodity,
+  groupByCommodityOrder,
+} from "./market.filter";
+import { extractErrorMeta, marketLog } from "./market.gov-client";
+import { sortByModalPriceDesc } from "./market.normalize";
 import {
   CropMarketIntelligenceDTO,
-  GovApiResponse,
-  GovMarketRecord,
   MarketPriceDTO,
   MarketPricesQuery,
 } from "./market.types";
 
 const DEFAULT_STATE = "Maharashtra";
-const REQUEST_TIMEOUT_MS = 30_000;
-const CACHE_TTL_MS = 5 * 60 * 1000;
-const FAVOURITES_LIMIT = 100;
-const GOV_API_URL = `${env.marketApiBaseUrl}/resource/${env.marketDatasetId}`;
-const DEFAULT_RECENT_DAYS = 20;
-const IS_DEV = process.env.NODE_ENV !== "production";
 
-/** Request context for structured error logs only — never dumped as raw param objects. */
+/** Request context for structured error logs only. */
 interface GovRequestContext {
   commodity?: string;
   district?: string;
 }
-
-interface CacheEntry {
-  data: MarketPriceDTO[];
-  expiresAt: number;
-}
-
-const cache = new Map<string, CacheEntry>();
-
-const marketLog = {
-  info: (message: string, meta?: Record<string, unknown>): void => {
-    // eslint-disable-next-line no-console
-    console.log(`[market] ${message}`, meta ?? "");
-  },
-  warn: (message: string, meta?: Record<string, unknown>): void => {
-    // eslint-disable-next-line no-console
-    console.warn(`[market] ${message}`, meta ?? "");
-  },
-  error: (message: string, meta?: Record<string, unknown>): void => {
-    // eslint-disable-next-line no-console
-    console.error(`[market] ${message}`, meta ?? "");
-  },
-};
-
-const toNumber = (value: string | number | undefined): number => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const getRecentDaysWindow = (): number => {
-  const raw = Number(process.env.MARKET_RECENT_DAYS);
-  return Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_RECENT_DAYS;
-};
-
-const parseArrivalDate = (value: string | undefined): Date | null => {
-  if (!value) return null;
-  const trimmed = value.trim();
-  const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (!match) return null;
-
-  const day = Number(match[1]);
-  const month = Number(match[2]);
-  const year = Number(match[3]);
-  const parsed = new Date(year, month - 1, day);
-
-  if (
-    parsed.getFullYear() !== year ||
-    parsed.getMonth() !== month - 1 ||
-    parsed.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return parsed;
-};
-
-const filterRecentGovRecords = (records: GovMarketRecord[]): GovMarketRecord[] => {
-  if (records.length === 0) return [];
-
-  const recentDays = getRecentDaysWindow();
-  const today = new Date();
-  const cutoffDate = new Date(today);
-  cutoffDate.setDate(today.getDate() - recentDays);
-  cutoffDate.setHours(0, 0, 0, 0);
-
-  return records.filter((record) => {
-    const arrivalDate = parseArrivalDate(record.Arrival_Date);
-    if (!arrivalDate) return false;
-    return arrivalDate >= cutoffDate;
-  });
-};
-
-const keepLatestRecordPerMandi = (records: GovMarketRecord[]): GovMarketRecord[] => {
-  const seenMarkets = new Set<string>();
-  const latestPerMandi: GovMarketRecord[] = [];
-
-  for (const record of records) {
-    const marketKey = (record.Market ?? "").trim();
-    if (!marketKey || seenMarkets.has(marketKey)) continue;
-    seenMarkets.add(marketKey);
-    latestPerMandi.push(record);
-  }
-
-  return latestPerMandi;
-};
-
-const normalizeText = (value: string): string => value.trim().toLowerCase();
 
 // Government market data still uses legacy district names (e.g. "Aurangabad")
 // even though profiles store the canonical renamed value.
@@ -127,33 +40,6 @@ const resolveGovDistrictCandidates = (district: string): string[] => {
   const apiDistrict = GOV_MARKET_DISTRICT_ALIASES[cacheKey] ?? canonicalDistrict;
   return [...new Set([apiDistrict, canonicalDistrict])];
 };
-
-const matchesFavoriteCrop = (commodity: string, crop: string): boolean =>
-  commodity.trim() === crop.trim();
-
-const matchesFavoriteDistrict = (recordDistrict: string, districtCandidates: string[]): boolean => {
-  const recordNorm = normalizeDistrictName(recordDistrict);
-  return districtCandidates.some(
-    (candidate) => normalizeDistrictName(candidate) === recordNorm
-  );
-};
-
-const toMarketPriceDTO = (record: GovMarketRecord): MarketPriceDTO => ({
-  commodity: (record.Commodity ?? "").trim(),
-  market: (record.Market ?? "").trim(),
-  district: (record.District ?? "").trim(),
-  state: (record.State ?? "").trim(),
-  variety: (record.Variety ?? "").trim(),
-  grade: (record.Grade ?? "").trim(),
-  arrivalDate: (record.Arrival_Date ?? "").trim(),
-  modalPrice: toNumber(record.Modal_Price),
-  minPrice: toNumber(record.Min_Price),
-  maxPrice: toNumber(record.Max_Price),
-});
-
-/** Highest modal price first — production default for market intelligence. */
-const sortByModalPriceDesc = (records: MarketPriceDTO[]): MarketPriceDTO[] =>
-  [...records].sort((a, b) => b.modalPrice - a.modalPrice);
 
 /**
  * Builds crop intelligence summary from already-filtered mandi rows.
@@ -191,269 +77,101 @@ export const buildCropMarketIntelligence = (
   };
 };
 
-const buildGovApiUrl = (params: Record<string, string | number>): string => {
-  const url = new URL(GOV_API_URL);
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.append(key, String(value));
+const requireDistrict = (district: string | undefined): string => {
+  const trimmed = district?.trim();
+  if (!trimmed) {
+    throw new AppError("district is required for market data", 400);
   }
-  return url.toString();
+  return trimmed;
 };
 
-const extractErrorMeta = (error: unknown): Record<string, unknown> => {
-  if (!(error instanceof Error)) {
-    return { message: String(error) };
-  }
-
-  const meta: Record<string, unknown> = {
-    name: error.name,
-    message: error.message,
-  };
-
-  const withCode = error as Error & { code?: string; cause?: unknown };
-  if (withCode.code) meta.code = withCode.code;
-  if (withCode.cause instanceof Error) {
-    meta.cause = withCode.cause.message;
-  } else if (withCode.cause != null) {
-    meta.cause = String(withCode.cause);
-  }
-
-  if (IS_DEV && error.stack) {
-    meta.stack = error.stack;
-  }
-
-  return meta;
+const applyLimitOffset = (
+  rows: MarketPriceDTO[],
+  limit: number,
+  offset: number
+): MarketPriceDTO[] => {
+  if (offset <= 0 && rows.length <= limit) return rows;
+  return rows.slice(offset, offset + limit);
 };
 
-const mapGovApiError = (
-  error: unknown,
-  context: GovRequestContext | null = null
-): AppError => {
-  if (error instanceof Error && error.name === "AbortError") {
-    marketLog.error("Government API timeout", {
-      ...extractErrorMeta(error),
-      commodity: context?.commodity,
-      district: context?.district,
-    });
-    return new AppError("Government market data service timed out", 504);
-  }
-
-  if (error instanceof Error) {
-    marketLog.error("Government API unavailable", {
-      ...extractErrorMeta(error),
-      commodity: context?.commodity,
-      district: context?.district,
-    });
-    return new AppError("Government market data service is unavailable", 503);
-  }
-
-  marketLog.error("Government API unexpected error", {
-    ...extractErrorMeta(error),
-    commodity: context?.commodity,
-    district: context?.district,
-  });
-  return new AppError("Unexpected error while fetching market prices", 500);
-};
-
-const buildCacheKey = (params: MarketPricesQuery): string =>
-  [
-    params.state ?? "",
-    params.district ?? "",
-    params.commodity ?? "",
-    params.limit,
-    params.offset,
-  ].join("|");
-
-const buildGovFilters = (
-  query: MarketPricesQuery
-): Record<string, string | number> => {
-  const params: Record<string, string | number> = {
-    "api-key": env.marketApiKey,
-    format: "json",
-    limit: query.limit,
-    offset: query.offset,
-  };
-
-  if (query.state) params["filters[State]"] = query.state.trim();
-  if (query.district) params["filters[District]"] = query.district.trim();
-  if (query.commodity) params["filters[Commodity]"] = query.commodity.trim();
-  params["sort[Arrival_Date]"] = "desc";
-
-  return params;
-};
-
-const fetchMarketPricesFromGov = async (
-  query: MarketPricesQuery,
-  context: GovRequestContext | null = null
-): Promise<MarketPriceDTO[]> => {
-  if (!env.marketApiKey) {
-    throw new AppError("Government market data API key is not configured", 500);
-  }
-
-  const params = buildGovFilters(query);
-  const requestContext: GovRequestContext = {
-    commodity: context?.commodity ?? query.commodity,
-    district: context?.district ?? query.district,
-  };
-  const start = Date.now();
-
-  marketLog.info("Government API request started", {
-    commodity: requestContext.commodity,
-    district: requestContext.district,
-    limit: query.limit,
-  });
-
-  try {
-    const finalUrl = buildGovApiUrl(params);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-    let response: Response;
-    try {
-      response = await fetch(finalUrl, { signal: controller.signal });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        marketLog.error("Government API invalid key", {
-          httpStatus: response.status,
-          commodity: requestContext.commodity,
-          district: requestContext.district,
-          durationMs: Date.now() - start,
-        });
-        throw new AppError("Government market data API key is invalid", 500);
-      }
-
-      marketLog.error("Government API HTTP failure", {
-        httpStatus: response.status,
-        statusText: response.statusText,
-        commodity: requestContext.commodity,
-        district: requestContext.district,
-        durationMs: Date.now() - start,
-      });
-      throw new AppError("Government market data service is unavailable", 503);
-    }
-
-    const responseData = (await response.json()) as GovApiResponse;
-    const elapsedMs = Date.now() - start;
-
-    if (!Array.isArray(responseData.records)) {
-      marketLog.error("Government API unexpected payload", {
-        commodity: requestContext.commodity,
-        district: requestContext.district,
-        durationMs: elapsedMs,
-      });
-      throw new AppError("Unexpected response from government market data API", 502);
-    }
-
-    const receivedCount = responseData.records.length;
-    const recentRecords = filterRecentGovRecords(responseData.records);
-    const latestPerMandiRecords = keepLatestRecordPerMandi(recentRecords);
-    const mappedRecords = latestPerMandiRecords.map(toMarketPriceDTO);
-
-    if (receivedCount === 0 || mappedRecords.length === 0) {
-      marketLog.warn("No recent government market records", {
-        commodity: requestContext.commodity,
-        district: requestContext.district,
-        received: receivedCount,
-        afterFilter: recentRecords.length,
-        uniqueMandis: mappedRecords.length,
-        durationMs: elapsedMs,
-      });
-    } else {
-      marketLog.info("Government API success", {
-        commodity: requestContext.commodity,
-        district: requestContext.district,
-        received: receivedCount,
-        afterFilter: recentRecords.length,
-        uniqueMandis: mappedRecords.length,
-        durationMs: elapsedMs,
-      });
-    }
-
-    return mappedRecords;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw mapGovApiError(error, requestContext);
-  }
-};
-
+/**
+ * Market prices for optional commodity within a district.
+ * Loads the district dataset once (cached 2h), then filters locally.
+ */
 export const getMarketPrices = async (
   query: MarketPricesQuery,
-  context: GovRequestContext | null = null
+  _context: GovRequestContext | null = null
 ): Promise<MarketPriceDTO[]> => {
-  const cacheKey = buildCacheKey(query);
-  const cached = cache.get(cacheKey);
+  const state = (query.state ?? DEFAULT_STATE).trim() || DEFAULT_STATE;
+  const districtInput = requireDistrict(query.district);
+  const apiDistrict = resolveGovDistrictForApi(districtInput);
+  const districtCandidates = resolveGovDistrictCandidates(districtInput);
 
-  if (cached && cached.expiresAt > Date.now()) {
-    marketLog.info("Market cache hit", { cacheKey });
-    return cached.data;
+  const districtData = await getDistrictMarketDataset(state, apiDistrict);
+
+  const filterStarted = Date.now();
+  let filtered: MarketPriceDTO[];
+
+  if (query.commodity?.trim()) {
+    filtered = filterDistrictDataForCommodity(
+      districtData,
+      query.commodity.trim(),
+      districtCandidates
+    );
+    marketLog.info("Filtered 1 favourite commodities", {
+      commodity: query.commodity.trim(),
+      district: apiDistrict,
+      matched: filtered.length,
+      filterMs: Date.now() - filterStarted,
+    });
+  } else {
+    // District-scoped fetch — return full normalized district set.
+    filtered = sortByModalPriceDesc(districtData);
+    marketLog.info("Filtered district dataset (all commodities)", {
+      district: apiDistrict,
+      matched: filtered.length,
+      filterMs: Date.now() - filterStarted,
+    });
   }
 
-  marketLog.info("Market cache miss", { cacheKey });
-  const data = sortByModalPriceDesc(await fetchMarketPricesFromGov(query, context));
-  cache.set(cacheKey, { data, expiresAt: Date.now() + CACHE_TTL_MS });
-  return data;
+  return applyLimitOffset(filtered, query.limit, query.offset);
 };
 
 /**
  * District + commodity market intelligence.
- * Reuses the same cached gov fetch as GET /prices (one request per crop).
- * Accepts either the profile district or the gov alias; maps to the API name for fetch.
+ * Reuses the district memory cache (one Government request per district).
  */
 export const getCropMarketIntelligence = async (
   query: MarketPricesQuery & { district: string; commodity: string }
 ): Promise<CropMarketIntelligenceDTO> => {
   const district = query.district.trim();
   const commodity = query.commodity.trim();
+  const state = (query.state ?? DEFAULT_STATE).trim() || DEFAULT_STATE;
   const apiDistrict = resolveGovDistrictForApi(district);
   const districtCandidates = resolveGovDistrictCandidates(district);
-  const records = await getMarketPrices(
-    {
-      ...query,
-      district: apiDistrict,
-    },
-    { commodity, district }
+
+  const districtData = await getDistrictMarketDataset(state, apiDistrict);
+
+  const filterStarted = Date.now();
+  const matched = filterDistrictDataForCommodity(
+    districtData,
+    commodity,
+    districtCandidates
   );
-  const matched = records.filter(
-    (item) =>
-      matchesFavoriteCrop(item.commodity, commodity) &&
-      matchesFavoriteDistrict(item.district, districtCandidates)
-  );
-  return buildCropMarketIntelligence(commodity, district, matched);
+  marketLog.info("Filtered 1 favourite commodities", {
+    commodity,
+    district: apiDistrict,
+    matched: matched.length,
+    filterMs: Date.now() - filterStarted,
+  });
+
+  const limited = applyLimitOffset(matched, query.limit, query.offset);
+  return buildCropMarketIntelligence(commodity, district, limited);
 };
 
-const fetchFavoriteCropPrices = async (
-  state: string,
-  _originalDistrict: string,
-  apiDistrict: string,
-  districtCandidates: string[],
-  crop: string
-): Promise<MarketPriceDTO[]> => {
-  const commodity = crop.trim();
-
-  const data = await getMarketPrices(
-    {
-      state,
-      district: apiDistrict,
-      commodity,
-      limit: FAVOURITES_LIMIT,
-      offset: 0,
-    },
-    { commodity, district: apiDistrict }
-  );
-  const matched = data.filter(
-    (item) =>
-      matchesFavoriteCrop(item.commodity, commodity) &&
-      matchesFavoriteDistrict(item.district, districtCandidates)
-  );
-
-  return sortByModalPriceDesc(matched);
-};
-
+/**
+ * Favourite crop prices for a user — one district Government fetch, local filter.
+ */
 export const getFavoriteMarketPrices = async (
   userId: string
 ): Promise<MarketPriceDTO[]> => {
@@ -476,63 +194,49 @@ export const getFavoriteMarketPrices = async (
     cropCount: favoriteCrops.length,
   });
 
-  const groupedByCrop = new Map<string, MarketPriceDTO[]>();
-  const cropResults = await Promise.allSettled(
-    favoriteCrops.map((crop) =>
-      fetchFavoriteCropPrices(
-        state,
-        originalDistrict,
-        apiDistrict,
-        districtCandidates,
-        crop
-      )
-    )
-  );
-  let successCount = 0;
-  let lastFailure: unknown = null;
+  try {
+    const districtData = await getDistrictMarketDataset(state, apiDistrict);
 
-  cropResults.forEach((result, index) => {
-    const crop = favoriteCrops[index];
-    if (!crop) return;
-
-    const cropKey = normalizeText(crop);
-    if (result.status === "fulfilled") {
-      successCount += 1;
-      groupedByCrop.set(cropKey, result.value);
-      return;
-    }
-
-    lastFailure = result.reason;
-    groupedByCrop.set(cropKey, []);
-    marketLog.error("Market favourites crop failed", {
-      crop,
-      district: originalDistrict,
-      ...extractErrorMeta(result.reason),
+    const filterStarted = Date.now();
+    const matched = filterDistrictData({
+      districtData,
+      commodities: favoriteCrops,
+      districtCandidates,
     });
-  });
-
-  if (successCount === 0) {
-    if (lastFailure instanceof AppError) {
-      throw lastFailure;
-    }
-    throw mapGovApiError(lastFailure, {
-      district: originalDistrict,
+    marketLog.info(`Filtered ${favoriteCrops.length} favourite commodities`, {
+      district: apiDistrict,
+      matched: matched.length,
+      filterMs: Date.now() - filterStarted,
     });
+
+    // Preserve previous response ordering: records grouped by favourite crop order.
+    const ordered = groupByCommodityOrder(matched, favoriteCrops);
+
+    marketLog.info("Market favourites fetch completed", {
+      userId,
+      district: originalDistrict,
+      cropsTotal: favoriteCrops.length,
+      records: ordered.length,
+    });
+
+    return ordered;
+  } catch (error) {
+    marketLog.error("Market favourites district fetch failed", {
+      userId,
+      district: originalDistrict,
+      ...extractErrorMeta(error),
+    });
+    if (error instanceof AppError) throw error;
+    throw new AppError("Government market data service is unavailable", 503);
   }
-
-  const ordered: MarketPriceDTO[] = [];
-  for (const crop of favoriteCrops) {
-    const cropKey = normalizeText(crop);
-    ordered.push(...(groupedByCrop.get(cropKey) ?? []));
-  }
-
-  marketLog.info("Market favourites fetch completed", {
-    userId,
-    district: originalDistrict,
-    cropsSucceeded: successCount,
-    cropsTotal: favoriteCrops.length,
-    records: ordered.length,
-  });
-
-  return ordered;
 };
+
+// Re-export filter helper for reuse / Phase 2.
+export { filterDistrictData } from "./market.filter";
+export {
+  clearDistrictMarketCache,
+  DISTRICT_CACHE_TTL_MS,
+  getDistrictCacheExpiresInMs,
+  getDistrictCacheMetrics,
+} from "./market.district";
+export { getConfiguredDistrictLimit } from "./market.gov-client";

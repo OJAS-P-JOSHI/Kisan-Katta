@@ -31,7 +31,6 @@ There is **no README**, **no `.env.example`**, **no Dockerfile**, and **no CI co
 | `npm run build` | `tsc` → `dist/` |
 | `npm start` | `node dist/server.js` |
 | `npm run lint` / `typecheck` | `tsc --noEmit` (no ESLint package) |
-| `npm test` | Vitest |
 | `backfill:application-numbers` | Backfill `applicationNumber` |
 | `migrate:phase-5a3` | Legacy status → three-state model |
 | `payment:reset` | Local-only payment state reset (refuses production) |
@@ -55,11 +54,10 @@ There is **no README**, **no `.env.example`**, **no Dockerfile**, and **no CI co
 | Logging | morgan | ^1.10.0 |
 | Config | dotenv | ^16.4.7 |
 | Weather HTTP | axios | ^1.7.9 |
-| Tests | vitest + supertest + mongodb-memory-server | present |
 
 TypeScript is strict (`strict`, `noUnusedLocals`, `noUncheckedIndexedAccess`, etc.). Target ES2022, CommonJS, `outDir: dist`.
 
-**Absent:** SMS/OTP provider SDK, `express-rate-limit`, Winston/Pino, Redis, Docker, CI.
+**Absent:** Automated unit/integration test runner, SMS/OTP provider SDK, `express-rate-limit`, Winston/Pino, Redis, Docker, CI.
 
 ---
 
@@ -68,11 +66,10 @@ TypeScript is strict (`strict`, `noUnusedLocals`, `noUncheckedIndexedAccess`, et
 ```
 Backend/
 └── backend/
-    ├── package.json, tsconfig.json, vitest.config.ts
+    ├── package.json, tsconfig.json
     ├── .env                          # gitignored; no .env.example
     ├── data/                         # Source LGD Excel + Agmarknet crop list
     ├── scripts/                      # migrations, seeds, QA, master generators
-    ├── tests/                        # payment, business-flow, application-number
     └── src/
         ├── server.ts                 # Boot: DB → seed admin → schedulers → listen
         ├── app.ts                    # Express factory + middleware chain
