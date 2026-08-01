@@ -57,11 +57,11 @@ function RootNavigator() {
         />
         <Stack.Screen
           name="subscription-billing"
-          options={{ headerShown: true, title: 'Subscription & Billing', presentation: 'card' }}
+          options={{ headerShown: true, title: 'सदस्यत्व', presentation: 'card' }}
         />
         <Stack.Screen
           name="subscription-billing/[paymentId]"
-          options={{ headerShown: true, title: 'Payment Details', presentation: 'card' }}
+          options={{ headerShown: true, title: 'पेमेंट तपशील', presentation: 'card' }}
         />
       </Stack.Protected>
       <Stack.Protected guard={!canEnterApp}>

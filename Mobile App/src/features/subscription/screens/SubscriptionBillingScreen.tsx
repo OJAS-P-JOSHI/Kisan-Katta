@@ -16,12 +16,10 @@ import { spacing, typography, useAppTheme } from '@/theme';
 
 import { billingStrings } from '../billing.strings';
 import {
+  BillingActionBar,
   BillingHistoryCard,
-  PaymentMethodCard,
-  PlanDetailsCard,
   RefundPolicyCard,
-  SubscriptionControlsCard,
-  SubscriptionStatusCard,
+  SubscriptionHeroCard,
   SupportCard,
 } from '../components/BillingCards';
 import { useSubscriptionBilling } from '../hooks/useSubscriptionBilling';
@@ -53,27 +51,35 @@ export default function SubscriptionBillingScreen() {
     if (ok) setSnack(billingStrings.cancelSuccess);
   }, [cancel]);
 
+  const showRenew = Boolean(subscription && !subscription.isActive);
+  const showCancel = Boolean(
+    subscription?.isActive &&
+      subscription.autoRenewalEnabled &&
+      subscription.status !== 'CANCELLED',
+  );
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
       <OrganicBackground intensity="subtle" />
+
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.xxl },
+          {
+            paddingBottom:
+              (showRenew || showCancel ? 8 : insets.bottom) + spacing.xl,
+          },
         ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => void reload({ soft: true })}
             tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
           />
         }
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[typography.largeHeading, { color: theme.colors.onBackground }]}>
-          {billingStrings.screenTitle}
-        </Text>
-
         {loading ? (
           <ActivityIndicator
             animating
@@ -83,7 +89,9 @@ export default function SubscriptionBillingScreen() {
           />
         ) : error && !subscription ? (
           <View style={styles.errorBox}>
-            <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>{error}</Text>
+            <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
+              {error}
+            </Text>
             <Button mode="text" onPress={() => void reload()}>
               {billingStrings.retry}
             </Button>
@@ -99,22 +107,14 @@ export default function SubscriptionBillingScreen() {
           </View>
         ) : (
           <View style={styles.stack}>
-            <SubscriptionStatusCard
-              subscription={subscription}
-              onRenew={!subscription.isActive ? onRenew : undefined}
-            />
-            <PlanDetailsCard subscription={subscription} />
-            <PaymentMethodCard subscription={subscription} />
+            <SubscriptionHeroCard subscription={subscription} />
             <BillingHistoryCard
               items={history}
               onPressItem={(paymentId) => {
-                router.push(`/subscription-billing/${encodeURIComponent(paymentId)}` as Href);
+                router.push(
+                  `/subscription-billing/${encodeURIComponent(paymentId)}` as Href,
+                );
               }}
-            />
-            <SubscriptionControlsCard
-              subscription={subscription}
-              cancelling={cancelling}
-              onCancelPress={() => setCancelVisible(true)}
             />
             <RefundPolicyCard />
             <SupportCard
@@ -129,6 +129,18 @@ export default function SubscriptionBillingScreen() {
           </View>
         )}
       </ScrollView>
+
+      {subscription ? (
+        <View style={{ paddingBottom: insets.bottom + spacing.sm }}>
+          <BillingActionBar
+            showRenew={showRenew}
+            showCancel={showCancel}
+            cancelling={cancelling}
+            onRenew={onRenew}
+            onCancel={() => setCancelVisible(true)}
+          />
+        </View>
+      ) : null}
 
       <Portal>
         <Dialog visible={cancelVisible} onDismiss={() => setCancelVisible(false)}>

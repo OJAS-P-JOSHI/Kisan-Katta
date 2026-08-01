@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { getErrorMessage } from '@/utils';
 
+import { billingStrings } from '../billing.strings';
 import {
   cancelSubscription,
   getBillingHistory,
@@ -34,7 +35,7 @@ export function useSubscriptionBilling() {
       setSubscription(sub);
       setHistory(bills);
     } catch (err) {
-      setError(getErrorMessage(err, 'Unable to load subscription details.'));
+      setError(getErrorMessage(err, billingStrings.loadError));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,7 +69,7 @@ export function useSubscriptionBilling() {
       await refreshUser();
       return true;
     } catch (err) {
-      setError(getErrorMessage(err, 'Unable to cancel subscription.'));
+      setError(getErrorMessage(err, billingStrings.cancelError));
       return false;
     } finally {
       setCancelling(false);

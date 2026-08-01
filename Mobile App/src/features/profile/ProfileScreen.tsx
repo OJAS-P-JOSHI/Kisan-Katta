@@ -20,6 +20,8 @@ import {
   useAppTheme,
 } from '@/theme';
 
+import { billingStrings } from '@/features/subscription/billing.strings';
+
 import { ProfileAvatar } from './components/ProfileAvatar';
 import { useMyProfile } from './hooks/useMyProfile';
 import { useProfilePhoto } from './hooks/useProfilePhoto';
@@ -189,7 +191,7 @@ export default function ProfileScreen() {
           contentStyle={styles.buttonContent}
           onPress={() => router.push('/subscription-billing' as Href)}
         >
-          Subscription & Billing
+          {billingStrings.profileEntry}
         </Button>
 
         <Button
