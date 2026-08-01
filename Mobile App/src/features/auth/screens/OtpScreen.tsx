@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -74,9 +74,14 @@ export default function OtpScreen() {
 
     if (!result.isProfileCompleted) {
       router.replace('/complete-profile');
+      return;
     }
-    // If the profile is already complete, the root layout's Stack.Protected
-    // guard reactively swaps to the App Stack (Home) once `user` refreshes.
+
+    if (result.subscription?.isActive !== true) {
+      router.replace('/(auth)/subscription' as Href);
+      return;
+    }
+    // Active subscription → root Stack.Protected swaps to App Stack (Home).
   };
 
   const handleResend = async (): Promise<void> => {

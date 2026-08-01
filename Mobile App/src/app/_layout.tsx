@@ -8,14 +8,16 @@ import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import { navigationTheme, paperTheme } from '@/theme';
 
 /**
- * Protected Navigation: the App Stack (`(tabs)`) is only reachable once a
- * JWT exists AND the authenticated user's profile is complete. Everyone
- * else — signed out, or signed in but mid-onboarding — is confined to the
- * Auth Stack (`(auth)`), which itself starts at the Splash screen.
+ * Protected Navigation:
+ * App Stack (Home/tabs) is only reachable when JWT exists, profile is complete,
+ * AND the user has an active mobile subscription (`subscription.isActive`).
+ * Everyone else stays on the Auth Stack (splash → login → OTP → profile → paywall).
  */
 function RootNavigator() {
   const { isAuthenticated, user } = useAuth();
-  const canEnterApp = isAuthenticated && user?.isProfileCompleted === true;
+  const subscriptionActive = user?.subscription?.isActive === true;
+  const canEnterApp =
+    isAuthenticated && user?.isProfileCompleted === true && subscriptionActive;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

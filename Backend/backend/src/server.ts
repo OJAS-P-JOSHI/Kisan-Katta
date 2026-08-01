@@ -12,6 +12,7 @@ import { connectDatabase, disconnectDatabase } from "./config/database";
 import { seedSuperAdmin } from "./modules/admin/admin.service";
 import { startFarmerPriceScheduler } from "./modules/farmer-price/farmer-price.scheduler";
 import { startPaymentReconciliationScheduler } from "./modules/payment/payment.scheduler";
+import { startSubscriptionReconciliationScheduler } from "./modules/subscription/subscription.scheduler";
 
 const app = createApp();
 
@@ -86,6 +87,17 @@ const startServer = async (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.error(
       "[PaymentReconciliationScheduler] Failed to initialize scheduler:",
+      error
+    );
+  }
+
+  // Sync mobile-app Razorpay Subscriptions with local user_subscriptions.
+  try {
+    startSubscriptionReconciliationScheduler();
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[SubscriptionReconciliationScheduler] Failed to initialize scheduler:",
       error
     );
   }

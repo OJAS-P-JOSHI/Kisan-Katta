@@ -13,6 +13,7 @@ import verificationRoutes from "../modules/verification/verification.routes";
 import rewardRoutes from "../modules/rewards/reward.routes";
 import locationRoutes from "../modules/location/location.routes";
 import cropRoutes from "../modules/crop/crop.routes";
+import subscriptionRoutes from "../modules/subscription/routes";
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use("/api/v1/marketplace", marketplaceRoutes);
 router.use("/api/v1/farmer-price", farmerPriceRoutes);
 router.use("/api/v1/gram-sahakari", gramSahakariRoutes);
 router.use("/api/v1/gram-sahakari", paymentRoutes);
+router.use("/api/v1/subscription", subscriptionRoutes);
 router.use("/api/v1/admin", adminRoutes);
 router.use("/api/v1/admin/rewards", rewardRoutes);
 router.use("/api/v1/verify", verificationRoutes);

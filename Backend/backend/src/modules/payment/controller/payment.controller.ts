@@ -19,6 +19,10 @@ import {
   verifyPayment,
 } from "../service/payment.service";
 import { handleWebhook } from "../service/webhook.service";
+import {
+  handleSubscriptionWebhook,
+  isSubscriptionWebhookEvent,
+} from "../../subscription/service/webhook.service";
 import { reconcileApplicationForAdmin } from "../service/reconciliation.service";
 import {
   validateApplicationIdParam,
@@ -91,6 +95,9 @@ export const paymentDetailsHandler = async (
 /**
  * Public, unauthenticated endpoint hit by Razorpay. Security is provided
  * entirely by webhook signature verification inside the service.
+ *
+ * Subscription events (`subscription.*`) are forwarded to the subscription
+ * module so a single Dashboard webhook URL can serve both products.
  */
 export const webhookHandler = async (
   req: Request,
@@ -99,13 +106,11 @@ export const webhookHandler = async (
   const rawBody = req.rawBody ? req.rawBody.toString("utf8") : "";
   const signature = req.header("X-Razorpay-Signature") ?? undefined;
   const eventId = req.header("X-Razorpay-Event-Id") ?? undefined;
+  const body = (req.body ?? {}) as Record<string, unknown>;
 
-  const result = await handleWebhook(
-    rawBody,
-    signature,
-    eventId,
-    (req.body ?? {}) as Record<string, unknown>
-  );
+  const result = isSubscriptionWebhookEvent(body.event)
+    ? await handleSubscriptionWebhook(rawBody, signature, eventId, body)
+    : await handleWebhook(rawBody, signature, eventId, body);
 
   if (result.httpStatus >= 400) {
     res.status(result.httpStatus).json({ success: false, message: result.detail });

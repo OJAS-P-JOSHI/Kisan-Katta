@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useEffect } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
@@ -15,8 +15,9 @@ import { useAuth } from '../context/AuthContext';
  * - loading            -> show logo + spinner
  * - not authenticated  -> Mobile Number screen
  * - authenticated, profile incomplete -> Complete Profile screen
- * - authenticated, profile complete   -> the root layout's `Stack.Protected`
- *   guard reactively swaps to the App Stack (Home) — no navigation needed here.
+ * - authenticated, profile complete, no subscription -> Subscription paywall
+ * - authenticated + profile + active subscription -> root `Stack.Protected`
+ *   swaps to the App Stack (Home)
  */
 export default function SplashScreen() {
   const theme = useAppTheme();
@@ -32,6 +33,11 @@ export default function SplashScreen() {
 
     if (user && !user.isProfileCompleted) {
       router.replace('/complete-profile');
+      return;
+    }
+
+    if (user?.isProfileCompleted && user.subscription?.isActive !== true) {
+      router.replace('/(auth)/subscription' as Href);
     }
   }, [isLoading, isAuthenticated, user]);
 

@@ -23,6 +23,8 @@ interface EnvConfig {
   razorpayKeyId: string;
   razorpayKeySecret: string;
   razorpayWebhookSecret: string;
+  /** Pre-created Razorpay Plan ID for the mobile app monthly subscription. */
+  razorpaySubscriptionPlanId: string;
 }
 
 const parsePort = (value: string | undefined): number => {
@@ -59,6 +61,7 @@ export const env: EnvConfig = {
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "",
+  razorpaySubscriptionPlanId: process.env.RAZORPAY_SUBSCRIPTION_PLAN_ID || "",
 };
 
 export const isProduction = (): boolean => env.nodeEnv === "production";

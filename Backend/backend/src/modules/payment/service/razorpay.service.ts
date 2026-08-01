@@ -295,6 +295,34 @@ export const verifyPaymentSignature = (params: {
 };
 
 /**
+ * Verifies a Razorpay Subscriptions Checkout authorisation signature.
+ * Payload is `payment_id|subscription_id` (see Razorpay Subscriptions
+ * integration guide) — same SDK helper, different param shape than Orders.
+ */
+export const verifySubscriptionPaymentSignature = (params: {
+  razorpay_subscription_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}): boolean => {
+  if (!env.razorpayKeySecret) {
+    throw new AppError("Payment gateway is not configured on the server.", 503);
+  }
+
+  try {
+    return validatePaymentVerification(
+      {
+        subscription_id: params.razorpay_subscription_id,
+        payment_id: params.razorpay_payment_id,
+      },
+      params.razorpay_signature,
+      env.razorpayKeySecret
+    );
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Best-effort lookup of the payment method (upi/card/netbanking/...). This is
  * purely informational, so any gateway failure is swallowed and `null` is
  * returned — it must never block a successfully-verified payment.

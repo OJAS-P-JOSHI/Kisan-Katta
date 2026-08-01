@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Dialog, Portal, Surface, Text } from 'react-native-paper';
@@ -36,7 +36,8 @@ export default function CompleteProfileScreen() {
   useEffect(() => {
     if (!showSuccess) return;
     const timeout = setTimeout(() => {
-      router.replace('/(tabs)');
+      // Profile done → subscription paywall (Home is gated until isActive).
+      router.replace('/(auth)/subscription' as Href);
     }, 900);
     return () => clearTimeout(timeout);
   }, [showSuccess]);

@@ -4,6 +4,8 @@
  * fields here — components/hooks must consume exactly these shapes.
  */
 
+import type { MeSubscription } from '@/features/subscription/subscription.types';
+
 export type SendOtpResponse = {
   message: string;
   /** Present only when `EXPO_PUBLIC_APP_ENV=development`. */
@@ -14,6 +16,8 @@ export type VerifyOtpResponse = {
   token: string;
   isNewUser: boolean;
   isProfileCompleted: boolean;
+  role?: string;
+  subscription?: MeSubscription;
 };
 
 /** GET /api/v1/auth/me */
@@ -22,4 +26,6 @@ export type AuthUser = {
   mobile: string;
   isProfileCompleted: boolean;
   createdAt: string;
+  role?: string;
+  subscription?: MeSubscription;
 };

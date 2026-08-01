@@ -34,6 +34,14 @@ export interface SendOtpResponseDTO {
   otp?: string;
 }
 
+/** Compact subscription summary for mobile Home gating. */
+export interface MeSubscriptionDTO {
+  isActive: boolean;
+  status: string | null;
+  currentPeriodEnd: string | null;
+  subscriptionId: string | null;
+}
+
 export interface VerifyOtpResponseDTO {
   token: string;
   isNewUser: boolean;
@@ -42,6 +50,7 @@ export interface VerifyOtpResponseDTO {
   /** True when an active Admin portal record exists for this mobile. */
   isAdmin: boolean;
   admin: AdminProfileDTO | null;
+  subscription: MeSubscriptionDTO;
 }
 
 export interface MeResponseDTO {
@@ -52,4 +61,5 @@ export interface MeResponseDTO {
   role: UserRole;
   isAdmin: boolean;
   admin: AdminProfileDTO | null;
+  subscription: MeSubscriptionDTO;
 }

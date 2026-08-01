@@ -4,14 +4,42 @@ import {
   lookupAdminForSession,
   resolveAdminAfterAuth,
 } from "../admin/admin.service";
+import { getSubscriptionStatus } from "../subscription/service/subscription.service";
 import { AuthUser } from "./auth.model";
 import { generateOtp, consumeOtp } from "./otp.service";
 import { signToken } from "./jwt.service";
 import type {
   MeResponseDTO,
+  MeSubscriptionDTO,
   SendOtpResponseDTO,
   VerifyOtpResponseDTO,
 } from "./auth.types";
+
+const toMeSubscription = async (userId: string): Promise<MeSubscriptionDTO> => {
+  const status = await getSubscriptionStatus(userId);
+  return {
+    isActive: status.isActive,
+    status: status.status,
+    currentPeriodEnd: status.currentPeriodEnd,
+    subscriptionId: status.subscriptionId,
+  };
+};
+
+/** Portal roles are not blocked by the mobile subscription paywall. */
+const subscriptionForRole = async (
+  userId: string,
+  role: string
+): Promise<MeSubscriptionDTO> => {
+  if (role === "ADMIN" || role === "TEAM") {
+    return {
+      isActive: true,
+      status: "ACTIVE",
+      currentPeriodEnd: null,
+      subscriptionId: null,
+    };
+  }
+  return toMeSubscription(userId);
+};
 
 /**
  * Generates an OTP for the given mobile number.
@@ -78,6 +106,11 @@ export const verifyOtpAndAuthenticate = async (
     mobile: user.mobile,
   });
 
+  const subscription = await subscriptionForRole(
+    user._id.toString(),
+    user.role
+  );
+
   return {
     token,
     isNewUser,
@@ -85,6 +118,7 @@ export const verifyOtpAndAuthenticate = async (
     role: user.role,
     isAdmin: Boolean(admin),
     admin: admin ?? null,
+    subscription,
   };
 };
 
@@ -104,6 +138,11 @@ export const getMe = async (userId: string): Promise<MeResponseDTO> => {
     await user.save();
   }
 
+  const subscription = await subscriptionForRole(
+    user._id.toString(),
+    user.role
+  );
+
   return {
     userId: user._id.toString(),
     mobile: user.mobile,
@@ -112,5 +151,6 @@ export const getMe = async (userId: string): Promise<MeResponseDTO> => {
     role: user.role,
     isAdmin: Boolean(admin),
     admin: admin ?? null,
+    subscription,
   };
 };
