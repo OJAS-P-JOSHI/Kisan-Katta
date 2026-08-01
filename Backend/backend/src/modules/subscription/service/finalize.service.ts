@@ -7,9 +7,14 @@ import type {
 import {
   findById,
   updateSubscriptionById,
+  upsertBillingPayment,
 } from "../repository/subscription.repository";
 import type { RazorpaySubscriptionSnapshot } from "./razorpay-subscription.service";
 import { RAZORPAY_SDK_VERSION } from "../../payment/service/razorpay.service";
+import {
+  SUBSCRIPTION_CURRENCY,
+  SUBSCRIPTION_FEE_PAISE,
+} from "../subscription.constants";
 
 const STATUS_MAP: Record<string, SubscriptionStatus> = {
   created: "CREATED",
@@ -42,6 +47,7 @@ export interface ApplyGatewaySnapshotOptions {
   eventType: string;
   paymentId?: string | null;
   paymentMethod?: string | null;
+  invoiceId?: string | null;
   gatewayResponse?: Record<string, unknown>;
   extraSet?: Record<string, unknown>;
 }
@@ -49,6 +55,7 @@ export interface ApplyGatewaySnapshotOptions {
 /**
  * Single writer for subscription state derived from Razorpay snapshots.
  * Used by verify, webhook, and reconciliation so logic is never duplicated.
+ * Also upserts billing history when a payment id is present.
  */
 export const applyGatewaySnapshot = async (
   options: ApplyGatewaySnapshotOptions
@@ -60,12 +67,16 @@ export const applyGatewaySnapshot = async (
     eventType,
     paymentId,
     paymentMethod,
+    invoiceId,
     gatewayResponse,
     extraSet,
   } = options;
 
   const mapped = mapRazorpayStatus(snapshot.status) ?? local.status;
   const now = new Date();
+  const periodStart =
+    unixToDate(snapshot.currentStart) ?? local.currentPeriodStart;
+  const periodEnd = unixToDate(snapshot.currentEnd) ?? local.currentPeriodEnd;
 
   const set: Record<string, unknown> = {
     status: mapped,
@@ -74,9 +85,8 @@ export const applyGatewaySnapshot = async (
     totalCount: snapshot.totalCount ?? local.totalCount,
     paidCount: snapshot.paidCount ?? local.paidCount,
     quantity: snapshot.quantity ?? local.quantity,
-    currentPeriodStart:
-      unixToDate(snapshot.currentStart) ?? local.currentPeriodStart,
-    currentPeriodEnd: unixToDate(snapshot.currentEnd) ?? local.currentPeriodEnd,
+    currentPeriodStart: periodStart,
+    currentPeriodEnd: periodEnd,
     nextChargeAt: unixToDate(snapshot.chargeAt) ?? local.nextChargeAt,
     shortUrl: snapshot.shortUrl ?? local.shortUrl,
     meta: {
@@ -106,10 +116,35 @@ export const applyGatewaySnapshot = async (
     timestamp: now,
   };
 
-  const updated = await updateSubscriptionById(String(local._id), set, [event]);
+  let updated = await updateSubscriptionById(String(local._id), set, [event]);
   if (!updated) {
-    const fresh = await findById(String(local._id));
-    return fresh ?? local;
+    updated = (await findById(String(local._id))) ?? local;
   }
+
+  // Persist billing history for successful / charged payments (idempotent).
+  const shouldRecordBilling =
+    Boolean(paymentId) &&
+    (eventType === "SUBSCRIPTION_VERIFY_SUCCESS" ||
+      eventType === "subscription.authenticated" ||
+      eventType === "subscription.charged" ||
+      eventType === "subscription.activated");
+
+  if (shouldRecordBilling && paymentId) {
+    const withBilling = await upsertBillingPayment(String(local._id), {
+      paymentId,
+      invoiceId: invoiceId ?? null,
+      amount: local.amount || SUBSCRIPTION_FEE_PAISE,
+      currency: local.currency || SUBSCRIPTION_CURRENCY,
+      status: "PAID",
+      paymentMethod: paymentMethod ?? local.paymentMethod,
+      paidAt: now,
+      periodStart,
+      periodEnd,
+      gateway: "RAZORPAY",
+      subscriptionId: snapshot.id || local.subscriptionId,
+    });
+    if (withBilling) updated = withBilling;
+  }
+
   return updated;
 };

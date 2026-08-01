@@ -30,6 +30,28 @@ const SubscriptionMetaSchema = new Schema(
   { _id: false }
 );
 
+const BillingPaymentSchema = new Schema(
+  {
+    paymentId: { type: String, required: true, trim: true },
+    invoiceId: { type: String, default: null, trim: true },
+    amount: { type: Number, required: true },
+    currency: { type: String, required: true, default: "INR", uppercase: true },
+    status: {
+      type: String,
+      enum: ["PAID", "FAILED", "PENDING", "REFUNDED"],
+      required: true,
+      default: "PAID",
+    },
+    paymentMethod: { type: String, default: null, trim: true },
+    paidAt: { type: Date, required: true },
+    periodStart: { type: Date, default: null },
+    periodEnd: { type: Date, default: null },
+    gateway: { type: String, required: true, default: "RAZORPAY" },
+    subscriptionId: { type: String, default: null, trim: true },
+  },
+  { _id: false }
+);
+
 const UserSubscriptionSchema = new Schema<IUserSubscription>(
   {
     userId: {
@@ -63,6 +85,7 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
     shortUrl: { type: String, default: null, trim: true },
     notes: { type: Schema.Types.Mixed, default: {} },
     events: { type: [SubscriptionEventSchema], default: [] },
+    billingPayments: { type: [BillingPaymentSchema], default: [] },
     meta: { type: SubscriptionMetaSchema, default: () => ({}) },
   },
   {

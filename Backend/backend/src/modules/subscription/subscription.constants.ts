@@ -10,6 +10,18 @@ export const SUBSCRIPTION_CURRENCY = "INR";
 
 export const SUBSCRIPTION_FEE_RUPEES = SUBSCRIPTION_FEE_PAISE / 100;
 
+/** Human-readable plan label for billing UI (Dashboard plan: App Payment). */
+export const SUBSCRIPTION_PLAN_DISPLAY_NAME = "Kisan Katta Monthly";
+
+export const SUBSCRIPTION_BILLING_FREQUENCY_LABEL = "Every 1 Month";
+
+export const BILLING_PAYMENT_STATUSES = [
+  "PAID",
+  "FAILED",
+  "PENDING",
+  "REFUNDED",
+] as const;
+
 /** Billing cycles configured on the Dashboard plan (Every 1 Month × 120). */
 export const SUBSCRIPTION_TOTAL_COUNT = 120;
 

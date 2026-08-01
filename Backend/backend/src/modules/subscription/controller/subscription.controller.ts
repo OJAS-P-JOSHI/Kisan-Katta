@@ -19,12 +19,17 @@ import {
   resumeSubscription,
   verifySubscriptionAuth,
 } from "../service/subscription.service";
+import {
+  getBillingHistory,
+  getBillingPaymentDetail,
+} from "../service/billing.service";
 import { handleSubscriptionWebhook } from "../service/webhook.service";
 import {
   validateCancelSubscription,
   validateVerifySubscription,
 } from "../validation/subscription.validation";
 import { createSubscriptionRefund } from "../service/refund.service";
+import type { BillingPaymentDTO } from "../dto/subscription.dto";
 
 export const createSubscriptionHandler = async (
   req: Request,
@@ -88,6 +93,29 @@ export const refreshSubscriptionHandler = async (
 ): Promise<void> => {
   const { userId, role } = getAuthUser(req);
   const data = await refreshSubscriptionState(userId, role);
+  res.status(200).json({ success: true, data });
+};
+
+export const billingHistoryHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<BillingPaymentDTO[]>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const data = await getBillingHistory(userId);
+  res.status(200).json({ success: true, data });
+};
+
+export const billingDetailHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<BillingPaymentDTO>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const paymentId = String(req.params.paymentId ?? "").trim();
+  if (!paymentId) {
+    res.status(400).json({ success: false, message: "paymentId is required." } as never);
+    return;
+  }
+  const data = await getBillingPaymentDetail(userId, paymentId);
   res.status(200).json({ success: true, data });
 };
 

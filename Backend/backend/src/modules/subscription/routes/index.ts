@@ -11,6 +11,8 @@ import {
   resumeSubscriptionHandler,
   subscriptionWebhookHandler,
   verifySubscriptionHandler,
+  billingHistoryHandler,
+  billingDetailHandler,
 } from "../controller/subscription.controller";
 
 const router = Router();
@@ -31,6 +33,18 @@ router.get(
   "/status",
   authenticate,
   asyncHandler(getSubscriptionStatusHandler)
+);
+
+router.get(
+  "/billing/history",
+  authenticate,
+  asyncHandler(billingHistoryHandler)
+);
+
+router.get(
+  "/billing/history/:paymentId",
+  authenticate,
+  asyncHandler(billingDetailHandler)
 );
 
 router.post(

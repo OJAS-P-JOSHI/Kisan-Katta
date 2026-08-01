@@ -2,6 +2,7 @@ import { api } from '@/services/api';
 import type { ApiSuccessResponse } from '@/types';
 
 import type {
+  BillingPaymentDTO,
   CreateSubscriptionResponse,
   SubscriptionDTO,
   SubscriptionStatusDTO,
@@ -49,5 +50,21 @@ export const cancelSubscription = async (
   const { data } = await api.post<ApiSuccessResponse<SubscriptionDTO>>(`${BASE}/cancel`, {
     cancelAtCycleEnd,
   });
+  return data.data;
+};
+
+export const getBillingHistory = async (): Promise<BillingPaymentDTO[]> => {
+  const { data } = await api.get<ApiSuccessResponse<BillingPaymentDTO[]>>(
+    `${BASE}/billing/history`,
+  );
+  return data.data;
+};
+
+export const getBillingPaymentDetail = async (
+  paymentId: string,
+): Promise<BillingPaymentDTO> => {
+  const { data } = await api.get<ApiSuccessResponse<BillingPaymentDTO>>(
+    `${BASE}/billing/history/${encodeURIComponent(paymentId)}`,
+  );
   return data.data;
 };

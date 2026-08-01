@@ -32,11 +32,15 @@ export type SubscriptionDTO = {
   id: string;
   userId: string;
   planId: string;
+  planName: string;
+  billingFrequency: string;
   subscriptionId: string | null;
   customerId: string | null;
   status: SubscriptionStatus;
   isActive: boolean;
+  autoRenewalEnabled: boolean;
   amount: number;
+  amountRupees: number;
   currency: string;
   quantity: number;
   totalCount: number;
@@ -50,6 +54,21 @@ export type SubscriptionDTO = {
   cancelAtCycleEnd: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type BillingPaymentDTO = {
+  paymentId: string;
+  invoiceId: string | null;
+  amount: number;
+  amountRupees: number;
+  currency: string;
+  status: 'PAID' | 'FAILED' | 'PENDING' | 'REFUNDED';
+  paymentMethod: string | null;
+  paidAt: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  gateway: string;
+  subscriptionId: string | null;
 };
 
 export type VerifySubscriptionBody = {

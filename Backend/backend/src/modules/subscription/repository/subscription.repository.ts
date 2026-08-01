@@ -1,7 +1,10 @@
 import { Types } from "mongoose";
 import { UserSubscription } from "../subscription.model";
-import type { IUserSubscription } from "../interfaces/subscription.interface";
-import type { ISubscriptionEvent } from "../interfaces/subscription.interface";
+import type {
+  IBillingPayment,
+  ISubscriptionEvent,
+  IUserSubscription,
+} from "../interfaces/subscription.interface";
 import type { SubscriptionStatus } from "../types/subscription.types";
 import { LIVING_SUBSCRIPTION_STATUSES } from "../subscription.constants";
 
@@ -90,6 +93,45 @@ export const updateSubscriptionById = (
     new: true,
     runValidators: true,
   }).lean();
+};
+
+/**
+ * Idempotently records a billing payment by paymentId.
+ * If the payment already exists, updates mutable fields; otherwise pushes.
+ */
+export const upsertBillingPayment = async (
+  subscriptionDocId: string,
+  payment: IBillingPayment
+): Promise<IUserSubscription | null> => {
+  const existing = await UserSubscription.findOneAndUpdate(
+    {
+      _id: subscriptionDocId,
+      "billingPayments.paymentId": payment.paymentId,
+    },
+    {
+      $set: {
+        "billingPayments.$.invoiceId": payment.invoiceId,
+        "billingPayments.$.amount": payment.amount,
+        "billingPayments.$.currency": payment.currency,
+        "billingPayments.$.status": payment.status,
+        "billingPayments.$.paymentMethod": payment.paymentMethod,
+        "billingPayments.$.paidAt": payment.paidAt,
+        "billingPayments.$.periodStart": payment.periodStart,
+        "billingPayments.$.periodEnd": payment.periodEnd,
+        "billingPayments.$.gateway": payment.gateway,
+        "billingPayments.$.subscriptionId": payment.subscriptionId,
+      },
+    },
+    { new: true }
+  ).lean();
+
+  if (existing) return existing;
+
+  return UserSubscription.findByIdAndUpdate(
+    subscriptionDocId,
+    { $push: { billingPayments: payment } },
+    { new: true, runValidators: true }
+  ).lean();
 };
 
 /** Subscriptions that may need a Razorpay sync (recon sweep). */

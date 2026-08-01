@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect, router } from 'expo-router';
+import { useFocusEffect, router, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Dialog, Portal, Text } from 'react-native-paper';
@@ -180,6 +180,16 @@ export default function ProfileScreen() {
           onPress={() => router.push('/edit-profile')}
         >
           {profileStrings.header.editProfile}
+        </Button>
+
+        <Button
+          mode="outlined"
+          icon="credit-card-outline"
+          style={[styles.actionButton, buttonSurface]}
+          contentStyle={styles.buttonContent}
+          onPress={() => router.push('/subscription-billing' as Href)}
+        >
+          Subscription & Billing
         </Button>
 
         <Button

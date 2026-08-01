@@ -55,6 +55,14 @@ function RootNavigator() {
           name="marketplace-saved"
           options={{ headerShown: true, title: marketplaceStrings.saved.title, presentation: 'card' }}
         />
+        <Stack.Screen
+          name="subscription-billing"
+          options={{ headerShown: true, title: 'Subscription & Billing', presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="subscription-billing/[paymentId]"
+          options={{ headerShown: true, title: 'Payment Details', presentation: 'card' }}
+        />
       </Stack.Protected>
       <Stack.Protected guard={!canEnterApp}>
         <Stack.Screen name="(auth)" />

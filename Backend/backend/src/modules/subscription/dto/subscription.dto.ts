@@ -1,17 +1,28 @@
+import type { IBillingPayment } from "../interfaces/subscription.interface";
 import type { IUserSubscription } from "../interfaces/subscription.interface";
-import type { SubscriptionStatus } from "../types/subscription.types";
+import {
+  SUBSCRIPTION_BILLING_FREQUENCY_LABEL,
+  SUBSCRIPTION_FEE_RUPEES,
+  SUBSCRIPTION_PLAN_DISPLAY_NAME,
+} from "../subscription.constants";
 import { hasSubscriptionAccess } from "../utils/access";
+import type { SubscriptionStatus } from "../types/subscription.types";
 
 export interface SubscriptionDTO {
   id: string;
   userId: string;
   planId: string;
+  planName: string;
+  billingFrequency: string;
   subscriptionId: string | null;
   customerId: string | null;
   status: SubscriptionStatus;
   /** True when the user may enter the mobile app Home stack. */
   isActive: boolean;
+  /** True when Razorpay will continue charging next cycle. */
+  autoRenewalEnabled: boolean;
   amount: number;
+  amountRupees: number;
   currency: string;
   quantity: number;
   totalCount: number;
@@ -51,8 +62,48 @@ export interface SubscriptionStatusDTO {
   subscriptionId: string | null;
 }
 
+export interface BillingPaymentDTO {
+  paymentId: string;
+  invoiceId: string | null;
+  amount: number;
+  amountRupees: number;
+  currency: string;
+  status: IBillingPayment["status"];
+  paymentMethod: string | null;
+  paidAt: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  gateway: string;
+  subscriptionId: string | null;
+}
+
 const toIso = (value: Date | null | undefined): string | null =>
   value ? value.toISOString() : null;
+
+const isAutoRenewalEnabled = (doc: IUserSubscription): boolean => {
+  if (!hasSubscriptionAccess(doc)) return false;
+  if (doc.status === "CANCELLED" || doc.status === "COMPLETED") return false;
+  if (doc.cancelledAt) return false;
+  if (doc.cancelAtCycleEnd) return false;
+  return doc.status === "ACTIVE" || doc.status === "AUTHENTICATED";
+};
+
+export const toBillingPaymentDTO = (
+  payment: IBillingPayment
+): BillingPaymentDTO => ({
+  paymentId: payment.paymentId,
+  invoiceId: payment.invoiceId,
+  amount: payment.amount,
+  amountRupees: payment.amount / 100,
+  currency: payment.currency,
+  status: payment.status,
+  paymentMethod: payment.paymentMethod,
+  paidAt: payment.paidAt.toISOString(),
+  periodStart: toIso(payment.periodStart),
+  periodEnd: toIso(payment.periodEnd),
+  gateway: payment.gateway,
+  subscriptionId: payment.subscriptionId,
+});
 
 export const toSubscriptionDTO = (
   doc: IUserSubscription
@@ -60,11 +111,15 @@ export const toSubscriptionDTO = (
   id: String(doc._id),
   userId: String(doc.userId),
   planId: doc.planId,
+  planName: SUBSCRIPTION_PLAN_DISPLAY_NAME,
+  billingFrequency: SUBSCRIPTION_BILLING_FREQUENCY_LABEL,
   subscriptionId: doc.subscriptionId,
   customerId: doc.customerId,
   status: doc.status,
   isActive: hasSubscriptionAccess(doc),
+  autoRenewalEnabled: isAutoRenewalEnabled(doc),
   amount: doc.amount,
+  amountRupees: doc.amount / 100 || SUBSCRIPTION_FEE_RUPEES,
   currency: doc.currency,
   quantity: doc.quantity,
   totalCount: doc.totalCount,

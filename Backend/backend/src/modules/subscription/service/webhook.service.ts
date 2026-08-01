@@ -66,6 +66,9 @@ export const handleSubscriptionWebhook = async (
     str(paymentEntity.subscription_id);
   const paymentId = str(paymentEntity.id);
   const paymentMethod = str(paymentEntity.method);
+  const invoiceId =
+    str(paymentEntity.invoice_id) ??
+    str(entityOf(payload, "invoice").id);
 
   const eventId =
     str(eventIdHeader) ??
@@ -129,6 +132,7 @@ export const handleSubscriptionWebhook = async (
       eventType,
       paymentId,
       paymentMethod,
+      invoiceId,
       gatewayResponse: body,
     });
 
