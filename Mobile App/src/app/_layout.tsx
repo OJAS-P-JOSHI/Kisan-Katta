@@ -4,6 +4,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
+import { farmerPriceStrings } from '@/features/farmer-price/farmer-price.strings';
 import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import { navigationTheme, paperTheme } from '@/theme';
 
@@ -54,6 +55,14 @@ function RootNavigator() {
         <Stack.Screen
           name="marketplace-saved"
           options={{ headerShown: true, title: marketplaceStrings.saved.title, presentation: 'card' }}
+        />
+        <Stack.Screen
+          name="farmer-price-detail/[pollId]"
+          options={{
+            headerShown: true,
+            title: farmerPriceStrings.detail.title,
+            presentation: 'card',
+          }}
         />
         <Stack.Screen
           name="subscription-billing"

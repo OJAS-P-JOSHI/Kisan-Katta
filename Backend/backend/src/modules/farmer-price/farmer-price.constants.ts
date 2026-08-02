@@ -47,3 +47,11 @@ export const FARMER_PRICE_SYNC_INTERVAL_MINUTES = 60;
  * before an automatic poll is created for that pair.
  */
 export const MIN_FARMERS_PER_POLL = 1;
+
+/**
+ * When GET /polls/my loses the open-slot race, wait this long for the
+ * winning request to finish creating the poll before returning.
+ * Covers slow government-price fetches without leaving callers empty.
+ */
+export const ENSURE_PEER_WAIT_MS = 8_000;
+export const ENSURE_PEER_POLL_INTERVAL_MS = 75;

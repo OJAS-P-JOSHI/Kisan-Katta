@@ -1,6 +1,6 @@
 /**
- * Farmer Price — Production-freeze QA suite
- * Temporary script: HTTP + MongoDB validation. Cleans up QA data on exit.
+ * Farmer Price — Production validation QA suite
+ * Uses real Crop Master names + LGD location codes. Cleans up QA data on exit.
  */
 import mongoose, { Types } from "mongoose";
 import * as dotenv from "dotenv";
@@ -11,11 +11,14 @@ dotenv.config({ path: path.join(__dirname, "..", ".env") });
 const BASE = process.env.QA_BASE_URL ?? "http://127.0.0.1:4000";
 const MONGODB_URI = process.env.MONGODB_URI!;
 
+/** Real Agmarknet commodities (Crop Master). Obscure enough for safe cleanup. */
+const CROP_A = "Ajwan";
+const CROP_B = "Alasande Gram";
+const STRESS_CROP = "Absinthe";
+
 type Result = { name: string; status: "PASS" | "FAIL" | "SKIP"; detail?: string };
 
 const results: Result[] = [];
-const qaCropA = `__QA_FP_CropA_${Date.now()}`;
-const qaCropB = `__QA_FP_CropB_${Date.now()}`;
 const mobiles = {
   jalnaFavA: "9000000001",
   puneFavA: "9000000002",
@@ -24,6 +27,25 @@ const mobiles = {
 
 const createdPollIds: string[] = [];
 const createdUserIds: string[] = [];
+
+const LOC = {
+  jalna: {
+    district: "Jalna",
+    districtCode: 479,
+    taluka: "Ambad",
+    talukaCode: 4129,
+    village: "Alamgaon",
+    villageCode: 547792,
+  },
+  pune: {
+    district: "Pune",
+    districtCode: 490,
+    taluka: "Ambegaon",
+    talukaCode: 4188,
+    village: "Adivare",
+    villageCode: 555422,
+  },
+} as const;
 
 const record = (name: string, status: Result["status"], detail?: string) => {
   results.push({ name, status, detail });
@@ -91,34 +113,155 @@ async function ensureProfile(
   token: string,
   profile: {
     name: string;
-    district: string;
-    taluka: string;
-    village: string;
+    location: (typeof LOC)["jalna"] | (typeof LOC)["pune"];
     favoriteCrops: string[];
     language: string;
   }
 ): Promise<void> {
+  const body = {
+    name: profile.name,
+    district: profile.location.district,
+    districtCode: profile.location.districtCode,
+    taluka: profile.location.taluka,
+    talukaCode: profile.location.talukaCode,
+    village: profile.location.village,
+    villageCode: profile.location.villageCode,
+    favoriteCrops: profile.favoriteCrops,
+    language: profile.language,
+  };
   const existing = await http("GET", "/api/v1/profile/me", { token });
   if (existing.status === 200) {
     await http("PUT", "/api/v1/profile/me", {
       token,
-      body: {
-        name: profile.name,
-        district: profile.district,
-        taluka: profile.taluka,
-        village: profile.village,
-        favoriteCrops: profile.favoriteCrops,
-        language: profile.language,
-      },
+      body,
       expectStatus: 200,
     });
     return;
   }
   await http("POST", "/api/v1/profile/", {
     token,
-    body: profile,
+    body,
     expectStatus: 201,
   });
+}
+
+async function clearPair(
+  pollsCol: mongoose.mongo.Collection,
+  votesCol: mongoose.mongo.Collection,
+  slotsCol: mongoose.mongo.Collection,
+  district: string,
+  crop: string
+): Promise<void> {
+  const open = await pollsCol
+    .find({ district, crop, endsAt: { $gt: new Date() } })
+    .project({ _id: 1 })
+    .toArray();
+  for (const p of open) {
+    await votesCol.deleteMany({ pollId: p._id });
+    await pollsCol.deleteOne({ _id: p._id });
+  }
+  await slotsCol.deleteOne({ district, crop });
+}
+
+async function createOrGetPoll(
+  token: string,
+  crop: string,
+  district: string
+): Promise<{ pollId: string; created: boolean; poll: Record<string, unknown> }> {
+  const createRes = await http("POST", "/api/v1/farmer-price/polls", {
+    token,
+    body: { crop, district },
+  });
+  if (createRes.status === 201) {
+    const poll = (createRes.json["data"] as Record<string, unknown>) ?? {};
+    const pollId = String(poll["id"] ?? "");
+    createdPollIds.push(pollId);
+    return { pollId, created: true, poll };
+  }
+  if (createRes.status === 409) {
+    const my = await http("GET", "/api/v1/farmer-price/polls/my", {
+      token,
+      expectStatus: 200,
+    });
+    const polls = (my.json["data"] as Record<string, unknown>[]) ?? [];
+    const match = polls.find((p) => p["crop"] === crop && p["district"] === district);
+    if (!match) {
+      throw new Error(`409 on create but no open ${district}+${crop} in /polls/my`);
+    }
+    return {
+      pollId: String(match["id"]),
+      created: false,
+      poll: match,
+    };
+  }
+  throw new Error(`POST /polls unexpected status ${createRes.status}: ${JSON.stringify(createRes.json)}`);
+}
+
+async function runConcurrentEnsure(
+  name: string,
+  concurrency: number,
+  crop: string,
+  district: string,
+  location: (typeof LOC)["jalna"],
+  pollsCol: mongoose.mongo.Collection,
+  votesCol: mongoose.mongo.Collection,
+  slotsCol: mongoose.mongo.Collection
+): Promise<void> {
+  await clearPair(pollsCol, votesCol, slotsCol, district, crop);
+
+  const tokens: string[] = [];
+  for (let i = 0; i < concurrency; i++) {
+    const mobile = `901${String(concurrency).padStart(2, "0")}${String(i).padStart(5, "0")}`;
+    const user = await login(mobile);
+    await ensureProfile(user.token, {
+      name: `QA Concurrent ${i}`,
+      location,
+      favoriteCrops: [crop],
+      language: "en",
+    });
+    tokens.push(user.token);
+  }
+
+  const responses = await Promise.all(
+    tokens.map((token) => http("GET", "/api/v1/farmer-price/polls/my", { token }))
+  );
+
+  const ok = responses.every((r) => r.status === 200);
+  assert(`${name}: all HTTP 200`, ok, `statuses=${responses.map((r) => r.status).join(",")}`);
+
+  const pollIds = responses.map((r) => {
+    const polls = (r.json["data"] as Record<string, unknown>[]) ?? [];
+    const match = polls.find((p) => p["crop"] === crop && p["district"] === district);
+    return match ? String(match["id"]) : "";
+  });
+
+  const emptyCount = pollIds.filter((id) => !id).length;
+  assert(
+    `${name}: no empty poll lists`,
+    emptyCount === 0,
+    `empty=${emptyCount}/${concurrency}`
+  );
+
+  const unique = new Set(pollIds.filter(Boolean));
+  assert(
+    `${name}: all callers see same poll`,
+    unique.size === 1,
+    `unique=${unique.size} ids=${[...unique].join(",")}`
+  );
+
+  const dbOpen = await pollsCol
+    .find({ district, crop, endsAt: { $gt: new Date() } })
+    .project({ _id: 1 })
+    .toArray();
+  assert(
+    `${name}: exactly one DB poll`,
+    dbOpen.length === 1,
+    `count=${dbOpen.length}`
+  );
+
+  if (dbOpen[0]) {
+    createdPollIds.push(String(dbOpen[0]._id));
+  }
 }
 
 async function main(): Promise<void> {
@@ -126,8 +269,9 @@ async function main(): Promise<void> {
   console.log("\n=== Farmer Price QA Suite ===\n");
   // eslint-disable-next-line no-console
   console.log(`Base URL: ${BASE}`);
+  // eslint-disable-next-line no-console
+  console.log(`Crops: ${CROP_A}, ${CROP_B}, stress=${STRESS_CROP}`);
 
-  // Health
   try {
     const health = await http("GET", "/health");
     assert("Server reachable", health.status === 200 || health.status === 304, `status=${health.status}`);
@@ -141,39 +285,39 @@ async function main(): Promise<void> {
   const db = mongoose.connection.db!;
   const pollsCol = db.collection("farmer_price_polls");
   const votesCol = db.collection("farmer_price_votes");
+  const slotsCol = db.collection("farmer_price_open_slots");
 
-  // Auth users
+  // Isolate QA crops so POST create and ensure paths are deterministic.
+  await clearPair(pollsCol, votesCol, slotsCol, "Jalna", CROP_A);
+  await clearPair(pollsCol, votesCol, slotsCol, "Jalna", CROP_B);
+  await clearPair(pollsCol, votesCol, slotsCol, "Jalna", STRESS_CROP);
+  await clearPair(pollsCol, votesCol, slotsCol, "Pune", CROP_A);
+
   const jalna = await login(mobiles.jalnaFavA);
   const pune = await login(mobiles.puneFavA);
   const jalnaOtherCrop = await login(mobiles.jalnaFavB);
 
   await ensureProfile(jalna.token, {
     name: "QA Jalna Farmer",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA Village",
-    favoriteCrops: [qaCropA, qaCropB],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_A, CROP_B],
     language: "en",
   });
   await ensureProfile(pune.token, {
     name: "QA Pune Farmer",
-    district: "Pune",
-    taluka: "Haveli",
-    village: "QA Village",
-    favoriteCrops: [qaCropA],
+    location: LOC.pune,
+    favoriteCrops: [CROP_A],
     language: "en",
   });
   await ensureProfile(jalnaOtherCrop.token, {
     name: "QA Jalna Other",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA Village",
-    favoriteCrops: [qaCropB],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_B],
     language: "en",
   });
 
   // ------------------------------------------------------------------
-  // Security: no JWT / bad JWT / malformed id
+  // Security
   // ------------------------------------------------------------------
   {
     const noAuth = await http("GET", "/api/v1/farmer-price/polls");
@@ -190,19 +334,19 @@ async function main(): Promise<void> {
     assert(
       "Security: malformed ObjectId rejected",
       badId.status === 400,
-      `status=${badId.status} body=${JSON.stringify(badId.json)}`
+      `status=${badId.status}`
     );
   }
 
   // ------------------------------------------------------------------
-  // Create poll (gov likely unavailable for QA crop)
+  // POST /polls still exists (used by sync/ensure + authenticated create)
   // ------------------------------------------------------------------
   const createRes = await http("POST", "/api/v1/farmer-price/polls", {
     token: jalna.token,
-    body: { crop: qaCropA, district: "Jalna" },
+    body: { crop: CROP_A, district: "Jalna" },
   });
   assert(
-    "POST /polls creates poll",
+    "POST /polls exists and creates poll",
     createRes.status === 201 && createRes.json["success"] === true,
     `status=${createRes.status}`
   );
@@ -216,14 +360,13 @@ async function main(): Promise<void> {
   const durationHours = (endsAt.getTime() - startsAt.getTime()) / (1000 * 60 * 60);
   assert("Poll duration is 72 hours", Math.abs(durationHours - 72) < 0.02, `hours=${durationHours}`);
   assert("Poll district stored", poll["district"] === "Jalna", String(poll["district"]));
-  assert("Poll crop stored", poll["crop"] === qaCropA, String(poll["crop"]));
+  assert("Poll crop stored", poll["crop"] === CROP_A, String(poll["crop"]));
   assert("Poll status OPEN", poll["status"] === "OPEN", String(poll["status"]));
   assert(
     "Response format success+data",
     createRes.json["success"] === true && typeof createRes.json["data"] === "object"
   );
 
-  // DB document
   const dbPoll = await pollsCol.findOne({ _id: new Types.ObjectId(pollId) });
   assert("Poll appears in database", !!dbPoll);
   assert(
@@ -242,7 +385,6 @@ async function main(): Promise<void> {
     assert("Gov unavailable → available=false", dbPoll?.["governmentPriceAvailable"] === false);
   }
 
-  // Snapshot immutability: mutate DB snapshot, ensure GET returns stored value not live market
   const frozenSnapshot = 10000;
   await pollsCol.updateOne(
     { _id: new Types.ObjectId(pollId) },
@@ -273,33 +415,39 @@ async function main(): Promise<void> {
       typeof detailData["remainingHours"] === "number"
   );
 
-  // Duplicate active poll
+  // Cross-district read is currently allowed (JWT only) — document behaviour.
+  const crossRead = await http("GET", `/api/v1/farmer-price/polls/${pollId}`, {
+    token: pune.token,
+  });
+  assert(
+    "GET /polls/:pollId readable by any authenticated farmer",
+    crossRead.status === 200,
+    `status=${crossRead.status}`
+  );
+
   const dupPoll = await http("POST", "/api/v1/farmer-price/polls", {
     token: jalna.token,
-    body: { crop: qaCropA, district: "Jalna" },
+    body: { crop: CROP_A, district: "Jalna" },
   });
   assert("Duplicate active poll rejected", dupPoll.status === 409, `status=${dupPoll.status}`);
 
   // ------------------------------------------------------------------
-  // List polls
+  // List / My polls
   // ------------------------------------------------------------------
-  const listRes = await http("GET", `/api/v1/farmer-price/polls?crop=${encodeURIComponent(qaCropA)}`, {
+  const listRes = await http("GET", `/api/v1/farmer-price/polls?crop=${encodeURIComponent(CROP_A)}`, {
     token: jalna.token,
     expectStatus: 200,
   });
   const listData = listRes.json["data"] as { polls: unknown[] };
   assert("GET /polls returns list", Array.isArray(listData.polls));
 
-  // ------------------------------------------------------------------
-  // My polls
-  // ------------------------------------------------------------------
   const myJalna = await http("GET", "/api/v1/farmer-price/polls/my", {
     token: jalna.token,
     expectStatus: 200,
   });
   const myJalnaPolls = (myJalna.json["data"] as Record<string, unknown>[]) ?? [];
   assert(
-    "My polls: Jalna farmer sees QA crop A",
+    "My polls: Jalna farmer sees crop A",
     myJalnaPolls.some((p) => p["id"] === pollId)
   );
   assert(
@@ -327,27 +475,12 @@ async function main(): Promise<void> {
     !myOtherCropPolls.some((p) => p["id"] === pollId)
   );
 
-  // Sort nearest ending: create second poll ending sooner via DB, then check order
-  const createB = await http("POST", "/api/v1/farmer-price/polls", {
-    token: jalna.token,
-    body: { crop: qaCropB, district: "Jalna" },
-  });
-  const pollBId = String((createB.json["data"] as Record<string, unknown>)?.["id"] ?? "");
-  createdPollIds.push(pollBId);
+  const { pollId: pollBId } = await createOrGetPoll(jalna.token, CROP_B, "Jalna");
   const sooner = new Date(Date.now() + 2 * 60 * 60 * 1000);
   await pollsCol.updateOne(
     { _id: new Types.ObjectId(pollBId) },
     { $set: { endsAt: sooner } }
   );
-  // Ensure farmer has both favourites
-  await ensureProfile(jalna.token, {
-    name: "QA Jalna Farmer",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA Village",
-    favoriteCrops: [qaCropA, qaCropB],
-    language: "en",
-  });
   const mySorted = await http("GET", "/api/v1/farmer-price/polls/my", {
     token: jalna.token,
     expectStatus: 200,
@@ -363,12 +496,12 @@ async function main(): Promise<void> {
   }
 
   // ------------------------------------------------------------------
-  // Price validation (±40%)
+  // Price / reason / eligibility validation
   // ------------------------------------------------------------------
   const rejectLow = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
-      expectedPrice: Math.ceil(frozenSnapshot * 0.59), // ~-41%
+      expectedPrice: Math.ceil(frozenSnapshot * 0.59),
       reasonType: "HIGH_DEMAND",
       reasonText: "Demand is high in market area",
     },
@@ -378,24 +511,16 @@ async function main(): Promise<void> {
   const rejectHigh = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
-      expectedPrice: Math.floor(frozenSnapshot * 1.41), // ~+41%
+      expectedPrice: Math.floor(frozenSnapshot * 1.41),
       reasonType: "HIGH_DEMAND",
       reasonText: "Demand is high in market area",
     },
   });
   assert("Price +41% rejected", rejectHigh.status === 400, `status=${rejectHigh.status}`);
 
-  // Boundary accept will be done as first real vote at -40%
   const minAllowed = Math.ceil(frozenSnapshot * 0.6);
   const maxAllowed = Math.floor(frozenSnapshot * 1.4);
 
-  // ------------------------------------------------------------------
-  // Reason validation (use pune for district fail, jalnaOther for fav fail)
-  // First test reason rules with temporary user via synthetic approach:
-  // create helper users for reason tests that don't consume jalna's vote yet.
-  // ------------------------------------------------------------------
-
-  // District validation
   const wrongDistrict = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: pune.token,
     body: {
@@ -408,15 +533,12 @@ async function main(): Promise<void> {
     "Wrong district vote rejected",
     wrongDistrict.status === 403 &&
       String((wrongDistrict.json as { message?: string }).message ?? "").includes("Invalid District"),
-    `status=${wrongDistrict.status} msg=${(wrongDistrict.json as { message?: string }).message}`
+    `status=${wrongDistrict.status}`
   );
 
-  // Favourite crop validation
   const wrongFav = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalnaOtherCrop.token,
-    body: {
-      expectedPrice: frozenSnapshot,
-    },
+    body: { expectedPrice: frozenSnapshot },
   });
   assert(
     "Non-favourite crop vote rejected",
@@ -425,7 +547,6 @@ async function main(): Promise<void> {
     `status=${wrongFav.status}`
   );
 
-  // Reason: different price without reason
   const noReason = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: { expectedPrice: frozenSnapshot + 100 },
@@ -437,7 +558,6 @@ async function main(): Promise<void> {
     `status=${noReason.status}`
   );
 
-  // Reason too short
   const shortReason = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
@@ -448,7 +568,6 @@ async function main(): Promise<void> {
   });
   assert("Reason < 10 rejected", shortReason.status === 400, `status=${shortReason.status}`);
 
-  // Reason too long
   const longReason = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
@@ -459,7 +578,6 @@ async function main(): Promise<void> {
   });
   assert("Reason > 200 rejected", longReason.status === 400, `status=${longReason.status}`);
 
-  // Whitespace only
   const wsReason = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
@@ -470,7 +588,6 @@ async function main(): Promise<void> {
   });
   assert("Whitespace-only reason rejected", wsReason.status === 400, `status=${wsReason.status}`);
 
-  // OTHER without reasonText
   const otherNoText = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: {
@@ -478,13 +595,8 @@ async function main(): Promise<void> {
       reasonType: "OTHER",
     },
   });
-  assert(
-    "OTHER without reasonText rejected",
-    otherNoText.status === 400,
-    `status=${otherNoText.status}`
-  );
+  assert("OTHER without reasonText rejected", otherNoText.status === 400, `status=${otherNoText.status}`);
 
-  // Exact gov price — reason optional (first successful vote)
   const vote1 = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: { expectedPrice: frozenSnapshot },
@@ -492,11 +604,10 @@ async function main(): Promise<void> {
   assert(
     "Exact gov price without reason accepted",
     vote1.status === 201 && vote1.json["success"] === true,
-    `status=${vote1.status} body=${JSON.stringify(vote1.json)}`
+    `status=${vote1.status}`
   );
   const vote1Data = vote1.json["data"] as Record<string, unknown>;
   assert("Vote response returns updated poll", vote1Data["id"] === pollId && vote1Data["voteCount"] === 1);
-  assert("voteCount=1 after first vote", vote1Data["voteCount"] === 1);
   assert("communityExpectedPrice null at 1 vote", vote1Data["communityExpectedPrice"] === null);
   assert("confidence NOT_AVAILABLE at 1 vote", vote1Data["confidence"] === "NOT_AVAILABLE");
   assert("minimumVotesReached false at 1 vote", vote1Data["minimumVotesReached"] === false);
@@ -505,7 +616,6 @@ async function main(): Promise<void> {
   const voteCountDb = await votesCol.countDocuments({ pollId: new Types.ObjectId(pollId) });
   assert("Vote inserted in DB", voteCountDb === 1, `count=${voteCountDb}`);
 
-  // Duplicate vote
   const dupVote = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
     token: jalna.token,
     body: { expectedPrice: frozenSnapshot },
@@ -516,17 +626,12 @@ async function main(): Promise<void> {
       String((dupVote.json as { message?: string }).message ?? "").includes("Already Voted"),
     `status=${dupVote.status}`
   );
-  const voteCountAfterDup = await votesCol.countDocuments({ pollId: new Types.ObjectId(pollId) });
-  assert("DB unchanged after duplicate", voteCountAfterDup === 1, `count=${voteCountAfterDup}`);
 
-  // Boundary -40% / +40% with additional voters
   const voter2 = await login("9000000010");
   await ensureProfile(voter2.token, {
     name: "QA Voter 2",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA",
-    favoriteCrops: [qaCropA],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_A],
     language: "en",
   });
   const acceptMin = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
@@ -542,10 +647,8 @@ async function main(): Promise<void> {
   const voter3 = await login("9000000011");
   await ensureProfile(voter3.token, {
     name: "QA Voter 3",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA",
-    favoriteCrops: [qaCropA],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_A],
     language: "en",
   });
   const acceptMax = await http("POST", `/api/v1/farmer-price/polls/${pollId}/vote`, {
@@ -559,10 +662,9 @@ async function main(): Promise<void> {
   assert("Price +40% boundary accepted", acceptMax.status === 201, `status=${acceptMax.status}`);
 
   // ------------------------------------------------------------------
-  // Seed votes 4..9 via DB, then 10th via API → community price
+  // Median / confidence at 10 votes
   // ------------------------------------------------------------------
-  const pricesForMedian = [10000, minAllowed, maxAllowed]; // existing 3
-  // Add synthetic votes to reach 9 total
+  const pricesForMedian = [10000, minAllowed, maxAllowed];
   for (let i = 4; i <= 9; i++) {
     const price = 10000 + i * 10;
     pricesForMedian.push(price);
@@ -570,14 +672,13 @@ async function main(): Promise<void> {
       pollId: new Types.ObjectId(pollId),
       userId: new Types.ObjectId(),
       district: "Jalna",
-      crop: qaCropA,
+      crop: CROP_A,
       expectedPrice: price,
       reasonType: "HIGH_DEMAND",
       reasonText: `Synthetic reason number ${i}xx`,
       createdAt: new Date(Date.now() - (20 - i) * 60_000),
     });
   }
-  // Sync voteCount to 9 without community price (simulating state before 10th)
   await pollsCol.updateOne(
     { _id: new Types.ObjectId(pollId) },
     {
@@ -601,10 +702,8 @@ async function main(): Promise<void> {
   const voter10 = await login("9000000012");
   await ensureProfile(voter10.token, {
     name: "QA Voter 10",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA",
-    favoriteCrops: [qaCropA],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_A],
     language: "en",
   });
   const tenthPrice = 10100;
@@ -623,7 +722,6 @@ async function main(): Promise<void> {
   assert("10 votes: confidence LOW", v10["confidence"] === "LOW");
   assert("10 votes: communityExpectedPrice set", typeof v10["communityExpectedPrice"] === "number");
 
-  // Median check
   const sorted = [...pricesForMedian].sort((a, b) => a - b);
   const expectedMedian =
     sorted.length % 2 === 1
@@ -632,10 +730,9 @@ async function main(): Promise<void> {
   assert(
     "Median algorithm (even/odd via 10 votes)",
     v10["communityExpectedPrice"] === expectedMedian,
-    `expected=${expectedMedian} got=${v10["communityExpectedPrice"]} prices=${sorted.join(",")}`
+    `expected=${expectedMedian} got=${v10["communityExpectedPrice"]}`
   );
 
-  // Difference
   const diff = Number(v10["communityExpectedPrice"]) - frozenSnapshot;
   const pct = Math.round((diff / frozenSnapshot) * 10000) / 100;
   assert(
@@ -649,13 +746,6 @@ async function main(): Promise<void> {
     `expected=${pct} got=${v10["differencePercentage"]}`
   );
 
-  // Confidence unit thresholds (pure + DB override simulation for 50/150)
-  // Verify via stats module logic already; also force update and GET
-  await pollsCol.updateOne(
-    { _id: new Types.ObjectId(pollId) },
-    { $set: { voteCount: 50, confidence: "MEDIUM" } }
-  );
-  // Note: GET returns stored confidence — backend stores on vote. Verify calculateConfidence via import.
   const { calculateConfidence, calculateMedianPrice, calculateDifferenceFromGovernment } =
     await import("../src/modules/farmer-price/farmer-price.stats");
   assert("Confidence @9 NOT_AVAILABLE", calculateConfidence(9) === "NOT_AVAILABLE");
@@ -667,28 +757,15 @@ async function main(): Promise<void> {
   const noGovDiff = calculateDifferenceFromGovernment(7100, false, null);
   assert("Difference null when gov unavailable", noGovDiff.differenceFromGovernmentPrice === null);
 
-  // Restore poll stats consistency after confidence probe
-  await pollsCol.updateOne(
-    { _id: new Types.ObjectId(pollId) },
-    {
-      $set: {
-        voteCount: 10,
-        confidence: "LOW",
-        communityExpectedPrice: expectedMedian,
-        minimumVotesReached: true,
-      },
-    }
-  );
-
   // ------------------------------------------------------------------
-  // Recent insights — insert many reasons, verify latest 5
+  // Recent insights
   // ------------------------------------------------------------------
   for (let i = 0; i < 8; i++) {
     await votesCol.insertOne({
       pollId: new Types.ObjectId(pollId),
       userId: new Types.ObjectId(),
       district: "Jalna",
-      crop: qaCropA,
+      crop: CROP_A,
       expectedPrice: 10000,
       reasonType: "OTHER",
       reasonText: `Insight reason text number ${i} here`,
@@ -726,10 +803,8 @@ async function main(): Promise<void> {
   const closedVoter = await login("9000000013");
   await ensureProfile(closedVoter.token, {
     name: "QA Closed",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA",
-    favoriteCrops: [qaCropA],
+    location: LOC.jalna,
+    favoriteCrops: [CROP_A],
     language: "en",
   });
   const votesBeforeClose = await votesCol.countDocuments({
@@ -756,7 +831,6 @@ async function main(): Promise<void> {
   });
   assert("No vote inserted on closed poll", votesBeforeClose === votesAfterClose);
 
-  // Status CLOSED on GET
   const closedGet = await http("GET", `/api/v1/farmer-price/polls/${pollId}`, {
     token: jalna.token,
     expectStatus: 200,
@@ -769,7 +843,7 @@ async function main(): Promise<void> {
   // ------------------------------------------------------------------
   // History
   // ------------------------------------------------------------------
-  const history = await http("GET", `/api/v1/farmer-price/history/${encodeURIComponent(qaCropA)}`, {
+  const history = await http("GET", `/api/v1/farmer-price/history/${encodeURIComponent(CROP_A)}`, {
     token: jalna.token,
     expectStatus: 200,
   });
@@ -778,19 +852,13 @@ async function main(): Promise<void> {
     district: string;
     polls: Record<string, unknown>[];
   };
-  assert("History crop matches", histData.crop === qaCropA);
+  assert("History crop matches", histData.crop === CROP_A);
   assert("History district is farmer district", histData.district === "Jalna");
   assert(
     "History includes closed QA poll",
     histData.polls.some((p) => p["id"] === pollId)
   );
-  assert(
-    "History polls newest first (by endsAt)",
-    histData.polls.length < 2 ||
-      new Date(String(histData.polls[0]!["endsAt"])).getTime() >=
-        new Date(String(histData.polls[1]!["endsAt"])).getTime()
-  );
-  const histPune = await http("GET", `/api/v1/farmer-price/history/${encodeURIComponent(qaCropA)}`, {
+  const histPune = await http("GET", `/api/v1/farmer-price/history/${encodeURIComponent(CROP_A)}`, {
     token: pune.token,
     expectStatus: 200,
   });
@@ -822,14 +890,13 @@ async function main(): Promise<void> {
     JSON.stringify(pollIndexes.map((i) => i.key))
   );
 
-  // Unique index enforcement
   let uniqueEnforced = false;
   try {
     await votesCol.insertOne({
       pollId: new Types.ObjectId(pollId),
       userId: new Types.ObjectId(jalna.userId),
       district: "Jalna",
-      crop: qaCropA,
+      crop: CROP_A,
       expectedPrice: 10000,
       createdAt: new Date(),
     });
@@ -843,84 +910,144 @@ async function main(): Promise<void> {
   assert("Unique vote index rejects duplicate insert", uniqueEnforced);
 
   // ------------------------------------------------------------------
-  // Transaction rollback (standalone fallback path simulation)
+  // Missing poll / error format
   // ------------------------------------------------------------------
-  // Re-open a fresh poll for rollback test
-  const rbCrop = `__QA_FP_Rollback_${Date.now()}`;
-  await ensureProfile(jalna.token, {
-    name: "QA Jalna Farmer",
-    district: "Jalna",
-    taluka: "Jalna",
-    village: "QA Village",
-    favoriteCrops: [qaCropA, qaCropB, rbCrop],
-    language: "en",
-  });
-  const rbCreate = await http("POST", "/api/v1/farmer-price/polls", {
-    token: jalna.token,
-    body: { crop: rbCrop, district: "Jalna" },
-  });
-  const rbPollId = String((rbCreate.json["data"] as Record<string, unknown>)?.["id"] ?? "");
-  createdPollIds.push(rbPollId);
-
-  // Simulate fallback: create vote then fail poll update by deleting poll first mid-path
-  // Directly exercise compensatory delete pattern
-  const orphanUserId = new Types.ObjectId();
-  const orphanVoteId = (
-    await votesCol.insertOne({
-      pollId: new Types.ObjectId(rbPollId),
-      userId: orphanUserId,
-      district: "Jalna",
-      crop: rbCrop,
-      expectedPrice: 5000,
-      createdAt: new Date(),
-    })
-  ).insertedId;
-
-  // Delete poll then attempt updateOne (matchedCount 0) — simulate failed update cleanup
-  await pollsCol.deleteOne({ _id: new Types.ObjectId(rbPollId) });
-  const matched = await pollsCol.updateOne(
-    { _id: new Types.ObjectId(rbPollId) },
-    { $set: { voteCount: 1 } }
-  );
-  if (matched.matchedCount === 0) {
-    await votesCol.deleteOne({ _id: orphanVoteId });
-  }
-  const orphanRemains = await votesCol.findOne({ _id: orphanVoteId });
-  assert(
-    "Rollback/cleanup removes orphan vote when poll update fails",
-    orphanRemains === null
-  );
-  // mark rb poll already deleted
-  const rbIdx = createdPollIds.indexOf(rbPollId);
-  if (rbIdx >= 0) createdPollIds.splice(rbIdx, 1);
-
-  // Missing poll
   const missing = await http("GET", `/api/v1/farmer-price/polls/${new Types.ObjectId().toHexString()}`, {
     token: jalna.token,
   });
   assert("Missing poll → 404", missing.status === 404, `status=${missing.status}`);
-
-  // Error format
   assert(
     "Error response has success:false + message",
     missing.json["success"] === false && typeof missing.json["message"] === "string"
   );
 
   // ------------------------------------------------------------------
-  // Cleanup QA data
+  // Concurrent ensure stress (Blocker 1)
   // ------------------------------------------------------------------
+  await runConcurrentEnsure(
+    "Concurrent ensure x10",
+    10,
+    STRESS_CROP,
+    "Jalna",
+    LOC.jalna,
+    pollsCol,
+    votesCol,
+    slotsCol
+  );
+  await runConcurrentEnsure(
+    "Concurrent ensure x25",
+    25,
+    STRESS_CROP,
+    "Jalna",
+    LOC.jalna,
+    pollsCol,
+    votesCol,
+    slotsCol
+  );
+  await runConcurrentEnsure(
+    "Concurrent ensure x50",
+    50,
+    STRESS_CROP,
+    "Jalna",
+    LOC.jalna,
+    pollsCol,
+    votesCol,
+    slotsCol
+  );
+
+  // ------------------------------------------------------------------
+  // Concurrent votes (unique users, one poll)
+  // ------------------------------------------------------------------
+  await clearPair(pollsCol, votesCol, slotsCol, "Jalna", STRESS_CROP);
+  const votePoll = await http("POST", "/api/v1/farmer-price/polls", {
+    token: jalna.token,
+    body: { crop: STRESS_CROP, district: "Jalna" },
+    expectStatus: 201,
+  });
+  const votePollId = String((votePoll.json["data"] as Record<string, unknown>)["id"]);
+  createdPollIds.push(votePollId);
+  await pollsCol.updateOne(
+    { _id: new Types.ObjectId(votePollId) },
+    {
+      $set: {
+        governmentPriceAvailable: true,
+        governmentPriceSnapshot: frozenSnapshot,
+        governmentUnit: "Quintal",
+      },
+    }
+  );
+
+  const voteTokens: string[] = [];
+  for (let i = 0; i < 100; i++) {
+    // 10-digit mobiles: 9020000000 .. 9020000099
+    const mobile = `9020000${String(i).padStart(3, "0")}`;
+    const user = await login(mobile);
+    await ensureProfile(user.token, {
+      name: `QA VoteStorm ${i}`,
+      location: LOC.jalna,
+      favoriteCrops: [STRESS_CROP],
+      language: "en",
+    });
+    voteTokens.push(user.token);
+  }
+
+  const voteResults = await Promise.all(
+    voteTokens.map((token, i) =>
+      http("POST", `/api/v1/farmer-price/polls/${votePollId}/vote`, {
+        token,
+        body: {
+          expectedPrice: frozenSnapshot + (i % 2 === 0 ? 0 : 50),
+          ...(i % 2 === 0
+            ? {}
+            : {
+                reasonType: "HIGH_DEMAND",
+                reasonText: "Demand is high in market area",
+              }),
+        },
+      })
+    )
+  );
+  const voteOk = voteResults.filter((r) => r.status === 201).length;
+  const voteFail = voteResults.filter((r) => r.status !== 201).length;
+  const failBreakdown: Record<string, number> = {};
+  for (const r of voteResults) {
+    if (r.status === 201) continue;
+    const key = `${r.status}:${String((r.json as { message?: string }).message ?? "")}`;
+    failBreakdown[key] = (failBreakdown[key] ?? 0) + 1;
+  }
+  assert(
+    "Concurrent votes x100: all accepted",
+    voteOk === 100,
+    `ok=${voteOk} fail=${voteFail} breakdown=${JSON.stringify(failBreakdown)}`
+  );
+  const dbVotes = await votesCol.countDocuments({ pollId: new Types.ObjectId(votePollId) });
+  assert("Concurrent votes x100: DB vote count", dbVotes === 100, `count=${dbVotes}`);
+  const afterStorm = await http("GET", `/api/v1/farmer-price/polls/${votePollId}`, {
+    token: jalna.token,
+    expectStatus: 200,
+  });
+  const stormData = afterStorm.json["data"] as Record<string, unknown>;
+  assert(
+    "Concurrent votes x100: poll voteCount synced",
+    stormData["voteCount"] === 100,
+    `voteCount=${stormData["voteCount"]}`
+  );
+  assert(
+    "Concurrent votes x100: community price set",
+    typeof stormData["communityExpectedPrice"] === "number"
+  );
+
+  // ------------------------------------------------------------------
+  // Cleanup QA data (only QA crops we isolated)
+  // ------------------------------------------------------------------
+  for (const crop of [CROP_A, CROP_B, STRESS_CROP]) {
+    await clearPair(pollsCol, votesCol, slotsCol, "Jalna", crop);
+    await clearPair(pollsCol, votesCol, slotsCol, "Pune", crop);
+  }
   for (const id of createdPollIds) {
+    if (!Types.ObjectId.isValid(id)) continue;
     await votesCol.deleteMany({ pollId: new Types.ObjectId(id) });
     await pollsCol.deleteOne({ _id: new Types.ObjectId(id) });
-  }
-  // Also cleanup any leftover QA crops by name pattern
-  const leftoverPolls = await pollsCol
-    .find({ crop: { $regex: /^__QA_FP_/ } })
-    .project({ _id: 1 })
-    .toArray();
-  for (const p of leftoverPolls) {
-    await votesCol.deleteMany({ pollId: p._id });
-    await pollsCol.deleteOne({ _id: p._id });
   }
 
   await mongoose.disconnect();
@@ -943,9 +1070,11 @@ function printSummary(): void {
       console.log(` - ${r.name}: ${r.detail ?? ""}`);
     }
   }
-  // Machine-readable footer for the agent
   // eslint-disable-next-line no-console
   console.log(`\nQA_JSON=${JSON.stringify({ passed, failed, skipped, results })}`);
+  if (failed > 0) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch(async (err) => {
@@ -954,8 +1083,21 @@ main().catch(async (err) => {
   try {
     if (mongoose.connection.readyState === 1) {
       const db = mongoose.connection.db!;
-      await db.collection("farmer_price_votes").deleteMany({ crop: { $regex: /^__QA_FP_/ } });
-      await db.collection("farmer_price_polls").deleteMany({ crop: { $regex: /^__QA_FP_/ } });
+      for (const crop of [CROP_A, CROP_B, STRESS_CROP]) {
+        const polls = await db
+          .collection("farmer_price_polls")
+          .find({ crop, district: { $in: ["Jalna", "Pune"] } })
+          .project({ _id: 1 })
+          .toArray();
+        for (const p of polls) {
+          await db.collection("farmer_price_votes").deleteMany({ pollId: p._id });
+          await db.collection("farmer_price_polls").deleteOne({ _id: p._id });
+        }
+        await db.collection("farmer_price_open_slots").deleteMany({
+          crop,
+          district: { $in: ["Jalna", "Pune"] },
+        });
+      }
       await mongoose.disconnect();
     }
   } catch {

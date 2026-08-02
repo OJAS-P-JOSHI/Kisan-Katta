@@ -1,11 +1,10 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { elevation, palette, radius, spacing } from '@/theme';
+import { cardSurface, palette, radius, spacing } from '@/theme';
 
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
-  const opacityRef = useRef(new Animated.Value(0.3));
-  const opacity = opacityRef.current;
+  const [opacity] = useState(() => new Animated.Value(0.3));
 
   useEffect(() => {
     const anim = Animated.loop(
@@ -25,24 +24,32 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
   );
 });
 
+/** Mirrors the summary card layout so the first paint does not jump. */
+const SummaryCardSkeleton = memo(function SummaryCardSkeleton() {
+  return (
+    <View style={[styles.card, cardSurface]}>
+      <SkeletonBox style={styles.title} />
+      <SkeletonBox style={styles.subtitle} />
+      <View style={styles.metrics}>
+        <SkeletonBox style={styles.metric} />
+        <SkeletonBox style={styles.metric} />
+      </View>
+      <SkeletonBox style={styles.meta} />
+      <SkeletonBox style={styles.divider} />
+      <View style={styles.chipsRow}>
+        <SkeletonBox style={styles.chip} />
+        <SkeletonBox style={styles.chipWide} />
+      </View>
+      <SkeletonBox style={styles.button} />
+    </View>
+  );
+});
+
 export function FarmerPriceSkeleton() {
   return (
     <View style={styles.root} accessibilityLabel="Loading">
-      <View style={[styles.card, elevation.soft]}>
-        <SkeletonBox style={styles.title} />
-        <SkeletonBox style={styles.subtitle} />
-        <SkeletonBox style={styles.divider} />
-        <View style={styles.metrics}>
-          <SkeletonBox style={styles.metric} />
-          <SkeletonBox style={styles.metric} />
-        </View>
-        <SkeletonBox style={styles.chips} />
-        <SkeletonBox style={styles.progress} />
-        <SkeletonBox style={styles.divider} />
-        <SkeletonBox style={styles.input} />
-        <SkeletonBox style={styles.button} />
-        <SkeletonBox style={styles.comments} />
-      </View>
+      <SummaryCardSkeleton />
+      <SummaryCardSkeleton />
     </View>
   );
 }
@@ -51,18 +58,17 @@ const styles = StyleSheet.create({
   root: { gap: spacing.md },
   card: {
     backgroundColor: palette.white,
-    borderRadius: 18,
     padding: spacing.md,
-    gap: 12,
+    gap: 14,
   },
-  title: { height: 28, width: '65%' },
-  subtitle: { height: 14, width: '40%' },
+  title: { height: 30, width: '55%' },
+  subtitle: { height: 14, width: '45%' },
+  metrics: { flexDirection: 'row', gap: spacing.md },
+  metric: { flex: 1, height: 62, borderRadius: radius.md },
+  meta: { height: 16, width: '70%' },
   divider: { height: StyleSheet.hairlineWidth, width: '100%' },
-  metrics: { flexDirection: 'row', gap: spacing.sm },
-  metric: { flex: 1, height: 52, borderRadius: radius.md },
-  chips: { height: 28, width: '85%', borderRadius: radius.pill },
-  progress: { height: 3, width: '100%', borderRadius: radius.pill },
-  input: { height: 48, width: '100%', borderRadius: radius.lg },
+  chipsRow: { flexDirection: 'row', gap: spacing.sm },
+  chip: { height: 28, width: 110, borderRadius: radius.pill },
+  chipWide: { height: 28, width: 140, borderRadius: radius.pill },
   button: { height: 48, width: '100%', borderRadius: radius.lg },
-  comments: { height: 20, width: '55%' },
 });

@@ -1,106 +1,120 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
-import { Animated, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Button, HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Button, HelperText, Text, TextInput } from 'react-native-paper';
 
-import {
-  iconSize,
-  palette,
-  radius,
-  spacing,
-  useAppTheme,
-} from '@/theme';
+import { palette, radius, spacing, useAppTheme } from '@/theme';
 
 import { MAX_REASON_LENGTH, MIN_REASON_LENGTH } from '../farmer-price.constants';
-import { farmerPriceStrings, getReasonTypeLabel } from '../farmer-price.strings';
-import { REASON_TYPES, type ReasonType } from '../farmer-price.types';
-import { parsePriceInput, sanitizePriceInput } from '../farmer-price.utils';
+import { farmerPriceStrings } from '../farmer-price.strings';
+import type { PollDetailResponseDTO, ReasonType } from '../farmer-price.types';
+import {
+  clampPrice,
+  defaultVotePrice,
+  formatRupee,
+  matchesGovernmentPrice,
+  parsePriceInput,
+  resolveAllowedRange,
+  sanitizePriceInput,
+} from '../farmer-price.utils';
+import { PriceSlider } from './PriceSlider';
+import { ReasonChips } from './ReasonChips';
+
+type VotePayload = {
+  expectedPrice: number;
+  reasonType?: ReasonType;
+  reasonText?: string;
+};
 
 type VoteCardProps = {
-  governmentPriceAvailable: boolean;
-  governmentPriceSnapshot: number | null;
+  poll: PollDetailResponseDTO;
   submitting: boolean;
-  onSubmit: (payload: {
-    expectedPrice: number;
-    reasonType?: ReasonType;
-    reasonText?: string;
-  }) => void | Promise<void>;
+  onSubmit: (payload: VotePayload) => void | Promise<void>;
 };
 
 /**
- * Reason is required when:
- * - No government price (no reference to match), or
- * - Government price exists and the entered price differs from it.
- * Reason is optional only when gov price is available and price matches it.
+ * "Share Your Opinion" composer.
+ *
+ * Reason rules mirror the backend exactly: an explanation is optional only when
+ * the government price exists and the chosen price matches it. Every other
+ * submission carries a reason type plus a 10–200 character note.
  */
-function computeNeedsReason(
-  governmentPriceAvailable: boolean,
-  governmentPriceSnapshot: number | null,
-  parsedPrice: number | null,
-): boolean {
-  if (parsedPrice == null) return false;
-  if (!governmentPriceAvailable) return true;
-  if (governmentPriceSnapshot == null) return true;
-  return parsedPrice !== governmentPriceSnapshot;
-}
-
-/** Compact vote form — rendered inside PollCard (no separate card shell). */
-export function VoteCard({
-  governmentPriceAvailable,
-  governmentPriceSnapshot,
-  submitting,
-  onSubmit,
-}: VoteCardProps) {
+export function VoteCard({ poll, submitting, onSubmit }: VoteCardProps) {
   const theme = useAppTheme();
-  const [priceText, setPriceText] = useState('');
+
+  const range = useMemo(() => resolveAllowedRange(poll), [poll]);
+  const initialPrice = useMemo(() => defaultVotePrice(poll), [poll]);
+
+  const [price, setPrice] = useState(initialPrice);
+  const [priceText, setPriceText] = useState(String(initialPrice));
   const [reasonType, setReasonType] = useState<ReasonType | null>(null);
   const [reasonText, setReasonText] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
-  const [reasonMenuOpen, setReasonMenuOpen] = useState(false);
 
-  const parsedPrice = parsePriceInput(priceText);
-  const needsReason = computeNeedsReason(
-    governmentPriceAvailable,
-    governmentPriceSnapshot,
-    parsedPrice,
-  );
+  const needsReason = !matchesGovernmentPrice(price, poll);
 
-  const trimmedReason = reasonText.trim();
+  // Reason state is kept but ignored while the price matches the government
+  // rate, so nothing has to be cleared (and re-typed) when the price moves.
+  const activeReasonType = needsReason ? reasonType : null;
+  const trimmedReason = needsReason ? reasonText.trim() : '';
   const reasonTextValid =
     trimmedReason.length >= MIN_REASON_LENGTH && trimmedReason.length <= MAX_REASON_LENGTH;
-  const reasonComplete = reasonType != null && reasonTextValid;
-  const canSubmit = parsedPrice != null && (!needsReason || reasonComplete) && !submitting;
+  const reasonComplete = activeReasonType != null && reasonTextValid;
+  const canSubmit = !submitting && (!needsReason || reasonComplete);
 
-  const reasonHeight = useRef(new Animated.Value(0)).current;
-  const reasonOpacity = useRef(new Animated.Value(0)).current;
+  const [reveal] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(reasonHeight, {
-        toValue: needsReason ? 1 : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(reasonOpacity, {
-        toValue: needsReason ? 1 : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-    ]).start();
-    if (!needsReason) {
-      setReasonType(null);
-      setReasonText('');
-    }
-  }, [needsReason, reasonHeight, reasonOpacity]);
+    Animated.timing(reveal, {
+      toValue: needsReason ? 1 : 0,
+      duration: 180,
+      useNativeDriver: false,
+    }).start();
+  }, [needsReason, reveal]);
 
-  const handlePriceChange = (raw: string) => {
+  const applyPrice = useCallback(
+    (next: number) => {
+      setLocalError(null);
+      setPrice(next);
+      setPriceText(String(next));
+    },
+    [],
+  );
+
+  const handleSliderChange = useCallback(
+    (next: number) => {
+      applyPrice(next);
+    },
+    [applyPrice],
+  );
+
+  const handleTextChange = useCallback((raw: string) => {
     setLocalError(null);
-    setPriceText(sanitizePriceInput(raw));
-  };
+    const sanitized = sanitizePriceInput(raw);
+    setPriceText(sanitized);
+    const parsed = parsePriceInput(sanitized);
+    if (parsed !== null) {
+      setPrice(parsed);
+    }
+  }, []);
 
-  const handleSubmit = () => {
-    const price = parsePriceInput(priceText);
-    if (price == null) {
+  /** Snap a partially typed / out-of-band amount back into the allowed range. */
+  const handleTextBlur = useCallback(() => {
+    const parsed = parsePriceInput(priceText);
+    if (parsed === null) {
+      applyPrice(price);
+      return;
+    }
+    applyPrice(clampPrice(parsed, range));
+  }, [applyPrice, price, priceText, range]);
+
+  const handleMatchGovernment = useCallback(() => {
+    if (poll.governmentPriceSnapshot === null) return;
+    applyPrice(clampPrice(poll.governmentPriceSnapshot, range));
+  }, [applyPrice, poll.governmentPriceSnapshot, range]);
+
+  const handleSubmit = useCallback(() => {
+    const parsed = parsePriceInput(priceText);
+    if (parsed === null) {
       setLocalError(
         priceText.trim()
           ? farmerPriceStrings.vote.priceInvalid
@@ -108,9 +122,15 @@ export function VoteCard({
       );
       return;
     }
+    if (parsed < range.min || parsed > range.max) {
+      setLocalError(
+        farmerPriceStrings.vote.priceOutOfRange(formatRupee(range.min), formatRupee(range.max)),
+      );
+      return;
+    }
 
     if (needsReason) {
-      if (!reasonType) {
+      if (!activeReasonType) {
         setLocalError(farmerPriceStrings.vote.reasonTypeRequired);
         return;
       }
@@ -120,93 +140,123 @@ export function VoteCard({
       }
     }
 
-    const payload: {
-      expectedPrice: number;
-      reasonType?: ReasonType;
-      reasonText?: string;
-    } = { expectedPrice: price };
-
-    if (needsReason && reasonType) {
-      payload.reasonType = reasonType;
+    const payload: VotePayload = { expectedPrice: parsed };
+    if (needsReason && activeReasonType) {
+      payload.reasonType = activeReasonType;
       payload.reasonText = trimmedReason;
     }
 
     void onSubmit(payload);
-  };
+  }, [
+    activeReasonType,
+    needsReason,
+    onSubmit,
+    priceText,
+    range.max,
+    range.min,
+    reasonTextValid,
+    trimmedReason,
+  ]);
+
+  const canMatchGovernment =
+    poll.governmentPriceAvailable &&
+    poll.governmentPriceSnapshot !== null &&
+    price !== poll.governmentPriceSnapshot;
 
   return (
     <View style={styles.root}>
       <Text style={[styles.heading, { color: theme.colors.onSurface }]}>
         {farmerPriceStrings.vote.heading}
       </Text>
+      <Text style={[styles.question, { color: theme.colors.onSurface }]}>
+        {farmerPriceStrings.vote.question}
+      </Text>
+      <Text style={[styles.helper, { color: theme.colors.onSurfaceVariant }]}>
+        {farmerPriceStrings.vote.helper}
+      </Text>
 
-      <TextInput
-        mode="outlined"
-        value={priceText}
-        onChangeText={handlePriceChange}
-        placeholder={farmerPriceStrings.vote.placeholder}
-        keyboardType="number-pad"
-        editable={!submitting}
-        error={!!localError && !needsReason}
-        left={<TextInput.Affix text={farmerPriceStrings.vote.prefix} />}
-        right={<TextInput.Affix text={farmerPriceStrings.vote.suffix} />}
-        accessibilityLabel={farmerPriceStrings.vote.a11yPriceField}
-        style={styles.input}
-        outlineStyle={styles.inputOutline}
-        dense
+      <View style={styles.amountRow}>
+        <Text style={[styles.amount, { color: palette.green900 }]}>{formatRupee(price)}</Text>
+        <Text style={[styles.amountSuffix, { color: theme.colors.onSurfaceVariant }]}>
+          {farmerPriceStrings.vote.suffix}
+        </Text>
+      </View>
+
+      <PriceSlider
+        value={price}
+        range={range}
+        governmentPrice={poll.governmentPriceAvailable ? poll.governmentPriceSnapshot : null}
+        disabled={submitting}
+        onChange={handleSliderChange}
       />
-      {localError && !needsReason ? <HelperText type="error">{localError}</HelperText> : null}
+
+      <View style={styles.inputRow}>
+        <TextInput
+          mode="outlined"
+          value={priceText}
+          onChangeText={handleTextChange}
+          onBlur={handleTextBlur}
+          keyboardType="number-pad"
+          editable={!submitting}
+          left={<TextInput.Affix text={farmerPriceStrings.vote.prefix} />}
+          accessibilityLabel={farmerPriceStrings.vote.a11yPriceField}
+          style={styles.input}
+          outlineStyle={styles.inputOutline}
+          dense
+        />
+        {canMatchGovernment ? (
+          <Button
+            mode="text"
+            compact
+            onPress={handleMatchGovernment}
+            disabled={submitting}
+            style={styles.matchButton}
+            labelStyle={styles.matchLabel}
+            accessibilityLabel={farmerPriceStrings.vote.matchGovernment}
+          >
+            {farmerPriceStrings.vote.matchGovernment}
+          </Button>
+        ) : null}
+      </View>
 
       <Animated.View
         style={{
-          opacity: reasonOpacity,
-          maxHeight: reasonHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 220],
-          }),
+          opacity: reveal,
+          maxHeight: reveal.interpolate({ inputRange: [0, 1], outputRange: [0, 620] }),
           overflow: 'hidden',
         }}
         pointerEvents={needsReason ? 'auto' : 'none'}
       >
         <View style={styles.reasonBlock}>
-          <Pressable
-            onPress={() => !submitting && setReasonMenuOpen(true)}
-            disabled={submitting}
-            accessibilityRole="button"
-            accessibilityLabel={farmerPriceStrings.vote.reasonTypeLabel}
-            style={styles.dropdownPressable}
-          >
-            <View pointerEvents="none">
-              <TextInput
-                mode="outlined"
-                label={farmerPriceStrings.vote.reasonTypeLabel}
-                value={reasonType ? getReasonTypeLabel(reasonType) : ''}
-                placeholder={farmerPriceStrings.vote.reasonTypePlaceholder}
-                editable={false}
-                dense
-                error={localError === farmerPriceStrings.vote.reasonTypeRequired}
-                right={<TextInput.Icon icon="chevron-down" />}
-                outlineStyle={styles.inputOutline}
-              />
-            </View>
-          </Pressable>
+          <Text style={[styles.reasonHeading, { color: theme.colors.onSurface }]}>
+            {farmerPriceStrings.vote.reasonHeading}
+          </Text>
 
-          {reasonType ? (
-            <View>
+          <ReasonChips
+            selected={activeReasonType}
+            disabled={submitting}
+            onSelect={(next) => {
+              setLocalError(null);
+              setReasonType(next);
+            }}
+          />
+
+          {activeReasonType ? (
+            <View style={styles.noteBlock}>
               <TextInput
                 mode="outlined"
+                label={farmerPriceStrings.vote.reasonNoteLabel}
                 value={reasonText}
                 onChangeText={(text) => {
                   setLocalError(null);
                   setReasonText(text.slice(0, MAX_REASON_LENGTH));
                 }}
-                placeholder={farmerPriceStrings.vote.reasonTextPlaceholder}
+                placeholder={farmerPriceStrings.vote.reasonNotePlaceholder}
                 multiline
                 numberOfLines={3}
                 editable={!submitting}
                 dense
-                error={localError === farmerPriceStrings.vote.reasonTextRequired}
-                style={styles.reasonInput}
+                style={styles.noteInput}
                 outlineStyle={styles.inputOutline}
               />
               <Text style={[styles.counter, { color: theme.colors.onSurfaceVariant }]}>
@@ -214,10 +264,10 @@ export function VoteCard({
               </Text>
             </View>
           ) : null}
-
-          {localError && needsReason ? <HelperText type="error">{localError}</HelperText> : null}
         </View>
       </Animated.View>
+
+      {localError ? <HelperText type="error">{localError}</HelperText> : null}
 
       <Button
         mode="contained"
@@ -233,90 +283,81 @@ export function VoteCard({
       >
         {submitting ? farmerPriceStrings.vote.submitting : farmerPriceStrings.vote.submit}
       </Button>
-
-      <Portal>
-        <Modal
-          visible={reasonMenuOpen}
-          onDismiss={() => setReasonMenuOpen(false)}
-          contentContainerStyle={[styles.modal, { backgroundColor: theme.colors.surface }]}
-        >
-          <Text variant="titleMedium" style={styles.modalTitle}>
-            {farmerPriceStrings.vote.reasonTypeLabel}
-          </Text>
-          <FlatList
-            data={[...REASON_TYPES]}
-            keyExtractor={(item) => item}
-            style={styles.list}
-            renderItem={({ item }) => {
-              const selected = item === reasonType;
-              return (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.option,
-                    pressed && { backgroundColor: theme.colors.surfaceVariant },
-                  ]}
-                  onPress={() => {
-                    setReasonType(item);
-                    setLocalError(null);
-                    setReasonMenuOpen(false);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                >
-                  <Text
-                    variant="bodyLarge"
-                    style={{ color: selected ? theme.colors.primary : theme.colors.onSurface }}
-                  >
-                    {getReasonTypeLabel(item)}
-                  </Text>
-                  {selected ? (
-                    <MaterialCommunityIcons
-                      name="check"
-                      size={iconSize.md}
-                      color={theme.colors.primary}
-                    />
-                  ) : null}
-                </Pressable>
-              );
-            }}
-          />
-        </Modal>
-      </Portal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    gap: 12,
-  },
+  root: { gap: 12 },
   heading: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  question: {
+    fontSize: 15,
+    lineHeight: 21,
     fontWeight: '600',
   },
+  helper: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: -6,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  amount: {
+    fontSize: 38,
+    lineHeight: 44,
+    fontWeight: '700',
+    letterSpacing: -0.8,
+  },
+  amountSuffix: {
+    fontSize: 13,
+    lineHeight: 20,
+    paddingBottom: 4,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   input: {
+    flex: 1,
     backgroundColor: palette.white,
     height: 48,
   },
   inputOutline: {
     borderRadius: radius.lg,
   },
+  matchButton: {
+    borderRadius: radius.lg,
+  },
+  matchLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
   reasonBlock: {
     gap: 12,
-    paddingTop: 2,
+    paddingTop: 4,
   },
-  dropdownPressable: {
-    minHeight: 48,
+  reasonHeading: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: '700',
   },
-  reasonInput: {
-    minHeight: 72,
-    maxHeight: 96,
+  noteBlock: { gap: 2 },
+  noteInput: {
+    minHeight: 76,
+    maxHeight: 110,
     backgroundColor: palette.white,
   },
   counter: {
     alignSelf: 'flex-end',
-    marginTop: 4,
     fontSize: 11,
     lineHeight: 14,
   },
@@ -325,30 +366,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   submitContent: {
-    height: 48,
+    height: 52,
   },
   submitLabel: {
+    fontSize: 16,
     fontWeight: '700',
-    fontSize: 15,
-  },
-  modal: {
-    marginHorizontal: spacing.lg,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    maxHeight: '70%',
-  },
-  modalTitle: {
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  list: { flexGrow: 0 },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm + 4,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.sm,
-    minHeight: 48,
   },
 });

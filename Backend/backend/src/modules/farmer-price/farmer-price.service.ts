@@ -9,10 +9,17 @@ import {
   COMMUNITY_PRICE_DISCLAIMER,
   DEFAULT_GOVERNMENT_UNIT,
   DEFAULT_POLL_DURATION_HOURS,
+  ENSURE_PEER_POLL_INTERVAL_MS,
+  ENSURE_PEER_WAIT_MS,
   MINIMUM_VOTES_REQUIRED,
   RECENT_INSIGHTS_LIMIT,
 } from "./farmer-price.constants";
 import { FarmerPricePoll, FarmerPriceVote } from "./farmer-price.model";
+import {
+  bindOpenSlotToPoll,
+  claimOpenSlot,
+  releaseOpenSlot,
+} from "./farmer-price.slot";
 import {
   calculateConfidence,
   calculateDifferenceFromGovernment,
@@ -25,15 +32,21 @@ import type {
   HistoryPollDTO,
   HistoryResponseDTO,
   IFarmerPricePoll,
+  MarketSignalDTO,
+  MyVoteDTO,
   PaginatedPollsDTO,
   PollDetailResponseDTO,
   PollResponseDTO,
   PollsQuery,
   PollStatus,
+  ReasonType,
   RecentInsightDTO,
   SubmitVoteBody,
 } from "./farmer-price.types";
-import { validateSubmitVote } from "./farmer-price.validation";
+import {
+  getAllowedPriceRange,
+  validateSubmitVote,
+} from "./farmer-price.validation";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -79,7 +92,101 @@ const isTransactionUnsupportedError = (error: unknown): boolean => {
   );
 };
 
-const toPollDTO = (doc: PollDocument): PollResponseDTO => {
+/** MongoDB write conflicts under concurrent votes on the same poll document. */
+const isTransientTransactionError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  const candidate = error as {
+    code?: number;
+    codeName?: string;
+    message?: string;
+    errorLabels?: string[];
+  };
+
+  if (candidate.errorLabels?.includes("TransientTransactionError")) {
+    return true;
+  }
+  if (candidate.codeName === "WriteConflict" || candidate.code === 112) {
+    return true;
+  }
+  if (
+    typeof candidate.message === "string" &&
+    candidate.message.toLowerCase().includes("write conflict")
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const VOTE_TRANSACTION_MAX_ATTEMPTS = 8;
+
+type CallerVoteState = {
+  hasVoted: boolean;
+  myVote: MyVoteDTO | null;
+};
+
+const NO_CALLER_VOTE: CallerVoteState = { hasVoted: false, myVote: null };
+
+const toMyVoteDTO = (vote: {
+  expectedPrice: number;
+  reasonType?: ReasonType | null;
+  reasonText?: string | null;
+  createdAt: Date;
+}): MyVoteDTO => {
+  const dto: MyVoteDTO = {
+    expectedPrice: vote.expectedPrice,
+    createdAt: vote.createdAt,
+  };
+  if (typeof vote.reasonType === "string") {
+    dto.reasonType = vote.reasonType;
+  }
+  if (typeof vote.reasonText === "string" && vote.reasonText.trim().length > 0) {
+    dto.reasonText = vote.reasonText.trim();
+  }
+  return dto;
+};
+
+/**
+ * One indexed query for the caller's votes across many polls.
+ * Uses unique { pollId, userId } — at most one vote per poll.
+ */
+const loadCallerVotesByPollIds = async (
+  userId: string,
+  pollIds: Types.ObjectId[]
+): Promise<Map<string, MyVoteDTO>> => {
+  const map = new Map<string, MyVoteDTO>();
+  if (pollIds.length === 0) {
+    return map;
+  }
+
+  const votes = await FarmerPriceVote.find({
+    userId: new Types.ObjectId(userId),
+    pollId: { $in: pollIds },
+  })
+    .select({ pollId: 1, expectedPrice: 1, reasonType: 1, reasonText: 1, createdAt: 1 })
+    .lean();
+
+  for (const vote of votes) {
+    map.set(vote.pollId.toString(), toMyVoteDTO(vote));
+  }
+  return map;
+};
+
+const callerVoteStateFromMap = (
+  pollId: string,
+  votesByPollId: Map<string, MyVoteDTO>
+): CallerVoteState => {
+  const myVote = votesByPollId.get(pollId) ?? null;
+  return myVote ? { hasVoted: true, myVote } : NO_CALLER_VOTE;
+};
+
+const toPollDTO = (
+  doc: PollDocument,
+  callerVote: CallerVoteState = NO_CALLER_VOTE
+): PollResponseDTO => {
   const { differenceFromGovernmentPrice, differencePercentage } =
     calculateDifferenceFromGovernment(
       doc.communityExpectedPrice,
@@ -101,12 +208,18 @@ const toPollDTO = (doc: PollDocument): PollResponseDTO => {
     minimumVotesReached: doc.minimumVotesReached,
     differenceFromGovernmentPrice,
     differencePercentage,
+    allowedPriceRange: getAllowedPriceRange({
+      governmentPriceAvailable: doc.governmentPriceAvailable,
+      governmentPriceSnapshot: doc.governmentPriceSnapshot,
+    }),
     lastVoteAt: doc.lastVoteAt ?? null,
     startsAt: doc.startsAt,
     endsAt: doc.endsAt,
     status: resolvePollStatus(doc.endsAt),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
+    hasVoted: callerVote.hasVoted,
+    myVote: callerVote.myVote,
   };
 };
 
@@ -155,15 +268,44 @@ const fetchRecentInsights = async (
     }));
 };
 
+/**
+ * Aggregated reason counts across every vote on the poll, strongest first.
+ * Read-only over existing vote documents — no schema or vote logic change.
+ */
+const fetchMarketSignals = async (
+  pollId: Types.ObjectId
+): Promise<MarketSignalDTO[]> => {
+  const rows = await FarmerPriceVote.aggregate<{
+    _id: ReasonType;
+    farmerCount: number;
+  }>([
+    { $match: { pollId, reasonType: { $exists: true, $ne: null } } },
+    { $group: { _id: "$reasonType", farmerCount: { $sum: 1 } } },
+    { $sort: { farmerCount: -1, _id: 1 } },
+  ]);
+
+  return rows
+    .filter((row) => typeof row._id === "string")
+    .map((row) => ({
+      reasonType: row._id,
+      farmerCount: row.farmerCount,
+    }));
+};
+
 const toPollDetailDTO = async (
-  doc: PollDocument
+  doc: PollDocument,
+  callerVote: CallerVoteState = NO_CALLER_VOTE
 ): Promise<PollDetailResponseDTO> => {
-  const summary = toPollDTO(doc);
-  const recentInsights = await fetchRecentInsights(doc._id);
+  const summary = toPollDTO(doc, callerVote);
+  const [marketSignals, recentInsights] = await Promise.all([
+    fetchMarketSignals(doc._id),
+    fetchRecentInsights(doc._id),
+  ]);
 
   return {
     ...summary,
     remainingHours: calculateRemainingHours(doc.endsAt),
+    marketSignals,
     recentInsights,
     isCommunityEstimate: true,
     disclaimer: COMMUNITY_PRICE_DISCLAIMER,
@@ -352,6 +494,8 @@ const createVoteDocument = async (
 /**
  * Persist vote + recalculated poll stats atomically when transactions are
  * supported; otherwise create the vote and roll it back if the poll update fails.
+ * Transient write conflicts are retried so concurrent voters on the same poll
+ * do not fail spuriously.
  */
 const persistVoteAndRecalculate = async (input: {
   pollId: Types.ObjectId;
@@ -370,32 +514,51 @@ const persistVoteAndRecalculate = async (input: {
     reasonText: input.voteData.reasonText,
   };
 
-  const session = await mongoose.startSession();
+  let useStandaloneFallback = false;
+  let lastTransientError: unknown;
 
-  try {
-    let stats!: PollStatUpdate;
+  for (let attempt = 1; attempt <= VOTE_TRANSACTION_MAX_ATTEMPTS; attempt++) {
+    const session = await mongoose.startSession();
+    try {
+      let stats!: PollStatUpdate;
 
-    await session.withTransaction(async () => {
-      await createVoteDocument(votePayload, session);
-      logEvent("Vote Submitted");
+      await session.withTransaction(async () => {
+        await createVoteDocument(votePayload, session);
+        logEvent("Vote Submitted");
 
-      const prices = await loadVotePrices(input.pollId, session);
-      stats = computePollStatsFromPrices(prices, new Date());
-      await applyPollStats(input.pollId, stats, session);
-    });
+        const prices = await loadVotePrices(input.pollId, session);
+        stats = computePollStatsFromPrices(prices, new Date());
+        await applyPollStats(input.pollId, stats, session);
+      });
 
-    return stats;
-  } catch (error: unknown) {
-    if (isDuplicateKeyError(error)) {
-      logEvent("Duplicate Vote");
-      throw new AppError("Already Voted", 409);
-    }
+      return stats;
+    } catch (error: unknown) {
+      if (isDuplicateKeyError(error)) {
+        logEvent("Duplicate Vote");
+        throw new AppError("Already Voted", 409);
+      }
 
-    if (!isTransactionUnsupportedError(error)) {
+      if (isTransactionUnsupportedError(error)) {
+        useStandaloneFallback = true;
+        break;
+      }
+
+      if (isTransientTransactionError(error) && attempt < VOTE_TRANSACTION_MAX_ATTEMPTS) {
+        lastTransientError = error;
+        await sleep(25 * attempt);
+        continue;
+      }
+
       throw error;
+    } finally {
+      await session.endSession();
     }
-  } finally {
-    await session.endSession();
+  }
+
+  if (!useStandaloneFallback) {
+    throw lastTransientError instanceof Error
+      ? lastTransientError
+      : new AppError("Invalid Vote", 500);
   }
 
   // Standalone MongoDB fallback: compensatory rollback if poll update fails.
@@ -489,7 +652,10 @@ export const getPolls = async (query: PollsQuery): Promise<PaginatedPollsDTO> =>
   };
 };
 
-export const getPoll = async (pollId: string): Promise<PollDetailResponseDTO> => {
+export const getPoll = async (
+  pollId: string,
+  userId: string
+): Promise<PollDetailResponseDTO> => {
   assertValidObjectId(pollId, "pollId");
 
   const poll = await FarmerPricePoll.findById(pollId).lean();
@@ -497,7 +663,140 @@ export const getPoll = async (pollId: string): Promise<PollDetailResponseDTO> =>
     throw new AppError("Poll Not Found", 404);
   }
 
-  return toPollDetailDTO(poll as PollDocument);
+  const pollDoc = poll as PollDocument;
+  const votesByPollId = await loadCallerVotesByPollIds(userId, [pollDoc._id]);
+  return toPollDetailDTO(
+    pollDoc,
+    callerVoteStateFromMap(pollDoc._id.toString(), votesByPollId)
+  );
+};
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+/**
+ * Another request holds the open-slot lock and is creating the poll.
+ * Poll until it appears (or the wait budget expires) so /polls/my never
+ * returns empty solely because creation is still in flight.
+ */
+const waitForPeerCreatedPoll = async (
+  district: string,
+  crop: string
+): Promise<boolean> => {
+  const deadline = Date.now() + ENSURE_PEER_WAIT_MS;
+  while (Date.now() < deadline) {
+    const existing = await findActivePoll(district, crop);
+    if (existing) {
+      return true;
+    }
+    await sleep(ENSURE_PEER_POLL_INTERVAL_MS);
+  }
+  return (await findActivePoll(district, crop)) !== null;
+};
+
+/**
+ * Creates the open poll for one district+crop pair if none exists.
+ * Uses the same open-slot lock as the hourly scheduler, so concurrent
+ * requests and the scheduler can never produce two active polls for a pair.
+ *
+ * Losers of the claim race wait for the winner's poll instead of returning
+ * early with an empty list.
+ */
+const ensureActivePollForPair = async (
+  district: string,
+  crop: string
+): Promise<void> => {
+  if (await findActivePoll(district, crop)) {
+    return;
+  }
+
+  const provisionalEndsAt = () =>
+    new Date(Date.now() + DEFAULT_POLL_DURATION_HOURS * 60 * 60 * 1000);
+
+  let claimed = await claimOpenSlot(
+    district,
+    crop,
+    provisionalEndsAt(),
+    new Date()
+  );
+
+  if (!claimed) {
+    if (await waitForPeerCreatedPoll(district, crop)) {
+      return;
+    }
+    // Winner may have failed and released the slot — try once more.
+    claimed = await claimOpenSlot(
+      district,
+      crop,
+      provisionalEndsAt(),
+      new Date()
+    );
+    if (!claimed) {
+      await waitForPeerCreatedPoll(district, crop);
+      return;
+    }
+  }
+
+  try {
+    const stillOpen = await findActivePoll(district, crop);
+    if (stillOpen) {
+      await bindOpenSlotToPoll(
+        district,
+        crop,
+        stillOpen._id.toString(),
+        stillOpen.endsAt
+      );
+      return;
+    }
+
+    const poll = await createPoll({ district, crop });
+    await bindOpenSlotToPoll(district, crop, poll.id, new Date(poll.endsAt));
+  } catch (error: unknown) {
+    // Another writer may have won the race between the re-check and the insert;
+    // bind the slot to whatever poll now exists, otherwise free it for a retry.
+    const existing = await findActivePoll(district, crop).catch(() => null);
+    if (existing) {
+      await bindOpenSlotToPoll(
+        district,
+        crop,
+        existing._id.toString(),
+        existing.endsAt
+      ).catch(() => undefined);
+    } else {
+      await releaseOpenSlot(district, crop).catch(() => undefined);
+    }
+
+    const reason = error instanceof Error ? error.message : String(error);
+    logEvent(`Ensure poll failed district=${district} crop=${crop} reason=${reason}`);
+  }
+};
+
+/**
+ * Guarantees an open poll exists for every crop the farmer follows, so the
+ * app never has to wait for the hourly scheduler or show an empty screen.
+ * Failures are swallowed — a missing poll must never break the read path.
+ */
+const ensureActivePollsForFarmer = async (
+  district: string,
+  crops: string[]
+): Promise<void> => {
+  const openPolls = await FarmerPricePoll.find(
+    { district, crop: { $in: crops }, endsAt: { $gt: new Date() } },
+    { crop: 1, _id: 0 }
+  ).lean();
+
+  const openCrops = new Set(openPolls.map((poll) => poll.crop));
+  const missing = crops.filter((crop) => !openCrops.has(crop));
+
+  if (missing.length === 0) {
+    return;
+  }
+
+  await Promise.all(
+    missing.map((crop) => ensureActivePollForPair(district, crop))
+  );
 };
 
 export const getMyPolls = async (userId: string): Promise<PollResponseDTO[]> => {
@@ -516,6 +815,9 @@ export const getMyPolls = async (userId: string): Promise<PollResponseDTO[]> => 
   }
 
   const { district } = resolveDistrict(profile.district);
+
+  await ensureActivePollsForFarmer(district, favoriteCrops);
+
   const now = new Date();
 
   const polls = await FarmerPricePoll.find({
@@ -526,7 +828,15 @@ export const getMyPolls = async (userId: string): Promise<PollResponseDTO[]> => 
     .sort({ endsAt: 1 })
     .lean();
 
-  return polls.map((poll) => toPollDTO(poll as PollDocument));
+  const pollDocs = polls as PollDocument[];
+  const votesByPollId = await loadCallerVotesByPollIds(
+    userId,
+    pollDocs.map((poll) => poll._id)
+  );
+
+  return pollDocs.map((poll) =>
+    toPollDTO(poll, callerVoteStateFromMap(poll._id.toString(), votesByPollId))
+  );
 };
 
 export const submitVote = async (
@@ -587,7 +897,17 @@ export const submitVote = async (
     throw new AppError("Poll Not Found", 404);
   }
 
-  return toPollDetailDTO(updatedPoll as PollDocument);
+  const myVote: MyVoteDTO = toMyVoteDTO({
+    expectedPrice: voteData.expectedPrice,
+    reasonType: voteData.reasonType,
+    reasonText: voteData.reasonText,
+    createdAt: new Date(),
+  });
+
+  return toPollDetailDTO(updatedPoll as PollDocument, {
+    hasVoted: true,
+    myVote,
+  });
 };
 
 export const getHistory = async (

@@ -1,9 +1,54 @@
-import { DEFAULT_POLL_DURATION_HOURS, MAX_PRICE_DIGITS } from './farmer-price.constants';
+import {
+  DEFAULT_POLL_DURATION_HOURS,
+  MAX_PRICE_DIGITS,
+  MAX_PRICE_WITHOUT_GOV,
+  MIN_PRICE_WITHOUT_GOV,
+  PRICE_SLIDER_STEP,
+  PRICE_VARIATION_PERCENT,
+} from './farmer-price.constants';
 import { farmerPriceStrings } from './farmer-price.strings';
+import type {
+  AllowedPriceRangeDTO,
+  MyVoteDTO,
+  PollResponseDTO,
+  SubmittedVoteLocal,
+} from './farmer-price.types';
 
 /** Formats an INR amount without decimals. */
 export function formatRupee(amount: number): string {
   return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+}
+
+/** Maps backend myVote into the thank-you card shape. */
+export function myVoteToLocal(pollId: string, myVote: MyVoteDTO): SubmittedVoteLocal {
+  return {
+    pollId,
+    expectedPrice: myVote.expectedPrice,
+    reasonType: myVote.reasonType,
+    reasonText: myVote.reasonText,
+    submittedAt: myVote.createdAt,
+  };
+}
+
+/**
+ * Prefer optimistic SecureStore snapshot only when it has a real price;
+ * otherwise use backend myVote. Backend hasVoted is the vote-state authority.
+ */
+export function resolveDisplayVote(
+  pollId: string,
+  myVote: MyVoteDTO | null | undefined,
+  optimistic: SubmittedVoteLocal | null | undefined,
+): SubmittedVoteLocal | null {
+  if (optimistic && optimistic.expectedPrice > 0) {
+    return optimistic;
+  }
+  if (myVote) {
+    return myVoteToLocal(pollId, myVote);
+  }
+  if (optimistic) {
+    return optimistic;
+  }
+  return null;
 }
 
 /** Compact diff chip label, e.g. `▲ +4%`. */
@@ -18,10 +63,8 @@ export function formatCompactRemaining(remainingHours: number): string {
   const safe = Math.max(0, Math.floor(remainingHours));
   const days = Math.floor(safe / 24);
   const hours = safe % 24;
-  if (days <= 0) {
-    return farmerPriceStrings.poll.compactHoursOnly(hours);
-  }
-  return farmerPriceStrings.poll.compactRemaining(days, hours);
+  if (days <= 0) return `${hours}h`;
+  return `${days}d ${hours}h`;
 }
 
 /** Progress 0–1 for voting window remaining. */
@@ -33,7 +76,7 @@ export function remainingProgress(
   return Math.min(1, Math.max(0, remainingHours / totalHours));
 }
 
-/** Relative short time for comment timestamps. */
+/** Relative short time for insight timestamps. */
 export function formatRelativeTime(iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return '';
@@ -64,4 +107,102 @@ export function parsePriceInput(value: string): number | null {
   if (!Number.isInteger(n) || n <= 0) return null;
   if (String(n).length > MAX_PRICE_DIGITS) return null;
   return n;
+}
+
+/**
+ * The band the backend will accept. Prefers the server-sent range and falls
+ * back to the mirrored ±40% formula for polls fetched before that field existed.
+ */
+export function resolveAllowedRange(poll: {
+  allowedPriceRange?: AllowedPriceRangeDTO | null;
+  governmentPriceAvailable: boolean;
+  governmentPriceSnapshot: number | null;
+}): AllowedPriceRangeDTO {
+  const fromServer = poll.allowedPriceRange;
+  if (fromServer && fromServer.max > fromServer.min) {
+    return fromServer;
+  }
+
+  const snapshot = poll.governmentPriceSnapshot;
+  if (poll.governmentPriceAvailable && snapshot !== null && snapshot > 0) {
+    const variation = PRICE_VARIATION_PERCENT / 100;
+    return {
+      min: Math.ceil(snapshot * (1 - variation)),
+      max: Math.floor(snapshot * (1 + variation)),
+    };
+  }
+
+  return { min: MIN_PRICE_WITHOUT_GOV, max: MAX_PRICE_WITHOUT_GOV };
+}
+
+/** Clamps a price into the allowed band. */
+export function clampPrice(value: number, range: AllowedPriceRangeDTO): number {
+  return Math.min(range.max, Math.max(range.min, Math.round(value)));
+}
+
+/**
+ * Maps a slider ratio (0–1) to a price.
+ * Snaps to the step, to both ends, and magnetically onto the government price
+ * so choosing "exactly the official rate" is always reachable by dragging.
+ */
+export function priceFromRatio(
+  ratio: number,
+  range: AllowedPriceRangeDTO,
+  governmentPrice: number | null,
+): number {
+  const span = range.max - range.min;
+  const raw = range.min + Math.min(1, Math.max(0, ratio)) * span;
+  const stepped = Math.round(raw / PRICE_SLIDER_STEP) * PRICE_SLIDER_STEP;
+  const clamped = clampPrice(stepped, range);
+
+  if (
+    governmentPrice !== null &&
+    governmentPrice >= range.min &&
+    governmentPrice <= range.max &&
+    Math.abs(raw - governmentPrice) <= PRICE_SLIDER_STEP
+  ) {
+    return governmentPrice;
+  }
+
+  return clamped;
+}
+
+/** Maps a price back to a slider ratio (0–1). */
+export function ratioFromPrice(price: number, range: AllowedPriceRangeDTO): number {
+  const span = range.max - range.min;
+  if (span <= 0) return 0;
+  return Math.min(1, Math.max(0, (price - range.min) / span));
+}
+
+/**
+ * Where the slider starts: the government rate when published (so agreeing
+ * costs one tap), else the community price, else the bottom of the band —
+ * never an invented mid-point on the very wide no-reference range.
+ */
+export function defaultVotePrice(poll: PollResponseDTO): number {
+  const range = resolveAllowedRange(poll);
+  if (
+    poll.governmentPriceAvailable &&
+    poll.governmentPriceSnapshot !== null &&
+    poll.governmentPriceSnapshot > 0
+  ) {
+    return clampPrice(poll.governmentPriceSnapshot, range);
+  }
+  if (poll.communityExpectedPrice) {
+    return clampPrice(poll.communityExpectedPrice, range);
+  }
+  return range.min;
+}
+
+/**
+ * True when the entered price equals the government snapshot — the only case
+ * where the backend treats a reason as optional.
+ */
+export function matchesGovernmentPrice(
+  price: number | null,
+  poll: { governmentPriceAvailable: boolean; governmentPriceSnapshot: number | null },
+): boolean {
+  if (price === null) return false;
+  if (!poll.governmentPriceAvailable || poll.governmentPriceSnapshot === null) return false;
+  return price === poll.governmentPriceSnapshot;
 }

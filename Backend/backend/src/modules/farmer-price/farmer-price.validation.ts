@@ -59,7 +59,12 @@ const validateReasonText = (value: unknown): string => {
   return trimmed;
 };
 
-const getAllowedPriceRange = (
+/**
+ * Single source of truth for the accepted vote band.
+ * Also read by the poll DTO so clients can bound their price input to
+ * exactly the range this validator enforces.
+ */
+export const getAllowedPriceRange = (
   context: VoteValidationContext
 ): { min: number; max: number } => {
   if (

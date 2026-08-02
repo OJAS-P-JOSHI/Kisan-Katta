@@ -1,261 +1,227 @@
-import { memo, useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
-import { ProgressBar, Text } from 'react-native-paper';
+import { memo } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Button, Text } from 'react-native-paper';
 
-import { getCropLabel, useCrops } from '@/features/crop';
-import {
-  elevation,
-  palette,
-  radius,
-  spacing,
-  useAppTheme,
-} from '@/theme';
+import { cardSurface, palette, radius, spacing, useAppTheme } from '@/theme';
 
 import { MINIMUM_VOTES_REQUIRED } from '../farmer-price.constants';
-import { farmerPriceStrings, getConfidenceLabel } from '../farmer-price.strings';
-import type { ConfidenceLevel, PollDetailResponseDTO } from '../farmer-price.types';
-import {
-  formatCompactRemaining,
-  formatDiffChip,
-  formatRupee,
-  remainingProgress,
-} from '../farmer-price.utils';
+import { farmerPriceStrings } from '../farmer-price.strings';
+import type { PollDetailResponseDTO } from '../farmer-price.types';
+import { formatCompactRemaining, formatRupee } from '../farmer-price.utils';
+import { ConfidenceBadge } from './ConfidenceBadge';
+import { MarketSignals } from './MarketSignals';
+import { PriceDelta } from './PriceDelta';
+
+export type PollCardFocus = 'vote' | 'community';
 
 type PollCardProps = {
   poll: PollDetailResponseDTO;
-  /** Embedded vote form or submitted state — rendered inside the same card. */
-  children?: ReactNode;
-  onViewComments?: () => void;
+  cropLabel: string;
+  hasVoted: boolean;
+  onOpen: (pollId: string, focus: PollCardFocus) => void;
 };
 
-const CARD_RADIUS = 18;
+type CardState = 'invite' | 'voted' | 'consensus';
 
-function confidenceColors(level: ConfidenceLevel): { bg: string; fg: string } {
-  switch (level) {
-    case 'HIGH':
-      return { bg: palette.green100, fg: palette.green900 };
-    case 'MEDIUM':
-      return { bg: palette.blue100, fg: palette.blue800 };
-    case 'LOW':
-      return { bg: palette.amber100, fg: palette.orange800 };
-    default:
-      return { bg: palette.mist, fg: palette.steel };
+function resolveCardState(hasVoted: boolean, minimumVotesReached: boolean): CardState {
+  if (!hasVoted) return 'invite';
+  if (minimumVotesReached) return 'consensus';
+  return 'voted';
+}
+
+type BannerTone = 'green' | 'blue';
+
+function resolveBanner(
+  state: CardState,
+  voteCount: number,
+): { text: string; tone: BannerTone } {
+  if (state === 'invite') {
+    return {
+      tone: 'green',
+      text:
+        voteCount === 0
+          ? farmerPriceStrings.card.bannerFirst
+          : farmerPriceStrings.card.bannerHelp,
+    };
   }
+  if (state === 'voted') {
+    return { tone: 'blue', text: farmerPriceStrings.card.bannerVoted };
+  }
+  return { tone: 'green', text: farmerPriceStrings.card.bannerConsensus };
 }
 
-function MetaChip({
-  label,
-  backgroundColor,
-  color,
-}: {
-  label: string;
-  backgroundColor: string;
-  color: string;
-}) {
-  return (
-    <View style={[styles.metaChip, { backgroundColor }]}>
-      <Text style={[styles.metaChipText, { color }]} numberOfLines={1}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function PollCardComponent({ poll, children, onViewComments }: PollCardProps) {
+/**
+ * Participation-first summary card.
+ * Primary CTA is Share My Opinion until the farmer has voted.
+ */
+function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps) {
   const theme = useAppTheme();
-  const { data: crops } = useCrops();
-  const appear = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(appear, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [appear]);
-
-  const cropLabel = getCropLabel(poll.crop, crops) || poll.crop;
-  const showGovUnavailable = !poll.governmentPriceAvailable;
-  const showCommunityUnavailable = !poll.minimumVotesReached;
-  const showDiff =
+  const state = resolveCardState(hasVoted, poll.minimumVotesReached);
+  const banner = resolveBanner(state, poll.voteCount);
+  const hasCommunity =
+    poll.minimumVotesReached && poll.communityExpectedPrice !== null;
+  const showDelta =
+    hasCommunity &&
     poll.governmentPriceAvailable &&
-    poll.minimumVotesReached &&
     poll.differencePercentage != null;
 
-  const conf = confidenceColors(poll.confidence);
-  const progress = remainingProgress(poll.remainingHours);
-  const diffPositive = showDiff && (poll.differenceFromGovernmentPrice ?? 0) > 0;
-  const diffNegative = showDiff && (poll.differenceFromGovernmentPrice ?? 0) < 0;
+  const ctaLabel =
+    state === 'invite'
+      ? poll.voteCount === 0
+        ? farmerPriceStrings.card.shareOpinion
+        : farmerPriceStrings.card.continueVoting
+      : hasCommunity
+        ? farmerPriceStrings.card.viewCommunity
+        : farmerPriceStrings.card.viewDetails;
 
-  const votesNeeded = Math.max(0, MINIMUM_VOTES_REQUIRED - poll.voteCount);
-  const votesChipLabel = poll.minimumVotesReached
-    ? farmerPriceStrings.poll.votesChip(poll.voteCount)
-    : farmerPriceStrings.poll.votesProgressChip(poll.voteCount, MINIMUM_VOTES_REQUIRED);
+  const ctaFocus: PollCardFocus = state === 'invite' ? 'vote' : 'community';
+  const ctaA11y =
+    state === 'invite'
+      ? farmerPriceStrings.card.a11yShare(cropLabel)
+      : farmerPriceStrings.card.a11yViewCommunity(cropLabel);
 
-  /** Comment count from backend insight/comment payload (anonymous reasons). */
-  const commentCount = poll.recentInsights.length;
-  const viewCommentsLabel =
-    commentCount === 0
-      ? farmerPriceStrings.poll.viewCommentsEmpty
-      : farmerPriceStrings.poll.viewComments(commentCount);
+  const bannerBg = banner.tone === 'blue' ? palette.blue100 : palette.green50;
+  const bannerFg = banner.tone === 'blue' ? palette.blue800 : palette.green900;
 
   return (
-    <Animated.View
-      style={{
-        opacity: appear,
-        transform: [
-          {
-            translateY: appear.interpolate({
-              inputRange: [0, 1],
-              outputRange: [6, 0],
-            }),
-          },
-        ],
-      }}
+    <View
+      style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]}
+      accessibilityLabel={farmerPriceStrings.card.a11yCard(cropLabel, poll.district)}
     >
-      <View
-        style={[styles.card, elevation.soft, { backgroundColor: theme.colors.surface }]}
-        accessibilityLabel={farmerPriceStrings.poll.a11yPollCard(cropLabel, poll.district)}
-      >
-        <View style={styles.titleRow}>
-          <View style={styles.titleLeft}>
-            <Text style={[styles.cropName, { color: theme.colors.onSurface }]} numberOfLines={1}>
-              🌾 {cropLabel}
-            </Text>
-            <Text style={[styles.district, { color: theme.colors.onSurfaceVariant }]} numberOfLines={1}>
-              📍 {poll.district}
-            </Text>
-          </View>
+      <View style={[styles.banner, { backgroundColor: bannerBg }]}>
+        <Text style={[styles.bannerText, { color: bannerFg }]}>{banner.text}</Text>
+      </View>
+
+      <View style={styles.headerRow}>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.crop, { color: theme.colors.onSurface }]} numberOfLines={1}>
+            {cropLabel}
+          </Text>
+          <Text
+            style={[styles.district, { color: theme.colors.onSurfaceVariant }]}
+            numberOfLines={1}
+          >
+            {`📍 ${poll.district}  ·  ${farmerPriceStrings.card.closingIn(
+              formatCompactRemaining(poll.remainingHours),
+            )}`}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.priceRow}>
+        <View style={styles.priceCol}>
+          <Text style={[styles.priceLabel, { color: theme.colors.onSurfaceVariant }]}>
+            {farmerPriceStrings.card.governmentPriceLabel}
+          </Text>
+          <Text style={[styles.priceValueMuted, { color: theme.colors.onSurface }]}>
+            {poll.governmentPriceAvailable && poll.governmentPriceSnapshot !== null
+              ? formatRupee(poll.governmentPriceSnapshot)
+              : '—'}
+          </Text>
+          <Text style={[styles.priceCaption, { color: theme.colors.onSurfaceVariant }]}>
+            {poll.governmentPriceAvailable
+              ? farmerPriceStrings.card.governmentPriceCaption
+              : farmerPriceStrings.card.governmentPriceUnavailable}
+          </Text>
         </View>
 
-        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+        <View style={[styles.vRule, { backgroundColor: theme.colors.outlineVariant }]} />
 
-        <View style={styles.metricsRow}>
-          <View style={styles.metricCol}>
-            <Text style={[styles.metricLabel, { color: theme.colors.onSurfaceVariant }]}>
-              {farmerPriceStrings.poll.governmentPriceLabel}
-            </Text>
-            {showGovUnavailable ? (
-              <View style={[styles.warnChip, { backgroundColor: palette.amber100 }]}>
-                <Text style={[styles.warnChipText, { color: palette.amber700 }]} numberOfLines={1}>
-                  {farmerPriceStrings.poll.governmentPriceUnavailableChip}
-                </Text>
-              </View>
-            ) : (
-              <Text style={[styles.metricValue, { color: theme.colors.onSurface }]}>
-                {formatRupee(poll.governmentPriceSnapshot ?? 0)}
+        <View style={styles.priceCol}>
+          <Text style={[styles.priceLabel, { color: theme.colors.onSurfaceVariant }]}>
+            {farmerPriceStrings.card.communityPriceLabel}
+          </Text>
+          {hasCommunity ? (
+            <View style={styles.communityRow}>
+              <Text style={[styles.priceValue, { color: palette.green900 }]}>
+                {formatRupee(poll.communityExpectedPrice!)}
               </Text>
-            )}
-          </View>
-
-          <View style={[styles.metricVRule, { backgroundColor: theme.colors.outlineVariant }]} />
-
-          <View style={styles.metricCol}>
-            <Text style={[styles.metricLabel, { color: theme.colors.onSurfaceVariant }]}>
-              {farmerPriceStrings.poll.communityPriceLabel}
-            </Text>
-            {showCommunityUnavailable ? (
-              <View style={styles.waitingBlock}>
-                <Text style={styles.waitingEmoji}>⏳</Text>
-                <Text style={[styles.waitingTitle, { color: theme.colors.onSurface }]} numberOfLines={1}>
-                  {farmerPriceStrings.poll.waitingVotesProgress(
+              {showDelta ? <PriceDelta differencePercentage={poll.differencePercentage!} /> : null}
+            </View>
+          ) : (
+            <>
+              <Text style={[styles.waitingTitle, { color: theme.colors.onSurface }]}>
+                {farmerPriceStrings.card.communityPriceHiddenTitle}
+              </Text>
+              <Text style={[styles.priceCaption, { color: theme.colors.onSurfaceVariant }]}>
+                {farmerPriceStrings.card.communityPriceHiddenBody(MINIMUM_VOTES_REQUIRED)}
+              </Text>
+              {poll.voteCount > 0 ? (
+                <Text style={[styles.progressCaption, { color: palette.green900 }]}>
+                  {farmerPriceStrings.card.communityPriceHiddenProgress(
                     poll.voteCount,
                     MINIMUM_VOTES_REQUIRED,
                   )}
                 </Text>
-                <Text
-                  style={[styles.waitingCaption, { color: theme.colors.onSurfaceVariant }]}
-                  numberOfLines={1}
-                >
-                  {farmerPriceStrings.poll.waitingVotesNeed(votesNeeded)}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.communityValueRow}>
-                <Text style={[styles.communityValue, { color: palette.green900 }]}>
-                  {formatRupee(poll.communityExpectedPrice ?? 0)}
-                </Text>
-                {showDiff ? (
-                  <View
-                    style={[
-                      styles.diffChip,
-                      {
-                        backgroundColor: diffPositive
-                          ? palette.green50
-                          : diffNegative
-                            ? palette.red100
-                            : palette.mist,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.diffChipText,
-                        {
-                          color: diffPositive
-                            ? palette.green900
-                            : diffNegative
-                              ? palette.red700
-                              : palette.steel,
-                        },
-                      ]}
-                    >
-                      {formatDiffChip(poll.differencePercentage!)}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            )}
-          </View>
+              ) : null}
+            </>
+          )}
         </View>
-
-        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
-        <View style={styles.chipsRow}>
-          <MetaChip
-            label={votesChipLabel}
-            backgroundColor={palette.green50}
-            color={palette.green900}
-          />
-          <MetaChip
-            label={getConfidenceLabel(poll.confidence)}
-            backgroundColor={conf.bg}
-            color={conf.fg}
-          />
-          <MetaChip
-            label={farmerPriceStrings.poll.timeChip(formatCompactRemaining(poll.remainingHours))}
-            backgroundColor={palette.mist}
-            color={palette.slate}
-          />
-        </View>
-
-        <ProgressBar
-          progress={progress}
-          color={theme.colors.primary}
-          style={[styles.progress, { backgroundColor: theme.colors.surfaceVariant }]}
-        />
-
-        {children ? (
-          <>
-            <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-            <View style={styles.voteArea}>{children}</View>
-          </>
-        ) : null}
-
-        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
-        <Pressable
-          onPress={onViewComments}
-          style={styles.commentsRow}
-          accessibilityRole="button"
-          accessibilityLabel={farmerPriceStrings.poll.a11yViewComments}
-        >
-          <Text style={[styles.commentsLabel, { color: theme.colors.primary }]}>
-            {viewCommentsLabel}
-          </Text>
-        </Pressable>
       </View>
-    </Animated.View>
+
+      {state === 'invite' && !hasCommunity ? (
+        <View style={[styles.inviteBlock, { backgroundColor: palette.green50 }]}>
+          <Text style={[styles.inviteTitle, { color: palette.green900 }]}>
+            {poll.voteCount === 0
+              ? farmerPriceStrings.card.inviteTitle
+              : farmerPriceStrings.card.invitePartialTitle(poll.voteCount)}
+          </Text>
+          <Text style={[styles.inviteBody, { color: theme.colors.onSurface }]}>
+            {poll.voteCount === 0
+              ? farmerPriceStrings.card.inviteBody(cropLabel, poll.district)
+              : farmerPriceStrings.card.invitePartialBody(MINIMUM_VOTES_REQUIRED)}
+          </Text>
+        </View>
+      ) : null}
+
+      <View style={styles.metaRow}>
+        {hasCommunity ? (
+          <View style={styles.metaLeft}>
+            <Text style={[styles.metaLabel, { color: theme.colors.onSurfaceVariant }]}>
+              {farmerPriceStrings.card.confidenceLabel}
+            </Text>
+            <ConfidenceBadge confidence={poll.confidence} size="sm" />
+          </View>
+        ) : (
+          <View style={styles.metaLeft} />
+        )}
+        <Text style={[styles.participants, { color: theme.colors.onSurfaceVariant }]}>
+          {poll.voteCount === 0
+            ? farmerPriceStrings.card.participantsNone(poll.district)
+            : farmerPriceStrings.card.participantsSome(poll.voteCount)}
+        </Text>
+      </View>
+
+      {(hasCommunity || poll.marketSignals.length > 0 || state !== 'invite') && (
+        <>
+          <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+          <View style={styles.signalsBlock}>
+            <Text style={[styles.signalsHeading, { color: theme.colors.onSurface }]}>
+              {farmerPriceStrings.card.signalsHeading}
+            </Text>
+            <MarketSignals signals={poll.marketSignals} variant="compact" />
+          </View>
+        </>
+      )}
+
+      {state === 'invite' && poll.marketSignals.length === 0 ? (
+        <Text style={[styles.signalsNudge, { color: theme.colors.onSurfaceVariant }]}>
+          {`${farmerPriceStrings.card.signalsEmptyTitle} ${farmerPriceStrings.card.signalsEmptyBody}`}
+        </Text>
+      ) : null}
+
+      <Button
+        mode={state === 'invite' ? 'contained' : 'contained-tonal'}
+        onPress={() => onOpen(poll.id, ctaFocus)}
+        style={styles.action}
+        contentStyle={styles.actionContent}
+        labelStyle={styles.actionLabel}
+        buttonColor={state === 'invite' ? palette.green700 : undefined}
+        accessibilityLabel={ctaA11y}
+      >
+        {ctaLabel}
+      </Button>
+    </View>
   );
 }
 
@@ -263,144 +229,149 @@ export const PollCard = memo(PollCardComponent);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: CARD_RADIUS,
     padding: spacing.md,
-    overflow: 'hidden',
+    gap: 12,
   },
-  titleRow: {
+  banner: {
+    marginHorizontal: -spacing.md,
+    marginTop: -spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+  },
+  bannerText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  titleLeft: {
-    flex: 1,
-    gap: 2,
-  },
-  cropName: {
-    fontSize: 26,
-    lineHeight: 32,
+  headerLeft: { flex: 1, gap: 2 },
+  crop: {
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
   district: {
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 18,
-    fontWeight: '400',
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    width: '100%',
-    marginVertical: 12,
-  },
-  metricsRow: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
   },
-  metricCol: {
-    flex: 1,
-    gap: 4,
-    minHeight: 56,
-  },
-  metricVRule: {
+  priceCol: { flex: 1, gap: 3 },
+  vRule: {
     width: StyleSheet.hairlineWidth,
     alignSelf: 'stretch',
-    marginHorizontal: 2,
   },
-  metricLabel: {
+  priceLabel: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '500',
     letterSpacing: 0.2,
   },
-  metricValue: {
-    fontSize: 30,
-    lineHeight: 36,
+  priceValue: {
+    fontSize: 28,
+    lineHeight: 34,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
   },
-  communityValue: {
-    fontSize: 30,
-    lineHeight: 36,
+  priceValueMuted: {
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
-  communityValueRow: {
+  waitingTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '700',
+  },
+  priceCaption: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  progressCaption: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  communityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  warnChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 5,
-    borderRadius: radius.sm,
-    marginTop: 2,
+  inviteBlock: {
+    borderRadius: radius.lg,
+    padding: 12,
+    gap: 4,
   },
-  warnChipText: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '600',
-  },
-  waitingBlock: {
-    gap: 2,
-    marginTop: 2,
-  },
-  waitingEmoji: {
+  inviteTitle: {
     fontSize: 14,
-    lineHeight: 18,
-  },
-  waitingTitle: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '600',
-  },
-  waitingCaption: {
-    fontSize: 11,
-    lineHeight: 15,
-  },
-  diffChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  diffChipText: {
-    fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 19,
     fontWeight: '700',
   },
-  chipsRow: {
+  inviteBody: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  metaRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.sm,
-    marginBottom: spacing.sm,
   },
-  metaChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
+  metaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flexShrink: 0,
   },
-  metaChipText: {
+  metaLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+  },
+  participants: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
   },
-  progress: {
-    height: 3,
-    borderRadius: radius.pill,
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
   },
-  voteArea: {
-    gap: 12,
+  signalsBlock: { gap: spacing.sm },
+  signalsHeading: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
-  commentsRow: {
-    minHeight: 48,
-    justifyContent: 'center',
+  signalsNudge: {
+    fontSize: 13,
+    lineHeight: 18,
   },
-  commentsLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '600',
+  action: {
+    borderRadius: radius.lg,
+  },
+  actionContent: {
+    height: 52,
+  },
+  actionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

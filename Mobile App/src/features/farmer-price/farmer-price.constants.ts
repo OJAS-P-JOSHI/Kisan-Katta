@@ -14,5 +14,17 @@ export const MINIMUM_VOTES_REQUIRED = 10;
 /** Insights list size expected from poll detail. */
 export const RECENT_INSIGHTS_LIMIT = 5;
 
-/** Client-side page size for comments bottom sheet. */
-export const COMMENTS_PAGE_SIZE = 20;
+/**
+ * Fallback vote band used only if a poll predates `allowedPriceRange`.
+ * Mirrors backend `PRICE_VARIATION_PERCENT`, `MIN_PRICE_WITHOUT_GOV`,
+ * `MAX_PRICE_WITHOUT_GOV` — the server remains the authority.
+ */
+export const PRICE_VARIATION_PERCENT = 40;
+export const MIN_PRICE_WITHOUT_GOV = 1000;
+export const MAX_PRICE_WITHOUT_GOV = 100000;
+
+/** Slider granularity in rupees; the thumb still snaps exactly onto the govt price. */
+export const PRICE_SLIDER_STEP = 10;
+
+/** Market signals shown on the summary card before "View Details". */
+export const HOME_SIGNALS_LIMIT = 3;

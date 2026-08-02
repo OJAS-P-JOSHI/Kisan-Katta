@@ -105,9 +105,9 @@ export const getPollHandler = async (
   req: Request,
   res: Response<ApiSuccessResponse<PollDetailResponseDTO>>
 ): Promise<void> => {
-  getAuthUser(req);
+  const { userId } = getAuthUser(req);
   const pollId = requireParam(req.params["pollId"], "pollId");
-  const data = await getPoll(pollId);
+  const data = await getPoll(pollId, userId);
   res.status(200).json({ success: true, data });
 };
 

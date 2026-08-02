@@ -9,7 +9,7 @@ import type {
   SubmitVoteBody,
   SubmittedVoteLocal,
 } from '../farmer-price.types';
-import { markAlreadyVoted, saveSubmittedVote } from '../farmer-price.vote-storage';
+import { saveSubmittedVote } from '../farmer-price.vote-storage';
 
 export type SubmitFarmerVoteResult =
   | { ok: true; poll: PollDetailResponseDTO; vote: SubmittedVoteLocal }
@@ -20,7 +20,10 @@ export type UseSubmitFarmerVoteReturn = {
   submit: (pollId: string, body: SubmitVoteBody) => Promise<SubmitFarmerVoteResult>;
 };
 
-/** Submits a vote and persists a local thank-you snapshot for this user only. */
+/**
+ * Submits a vote. On success, caches an optimistic thank-you snapshot.
+ * On 409 Already Voted, does not invent local vote state — caller must re-fetch.
+ */
 export function useSubmitFarmerVote(): UseSubmitFarmerVoteReturn {
   const { user } = useAuth();
   const userId = user?.userId ?? null;
@@ -35,21 +38,26 @@ export function useSubmitFarmerVote(): UseSubmitFarmerVoteReturn {
         }
 
         const poll = await submitFarmerVote(pollId, body);
-        const vote: SubmittedVoteLocal = {
-          pollId,
-          expectedPrice: body.expectedPrice,
-          reasonType: body.reasonType,
-          reasonText: body.reasonText,
-          submittedAt: new Date().toISOString(),
-        };
+        const vote: SubmittedVoteLocal = poll.myVote
+          ? {
+              pollId,
+              expectedPrice: poll.myVote.expectedPrice,
+              reasonType: poll.myVote.reasonType,
+              reasonText: poll.myVote.reasonText,
+              submittedAt: poll.myVote.createdAt,
+            }
+          : {
+              pollId,
+              expectedPrice: body.expectedPrice,
+              reasonType: body.reasonType,
+              reasonText: body.reasonText,
+              submittedAt: new Date().toISOString(),
+            };
         await saveSubmittedVote(userId, vote);
         return { ok: true, poll, vote };
       } catch (err) {
         const message = getErrorMessage(err);
         const alreadyVoted = message === 'Already Voted';
-        if (alreadyVoted && userId) {
-          await markAlreadyVoted(userId, pollId);
-        }
         return { ok: false, message, alreadyVoted };
       } finally {
         setSubmitting(false);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { getErrorMessage } from '@/utils';
@@ -7,57 +7,78 @@ import { getMyPollDetails } from '../farmer-price.service';
 import type { PollDetailResponseDTO, SubmittedVoteLocal } from '../farmer-price.types';
 import { getAllSubmittedVotes } from '../farmer-price.vote-storage';
 
+type LoadMode = 'initial' | 'refresh' | 'silent';
+
 export type UseMyFarmerPricePollReturn = {
   polls: PollDetailResponseDTO[];
-  /** Thank-you cache for the authenticated user only, keyed by pollId. */
-  submittedVotes: Record<string, SubmittedVoteLocal>;
+  /**
+   * Optimistic thank-you snapshots only (SecureStore).
+   * Voted CTAs must use poll.hasVoted from the backend.
+   */
+  optimisticVotes: Record<string, SubmittedVoteLocal>;
   loading: boolean;
   refreshing: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  /** Background re-fetch with no spinner — used when the screen regains focus. */
+  revalidate: () => Promise<void>;
   setPollDetail: (poll: PollDetailResponseDTO) => void;
-  setSubmittedVote: (vote: SubmittedVoteLocal) => void;
+  setOptimisticVote: (vote: SubmittedVoteLocal) => void;
 };
 
 /**
- * Loads the farmer's active polls (district + favourite crops) with detail
- * payloads, plus this user's locally cached submitted votes for thank-you cards.
+ * Loads the farmer's active polls with detail payloads.
+ * hasVoted / myVote come from the backend on each poll.
  */
 export function useMyFarmerPricePoll(): UseMyFarmerPricePollReturn {
   const { user } = useAuth();
   const userId = user?.userId ?? null;
 
   const [polls, setPolls] = useState<PollDetailResponseDTO[]>([]);
-  const [submittedVotes, setSubmittedVotes] = useState<Record<string, SubmittedVoteLocal>>({});
+  const [optimisticVotes, setOptimisticVotes] = useState<Record<string, SubmittedVoteLocal>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** Guards against a slow response overwriting a newer one. */
+  const requestIdRef = useRef(0);
+
   const load = useCallback(
-    async (mode: 'initial' | 'refresh'): Promise<void> => {
+    async (mode: LoadMode): Promise<void> => {
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+
       if (mode === 'refresh') {
         setRefreshing(true);
-      } else {
+      } else if (mode === 'initial') {
         setLoading(true);
       }
-      setError(null);
+      if (mode !== 'silent') {
+        setError(null);
+      }
+
       try {
         if (!userId) {
           setPolls([]);
-          setSubmittedVotes({});
+          setOptimisticVotes({});
           return;
         }
-        const [details, votes] = await Promise.all([
+        const [details, cached] = await Promise.all([
           getMyPollDetails(),
           getAllSubmittedVotes(userId),
         ]);
+        if (requestIdRef.current !== requestId) return;
         setPolls(details);
-        setSubmittedVotes(votes);
+        setOptimisticVotes(cached);
+        setError(null);
       } catch (err) {
+        if (requestIdRef.current !== requestId) return;
         setError(getErrorMessage(err));
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (requestIdRef.current === requestId) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [userId],
@@ -65,6 +86,10 @@ export function useMyFarmerPricePoll(): UseMyFarmerPricePollReturn {
 
   const refresh = useCallback(async (): Promise<void> => {
     await load('refresh');
+  }, [load]);
+
+  const revalidate = useCallback(async (): Promise<void> => {
+    await load('silent');
   }, [load]);
 
   const setPollDetail = useCallback((poll: PollDetailResponseDTO) => {
@@ -77,24 +102,24 @@ export function useMyFarmerPricePoll(): UseMyFarmerPricePollReturn {
     });
   }, []);
 
-  const setSubmittedVote = useCallback((vote: SubmittedVoteLocal) => {
-    setSubmittedVotes((prev) => ({ ...prev, [vote.pollId]: vote }));
+  const setOptimisticVote = useCallback((vote: SubmittedVoteLocal) => {
+    setOptimisticVotes((prev) => ({ ...prev, [vote.pollId]: vote }));
   }, []);
 
   useEffect(() => {
-    // Reset UI cache immediately when the authenticated user changes.
-    setSubmittedVotes({});
+    setOptimisticVotes({});
     void load('initial');
   }, [load]);
 
   return {
     polls,
-    submittedVotes,
+    optimisticVotes,
     loading,
     refreshing,
     error,
     refresh,
+    revalidate,
     setPollDetail,
-    setSubmittedVote,
+    setOptimisticVote,
   };
 }

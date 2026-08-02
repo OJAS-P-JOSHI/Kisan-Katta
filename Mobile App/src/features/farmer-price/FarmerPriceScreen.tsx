@@ -1,18 +1,18 @@
-import { useRouter, type Href } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
 import { Button, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
 import { OrganicBackground } from '@/components/OrganicBackground';
+import { getCropLabel, useCrops } from '@/features/crop';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 import { palette, radius, spacing, useAppTheme } from '@/theme';
 
 import { FarmerPriceSkeleton } from './components/FarmerPriceSkeleton';
-import { PollBlock } from './components/PollBlock';
+import { PollCard, type PollCardFocus } from './components/PollCard';
 import { farmerPriceStrings } from './farmer-price.strings';
-import type { PollDetailResponseDTO, SubmittedVoteLocal } from './farmer-price.types';
 import { useMyFarmerPricePoll } from './hooks/useMyFarmerPricePoll';
 
 export default function FarmerPriceScreen() {
@@ -20,18 +20,13 @@ export default function FarmerPriceScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { data: profile, loading: profileLoading } = useMyProfile();
-  const {
-    polls,
-    submittedVotes,
-    loading,
-    refreshing,
-    error,
-    refresh,
-    setPollDetail,
-    setSubmittedVote,
-  } = useMyFarmerPricePoll();
+  const { data: crops } = useCrops();
+  const { polls, loading, refreshing, error, refresh, revalidate } =
+    useMyFarmerPricePoll();
 
-  const [snackbar, setSnackbar] = useState<string | null>(null);
+  /** Refresh failures surface as a dismissible snackbar over the cached list. */
+  const [dismissedError, setDismissedError] = useState<string | null>(null);
+  const snackbarError = error && polls.length > 0 && error !== dismissedError ? error : null;
 
   const hasFavorites = (profile?.favoriteCrops?.length ?? 0) > 0;
   const isInitialLoading = (loading || profileLoading) && polls.length === 0 && !error;
@@ -40,30 +35,40 @@ export default function FarmerPriceScreen() {
     await refresh();
   }, [refresh]);
 
-  const handleVoted = useCallback(
-    (poll: PollDetailResponseDTO, vote: SubmittedVoteLocal) => {
-      setPollDetail(poll);
-      setSubmittedVote(vote);
-      setSnackbar(farmerPriceStrings.snackbar.voteSuccess);
-    },
-    [setPollDetail, setSubmittedVote],
-  );
-
-  const handleAlreadyVoted = useCallback(
-    (pollId: string) => {
-      setSubmittedVote({
-        pollId,
-        expectedPrice: 0,
-        submittedAt: new Date().toISOString(),
-      });
-      void refresh();
-    },
-    [refresh, setSubmittedVote],
+  /** Statistics change while the farmer is on the detail screen — pull them back in. */
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      void revalidate();
+    }, [revalidate]),
   );
 
   const openProfile = useCallback(() => {
     router.push('/profile' as Href);
   }, [router]);
+
+  const openPoll = useCallback(
+    (pollId: string, focus: PollCardFocus) => {
+      router.push({
+        pathname: '/farmer-price-detail/[pollId]',
+        params: { pollId, focus },
+      } as Href);
+    },
+    [router],
+  );
+
+  /** Labels resolved once here so each memoized card stays render-stable. */
+  const cropLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const poll of polls) {
+      map[poll.id] = getCropLabel(poll.crop, crops) || poll.crop;
+    }
+    return map;
+  }, [crops, polls]);
 
   const renderBody = () => {
     if (isInitialLoading) {
@@ -130,14 +135,17 @@ export default function FarmerPriceScreen() {
 
     return (
       <View style={styles.pollStack}>
+        <Text style={[styles.listHeading, { color: theme.colors.onSurfaceVariant }]}>
+          {farmerPriceStrings.screen.listHeading}
+        </Text>
+
         {polls.map((poll) => (
-          <PollBlock
+          <PollCard
             key={poll.id}
             poll={poll}
-            submittedVote={submittedVotes[poll.id]}
-            onVoted={handleVoted}
-            onError={setSnackbar}
-            onAlreadyVoted={handleAlreadyVoted}
+            cropLabel={cropLabels[poll.id] ?? poll.crop}
+            hasVoted={poll.hasVoted}
+            onOpen={openPoll}
           />
         ))}
 
@@ -189,15 +197,15 @@ export default function FarmerPriceScreen() {
       </ScrollView>
 
       <Snackbar
-        visible={!!snackbar}
-        onDismiss={() => setSnackbar(null)}
-        duration={3000}
+        visible={!!snackbarError}
+        onDismiss={() => setDismissedError(error)}
+        duration={4000}
         action={{
           label: farmerPriceStrings.snackbar.dismiss,
-          onPress: () => setSnackbar(null),
+          onPress: () => setDismissedError(error),
         }}
       >
-        {snackbar}
+        {snackbarError ?? ''}
       </Snackbar>
     </View>
   );
@@ -213,8 +221,7 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: 4,
-    paddingBottom: 12,
-    marginBottom: 0,
+    paddingBottom: spacing.md,
   },
   screenTitle: {
     fontSize: 26,
@@ -225,6 +232,13 @@ const styles = StyleSheet.create({
   screenSubtitle: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  listHeading: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
   },
   pollStack: {
     gap: spacing.md,

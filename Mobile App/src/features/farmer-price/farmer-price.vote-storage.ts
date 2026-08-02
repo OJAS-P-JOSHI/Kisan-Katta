@@ -3,13 +3,10 @@ import { requireOptionalNativeModule } from 'expo-modules-core';
 import type { SubmittedVoteLocal } from './farmer-price.types';
 
 /**
- * Persists submitted votes so thank-you cards survive pull-to-refresh.
- * Keys are scoped per authenticated user so multiple farmers on one device
- * never share thank-you state.
+ * Temporary UX cache for immediate post-submit thank-you.
+ * Authoritative voted state is always poll.hasVoted / poll.myVote from the API.
  *
  * Cache key format: `vote:<userId>:<pollId>`
- *
- * Backend has no "my vote" endpoint — this is UI-only cache.
  */
 const STORAGE_KEY = 'farmerPriceSubmittedVotes';
 
@@ -69,10 +66,7 @@ async function writeAll(votes: Record<string, SubmittedVoteLocal>): Promise<void
   }
 }
 
-/**
- * Returns one vote for the given user + poll, or null.
- * Legacy pollId-only keys are ignored (never shared across users).
- */
+/** Returns one optimistic thank-you snapshot, or null. */
 export async function getSubmittedVote(
   userId: string,
   pollId: string,
@@ -82,10 +76,7 @@ export async function getSubmittedVote(
   return all[voteCacheKey(userId, pollId)] ?? null;
 }
 
-/**
- * Returns this user's votes keyed by pollId (UI-friendly map).
- * Other users' entries on the device are never included.
- */
+/** Returns this user's optimistic thank-you snapshots keyed by pollId. */
 export async function getAllSubmittedVotes(
   userId: string,
 ): Promise<Record<string, SubmittedVoteLocal>> {
@@ -101,7 +92,7 @@ export async function getAllSubmittedVotes(
   return result;
 }
 
-/** Saves a vote under `vote:<userId>:<pollId>`. */
+/** Saves an optimistic thank-you snapshot after a successful submit. */
 export async function saveSubmittedVote(
   userId: string,
   vote: SubmittedVoteLocal,
@@ -112,25 +103,7 @@ export async function saveSubmittedVote(
   await writeAll(all);
 }
 
-/** Marks a poll as already voted for this user (no price details). */
-export async function markAlreadyVoted(userId: string, pollId: string): Promise<void> {
-  if (!userId) return;
-  const existing = await getSubmittedVote(userId, pollId);
-  if (existing) return;
-  await saveSubmittedVote(userId, {
-    pollId,
-    expectedPrice: 0,
-    submittedAt: new Date().toISOString(),
-  });
-}
-
-/**
- * Deletes only this user's vote cache entries.
- * Does not touch other farmers' cached votes on the same device.
- *
- * Not called on logout by default — persisted thank-you state must survive
- * re-login for the same user. Cross-user isolation is handled by the key.
- */
+/** Deletes only this user's optimistic thank-you cache entries. */
 export async function clearUserVoteCache(userId: string): Promise<void> {
   if (!userId) return;
   const all = await readAll();

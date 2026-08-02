@@ -14,7 +14,8 @@
     "migrate:phase-5a3": "ts-node scripts/migrate-phase-5a3-business-flow.ts",
     "payment:reset": "ts-node scripts/payment-reset.ts",
     "generate:location-master": "ts-node scripts/generate-location-master.ts",
-    "generate:crop-master": "ts-node scripts/generate-crop-master.ts"
+    "generate:crop-master": "ts-node scripts/generate-crop-master.ts",
+    "qa:farmer-price": "ts-node scripts/farmer-price.qa.ts"
   },
   "dependencies": {
     "axios": "^1.19.0",

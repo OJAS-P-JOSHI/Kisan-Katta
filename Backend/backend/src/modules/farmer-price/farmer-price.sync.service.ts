@@ -1,4 +1,3 @@
-import { Schema, model, Types } from "mongoose";
 import { resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../utils/AppError";
 import { FarmerProfile } from "../profile/profile.model";
@@ -8,38 +7,12 @@ import {
 } from "./farmer-price.constants";
 import { FarmerPricePoll } from "./farmer-price.model";
 import { createPoll } from "./farmer-price.service";
-
-// ---------------------------------------------------------------------------
-// Open-slot lock (concurrency / idempotency)
-// One document per district+crop. Never touches historical poll documents.
-// ---------------------------------------------------------------------------
-
-interface IFarmerPriceOpenSlot {
-  district: string;
-  crop: string;
-  pollId: Types.ObjectId | null;
-  endsAt: Date;
-}
-
-const FarmerPriceOpenSlotSchema = new Schema<IFarmerPriceOpenSlot>(
-  {
-    district: { type: String, required: true, trim: true },
-    crop: { type: String, required: true, trim: true },
-    pollId: { type: Schema.Types.ObjectId, ref: "FarmerPricePoll", default: null },
-    endsAt: { type: Date, required: true },
-  },
-  {
-    timestamps: true,
-    collection: "farmer_price_open_slots",
-  }
-);
-
-FarmerPriceOpenSlotSchema.index({ district: 1, crop: 1 }, { unique: true });
-
-const FarmerPriceOpenSlot = model<IFarmerPriceOpenSlot>(
-  "FarmerPriceOpenSlot",
-  FarmerPriceOpenSlotSchema
-);
+import {
+  bindOpenSlotToPoll,
+  claimOpenSlot,
+  isDuplicateKeyError,
+  releaseOpenSlot,
+} from "./farmer-price.slot";
 
 // ---------------------------------------------------------------------------
 // Types & helpers
@@ -73,86 +46,10 @@ const log = (message: string): void => {
 
 const pairKey = (district: string, crop: string): string => `${district}::${crop}`;
 
-const isDuplicateKeyError = (error: unknown): boolean =>
-  typeof error === "object" &&
-  error !== null &&
-  "code" in error &&
-  (error as { code: unknown }).code === 11000;
-
 const isPollAlreadyExistsError = (error: unknown): boolean =>
   error instanceof AppError &&
   error.statusCode === 409 &&
   error.message.toLowerCase().includes("already exists");
-
-/**
- * Atomically claim the open slot for a district+crop pair.
- * Returns true if this worker may create a poll; false if another holder is active.
- */
-const claimOpenSlot = async (
-  district: string,
-  crop: string,
-  provisionalEndsAt: Date,
-  now: Date
-): Promise<boolean> => {
-  const reclaimed = await FarmerPriceOpenSlot.findOneAndUpdate(
-    {
-      district,
-      crop,
-      endsAt: { $lte: now },
-    },
-    {
-      $set: {
-        endsAt: provisionalEndsAt,
-        pollId: null,
-      },
-    },
-    { new: true }
-  );
-
-  if (reclaimed) {
-    return true;
-  }
-
-  try {
-    await FarmerPriceOpenSlot.create({
-      district,
-      crop,
-      endsAt: provisionalEndsAt,
-      pollId: null,
-    });
-    return true;
-  } catch (error: unknown) {
-    if (isDuplicateKeyError(error)) {
-      return false;
-    }
-    throw error;
-  }
-};
-
-const releaseOpenSlot = async (district: string, crop: string): Promise<void> => {
-  await FarmerPriceOpenSlot.updateOne(
-    { district, crop },
-    { $set: { endsAt: new Date(0), pollId: null } }
-  );
-};
-
-const bindOpenSlotToPoll = async (
-  district: string,
-  crop: string,
-  pollId: string,
-  endsAt: Date
-): Promise<void> => {
-  await FarmerPriceOpenSlot.updateOne(
-    { district, crop },
-    {
-      $set: {
-        pollId,
-        endsAt,
-      },
-    },
-    { upsert: true }
-  );
-};
 
 const loadDistrictCropInterest = async (): Promise<{
   profilesScanned: number;

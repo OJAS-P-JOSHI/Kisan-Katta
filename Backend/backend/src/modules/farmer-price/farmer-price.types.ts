@@ -84,6 +84,29 @@ export interface RecentInsightDTO {
   author: string;
 }
 
+/** Aggregated reason counts for a poll — "why the community thinks this". */
+export interface MarketSignalDTO {
+  reasonType: ReasonType;
+  farmerCount: number;
+}
+
+/** Vote band enforced by the validator, surfaced so clients can bound inputs. */
+export interface AllowedPriceRangeDTO {
+  min: number;
+  max: number;
+}
+
+/**
+ * Authenticated caller's own vote on a poll (additive).
+ * Source of truth for cross-device "already voted" UI.
+ */
+export interface MyVoteDTO {
+  expectedPrice: number;
+  reasonType?: ReasonType;
+  reasonText?: string;
+  createdAt: Date;
+}
+
 export interface PollResponseDTO {
   id: string;
   crop: string;
@@ -98,16 +121,22 @@ export interface PollResponseDTO {
   minimumVotesReached: boolean;
   differenceFromGovernmentPrice: number | null;
   differencePercentage: number | null;
+  allowedPriceRange: AllowedPriceRangeDTO;
   lastVoteAt: Date | null;
   startsAt: Date;
   endsAt: Date;
   status: PollStatus;
   createdAt: Date;
   updatedAt: Date;
+  /** Whether the authenticated caller has voted on this poll. */
+  hasVoted: boolean;
+  /** Caller's vote payload when hasVoted; otherwise null. */
+  myVote: MyVoteDTO | null;
 }
 
 export interface PollDetailResponseDTO extends PollResponseDTO {
   remainingHours: number;
+  marketSignals: MarketSignalDTO[];
   recentInsights: RecentInsightDTO[];
   isCommunityEstimate: true;
   disclaimer: string;
