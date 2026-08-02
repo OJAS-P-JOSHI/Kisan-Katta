@@ -995,6 +995,6 @@ type ProfileResponseDTO = {
 | Crop picker UX | `components/CropMultiSelect.tsx` |
 | API paths | `profile.service.ts` |
 
----
+---SSSS
 
 *End of Profile Module technical reference.*

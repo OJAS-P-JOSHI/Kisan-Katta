@@ -220,28 +220,28 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    gap: 4,
-    paddingBottom: spacing.md,
+    gap: 2,
+    paddingBottom: spacing.sm,
   },
   screenTitle: {
-    fontSize: 26,
-    lineHeight: 32,
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
   screenSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
   listHeading: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
   pollStack: {
-    gap: spacing.md,
+    gap: 12,
   },
   disclaimer: {
     gap: 2,

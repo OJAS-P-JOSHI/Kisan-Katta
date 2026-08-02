@@ -8,29 +8,38 @@ export const farmerPriceStrings = {
   tab: 'अपेक्षित भाव',
   screen: {
     title: 'शेतकऱ्यांचा अपेक्षित भाव',
-    subtitle: 'तुमच्या जिल्ह्यातील शेतकऱ्यांचे सामूहिक मत — आजची निष्पक्ष किंमत काय असावी?',
-    listHeading: 'Your crops today',
+    subtitle: 'District farmers’ fair-price view for today',
+    listHeading: 'Your crops',
   },
   card: {
-    governmentPriceLabel: 'Government Price',
+    governmentPriceLabel: 'Government',
     governmentPriceCaption: 'Reference only',
     governmentPriceUnavailable: 'Not published today',
-    communityPriceLabel: 'Community Expected',
+    communityPriceLabel: 'Community',
     communityPriceHiddenTitle: 'Not revealed yet',
     communityPriceHiddenBody: (required: number) =>
-      `Community price appears after ${required} farmers participate. You can help build today’s consensus.`,
+      `Appears after ${required} opinions`,
     communityPriceHiddenProgress: (current: number, required: number) =>
-      `${current} of ${required} opinions so far`,
+      `${current}/${required}`,
+    communityProgressShort: (current: number, required: number) =>
+      `${current}/${required}`,
     perQuintal: 'per Quintal',
     confidenceLabel: 'Confidence',
     participantsNone: (district: string) =>
       `No opinions yet. Be the first farmer from ${district}.`,
     participantsSome: (count: number) =>
-      count === 1 ? '1 farmer has shared an opinion' : `${count} farmers have shared opinions`,
-    signalsHeading: 'Top Market Signals',
-    signalsEmptyTitle: 'No farmer has explained today’s market yet.',
-    signalsEmptyBody: 'Share your opinion to help the community.',
-    /** Status banners */
+      count === 1 ? '1 opinion' : `${count} opinions`,
+    signalsHeading: 'Signals',
+    signalsEmptyTitle: 'No market notes yet.',
+    signalsEmptyBody: 'Your vote can add the first one.',
+    /** Compact status (one message per card) */
+    statusEmpty: (district: string) =>
+      `🌱  No opinions yet · Be the first in ${district}`,
+    statusPartial: (current: number, required: number) =>
+      `🌱  ${current} of ${required} opinions · Your vote helps`,
+    statusVoted: '✓  Opinion recorded · Waiting for consensus',
+    statusConsensus: '🟢  Community consensus available',
+    /** Status banners (kept for compatibility; card no longer renders them) */
     bannerFirst: 'Be the first farmer to share today’s fair price.',
     bannerInvite: (crop: string, district: string) =>
       `You can become the first voice for ${crop} in ${district}.`,
@@ -45,16 +54,14 @@ export const farmerPriceStrings = {
     a11yCard: (crop: string, district: string) => `${crop} in ${district}, community price card`,
     a11yShare: (crop: string) => `Share your opinion for ${crop}`,
     a11yViewCommunity: (crop: string) => `View community for ${crop}`,
-    closingIn: (label: string) => `Closes in ${label}`,
-    inviteTitle: 'No farmer has shared an opinion yet.',
+    closingIn: (label: string) => `closes in ${label}`,
+    inviteTitle: 'No opinions yet.',
     inviteBody: (crop: string, district: string) =>
-      `You can become the first voice for ${crop} in ${district}. Help other farmers understand today’s market.`,
+      `Be the first voice for ${crop} in ${district}.`,
     invitePartialTitle: (count: number) =>
-      count === 1
-        ? '1 farmer has spoken — more voices help.'
-        : `${count} farmers have spoken — more voices help.`,
+      count === 1 ? '1 opinion so far' : `${count} opinions so far`,
     invitePartialBody: (required: number) =>
-      `Community price will appear once ${required} farmers participate. Your opinion counts.`,
+      `Community price after ${required} farmers.`,
   },
   detail: {
     title: 'Community Price',

@@ -24,22 +24,22 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
   );
 });
 
-/** Mirrors the summary card layout so the first paint does not jump. */
+/** Mirrors the lighter summary card so the first paint does not jump. */
 const SummaryCardSkeleton = memo(function SummaryCardSkeleton() {
   return (
     <View style={[styles.card, cardSurface]}>
-      <SkeletonBox style={styles.title} />
-      <SkeletonBox style={styles.subtitle} />
+      <View style={styles.header}>
+        <SkeletonBox style={styles.emoji} />
+        <View style={styles.headerText}>
+          <SkeletonBox style={styles.title} />
+          <SkeletonBox style={styles.subtitle} />
+        </View>
+      </View>
       <View style={styles.metrics}>
         <SkeletonBox style={styles.metric} />
         <SkeletonBox style={styles.metric} />
       </View>
-      <SkeletonBox style={styles.meta} />
-      <SkeletonBox style={styles.divider} />
-      <View style={styles.chipsRow}>
-        <SkeletonBox style={styles.chip} />
-        <SkeletonBox style={styles.chipWide} />
-      </View>
+      <SkeletonBox style={styles.status} />
       <SkeletonBox style={styles.button} />
     </View>
   );
@@ -58,17 +58,17 @@ const styles = StyleSheet.create({
   root: { gap: spacing.md },
   card: {
     backgroundColor: palette.white,
-    padding: spacing.md,
-    gap: 14,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    gap: 12,
   },
-  title: { height: 30, width: '55%' },
-  subtitle: { height: 14, width: '45%' },
-  metrics: { flexDirection: 'row', gap: spacing.md },
-  metric: { flex: 1, height: 62, borderRadius: radius.md },
-  meta: { height: 16, width: '70%' },
-  divider: { height: StyleSheet.hairlineWidth, width: '100%' },
-  chipsRow: { flexDirection: 'row', gap: spacing.sm },
-  chip: { height: 28, width: 110, borderRadius: radius.pill },
-  chipWide: { height: 28, width: 140, borderRadius: radius.pill },
-  button: { height: 48, width: '100%', borderRadius: radius.lg },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  emoji: { height: 28, width: 28, borderRadius: radius.md },
+  headerText: { flex: 1, gap: 4 },
+  title: { height: 22, width: '50%' },
+  subtitle: { height: 12, width: '40%' },
+  metrics: { flexDirection: 'row', gap: 8 },
+  metric: { flex: 1, height: 56, borderRadius: radius.lg },
+  status: { height: 34, width: '100%', borderRadius: radius.lg },
+  button: { height: 44, width: '100%', borderRadius: radius.xl },
 });
