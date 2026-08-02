@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Button, Card, SegmentedButtons, Snackbar, Text } from 'react-native-paper';
 
@@ -10,6 +10,7 @@ import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
 import { ListingEmptyView, ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
+import { LISTING_STATUSES } from '../marketplace.constants';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getMyListings } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
@@ -18,15 +19,28 @@ import { formatListingDate, formatPrice, getListingDisplayTitle } from '../marke
 
 type StatusFilter = ListingStatus;
 
+const parseStatusParam = (value: string | string[] | undefined): StatusFilter => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (raw && (LISTING_STATUSES as readonly string[]).includes(raw)) {
+    return raw as StatusFilter;
+  }
+  return 'ACTIVE';
+};
+
 export default function MyListingsScreen() {
   const theme = useAppTheme();
   const router = useRouter();
+  const { status: statusParam } = useLocalSearchParams<{ status?: string }>();
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ACTIVE');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => parseStatusParam(statusParam));
   const [snackbar, setSnackbar] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStatusFilter(parseStatusParam(statusParam));
+  }, [statusParam]);
 
   const fetchListings = useCallback(async () => {
     try {

@@ -14,6 +14,7 @@ import {
   getListingById,
   getListings,
   getMyListings,
+  getMyMarketplaceSummary,
   getSavedListings,
   recordContactClick,
   saveListing,
@@ -30,6 +31,7 @@ import type {
   ListingSortOption,
   ListingsQuery,
   MarketplaceCategory,
+  MyMarketplaceSummaryDTO,
   PaginatedListingsDTO,
   SavedListingsDTO,
 } from "./marketplace.types";
@@ -186,6 +188,15 @@ export const getMyListingsHandler = async (
   const { userId } = getAuthUser(req);
   const { page, limit } = parsePaginationQuery(req);
   const data = await getMyListings(userId, page, limit);
+  res.status(200).json({ success: true, data });
+};
+
+export const getMyMarketplaceSummaryHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<MyMarketplaceSummaryDTO>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const data = await getMyMarketplaceSummary(userId);
   res.status(200).json({ success: true, data });
 };
 

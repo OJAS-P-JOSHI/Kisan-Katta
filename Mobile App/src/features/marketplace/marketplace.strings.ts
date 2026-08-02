@@ -123,6 +123,18 @@ export const marketplaceStrings = {
     emptyMessage: 'जाहिरातीवर हृदय चिन्ह दाबून जतन करा.',
     save: 'जतन करा',
   },
+  homeSummary: {
+    title: 'माझी बाजारपेठ',
+    subtitle: 'आपल्या जाहिरातींचा आढावा',
+    active: 'सक्रिय',
+    sold: 'विकले',
+    archived: 'संग्रहित',
+    saved: 'जतन',
+    viewAll: 'सर्व पहा',
+    emptyTitle: 'अद्याप कोणतीही जाहिरात नाही.',
+    createFirst: 'पहिली जाहिरात तयार करा',
+    loading: 'आढावा लोड होत आहे…',
+  },
   lifecycle: {
     markSoldTitle: 'विकले म्हणून चिन्हांकित करायचे?',
     markSoldMessage:

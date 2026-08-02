@@ -14,6 +14,7 @@ import type {
   ListingDetailResponseDTO,
   ListingResponseDTO,
   ListingsQuery,
+  MyMarketplaceSummaryDTO,
   PaginatedListingsDTO,
   SavedListingsDTO,
   SellerInfoDTO,
@@ -510,4 +511,48 @@ export const recordContactClick = async (listingId: string): Promise<void> => {
   if (!listing) {
     throw new AppError("Listing not found.", 404);
   }
+};
+
+/**
+ * Returns owned-listing status counts plus publicly-visible saved count.
+ * Uses countDocuments / aggregate count only — no listing payloads.
+ */
+export const getMyMarketplaceSummary = async (
+  userId: string
+): Promise<MyMarketplaceSummaryDTO> => {
+  const sellerId = new Types.ObjectId(userId);
+  const userObjectId = sellerId;
+  const now = new Date();
+
+  const [active, sold, archived, savedAggregation] = await Promise.all([
+    MarketplaceListing.countDocuments({ sellerId, status: "ACTIVE" }),
+    MarketplaceListing.countDocuments({ sellerId, status: "SOLD" }),
+    MarketplaceListing.countDocuments({ sellerId, status: "ARCHIVED" }),
+    MarketplaceSaved.aggregate<{ total: number }>([
+      { $match: { userId: userObjectId } },
+      {
+        $lookup: {
+          from: "marketplace",
+          localField: "listingId",
+          foreignField: "_id",
+          as: "listing",
+        },
+      },
+      { $unwind: "$listing" },
+      {
+        $match: {
+          "listing.status": "ACTIVE",
+          "listing.expiresAt": { $gt: now },
+        },
+      },
+      { $count: "total" },
+    ]),
+  ]);
+
+  return {
+    active,
+    sold,
+    archived,
+    saved: savedAggregation[0]?.total ?? 0,
+  };
 };

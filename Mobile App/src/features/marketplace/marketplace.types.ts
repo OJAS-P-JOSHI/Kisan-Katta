@@ -108,6 +108,14 @@ export type UnsaveListingResult = {
   listingId: string;
 };
 
+/** Home "My Marketplace" summary counts from GET /my-summary. */
+export type MyMarketplaceSummary = {
+  active: number;
+  sold: number;
+  archived: number;
+  saved: number;
+};
+
 export type UploadImagesResult = {
   images: ListingImage[];
 };
@@ -123,3 +131,4 @@ export type ListingDetailResponse = ApiSuccessResponse<MarketplaceListingDetail>
 export type ListingResponse = ApiSuccessResponse<MarketplaceListing>;
 export type SaveListingResponse = ApiSuccessResponse<SaveListingResult>;
 export type UnsaveListingResponse = ApiSuccessResponse<UnsaveListingResult>;
+export type MyMarketplaceSummaryResponse = ApiSuccessResponse<MyMarketplaceSummary>;

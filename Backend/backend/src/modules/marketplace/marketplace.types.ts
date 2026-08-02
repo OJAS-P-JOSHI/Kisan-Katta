@@ -180,3 +180,11 @@ export interface SavedListingsDTO {
     totalPages: number;
   };
 }
+
+/** Aggregated counts for the Home "My Marketplace" summary card. */
+export interface MyMarketplaceSummaryDTO {
+  active: number;
+  sold: number;
+  archived: number;
+  saved: number;
+}

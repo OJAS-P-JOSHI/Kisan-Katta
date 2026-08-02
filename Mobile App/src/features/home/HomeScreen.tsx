@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
 import { useFavouriteMarketCards } from '@/features/market/hooks/useFavouriteMarketCards';
+import { useMyMarketplaceSummary } from '@/features/marketplace/hooks/useMyMarketplaceSummary';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { useCurrentWeather } from './hooks/useCurrentWeather';
@@ -18,6 +19,7 @@ import { DashboardHeader } from './components/DashboardHeader';
 import { FavouriteCropsCard } from './components/FavouriteCropsCard';
 import { ForecastList } from './components/ForecastList';
 import { MarketSummaryCard } from './components/MarketSummaryCard';
+import { MyMarketplaceCard } from './components/MyMarketplaceCard';
 import { PlaceholderCard } from './components/PlaceholderCard';
 import { WeatherAlertCard } from './components/WeatherAlertCard';
 import { WeatherCard } from './components/WeatherCard';
@@ -82,14 +84,33 @@ export default function HomeScreen() {
   const { data: alerts, loading: alertsLoading, error: alertsError, refresh: refreshAlerts } =
     useWeatherAlerts(district);
 
+  const {
+    data: marketplaceSummary,
+    loading: marketplaceSummaryLoading,
+    error: marketplaceSummaryError,
+    refresh: refreshMarketplaceSummary,
+  } = useMyMarketplaceSummary();
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refreshMarket(), refreshWeather(), refreshForecast(), refreshAlerts()]);
+      await Promise.all([
+        refreshMarket(),
+        refreshWeather(),
+        refreshForecast(),
+        refreshAlerts(),
+        refreshMarketplaceSummary(),
+      ]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshMarket, refreshWeather, refreshForecast, refreshAlerts]);
+  }, [
+    refreshMarket,
+    refreshWeather,
+    refreshForecast,
+    refreshAlerts,
+    refreshMarketplaceSummary,
+  ]);
 
   const todayRainChance =
     forecast.length > 0 ? forecast[0].dailyChanceOfRain : undefined;
@@ -189,6 +210,15 @@ export default function HomeScreen() {
           error={marketError}
           onRetry={() => {
             void refreshMarket();
+          }}
+        />
+
+        <MyMarketplaceCard
+          summary={marketplaceSummary}
+          loading={marketplaceSummaryLoading}
+          error={marketplaceSummaryError}
+          onRetry={() => {
+            void refreshMarketplaceSummary();
           }}
         />
 

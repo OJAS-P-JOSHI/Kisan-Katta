@@ -7,6 +7,8 @@ import type {
   ListingImage,
   ListingResponse,
   ListingsQueryParams,
+  MyMarketplaceSummary,
+  MyMarketplaceSummaryResponse,
   PaginatedListings,
   PaginatedListingsResponse,
   SaveListingResponse,
@@ -19,6 +21,7 @@ const MARKETPLACE_BASE = '/api/v1/marketplace';
 
 const LISTINGS_ENDPOINT = `${MARKETPLACE_BASE}/listings`;
 const MY_LISTINGS_ENDPOINT = `${MARKETPLACE_BASE}/my-listings`;
+const MY_SUMMARY_ENDPOINT = `${MARKETPLACE_BASE}/my-summary`;
 const SAVED_LISTINGS_ENDPOINT = `${MARKETPLACE_BASE}/saved`;
 
 /** Fetches paginated marketplace listings with optional filters. */
@@ -71,6 +74,12 @@ export const getMyListings = async (
   const response = await api.get<PaginatedListingsResponse>(MY_LISTINGS_ENDPOINT, {
     params: { page, limit },
   });
+  return response.data.data;
+};
+
+/** Fetches owned + saved listing counts for the Home summary card. */
+export const getMyMarketplaceSummary = async (): Promise<MyMarketplaceSummary> => {
+  const response = await api.get<MyMarketplaceSummaryResponse>(MY_SUMMARY_ENDPOINT);
   return response.data.data;
 };
 

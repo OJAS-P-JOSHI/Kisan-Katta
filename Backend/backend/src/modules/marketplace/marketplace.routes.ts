@@ -10,6 +10,7 @@ import {
   getListingByIdHandler,
   getListingsHandler,
   getMyListingsHandler,
+  getMyMarketplaceSummaryHandler,
   getSavedListingsHandler,
   saveListingHandler,
   unsaveListingHandler,
@@ -67,6 +68,11 @@ router.post(
 );
 router.delete("/images", authenticate, asyncHandler(deleteMarketplaceImageHandler));
 router.get("/my-listings", authenticate, asyncHandler(getMyListingsHandler));
+router.get(
+  "/my-summary",
+  authenticate,
+  asyncHandler(getMyMarketplaceSummaryHandler)
+);
 router.get("/saved", authenticate, asyncHandler(getSavedListingsHandler));
 
 router.get("/listings/:id", optionalAuthenticate, asyncHandler(getListingByIdHandler));
