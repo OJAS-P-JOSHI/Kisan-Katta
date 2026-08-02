@@ -73,7 +73,21 @@ export const toAdminProfileDTO = (admin: IAdmin): AdminProfileDTO => ({
  */
 export const seedSuperAdmin = async (): Promise<void> => {
   const existing = await findAdminByPhone(SUPER_ADMIN_SEED.phoneNumber);
-  if (existing) return;
+  if (existing) {
+    // Keep the seeded SUPER_ADMIN permission catalog in sync as new modules ship.
+    const catalog = ROLE_PERMISSIONS.SUPER_ADMIN;
+    const missing = catalog.filter((p) => !existing.permissions.includes(p));
+    if (missing.length > 0 || existing.permissions.length !== catalog.length) {
+      await Admin.findByIdAndUpdate(existing._id, {
+        $set: { permissions: [...catalog] },
+      });
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Admin] Synced SUPER_ADMIN permissions (+${missing.join(",") || "refresh"})`
+      );
+    }
+    return;
+  }
 
   await createAdmin({
     name: SUPER_ADMIN_SEED.name,

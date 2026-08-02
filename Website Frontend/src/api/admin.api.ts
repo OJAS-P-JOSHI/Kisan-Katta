@@ -13,6 +13,11 @@ import type {
   PaginatedVolunteers,
   SystemInfo,
 } from '@/types/admin.types'
+import type {
+  AdminAssistanceListQuery,
+  AdminHelpRequest,
+  PaginatedAdminHelpRequests,
+} from '@/types/assistance-admin.types'
 
 const BASE = '/api/v1/admin'
 
@@ -104,6 +109,49 @@ export const getAdminFarmer = async (id: string): Promise<FarmerDetail> => {
 export const getAdminSystemInfo = async (): Promise<SystemInfo> => {
   const { data } = await api.get<ApiSuccessResponse<SystemInfo>>(
     `${BASE}/system`,
+  )
+  return data.data
+}
+
+export const listAdminAssistance = async (
+  query?: AdminAssistanceListQuery,
+): Promise<PaginatedAdminHelpRequests> => {
+  const { data } = await api.get<ApiSuccessResponse<PaginatedAdminHelpRequests>>(
+    `${BASE}/assistance`,
+    { params: toParams(query) },
+  )
+  return data.data
+}
+
+export const approveAdminAssistance = async (
+  id: string,
+  note?: string,
+): Promise<AdminHelpRequest> => {
+  const { data } = await api.patch<ApiSuccessResponse<AdminHelpRequest>>(
+    `${BASE}/assistance/${id}/approve`,
+    note ? { note } : {},
+  )
+  return data.data
+}
+
+export const rejectAdminAssistance = async (
+  id: string,
+  note?: string,
+): Promise<AdminHelpRequest> => {
+  const { data } = await api.patch<ApiSuccessResponse<AdminHelpRequest>>(
+    `${BASE}/assistance/${id}/reject`,
+    note ? { note } : {},
+  )
+  return data.data
+}
+
+export const archiveAdminAssistance = async (
+  id: string,
+  note?: string,
+): Promise<AdminHelpRequest> => {
+  const { data } = await api.patch<ApiSuccessResponse<AdminHelpRequest>>(
+    `${BASE}/assistance/${id}/archive`,
+    note ? { note } : {},
   )
   return data.data
 }

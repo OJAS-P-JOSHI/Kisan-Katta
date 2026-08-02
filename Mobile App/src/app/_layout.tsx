@@ -1,9 +1,12 @@
 import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
+import { assistanceStrings } from '@/features/assistance/assistance.strings';
 import { farmerPriceStrings } from '@/features/farmer-price/farmer-price.strings';
 import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import { navigationTheme, paperTheme } from '@/theme';
@@ -57,6 +60,38 @@ function RootNavigator() {
           options={{ headerShown: true, title: marketplaceStrings.saved.title, presentation: 'card' }}
         />
         <Stack.Screen
+          name="assistance-create"
+          options={{
+            headerShown: true,
+            title: assistanceStrings.create.title,
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="assistance-edit/[id]"
+          options={{
+            headerShown: true,
+            title: assistanceStrings.create.editTitle,
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="assistance-request/[id]"
+          options={{
+            headerShown: true,
+            title: assistanceStrings.detail.title,
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="assistance-my-requests"
+          options={{
+            headerShown: true,
+            title: assistanceStrings.myRequests.title,
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
           name="farmer-price-detail/[pollId]"
           options={{
             headerShown: true,
@@ -82,15 +117,21 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <PaperProvider theme={paperTheme}>
-        <ThemeProvider value={navigationTheme}>
-          <StatusBar style="dark" />
-          <AuthProvider>
-            <RootNavigator />
-          </AuthProvider>
-        </ThemeProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <PaperProvider theme={paperTheme}>
+          <ThemeProvider value={navigationTheme}>
+            <StatusBar style="dark" />
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </ThemeProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

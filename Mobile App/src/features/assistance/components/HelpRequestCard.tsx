@@ -6,62 +6,58 @@ import { Card, IconButton, Text } from 'react-native-paper';
 import { RemoteImage } from '@/components/media/RemoteImage';
 import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
 
-import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
-import type { MarketplaceListing } from '../marketplace.types';
+import { assistanceStrings } from '../assistance.strings';
+import type { HelpRequest } from '../assistance.types';
 import {
-  formatListingDate,
-  formatPrice,
-  getListingDisplayTitle,
-  getListingImageUrl,
-  getListingImageUrls,
-  isListingOwner,
-} from '../marketplace.utils';
-import { ListingStatusBadge } from './ListingStatusBadge';
+  formatAuthorPlace,
+  formatHelpRequestDate,
+  getPrimaryProofPhotoUrl,
+  getProofPhotoUrls,
+} from '../assistance.utils';
+import { HelpRequestStatusChip } from './HelpRequestStatusChip';
 
-type ListingCardProps = {
-  listing: MarketplaceListing;
-  currentUserId?: string | null;
-  isSaved?: boolean;
-  onPress: (listing: MarketplaceListing) => void;
-  onToggleSave?: (listing: MarketplaceListing) => void;
-  showBrand?: boolean;
-  showStatus?: boolean;
+type HelpRequestCardProps = {
+  request: HelpRequest;
+  supporting?: boolean;
+  onPress: (request: HelpRequest) => void;
+  onSupport?: (request: HelpRequest) => void;
+  /** Hidden on "My requests", where every row belongs to the viewer. */
+  showActions?: boolean;
 };
 
-function ListingCardComponent({
-  listing,
-  currentUserId,
-  isSaved = false,
+/**
+ * Feed card — same horizontal layout, elevation, press feedback, and
+ * typography as Marketplace `ListingCard`.
+ */
+function HelpRequestCardComponent({
+  request,
+  supporting = false,
   onPress,
-  onToggleSave,
-  showBrand = listing.listingType === 'product',
-  showStatus = true,
-}: ListingCardProps) {
+  onSupport,
+  showActions = true,
+}: HelpRequestCardProps) {
   const theme = useAppTheme();
-  const imageUrl = getListingImageUrl(listing.images);
-  const imageCount = getListingImageUrls(listing.images).length;
-  const extraImageCount = imageCount > 1 ? imageCount - 1 : 0;
-  const title = getListingDisplayTitle(listing);
-  const isOwner = isListingOwner(listing.sellerId, currentUserId);
-  const showSaveButton = !!onToggleSave && !isOwner;
+  const imageUrl = getPrimaryProofPhotoUrl(request.images);
+  const photoCount = getProofPhotoUrls(request.images).length;
+  const extraPhotoCount = photoCount > 1 ? photoCount - 1 : 0;
+  const canSupport =
+    showActions &&
+    request.status === 'OPEN' &&
+    !request.isOwner &&
+    !request.hasSupported &&
+    !supporting;
+  const showSupportButton = showActions && !!onSupport && !request.isOwner;
 
-  const handlePress = useCallback(() => onPress(listing), [listing, onPress]);
-  const handleToggleSave = useCallback(() => {
-    onToggleSave?.(listing);
-  }, [listing, onToggleSave]);
+  const handlePress = useCallback(() => onPress(request), [onPress, request]);
+  const handleSupport = useCallback(() => onSupport?.(request), [onSupport, request]);
 
-  const quantityText =
-    listing.quantity != null && listing.unit
-      ? `${listing.quantity} ${listing.unit}`
-      : listing.stock != null
-        ? `${listing.stock} ${marketplaceStrings.detail.inStock}`
-        : null;
+  const supportCountLabel =
+    request.supportCount > 0
+      ? assistanceStrings.card.supportCount(request.supportCount)
+      : assistanceStrings.card.supportCountEmpty;
 
   return (
-    <Pressable
-      onPress={handlePress}
-      style={({ pressed }) => [pressed && styles.pressed]}
-    >
+    <Pressable onPress={handlePress} style={({ pressed }) => [pressed && styles.pressed]}>
       <Card style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]} mode="elevated">
         <View style={styles.cardRow}>
           <View style={styles.imageWrap}>
@@ -72,7 +68,7 @@ function ListingCardComponent({
                 style={styles.image}
                 containerStyle={styles.imageFill}
                 resizeMode="cover"
-                accessibilityLabel={title}
+                accessibilityLabel={request.title}
               />
             ) : (
               <View
@@ -83,26 +79,26 @@ function ListingCardComponent({
                 ]}
               >
                 <MaterialCommunityIcons
-                  name={listing.listingType === 'produce' ? 'sprout' : 'package-variant'}
+                  name="image-off-outline"
                   size={iconSize.xl}
                   color={theme.colors.onSurfaceVariant}
                 />
               </View>
             )}
-            {extraImageCount > 0 ? (
+            {extraPhotoCount > 0 ? (
               <View style={[styles.moreBadge, { backgroundColor: theme.colors.surface }]}>
                 <Text style={[typography.caption, { color: theme.colors.onSurface, fontWeight: '700' }]}>
-                  {marketplaceStrings.images.morePhotosOverlay(extraImageCount)}
+                  {assistanceStrings.images.morePhotosOverlay(extraPhotoCount)}
                 </Text>
               </View>
             ) : null}
-            {isOwner ? (
+            {request.isOwner ? (
               <View style={[styles.ownerBadge, { backgroundColor: theme.colors.primaryContainer }]}>
                 <Text
                   numberOfLines={1}
                   style={[typography.caption, { color: theme.colors.onPrimaryContainer, fontSize: 9 }]}
                 >
-                  {marketplaceStrings.myListings.myListingBadge}
+                  {assistanceStrings.card.myRequestBadge}
                 </Text>
               </View>
             ) : null}
@@ -114,56 +110,56 @@ function ListingCardComponent({
                 numberOfLines={2}
                 style={[typography.sectionTitle, { color: theme.colors.onSurface, flex: 1 }]}
               >
-                {title}
+                {request.title}
               </Text>
-              {showSaveButton ? (
+              {showSupportButton ? (
                 <IconButton
-                  icon={isSaved ? 'heart' : 'heart-outline'}
+                  icon={request.hasSupported ? 'hand-heart' : 'hand-heart-outline'}
                   size={22}
-                  iconColor={isSaved ? theme.colors.error : theme.colors.onSurfaceVariant}
-                  onPress={handleToggleSave}
-                  style={styles.saveButton}
+                  iconColor={
+                    request.hasSupported || canSupport
+                      ? theme.colors.primary
+                      : theme.colors.onSurfaceVariant
+                  }
+                  onPress={handleSupport}
+                  disabled={!canSupport && !request.hasSupported}
+                  style={styles.actionButton}
                   hitSlop={8}
+                  accessibilityLabel={
+                    request.hasSupported
+                      ? assistanceStrings.card.supported
+                      : assistanceStrings.card.support
+                  }
                 />
               ) : null}
             </View>
 
-            {showStatus ? (
-              <View style={styles.badgeRow}>
-                <ListingStatusBadge status={listing.status} />
-              </View>
-            ) : null}
+            <View style={styles.badgeRow}>
+              <HelpRequestStatusChip status={request.status} />
+            </View>
 
-            {showBrand && listing.brand ? (
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-                {listing.brand}
-              </Text>
-            ) : null}
-
-            <Text style={[typography.sectionTitle, styles.price, { color: theme.colors.primary }]}>
-              {formatPrice(listing.price)}
+            <Text style={[typography.sectionTitle, styles.supportCount, { color: theme.colors.primary }]}>
+              {supportCountLabel}
             </Text>
-
-            {quantityText ? (
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-                {quantityText}
-              </Text>
-            ) : null}
 
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="map-marker-outline" size={iconSize.sm} color={theme.colors.primary} />
+                <MaterialCommunityIcons
+                  name="map-marker-outline"
+                  size={iconSize.sm}
+                  color={theme.colors.primary}
+                />
                 <Text
                   numberOfLines={1}
                   style={[typography.caption, { color: theme.colors.onSurfaceVariant, flex: 1 }]}
                 >
-                  {listing.district}
+                  {formatAuthorPlace(request.author)}
                 </Text>
               </View>
             </View>
 
             <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-              {getCategoryLabel(listing.category)} · {formatListingDate(listing.createdAt)}
+              {formatHelpRequestDate(request.createdAt)}
             </Text>
           </View>
         </View>
@@ -172,7 +168,7 @@ function ListingCardComponent({
   );
 }
 
-export const ListingCard = memo(ListingCardComponent);
+export const HelpRequestCard = memo(HelpRequestCardComponent);
 
 const styles = StyleSheet.create({
   card: {},
@@ -207,8 +203,8 @@ const styles = StyleSheet.create({
   content: { flex: 1, gap: spacing.xs },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start' },
   badgeRow: { alignSelf: 'flex-start' },
-  saveButton: { margin: 0, width: 40, height: 40 },
-  price: { marginTop: spacing.xs },
+  actionButton: { margin: 0, width: 40, height: 40 },
+  supportCount: { marginTop: spacing.xs },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
 });

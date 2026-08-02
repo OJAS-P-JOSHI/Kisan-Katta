@@ -13,6 +13,7 @@ export const strings = {
     community: 'अपेक्षित भाव',
     farmerPrice: 'अपेक्षित भाव',
     marketplace: 'Marketplace',
+    assistance: 'साथ',
     profile: 'Profile',
   },
   home: {

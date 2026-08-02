@@ -1,0 +1,216 @@
+{
+  "passed": 42,
+  "failed": 0,
+  "results": [
+    {
+      "ok": true,
+      "name": "Public feed without auth",
+      "detail": "total=0"
+    },
+    {
+      "ok": true,
+      "name": "Create without JWT → 401",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Upload stores userId-scoped publicId",
+      "detail": "kisan-katta/assistance/6a5126dd996d6dab06c9b751/39e1c7bd536540d8a8a493ab31c28f5f"
+    },
+    {
+      "ok": true,
+      "name": "Title > 80 → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Description < 100 → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Zero images → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B cannot use A's publicId → 403",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Create starts PENDING_REVIEW",
+      "detail": "6a6f7c22a044ecbfdbf569e2"
+    },
+    {
+      "ok": true,
+      "name": "Pre-approval: B feed does not include request",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Pre-approval: B detail → 404",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Pre-approval: A (owner) can see detail",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Admin list includes pending request",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Admin approve → OPEN",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Post-approval: B feed includes request",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Post-approval: C feed includes request",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Post-approval: B detail → 200 OPEN",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Post-approval: anonymous feed includes request",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "A cannot support own request → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B support → 201 count=1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B duplicate support → 409",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "C report → 201",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "C duplicate report → 409",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "A cannot report own → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Edit OPEN → PENDING_REVIEW (re-moderation)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "After edit: B no longer sees request (back in review)",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B cannot edit A's request → 403",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B cannot resolve A's request → 403",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "A resolve → RESOLVED",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Cannot support RESOLVED → 400",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Resolved request still visible in feed with RESOLVED status",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B cannot delete A's request → 403",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "A soft-delete → 200",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Soft-deleted request absent from feed",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Soft-deleted detail → 404 even for owner",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Admin reject → REJECTED",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Rejected request absent from public feed",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "B cannot delete A's uploaded image → 403",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "A can delete own uploaded image → 200",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "My assistance list",
+      "detail": "count=4"
+    },
+    {
+      "ok": true,
+      "name": "My summary",
+      "detail": "active=0 canCreate=true"
+    },
+    {
+      "ok": true,
+      "name": "Pagination meta present",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "name": "Non-admin cannot approve → 403",
+      "detail": ""
+    }
+  ]
+}

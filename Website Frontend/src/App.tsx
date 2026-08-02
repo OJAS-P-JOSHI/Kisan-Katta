@@ -129,6 +129,11 @@ const AdminSettingsPage = lazy(() =>
     default: m.AdminSettingsPage,
   })),
 )
+const AdminAssistancePage = lazy(() =>
+  import('@/pages/admin/AdminAssistancePage').then((m) => ({
+    default: m.AdminAssistancePage,
+  })),
+)
 
 function RouteFallback() {
   const { t } = useTranslation()
@@ -207,6 +212,7 @@ export function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="farmers" element={<AdminFarmersPage />} />
             <Route path="farmers/:id" element={<AdminFarmerDetailPage />} />
+            <Route path="assistance" element={<AdminAssistancePage />} />
             <Route path="applications" element={<AdminApplicationsPage />} />
             <Route path="applications/:id" element={<AdminApplicationDetailPage />} />
             <Route path="gram-sahakaris" element={<AdminGramSahakarisPage />} />

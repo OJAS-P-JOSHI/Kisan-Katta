@@ -105,6 +105,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="assistance"
+        options={{
+          title: strings.tabs.assistance,
+          headerShown: false,
+          tabBarIcon: ({ color, focused }: TabIconProps) => (
+            <TabIcon name="hand-heart" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: strings.tabs.profile,
