@@ -2,4 +2,9 @@ export { fetchCrops, searchCrops, getCropLabel, resolveFavoriteCrops, normalizeF
 export { useCrops } from './hooks/useCrops';
 export { useCropSearch } from './hooks/useCropSearch';
 export { cropStrings } from './crop.strings';
+export {
+  MILK_CROP_NAME,
+  isExcludedFromGovernmentMarket,
+  excludeFromGovernmentMarket,
+} from './crop.special';
 export type { CropListItem, CropOption } from './crop.types';

@@ -5,6 +5,7 @@ import { Text } from 'react-native-paper';
 import { EmptyState } from '@/components/EmptyState';
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
+import { excludeFromGovernmentMarket } from '@/features/crop';
 import { spacing, typography, useAppTheme } from '@/theme';
 
 import { MarketCropCard } from './components/MarketCropCard';
@@ -40,6 +41,8 @@ export default function MarketScreen() {
   const handleToggleExpand = useCallback((crop: string) => {
     setExpandedCrop((current) => (current === crop ? null : crop));
   }, []);
+
+  const marketEligibleCount = excludeFromGovernmentMarket(favoriteCrops).length;
 
   const renderItem = useCallback(
     ({ item }: { item: MarketCropCardModel }) => (
@@ -107,7 +110,11 @@ export default function MarketScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="chart-line"
-            title={favoriteCrops.length === 0 ? strings.market.emptyTitle : strings.market.noFavouriteCropsTitle}
+            title={
+              marketEligibleCount === 0
+                ? strings.market.emptyTitle
+                : strings.market.noFavouriteCropsTitle
+            }
             message={strings.market.noFavouriteCropsDescription}
           />
         }

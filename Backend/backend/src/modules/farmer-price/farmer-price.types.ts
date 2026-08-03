@@ -69,6 +69,8 @@ export interface PollsQuery {
 }
 
 export interface VoteValidationContext {
+  /** Poll crop — required so Milk can use its fixed litre band. */
+  crop: string;
   governmentPriceAvailable: boolean;
   governmentPriceSnapshot: number | null;
 }
@@ -90,10 +92,14 @@ export interface MarketSignalDTO {
   farmerCount: number;
 }
 
-/** Vote band enforced by the validator, surfaced so clients can bound inputs. */
+/**
+ * Vote band enforced by the validator, surfaced so clients can bound inputs.
+ * `unit` is set for Milk ("Litre"); omitted for Agmarknet crops (Quintal UX).
+ */
 export interface AllowedPriceRangeDTO {
   min: number;
   max: number;
+  unit?: string;
 }
 
 /**

@@ -13,4 +13,8 @@ export {
   resolveCropName,
   assertKnownCrops,
   getCropMasterStats,
+  MILK_CROP_NAME,
+  MILK_CROP_ID,
+  isExcludedFromGovernmentMarket,
+  excludeFromGovernmentMarket,
 } from "./crop.service";

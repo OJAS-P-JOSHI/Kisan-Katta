@@ -13,6 +13,8 @@ import { formatRupee } from '../farmer-price.utils';
 type ThankYouCardProps = {
   vote: SubmittedVoteLocal;
   district: string;
+  /** Display unit for the submitted price (Quintal or Litre). */
+  priceUnit?: string;
   /** When community price is still gated, explain that the vote still counts. */
   communityRevealed?: boolean;
 };
@@ -21,6 +23,7 @@ type ThankYouCardProps = {
 export function ThankYouCard({
   vote,
   district,
+  priceUnit = 'Quintal',
   communityRevealed = true,
 }: ThankYouCardProps) {
   const theme = useAppTheme();
@@ -74,7 +77,7 @@ export function ThankYouCard({
             {farmerPriceStrings.submitted.yourSubmittedPrice}
           </Text>
           <Text style={[styles.price, { color: palette.green900 }]}>
-            {`${formatRupee(vote.expectedPrice)} ${farmerPriceStrings.vote.suffix}`}
+            {`${formatRupee(vote.expectedPrice)} ${farmerPriceStrings.vote.suffixPerUnit(priceUnit)}`}
           </Text>
         </View>
       ) : null}

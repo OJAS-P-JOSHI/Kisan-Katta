@@ -24,6 +24,9 @@ export const farmerPriceStrings = {
     communityProgressShort: (current: number, required: number) =>
       `${current}/${required}`,
     perQuintal: 'per Quintal',
+    perUnit: (unit: string) => `per ${unit}`,
+    allowedRangeLabel: (min: string, max: string, unit: string) =>
+      `Allowed Range  ${min} – ${max} / ${unit}`,
     confidenceLabel: 'Confidence',
     participantsNone: (district: string) =>
       `No opinions yet. Be the first farmer from ${district}.`,
@@ -105,6 +108,7 @@ export const farmerPriceStrings = {
       `Start the conversation for ${crop} in ${district}.`,
     prefix: '₹',
     suffix: '/ Quintal',
+    suffixPerUnit: (unit: string) => `/ ${unit}`,
     matchGovernment: 'Match government price',
     reasonHeading: 'What makes you think this price is fair?',
     reasonNoteLabel: 'Add a short note',

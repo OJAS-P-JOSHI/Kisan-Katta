@@ -30,10 +30,12 @@ export type MarketSignalDTO = {
   farmerCount: number;
 };
 
-/** Vote band enforced by the backend validator (±40% of government price). */
+/** Vote band enforced by the backend validator (±40% of government price, or Milk litre band). */
 export type AllowedPriceRangeDTO = {
   min: number;
   max: number;
+  /** Present for Milk (`Litre`); omitted for Agmarknet crops. */
+  unit?: string;
 };
 
 /** Authenticated caller's own vote — backend source of truth. */

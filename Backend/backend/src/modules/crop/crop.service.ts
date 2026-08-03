@@ -6,6 +6,7 @@
  */
 import { AppError } from "../../utils/AppError";
 import cropMasterJson from "../../data/crop-master.json";
+import { MILK_CROP_ENTRY } from "./crop.special";
 import type {
   CropListItemDTO,
   CropMaster,
@@ -27,15 +28,18 @@ const searchTermIndex = new Map<string, number[]>();
 
 const listCache: CropListItemDTO[] = [];
 
-for (const crop of master) {
+const indexCrop = (crop: CropMasterEntry, options?: { appendToList?: boolean }): void => {
   cropById.set(crop.cropId, crop);
   cropByName.set(crop.name, crop);
   cropByNormalized.set(crop.normalized, crop);
-  listCache.push({
-    cropId: crop.cropId,
-    name: crop.name,
-    nameMr: crop.nameMr,
-  });
+
+  if (options?.appendToList !== false) {
+    listCache.push({
+      cropId: crop.cropId,
+      name: crop.name,
+      nameMr: crop.nameMr,
+    });
+  }
 
   for (const term of crop.search) {
     const key = term.trim().toLowerCase();
@@ -49,7 +53,15 @@ for (const crop of master) {
 
   // Index canonical name and normalized form explicitly
   searchTermIndex.set(crop.normalized, [crop.cropId]);
+};
+
+for (const crop of master) {
+  indexCrop(crop);
 }
+
+// Milk / Dairy — special favourite for Farmer Expected Price (not Agmarknet).
+// Always last in GET /crops browse list. Excluded from Government Market module.
+indexCrop(MILK_CROP_ENTRY);
 
 Object.freeze(listCache);
 
@@ -114,8 +126,8 @@ export const searchCrops = (query: string, limit = 50): CropSearchResultDTO[] =>
     }
   }
 
-  // Also scan all crops for substring matches (covers gaps in index)
-  for (const crop of master) {
+  // Also scan Agmarknet + special favourites for substring matches
+  for (const crop of cropById.values()) {
     if (rankMatch(crop, q) !== null) {
       candidateIds.add(crop.cropId);
     }
@@ -173,8 +185,8 @@ export const resolveCropName = (input: string): string | null => {
     if (crop) return crop.name;
   }
 
-  // Linear fallback for multi-match or spacing variants
-  for (const crop of master) {
+  // Linear fallback for multi-match or spacing variants (Agmarknet + special)
+  for (const crop of cropById.values()) {
     for (const term of crop.search) {
       if (term.toLowerCase() === trimmed.toLowerCase()) {
         return crop.name;
@@ -214,10 +226,19 @@ export const getCropMasterStats = (): {
   translatedCount: number;
   untranslatedCount: number;
 } => {
-  const translatedCount = master.filter((c) => c.nameMr.length > 0).length;
+  const all = [...cropById.values()];
+  const translatedCount = all.filter((c) => c.nameMr.length > 0).length;
   return {
-    totalCrops: master.length,
+    totalCrops: all.length,
     translatedCount,
-    untranslatedCount: master.length - translatedCount,
+    untranslatedCount: all.length - translatedCount,
   };
 };
+
+// Re-export special-favourite helpers for Market / Profile consumers.
+export {
+  MILK_CROP_NAME,
+  MILK_CROP_ID,
+  isExcludedFromGovernmentMarket,
+  excludeFromGovernmentMarket,
+} from "./crop.special";

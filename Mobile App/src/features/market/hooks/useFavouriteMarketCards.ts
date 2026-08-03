@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
+import { excludeFromGovernmentMarket } from '@/features/crop';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
 
 import type { MarketCropCardModel } from '../market.types';
@@ -16,13 +17,14 @@ export type UseFavouriteMarketCardsReturn = {
   cards: MarketCropCardModel[];
   /** Favourite crops that currently have a valid market price. */
   pricedCards: MarketCropCardModel[];
+  /** All profile favourites (includes Milk for Home chips). */
   favoriteCrops: string[];
   profileLoading: boolean;
   profileError: string | null;
   profile: ReturnType<typeof useMyProfile>['data'];
   /** True while profile or any crop card is still in the initial loading state. */
   loading: boolean;
-  /** True once every favourite crop has left the loading state. */
+  /** True once every market-eligible favourite crop has left the loading state. */
   settled: boolean;
   refreshing: boolean;
   refresh: () => Promise<void>;
@@ -33,6 +35,8 @@ export type UseFavouriteMarketCardsReturn = {
 /**
  * Shared Market favourites source of truth for Market + Home.
  * Dedupes in-flight fetches across screens; does not add a second API/cache.
+ * Milk is kept in `favoriteCrops` for Home chips but excluded from market cards
+ * (no Agmarknet government price).
  */
 export function useFavouriteMarketCards(): UseFavouriteMarketCardsReturn {
   const {
@@ -53,6 +57,12 @@ export function useFavouriteMarketCards(): UseFavouriteMarketCardsReturn {
     [profile?.favoriteCrops],
   );
 
+  /** Agmarknet-backed favourites only — never includes Milk. */
+  const marketFavoriteCrops = useMemo(
+    () => excludeFromGovernmentMarket(favoriteCrops),
+    [favoriteCrops],
+  );
+
   const district = profile?.district?.trim() ?? '';
   const districtResolution = useMemo(
     () => (district ? resolveGovDistrict(district) : null),
@@ -61,26 +71,34 @@ export function useFavouriteMarketCards(): UseFavouriteMarketCardsReturn {
 
   const datasetKey = useMemo(
     () =>
-      `${districtResolution?.apiDistrict ?? ''}::${favoriteCrops.map((crop) => crop.trim().toLowerCase()).join('|')}`,
-    [districtResolution?.apiDistrict, favoriteCrops],
+      `${districtResolution?.apiDistrict ?? ''}::${marketFavoriteCrops
+        .map((crop) => crop.trim().toLowerCase())
+        .join('|')}`,
+    [districtResolution?.apiDistrict, marketFavoriteCrops],
   );
 
   useEffect(() => {
     if (profileLoading && !profile) return;
-    syncDataset({ datasetKey, favoriteCrops, districtResolution });
-  }, [datasetKey, districtResolution, favoriteCrops, profile, profileLoading, syncDataset]);
+    syncDataset({
+      datasetKey,
+      favoriteCrops: marketFavoriteCrops,
+      districtResolution,
+    });
+  }, [datasetKey, districtResolution, marketFavoriteCrops, profile, profileLoading, syncDataset]);
 
   const pricedCards = useMemo(() => selectPricedFavouriteCards(cards), [cards]);
-  const hasFavorites = favoriteCrops.length > 0;
+  const hasMarketFavorites = marketFavoriteCrops.length > 0;
   const loading =
-    (profileLoading && !profile) || selectFavouriteCardsLoading(cards, hasFavorites);
-  const settled = !profileLoading && selectFavouriteCardsSettled(cards, hasFavorites);
+    (profileLoading && !profile) ||
+    selectFavouriteCardsLoading(cards, hasMarketFavorites);
+  const settled =
+    !profileLoading && selectFavouriteCardsSettled(cards, hasMarketFavorites);
 
   const refresh = useCallback(async () => {
     await refreshProfile();
-    if (!districtResolution || !favoriteCrops.length) return;
-    await refreshAll(favoriteCrops, districtResolution);
-  }, [districtResolution, favoriteCrops, refreshAll, refreshProfile]);
+    if (!districtResolution || !marketFavoriteCrops.length) return;
+    await refreshAll(marketFavoriteCrops, districtResolution);
+  }, [districtResolution, marketFavoriteCrops, refreshAll, refreshProfile]);
 
   const retryCrop = useCallback(
     (crop: string) => {

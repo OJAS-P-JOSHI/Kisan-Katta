@@ -1,13 +1,16 @@
 import { AppError } from "../../utils/AppError";
 import {
+  isMilkCrop,
   MAX_PRICE_WITHOUT_GOV,
   MAX_REASON_LENGTH,
+  MILK_PRICE_RANGE,
   MIN_PRICE_WITHOUT_GOV,
   MIN_REASON_LENGTH,
   PRICE_VARIATION_PERCENT,
   REASON_TYPES,
 } from "./farmer-price.constants";
 import type {
+  AllowedPriceRangeDTO,
   CreatePollBody,
   ReasonType,
   SubmitVoteBody,
@@ -63,10 +66,21 @@ const validateReasonText = (value: unknown): string => {
  * Single source of truth for the accepted vote band.
  * Also read by the poll DTO so clients can bound their price input to
  * exactly the range this validator enforces.
+ *
+ * Milk → fixed ₹30–₹150 / Litre (never ±40%).
+ * All other crops → government ±40%, or the no-gov fallback band.
  */
 export const getAllowedPriceRange = (
   context: VoteValidationContext
-): { min: number; max: number } => {
+): AllowedPriceRangeDTO => {
+  if (isMilkCrop(context.crop)) {
+    return {
+      min: MILK_PRICE_RANGE.min,
+      max: MILK_PRICE_RANGE.max,
+      unit: MILK_PRICE_RANGE.unit,
+    };
+  }
+
   if (
     context.governmentPriceAvailable &&
     context.governmentPriceSnapshot !== null &&

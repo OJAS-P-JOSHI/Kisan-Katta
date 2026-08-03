@@ -1,3 +1,5 @@
+import { MILK_CROP_NAME as CROP_MILK_NAME } from "../crop/crop.special";
+
 export const POLL_STATUSES = ["OPEN", "CLOSED"] as const;
 
 export const CONFIDENCE_LEVELS = [
@@ -28,6 +30,23 @@ export const PRICE_VARIATION_PERCENT = 40;
 
 /** Agmarknet modal prices are conventionally quoted per quintal. */
 export const DEFAULT_GOVERNMENT_UNIT = "Quintal";
+
+/**
+ * Fixed vote band for Milk (per litre). Not derived from Agmarknet ±40%.
+ * Used only when poll.crop is Milk — every other crop keeps ±40% / no-gov band.
+ */
+export const MILK_PRICE_RANGE = {
+  min: 30,
+  max: 150,
+  default: 60,
+  unit: "Litre",
+} as const;
+
+/** Canonical Milk crop name (matches profile `favoriteCrops` / poll.crop). */
+export const MILK_CROP_NAME = CROP_MILK_NAME;
+
+export const isMilkCrop = (crop: string): boolean =>
+  crop.trim().toLowerCase() === MILK_CROP_NAME.toLowerCase();
 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;

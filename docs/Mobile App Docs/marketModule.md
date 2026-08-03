@@ -26,6 +26,8 @@ It is responsible for:
 
 Without favourite crops and a completed profile district, Market cards and Home market summary stay empty. The mobile app **never** calls data.gov.in directly — only the Kisan Katta backend does.
 
+> **Milk exclusion:** Favourite `"Milk"` is intentionally excluded from Government Market Prices (no Agmarknet mandi rate). Home **Favourite Crops** chips still show Milk; Market cards / intelligence / favourites APIs ignore it. Farmer Expected Price handles Milk separately.
+
 This document treats **backend + mobile + Government integration** as **one production module**.
 
 ---
@@ -583,6 +585,7 @@ MarketCropCard / MarketSummaryCard render
 | Cache TTL | Exactly 2 hours from write |
 | One gov call per district cold path | Regardless of favourite count |
 | Limit on HTTP responses | Controller max 100; applied after filter |
+| Milk excluded | `"Milk"` never drives market cards, `/favourites` filter, or OGD commodity fetches (`isExcludedFromGovernmentMarket`) |
 
 ---
 
@@ -989,6 +992,7 @@ Invalid / unparsable arrival dates are **dropped** in the recent filter.
 |---|---|---|
 | 1.0.0 | 2026-08-02 | Initial official Market module documentation (Phase 1 architecture as implemented) |
 | 1.0.1 | 2026-08-02 | Deep-dive sections: store/hook, controller, gov client, cache, journeys |
+| 1.1.0 | 2026-08-03 | Milk exclusion from Government Market (special favourite for Farmer Expected Price only) |
 
 ---
 

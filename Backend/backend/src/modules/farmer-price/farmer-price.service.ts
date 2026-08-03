@@ -209,6 +209,7 @@ const toPollDTO = (
     differenceFromGovernmentPrice,
     differencePercentage,
     allowedPriceRange: getAllowedPriceRange({
+      crop: doc.crop,
       governmentPriceAvailable: doc.governmentPriceAvailable,
       governmentPriceSnapshot: doc.governmentPriceSnapshot,
     }),
@@ -880,6 +881,7 @@ export const submitVote = async (
   }
 
   const voteData = validateSubmitVote(body, {
+    crop: pollDoc.crop,
     governmentPriceAvailable: pollDoc.governmentPriceAvailable,
     governmentPriceSnapshot: pollDoc.governmentPriceSnapshot,
   });

@@ -14,6 +14,7 @@ import {
   matchesGovernmentPrice,
   parsePriceInput,
   resolveAllowedRange,
+  resolvePriceUnit,
   sanitizePriceInput,
 } from '../farmer-price.utils';
 import { PriceSlider } from './PriceSlider';
@@ -42,7 +43,14 @@ export function VoteCard({ poll, submitting, onSubmit }: VoteCardProps) {
   const theme = useAppTheme();
 
   const range = useMemo(() => resolveAllowedRange(poll), [poll]);
+  const priceUnit = useMemo(() => resolvePriceUnit(poll), [poll]);
   const initialPrice = useMemo(() => defaultVotePrice(poll), [poll]);
+  const amountSuffix = farmerPriceStrings.vote.suffixPerUnit(priceUnit);
+  const allowedRangeText = farmerPriceStrings.card.allowedRangeLabel(
+    formatRupee(range.min),
+    formatRupee(range.max),
+    priceUnit,
+  );
 
   const [price, setPrice] = useState(initialPrice);
   const [priceText, setPriceText] = useState(String(initialPrice));
@@ -178,9 +186,13 @@ export function VoteCard({ poll, submitting, onSubmit }: VoteCardProps) {
       <View style={styles.amountRow}>
         <Text style={[styles.amount, { color: palette.green900 }]}>{formatRupee(price)}</Text>
         <Text style={[styles.amountSuffix, { color: theme.colors.onSurfaceVariant }]}>
-          {farmerPriceStrings.vote.suffix}
+          {amountSuffix}
         </Text>
       </View>
+
+      <Text style={[styles.rangeHint, { color: theme.colors.onSurfaceVariant }]}>
+        {allowedRangeText}
+      </Text>
 
       <PriceSlider
         value={price}
@@ -320,6 +332,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     paddingBottom: 4,
+  },
+  rangeHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
   inputRow: {
     flexDirection: 'row',

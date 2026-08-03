@@ -1,8 +1,10 @@
 /**
- * Crop Master types — Agmarknet commodity catalog.
+ * Crop Master types — Agmarknet commodity catalog (+ special favourites).
  *
- * Loaded from `src/data/crop-master.json`. No MongoDB.
- * Canonical `name` values MUST match Agmarknet exactly (used by market APIs).
+ * Agmarknet rows load from `src/data/crop-master.json`. Milk is injected by
+ * `crop.special.ts` for Farmer Expected Price only (not Agmarknet).
+ * Canonical `name` values for Agmarknet crops MUST match Agmarknet exactly
+ * (used by market APIs). Milk must never be sent to Agmarknet.
  */
 
 /** Full crop entry as stored in crop-master.json. */

@@ -297,6 +297,8 @@ uploadProfileImage(uri, fileName, mimeType): Promise<ProfileImage>
 
 Canonical English `name` values are what the profile stores in `favoriteCrops`.
 
+**Special favourite — Milk (दूध):** Injected by the Crop service (`crop.special.ts`) as the **last** browse option (not part of Agmarknet `crop-master.json`). Search aliases: `milk`, `dairy`, `दूध`, `दुध`. Stored like any other favourite (`"Milk"`). Used by Farmer Expected Price; **excluded** from Government Market Prices.
+
 ---
 
 ### 4.4 Auth (onboarding completion)
@@ -864,8 +866,8 @@ Balances Cloudinary cost/bandwidth with farmer device photos. Matches backend mu
 3. **Always refresh after successful upload/delete** via `refreshProfile` passed into the photo hook.  
 4. **Onboarding:** after create, always `refresh()` then `refreshUser()` before navigating.  
 5. **Always use Location Master** — never hardcode Maharashtra districts/talukas/villages.  
-6. **Always use Crop Master** — never hardcode crop lists.  
-7. **Store canonical English crop `name`** in `favoriteCrops`; display with `getCropLabel` / `nameMr`.  
+6. **Always use Crop Master** — never hardcode crop lists (exception: Milk is injected by backend Crop service as a special favourite — do not invent a Dairy module).  
+7. **Store canonical English crop `name`** in `favoriteCrops`; display with `getCropLabel` / `nameMr`. Milk stores as `"Milk"`.  
 8. **Never upload images larger than 5 MB** — enforce via `MAX_PROFILE_IMAGE_SIZE_BYTES`.  
 9. **Do not add photo fields to `CreateProfileBody`** without an explicit API/schema change.  
 10. **Do not modify Website Frontend** for mobile Profile work.  
@@ -936,6 +938,7 @@ Balances Cloudinary cost/bandwidth with farmer device photos. Matches backend mu
 | Initial Profile module | View / edit / complete profile with basic form |
 | Location Master integration | Replaced hardcoded districts; cascading taluka/village APIs |
 | Crop Master integration | Favourite crops via `/crops` + `/crops/search` |
+| Milk (दूध) special favourite | Injected last in crop list; search milk/dairy/दूध; Farmer Expected Price only — excluded from Government Market |
 | Marathi localization | Profile + onboarding + photo/crop strings Marathi-first |
 | Shared photo upload hook | `useProfilePhoto` for Profile, Edit, Complete |
 | Onboarding UX redesign | Welcoming header, optional photo section, progress |

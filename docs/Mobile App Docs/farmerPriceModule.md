@@ -46,6 +46,9 @@ This document treats **backend + mobile + MongoDB** as **one production module**
 | Thank-you / already voted | `ThankYouCard` + SecureStore cache | Authoritative state = `poll.hasVoted` |
 | Pull-to-refresh / focus revalidate | Home screen | Silent refresh when returning from detail |
 | Background sync | `farmer-price.scheduler` | Every **60** minutes + once on server start |
+| **Milk (दूध)** | Profile `favoriteCrops` + ensure/sync | Special favourite item — polls/votes like any crop; **no** Agmarknet government price (`governmentPriceAvailable: false`) |
+
+> **Milk note:** Milk is treated as a special supported favourite item for Farmer Expected Price. It is intentionally excluded from Government Market Prices because no official Agmarknet government price exists. Stored as `"Milk"` in `favoriteCrops[]` — no separate Dairy module.
 
 ---
 
@@ -702,7 +705,7 @@ When price **equals** government snapshot (and gov available), `reasonType` / `r
 | 11 | Community statistic | **Median** of expected prices (even count → round average of two middles) |
 | 12 | Confidence | &lt;10 `NOT_AVAILABLE`; &lt;50 `LOW`; &lt;150 `MEDIUM`; else `HIGH` |
 | 13 | Difference | `community - gov`; % rounded to 2 decimals; null if community or gov missing/zero |
-| 14 | ±40% validation | With gov: ceil(0.6×) … floor(1.4×); without: 1000…100000 |
+| 14 | ±40% validation | With gov: ceil(0.6×) … floor(1.4×); without: 1000…100000. **Milk exception:** fixed ₹30–₹150 / Litre via `MILK_PRICE_RANGE` (never ±40%) |
 | 15 | Mandatory reasons | If price ≠ gov snapshot (when available): require `reasonType` + reason text 10–200 |
 | 16 | Reason optional | Only when matching government price |
 | 17 | Insights anonymity | Author always `"Anonymous Farmer"` |
@@ -713,6 +716,7 @@ When price **equals** government snapshot (and gov available), `reasonType` / `r
 | 22 | Integer prices only | Non-integer → `"Invalid Vote"` |
 | 23 | Closed poll voting | **400** `"Poll Closed"` |
 | 24 | Disclaimer | Fixed community estimate disclaimer on detail DTO |
+| 25 | Milk (दूध) | Allowed in `favoriteCrops` as `"Milk"`; ensure/sync/vote identical; no Agmarknet price; `allowedPriceRange` = `{ min: 30, max: 150, unit: "Litre" }` from `getAllowedPriceRange` |
 
 ---
 
@@ -1037,6 +1041,7 @@ Realistic production follow-ups (not invented architecture):
 | Open-slot concurrency | Unique `(district, crop)` create lock |
 | `/polls/my` ensure | On-demand poll creation for favourites |
 | Hourly scheduler | Profile-scan sync + startup run |
+| Milk (दूध) favourite | Special supported item for Farmer Expected Price; excluded from Government Market; no Agmarknet price |
 | Vote transactions | Session txn + retries / compensating path |
 | Mobile home + detail | Tab list, VoteCard, community sections |
 | SecureStore thank-you | Local submitted-vote snapshot |

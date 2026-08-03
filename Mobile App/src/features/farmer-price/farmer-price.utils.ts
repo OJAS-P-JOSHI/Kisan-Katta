@@ -1,7 +1,9 @@
 import {
   DEFAULT_POLL_DURATION_HOURS,
+  isMilkCrop,
   MAX_PRICE_DIGITS,
   MAX_PRICE_WITHOUT_GOV,
+  MILK_PRICE_RANGE,
   MIN_PRICE_WITHOUT_GOV,
   PRICE_SLIDER_STEP,
   PRICE_VARIATION_PERCENT,
@@ -111,9 +113,10 @@ export function parsePriceInput(value: string): number | null {
 
 /**
  * The band the backend will accept. Prefers the server-sent range and falls
- * back to the mirrored ±40% formula for polls fetched before that field existed.
+ * back to Milk's fixed litre band or the mirrored ±40% formula for older polls.
  */
 export function resolveAllowedRange(poll: {
+  crop?: string;
   allowedPriceRange?: AllowedPriceRangeDTO | null;
   governmentPriceAvailable: boolean;
   governmentPriceSnapshot: number | null;
@@ -121,6 +124,14 @@ export function resolveAllowedRange(poll: {
   const fromServer = poll.allowedPriceRange;
   if (fromServer && fromServer.max > fromServer.min) {
     return fromServer;
+  }
+
+  if (poll.crop && isMilkCrop(poll.crop)) {
+    return {
+      min: MILK_PRICE_RANGE.min,
+      max: MILK_PRICE_RANGE.max,
+      unit: MILK_PRICE_RANGE.unit,
+    };
   }
 
   const snapshot = poll.governmentPriceSnapshot;
@@ -133,6 +144,18 @@ export function resolveAllowedRange(poll: {
   }
 
   return { min: MIN_PRICE_WITHOUT_GOV, max: MAX_PRICE_WITHOUT_GOV };
+}
+
+/** Display unit for prices on a poll (Litre for Milk, Quintal otherwise). */
+export function resolvePriceUnit(poll: {
+  crop: string;
+  allowedPriceRange?: AllowedPriceRangeDTO | null;
+  governmentUnit?: string | null;
+}): string {
+  if (poll.allowedPriceRange?.unit) return poll.allowedPriceRange.unit;
+  if (isMilkCrop(poll.crop)) return MILK_PRICE_RANGE.unit;
+  if (poll.governmentUnit?.trim()) return poll.governmentUnit.trim();
+  return 'Quintal';
 }
 
 /** Clamps a price into the allowed band. */
@@ -175,9 +198,11 @@ export function ratioFromPrice(price: number, range: AllowedPriceRangeDTO): numb
 }
 
 /**
- * Where the slider starts: the government rate when published (so agreeing
- * costs one tap), else the community price, else the bottom of the band —
- * never an invented mid-point on the very wide no-reference range.
+ * Where the slider starts:
+ * - Government rate when published
+ * - Else community price when revealed
+ * - Else Milk default ₹60 / Litre
+ * - Else the bottom of the band (wide no-gov crop range)
  */
 export function defaultVotePrice(poll: PollResponseDTO): number {
   const range = resolveAllowedRange(poll);
@@ -190,6 +215,9 @@ export function defaultVotePrice(poll: PollResponseDTO): number {
   }
   if (poll.communityExpectedPrice) {
     return clampPrice(poll.communityExpectedPrice, range);
+  }
+  if (isMilkCrop(poll.crop)) {
+    return clampPrice(MILK_PRICE_RANGE.default, range);
   }
   return range.min;
 }

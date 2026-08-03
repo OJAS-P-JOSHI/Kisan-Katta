@@ -98,11 +98,14 @@ export function CropMultiSelect({
 
   const atLimit = selected.length >= max;
 
-  /** Crops with verified Marathi — shown as the browse/recommended section. */
-  const recommended = useMemo(
-    () => allCrops.filter((c) => c.nameMr.trim().length > 0),
-    [allCrops],
-  );
+  /** Crops with verified Marathi — browse/recommended section.
+   * Milk (दूध) is pinned last when present (Farmer Expected Price favourite). */
+  const recommended = useMemo(() => {
+    const withMr = allCrops.filter((c) => c.nameMr.trim().length > 0);
+    const milk = withMr.find((c) => c.name === 'Milk');
+    if (!milk) return withMr;
+    return [...withMr.filter((c) => c.name !== 'Milk'), milk];
+  }, [allCrops]);
 
   const labelFor = useCallback(
     (name: string): string => getCropLabel(name, allCrops),

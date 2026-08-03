@@ -23,6 +23,22 @@ export const PRICE_VARIATION_PERCENT = 40;
 export const MIN_PRICE_WITHOUT_GOV = 1000;
 export const MAX_PRICE_WITHOUT_GOV = 100000;
 
+/**
+ * Fixed Milk vote band (per litre). Mirrors backend `MILK_PRICE_RANGE`.
+ * Prefer server `allowedPriceRange` when present.
+ */
+export const MILK_PRICE_RANGE = {
+  min: 30,
+  max: 150,
+  default: 60,
+  unit: 'Litre',
+} as const;
+
+export const MILK_CROP_NAME = 'Milk';
+
+export const isMilkCrop = (crop: string): boolean =>
+  crop.trim().toLowerCase() === MILK_CROP_NAME.toLowerCase();
+
 /** Slider granularity in rupees; the thumb still snaps exactly onto the govt price. */
 export const PRICE_SLIDER_STEP = 10;
 

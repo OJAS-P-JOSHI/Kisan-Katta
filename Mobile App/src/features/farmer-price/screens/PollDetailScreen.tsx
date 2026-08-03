@@ -28,6 +28,7 @@ import {
   formatCompactRemaining,
   formatRupee,
   remainingProgress,
+  resolvePriceUnit,
 } from '../farmer-price.utils';
 import { useFarmerPricePollDetail } from '../hooks/useFarmerPricePollDetail';
 import { useSubmitFarmerVote } from '../hooks/useSubmitFarmerVote';
@@ -139,6 +140,7 @@ export default function PollDetailScreen() {
   const hasDelta =
     hasCommunityPrice && poll.governmentPriceAvailable && poll.differencePercentage != null;
   const deltaColors = hasDelta ? deltaTone(poll.differencePercentage!) : null;
+  const priceUnitLabel = farmerPriceStrings.card.perUnit(resolvePriceUnit(poll));
 
   const differenceSentence = !hasDelta
     ? farmerPriceStrings.detail.differenceUnavailable
@@ -158,7 +160,7 @@ export default function PollDetailScreen() {
           ? `${formatRupee(poll.governmentPriceSnapshot)} `
           : '—'}
         <Text style={[styles.unit, { color: theme.colors.onSurfaceVariant }]}>
-          {farmerPriceStrings.card.perQuintal}
+          {priceUnitLabel}
         </Text>
       </Text>
       <Text style={[styles.cardHint, { color: theme.colors.onSurfaceVariant }]}>
@@ -177,7 +179,7 @@ export default function PollDetailScreen() {
           <Text style={[styles.communityPrice, { color: palette.green900 }]}>
             {`${formatRupee(poll.communityExpectedPrice!)} `}
             <Text style={[styles.unit, { color: theme.colors.onSurfaceVariant }]}>
-              {farmerPriceStrings.card.perQuintal}
+              {priceUnitLabel}
             </Text>
           </Text>
           <Text style={[styles.cardHint, { color: theme.colors.onSurfaceVariant }]}>
@@ -318,6 +320,7 @@ export default function PollDetailScreen() {
             }
           }
           district={poll.district}
+          priceUnit={resolvePriceUnit(poll)}
           communityRevealed={hasCommunityPrice}
         />
       ) : isClosed ? (

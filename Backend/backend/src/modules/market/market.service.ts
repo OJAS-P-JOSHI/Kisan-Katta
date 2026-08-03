@@ -1,5 +1,6 @@
 import { resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AppError } from "../../utils/AppError";
+import { excludeFromGovernmentMarket, isExcludedFromGovernmentMarket } from "../crop/crop.special";
 import { getProfile } from "../profile/profile.service";
 import { getDistrictMarketDataset } from "./market.district";
 import {
@@ -102,6 +103,11 @@ export const getMarketPrices = async (
   query: MarketPricesQuery,
   _context: GovRequestContext | null = null
 ): Promise<MarketPriceDTO[]> => {
+  // Milk has no Agmarknet mandi price — never call Government API for it.
+  if (query.commodity && isExcludedFromGovernmentMarket(query.commodity)) {
+    return [];
+  }
+
   const state = (query.state ?? DEFAULT_STATE).trim() || DEFAULT_STATE;
   const districtInput = requireDistrict(query.district);
   const apiDistrict = resolveGovDistrictForApi(districtInput);
@@ -146,6 +152,12 @@ export const getCropMarketIntelligence = async (
 ): Promise<CropMarketIntelligenceDTO> => {
   const district = query.district.trim();
   const commodity = query.commodity.trim();
+
+  // Milk has no Agmarknet mandi price — return empty intelligence (no OGD call).
+  if (isExcludedFromGovernmentMarket(commodity)) {
+    return buildCropMarketIntelligence(commodity, district, []);
+  }
+
   const state = (query.state ?? DEFAULT_STATE).trim() || DEFAULT_STATE;
   const apiDistrict = resolveGovDistrictForApi(district);
   const districtCandidates = resolveGovDistrictCandidates(district);
@@ -176,7 +188,10 @@ export const getFavoriteMarketPrices = async (
   userId: string
 ): Promise<MarketPriceDTO[]> => {
   const profile = await getProfile(userId);
-  const favoriteCrops = profile.favoriteCrops.map((crop) => crop.trim()).filter(Boolean);
+  // Milk (and any non-Agmarknet favourites) must never hit Government Market APIs.
+  const favoriteCrops = excludeFromGovernmentMarket(
+    profile.favoriteCrops.map((crop) => crop.trim()).filter(Boolean)
+  );
 
   if (favoriteCrops.length === 0) {
     marketLog.info("Market favourites empty", { userId });
