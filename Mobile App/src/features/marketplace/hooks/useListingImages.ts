@@ -31,6 +31,11 @@ export type UploadProgress = {
   total: number;
 };
 
+type UseListingImagesOptions = {
+  initialImages?: unknown;
+  maxImages?: number;
+};
+
 const createId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 const toRemoteSlot = (image: ListingImage): RemoteImageSlot => ({
@@ -71,17 +76,36 @@ const promptOpenSettings = (message: string) => {
 };
 
 /** Manages local previews, Cloudinary metadata, and publish-time uploads. */
-export function useListingImages(initialImages?: unknown) {
+export function useListingImages(
+  initialImagesOrOptions?: unknown | UseListingImagesOptions,
+  maybeMaxImages?: number,
+) {
+  const options: UseListingImagesOptions =
+    initialImagesOrOptions !== null &&
+    typeof initialImagesOrOptions === 'object' &&
+    !Array.isArray(initialImagesOrOptions) &&
+    ('initialImages' in (initialImagesOrOptions as object) ||
+      'maxImages' in (initialImagesOrOptions as object))
+      ? (initialImagesOrOptions as UseListingImagesOptions)
+      : { initialImages: initialImagesOrOptions, maxImages: maybeMaxImages };
+
+  const [maxImages, setMaxImagesState] = useState(
+    options.maxImages ?? MAX_LISTING_IMAGES,
+  );
+  const isLabourLimit = maxImages < MAX_LISTING_IMAGES;
+
   const [slots, setSlots] = useState<ImageSlot[]>(() =>
-    normalizeListingImages(initialImages).map(toRemoteSlot),
+    normalizeListingImages(options.initialImages).map(toRemoteSlot),
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const uploadingRef = useRef(false);
+  const maxImagesRef = useRef(maxImages);
+  maxImagesRef.current = maxImages;
 
-  const canAddMore = slots.length < MAX_LISTING_IMAGES;
-  const remainingSlots = MAX_LISTING_IMAGES - slots.length;
+  const canAddMore = slots.length < maxImages;
+  const remainingSlots = maxImages - slots.length;
 
   const clearUploadError = useCallback(() => setUploadError(null), []);
 
@@ -89,21 +113,30 @@ export function useListingImages(initialImages?: unknown) {
     (assets: ImagePicker.ImagePickerAsset[]) => {
       if (assets.length === 0) return;
 
-      const available = MAX_LISTING_IMAGES - slots.length;
+      const limit = maxImagesRef.current;
+      const available = limit - slots.length;
       if (available <= 0) {
-        Alert.alert(marketplaceStrings.images.maxReached);
+        Alert.alert(
+          isLabourLimit
+            ? marketplaceStrings.images.maxReachedLabour
+            : marketplaceStrings.images.maxReached,
+        );
         return;
       }
 
       if (assets.length > available) {
-        Alert.alert(marketplaceStrings.images.maxSelected);
+        Alert.alert(
+          isLabourLimit
+            ? marketplaceStrings.images.maxSelectedLabour
+            : marketplaceStrings.images.maxSelected,
+        );
       }
 
       const nextSlots = assets.slice(0, available).map(toLocalSlot);
       setSlots((prev) => [...prev, ...nextSlots]);
       clearUploadError();
     },
-    [clearUploadError, slots.length],
+    [clearUploadError, isLabourLimit, slots.length],
   );
 
   const pickFromCamera = useCallback(async () => {
@@ -146,7 +179,11 @@ export function useListingImages(initialImages?: unknown) {
 
   const showImageSourcePicker = useCallback(() => {
     if (!canAddMore) {
-      Alert.alert(marketplaceStrings.images.maxReached);
+      Alert.alert(
+        isLabourLimit
+          ? marketplaceStrings.images.maxReachedLabour
+          : marketplaceStrings.images.maxReached,
+      );
       return;
     }
 
@@ -173,7 +210,7 @@ export function useListingImages(initialImages?: unknown) {
       { text: marketplaceStrings.images.takePhoto, onPress: () => void pickFromCamera() },
       { text: marketplaceStrings.images.chooseGallery, onPress: () => void pickFromGallery() },
     ]);
-  }, [canAddMore, pickFromCamera, pickFromGallery]);
+  }, [canAddMore, isLabourLimit, pickFromCamera, pickFromGallery]);
 
   const removeImage = useCallback(async (index: number) => {
     const slot = slots[index];
@@ -191,6 +228,22 @@ export function useListingImages(initialImages?: unknown) {
     setSlots((prev) => prev.filter((_, i) => i !== index));
     clearUploadError();
   }, [clearUploadError, slots]);
+
+  /** Clears local/remote slots (e.g. when create form switches listing type). */
+  const clearImages = useCallback(() => {
+    setSlots([]);
+    clearUploadError();
+  }, [clearUploadError]);
+
+  /**
+   * Updates the max image cap and trims excess local slots.
+   * Remote extras are dropped from state only (create flow); edit locks listing type.
+   */
+  const setMaxImages = useCallback((nextMax: number) => {
+    setMaxImagesState(nextMax);
+    maxImagesRef.current = nextMax;
+    setSlots((prev) => (prev.length > nextMax ? prev.slice(0, nextMax) : prev));
+  }, []);
 
   const uploadAll = useCallback(async (): Promise<ListingImage[]> => {
     if (uploadingRef.current) {
@@ -264,6 +317,8 @@ export function useListingImages(initialImages?: unknown) {
     uploadProgress,
     uploadError,
     clearUploadError,
+    clearImages,
+    setMaxImages,
     showImageSourcePicker,
     removeImage,
     uploadAll,

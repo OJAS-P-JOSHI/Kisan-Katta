@@ -20,7 +20,10 @@ type EditListingFormProps = {
 
 function EditListingForm({ listing }: EditListingFormProps) {
   const router = useRouter();
-  const images = useListingImages(listing.images);
+  const images = useListingImages({
+    initialImages: listing.images,
+    maxImages: listing.listingType === 'labour' ? 2 : undefined,
+  });
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const pendingPayloadRef = useRef<ListingFormPayload | null>(null);

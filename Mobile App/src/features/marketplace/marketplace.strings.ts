@@ -2,13 +2,16 @@ export const marketplaceStrings = {
   home: {
     title: 'बाजारपेठ',
     subtitle: 'शेतकरी ते शेतकरी थेट व्यवहार',
-    searchPlaceholder: 'पिके, बियाणे, खते किंवा यंत्रे शोधा...',
+    searchPlaceholder: 'पिके, बियाणे, खते, यंत्रे किंवा मजूर शोधा...',
     produceCardTitle: 'शेतमाल',
     produceCardSubtitle: 'महाराष्ट्रातील शेतकऱ्यांकडून थेट खरेदी करा',
     produceCardAction: 'शेतमाल पहा',
     productCardTitle: 'शेती साहित्य',
     productCardSubtitle: 'बियाणे • खते • औषधे • यंत्रे',
     productCardAction: 'साहित्य पहा',
+    labourCardTitle: 'मजूर कट्टा',
+    labourCardSubtitle: 'शेतीसाठी उपलब्ध मजूर शोधा',
+    labourCardAction: 'मजूर पहा',
     savedListings: 'जतन केलेले',
     myListings: 'माझ्या जाहिराती',
     sellSomething: 'नवीन जाहिरात',
@@ -17,6 +20,7 @@ export const marketplaceStrings = {
   listings: {
     produceTitle: 'शेतमाल',
     productsTitle: 'शेती साहित्य',
+    labourTitle: 'मजूर कट्टा',
     loading: 'जाहिराती लोड होत आहेत…',
     errorTitle: 'काहीतरी चुकले',
     retry: 'पुन्हा प्रयत्न करा',
@@ -36,11 +40,34 @@ export const marketplaceStrings = {
     Tools: 'साधने',
     Irrigation: 'सिंचन',
     'Crop Protection': 'पीक संरक्षण',
+    Harvesting: 'कापणी',
+    Plantation: 'लागवड',
+    'Sugarcane Cutting': 'ऊस तोडणी',
+    Spraying: 'फवारणी',
+    Weeding: 'निंदण',
+    'Tractor Driver': 'ट्रॅक्टर चालक',
+    'Farm Supervisor': 'शेत पर्यवेक्षक',
+    'General Labour': 'सामान्य मजूर',
+    'Daily Helper': 'दैनिक मदतनीस',
   },
   status: {
     ACTIVE: 'सक्रिय',
     SOLD: 'विकले',
     ARCHIVED: 'संग्रहित',
+  },
+  labourStatus: {
+    ACTIVE: 'उपलब्ध',
+    SOLD: 'काम मिळाले',
+    ARCHIVED: 'संग्रहित',
+  },
+  gender: {
+    Male: 'पुरुष',
+    Female: 'स्त्री',
+    'Mixed Group': 'मिश्र गट',
+  },
+  rateType: {
+    per_day: 'प्रति दिवस',
+    per_hour: 'प्रति तास',
   },
   detail: {
     title: 'जाहिरात तपशील',
@@ -50,6 +77,8 @@ export const marketplaceStrings = {
     quantity: 'प्रमाण',
     seller: 'विक्रेता',
     district: 'जिल्हा',
+    taluka: 'तालुका',
+    village: 'गाव',
     phone: 'मोबाईल',
     posted: 'प्रकाशित',
     callSeller: 'संपर्क करा',
@@ -60,12 +89,20 @@ export const marketplaceStrings = {
     stock: 'साठा',
     crop: 'पीक',
     harvestDate: 'कापणीची तारीख',
+    availableWorkers: 'उपलब्ध मजूर',
+    gender: 'लिंग',
+    rate: 'दर',
+    availableFrom: 'पासून उपलब्ध',
+    individual: 'वैयक्तिक',
+    group: 'गट',
     ownerActions: 'आपल्या कृती',
     soldMessage: 'ही जाहिरात विकली म्हणून चिन्हांकित केली आहे.\nती आता खरेदीदारांना दिसणार नाही.',
+    hiredMessage: 'ही जाहिरात काम मिळाले म्हणून चिन्हांकित केली आहे.\nती आता इतरांना दिसणार नाही.',
     archivedMessage:
       'ही जाहिरात संग्रहित केली आहे.\nसंग्रहित जाहिराती फक्त आपल्यालाच दिसतात.',
     editListing: 'जाहिरात संपादित करा',
     markSold: 'विकले म्हणून चिन्हांकित करा',
+    markHired: 'काम मिळाले म्हणून चिन्हांकित करा',
     archive: 'संग्रहित करा',
     inStock: 'साठा उपलब्ध',
   },
@@ -75,6 +112,7 @@ export const marketplaceStrings = {
     listingType: 'जाहिरात प्रकार',
     produce: 'शेतमाल',
     product: 'शेती साहित्य',
+    labour: 'मजूर कट्टा',
     crop: 'पीक',
     cropPlaceholder: 'पीक निवडा',
     favoriteCropsTitle: '⭐ तुमची प्रमुख पिके',
@@ -90,11 +128,18 @@ export const marketplaceStrings = {
     brand: 'ब्रँड',
     brandPlaceholder: 'उदा. महिको',
     category: 'प्रकार',
+    labourCategory: 'मजूर प्रकार',
+    availableWorkers: 'उपलब्ध मजूर',
+    gender: 'लिंग',
+    rate: 'दर',
+    rateType: 'दर प्रकार',
+    availableFrom: 'पासून उपलब्ध',
+    availableFromPlaceholder: 'तारीख निवडा',
     stock: 'साठा',
     price: 'किंमत',
     description: 'वर्णन',
     descriptionPlaceholder: 'आपल्या जाहिरातीबद्दल माहिती लिहा…',
-    imagesPlaceholder: 'छायाचित्र अपलोड लवकरच उपलब्ध होईल',
+    labourDescriptionPlaceholder: 'कामाचा अनुभव, कौशल्ये किंवा इतर माहिती लिहा…',
     publish: 'जाहिरात प्रकाशित करा',
     update: 'जाहिरात अद्यतनित करा',
     publishing: 'प्रकाशित होत आहे…',
@@ -103,16 +148,22 @@ export const marketplaceStrings = {
     archive: 'संग्रहित करा',
     archiving: 'संग्रहित होत आहे…',
     districtAuto: (district: string) => `📍 जिल्हा: ${district} (आपोआप निवडलेले)`,
+    locationAuto: (village: string, taluka: string, district: string) =>
+      `📍 ${village}, ${taluka}, ${district} (आपोआप निवडलेले)`,
     districtLoading: '📍 जिल्हा लोड होत आहे…',
+    titlePreview: 'शीर्षक',
   },
   myListings: {
     title: 'माझ्या जाहिराती',
     active: 'सक्रिय',
     sold: 'विकले',
     archived: 'संग्रहित',
+    available: 'उपलब्ध',
+    hired: 'काम मिळाले',
     edit: 'संपादन करा',
     archive: 'संग्रहित करा',
     markSold: 'विकले म्हणून चिन्हांकित करा',
+    markHired: 'काम मिळाले म्हणून चिन्हांकित करा',
     myListingBadge: 'माझी जाहिरात',
     emptyTitle: 'आपण अद्याप कोणतीही जाहिरात तयार केलेली नाही.',
     emptyMessage: 'आजच पहिली जाहिरात द्या.',
@@ -140,14 +191,20 @@ export const marketplaceStrings = {
     markSoldMessage:
       'ही जाहिरात बाजारपेठेत दिसणार नाही.\nआपण ती माझ्या जाहिराती मध्ये पाहू शकता.',
     markSoldConfirm: 'विकले म्हणून चिन्हांकित करा',
+    markHiredTitle: 'काम मिळाले म्हणून चिन्हांकित करायचे?',
+    markHiredMessage:
+      'ही मजूर जाहिरात बाजारपेठेत दिसणार नाही.\nआपण ती माझ्या जाहिराती मध्ये पाहू शकता.',
+    markHiredConfirm: 'काम मिळाले म्हणून चिन्हांकित करा',
     archiveTitle: 'जाहिरात संग्रहित करायची?',
     archiveMessage:
       'संग्रहित जाहिराती बाजारपेठेत दिसणार नाहीत.\nते माझ्या जाहिराती मध्ये उपलब्ध राहतील.',
     archiveConfirm: 'संग्रहित करा',
     cancel: 'रद्द करा',
     markedSold: 'जाहिरात विकली म्हणून चिन्हांकित केली.',
+    markedHired: 'जाहिरात काम मिळाले म्हणून चिन्हांकित केली.',
     archived: 'जाहिरात यशस्वीरित्या संग्रहित केली.',
     unableMarkSold: 'जाहिरात विकली म्हणून चिन्हांकित करता आली नाही.',
+    unableMarkHired: 'जाहिरात काम मिळाले म्हणून चिन्हांकित करता आली नाही.',
     unableArchive: 'जाहिरात संग्रहित करता आली नाही.',
     unableSave: 'जाहिरात जतन करता आली नाही.',
     whatsappUnavailable: 'या उपकरणावर व्हॉट्सअॅप उपलब्ध नाही.',
@@ -161,6 +218,8 @@ export const marketplaceStrings = {
     requiredField: 'हे फील्ड भरणे आवश्यक आहे',
     invalidPrice: 'वैध किंमत प्रविष्ट करा',
     invalidQuantity: 'वैध प्रमाण प्रविष्ट करा',
+    invalidWorkers: 'वैध मजूर संख्या प्रविष्ट करा',
+    imagesRequired: 'किमान एक फोटो आवश्यक आहे',
   },
   images: {
     addPhoto: 'फोटो जोडा',
@@ -168,7 +227,9 @@ export const marketplaceStrings = {
     chooseGallery: '🖼️ गॅलरीमधून निवडा',
     removePhoto: 'फोटो हटवा',
     maxReached: 'जास्तीत जास्त ३ फोटो जोडता येतील.',
+    maxReachedLabour: 'जास्तीत जास्त २ फोटो जोडता येतील.',
     maxSelected: 'जास्तीत जास्त ३ फोटो निवडा.',
+    maxSelectedLabour: 'जास्तीत जास्त २ फोटो निवडा.',
     uploading: 'फोटो अपलोड होत आहेत...',
     uploadProgress: (current: number, total: number) => `${current} / ${total} अपलोड झाले`,
     uploadFailed: 'फोटो अपलोड करण्यात अडचण आली.',
@@ -189,8 +250,24 @@ export const getCategoryLabel = (category: string): string => {
   return labels[category] ?? category;
 };
 
-/** Marathi label for a listing status badge. */
-export const getStatusLabel = (status: string): string => {
+/** Marathi label for a listing status badge (labour uses Available/Hired). */
+export const getStatusLabel = (status: string, listingType?: string): string => {
+  if (listingType === 'labour') {
+    const labourLabels = marketplaceStrings.labourStatus as Record<string, string>;
+    return labourLabels[status] ?? status;
+  }
   const labels = marketplaceStrings.status as Record<string, string>;
   return labels[status] ?? status;
+};
+
+/** Marathi label for labour gender. */
+export const getGenderLabel = (gender: string): string => {
+  const labels = marketplaceStrings.gender as Record<string, string>;
+  return labels[gender] ?? gender;
+};
+
+/** Marathi label for labour rate type. */
+export const getRateTypeLabel = (rateType: string): string => {
+  const labels = marketplaceStrings.rateType as Record<string, string>;
+  return labels[rateType] ?? rateType;
 };

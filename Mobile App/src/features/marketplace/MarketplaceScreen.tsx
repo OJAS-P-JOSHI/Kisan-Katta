@@ -206,6 +206,17 @@ export default function MarketplaceScreen() {
             accentColor={palette.green900}
             onPress={() => router.push('/marketplace-products' as Href)}
           />
+
+          <HeroCard
+            title={marketplaceStrings.home.labourCardTitle}
+            subtitle={marketplaceStrings.home.labourCardSubtitle}
+            actionLabel={marketplaceStrings.home.labourCardAction}
+            icon="account-hard-hat"
+            backgroundColor={palette.blue100}
+            textColor={palette.blue800}
+            accentColor={palette.blue800}
+            onPress={() => router.push('/marketplace-labour' as Href)}
+          />
         </View>
 
         <View style={styles.quickSection}>

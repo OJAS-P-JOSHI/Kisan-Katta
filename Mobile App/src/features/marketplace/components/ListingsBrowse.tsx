@@ -12,6 +12,8 @@ import { ListingCard } from './ListingCard';
 import { ListingEmptyView, ListingErrorView, ListingLoadingView } from './ListingStateViews';
 import {
   CATEGORY_FILTER_ALL,
+  LABOUR_CATEGORIES,
+  PRODUCT_CATEGORIES,
   SEARCH_DEBOUNCE_MS,
   type CategoryFilter,
 } from '../marketplace.constants';
@@ -26,6 +28,12 @@ type ListingsBrowseProps = {
   listingType: ListingType;
   initialSearch?: string;
   onListingPress: (listing: MarketplaceListing) => void;
+};
+
+const browseCategoriesForType = (listingType: ListingType): readonly string[] => {
+  if (listingType === 'labour') return LABOUR_CATEGORIES;
+  if (listingType === 'product') return PRODUCT_CATEGORIES;
+  return ['Produce'];
 };
 
 export function ListingsBrowse({
@@ -126,7 +134,11 @@ export function ListingsBrowse({
         />
       </View>
 
-      <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
+      <CategoryChips
+        selected={selectedCategory}
+        onSelect={setSelectedCategory}
+        categories={browseCategoriesForType(listingType)}
+      />
 
       <FlatList
         data={listings}

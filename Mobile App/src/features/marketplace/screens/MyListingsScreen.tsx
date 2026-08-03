@@ -15,7 +15,7 @@ import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getMyListings } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
 import type { ListingStatus, MarketplaceListing } from '../marketplace.types';
-import { formatListingDate, formatPrice, getListingDisplayTitle } from '../marketplace.utils';
+import { formatLabourRate, formatListingDate, formatPrice, getListingDisplayTitle } from '../marketplace.utils';
 
 type StatusFilter = ListingStatus;
 
@@ -71,6 +71,7 @@ export default function MyListingsScreen() {
   const {
     dialog,
     loading: lifecycleLoading,
+    isLabour: lifecycleIsLabour,
     openMarkSoldDialog,
     openArchiveDialog,
     closeDialog,
@@ -92,17 +93,21 @@ export default function MyListingsScreen() {
   }, [confirmArchive]);
 
   const renderItem = useCallback(
-    ({ item }: { item: MarketplaceListing }) => (
+    ({ item }: { item: MarketplaceListing }) => {
+      const isLabour = item.listingType === 'labour';
+      return (
       <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="elevated">
         <Card.Content style={styles.cardContent}>
           <View style={styles.headerRow}>
             <Text variant="titleMedium" style={{ flex: 1 }}>
               {getListingDisplayTitle(item)}
             </Text>
-            <ListingStatusBadge status={item.status} />
+            <ListingStatusBadge status={item.status} listingType={item.listingType} />
           </View>
           <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
-            {formatPrice(item.price)}
+            {isLabour
+              ? formatLabourRate(item.price, item.rateType)
+              : formatPrice(item.price)}
           </Text>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
             {item.district} · {formatListingDate(item.createdAt)}
@@ -122,17 +127,19 @@ export default function MyListingsScreen() {
               <Button
                 mode="outlined"
                 compact
-                onPress={() => openMarkSoldDialog(item.id)}
+                onPress={() => openMarkSoldDialog(item.id, item.listingType)}
                 style={styles.actionButton}
                 disabled={lifecycleLoading}
               >
-                {marketplaceStrings.myListings.markSold}
+                {isLabour
+                  ? marketplaceStrings.myListings.markHired
+                  : marketplaceStrings.myListings.markSold}
               </Button>
               <Button
                 mode="text"
                 compact
                 textColor={theme.colors.error}
-                onPress={() => openArchiveDialog(item.id)}
+                onPress={() => openArchiveDialog(item.id, item.listingType)}
                 disabled={lifecycleLoading}
               >
                 {marketplaceStrings.myListings.archive}
@@ -154,8 +161,9 @@ export default function MyListingsScreen() {
           ) : null}
         </Card.Content>
       </Card>
-    ),
-    [lifecycleLoading, openArchiveDialog, openMarkSoldDialog, router, theme.colors.error],
+      );
+    },
+    [lifecycleLoading, openArchiveDialog, openMarkSoldDialog, router, theme.colors.error, theme.colors.primary, theme.colors.onSurfaceVariant, theme.colors.surface],
   );
 
   if (loading && listings.length === 0) {
@@ -214,6 +222,7 @@ export default function MyListingsScreen() {
       <ListingLifecycleDialogs
         dialog={dialog}
         loading={lifecycleLoading}
+        isLabour={lifecycleIsLabour}
         onDismiss={closeDialog}
         onConfirmMarkSold={handleConfirmMarkSold}
         onConfirmArchive={handleConfirmArchive}

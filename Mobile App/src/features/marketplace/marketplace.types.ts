@@ -2,6 +2,8 @@ import type { ID } from '@/types';
 import type { ApiSuccessResponse } from '@/types';
 
 import type {
+  LABOUR_GENDERS,
+  LABOUR_RATE_TYPES,
   LISTING_STATUSES,
   LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
@@ -12,6 +14,8 @@ export type ListingType = (typeof LISTING_TYPES)[number];
 export type MarketplaceCategory = (typeof MARKETPLACE_CATEGORIES)[number];
 export type MarketplaceUnit = (typeof MARKETPLACE_UNITS)[number];
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
+export type LabourGender = (typeof LABOUR_GENDERS)[number];
+export type LabourRateType = (typeof LABOUR_RATE_TYPES)[number];
 
 export type ListingImage = {
   url: string;
@@ -37,6 +41,8 @@ export type MarketplaceListing = {
   unit?: MarketplaceUnit;
   images: ListingImage[];
   district: string;
+  village?: string;
+  taluka?: string;
   status: ListingStatus;
   views: number;
   contactClicks: number;
@@ -47,6 +53,10 @@ export type MarketplaceListing = {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  availableWorkers?: number;
+  gender?: LabourGender;
+  rateType?: LabourRateType;
+  availableFrom?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -91,6 +101,10 @@ export type CreateListingPayload = {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  availableWorkers?: number;
+  gender?: LabourGender;
+  rateType?: LabourRateType;
+  availableFrom?: string;
 };
 
 export type UpdateListingPayload = Partial<

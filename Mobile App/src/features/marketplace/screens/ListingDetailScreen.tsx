@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
@@ -14,13 +13,16 @@ import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getListingById, recordContactClick } from '../marketplace.service';
-import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
+import { getCategoryLabel, getGenderLabel, marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListingDetail } from '../marketplace.types';
 import {
+  formatHarvestDateDisplay,
+  formatLabourRate,
   formatListingDate,
   formatPhoneForDial,
   formatPhoneForWhatsApp,
   formatPrice,
+  getLabourGroupLabel,
   getListingDisplayTitle,
   isListingOwner,
 } from '../marketplace.utils';
@@ -63,12 +65,14 @@ export default function ListingDetailScreen() {
   const {
     dialog,
     loading: lifecycleLoading,
+    isLabour: lifecycleIsLabour,
     openMarkSoldDialog,
     openArchiveDialog,
     closeDialog,
     confirmMarkSold,
     confirmArchive,
   } = useListingLifecycleActions({
+    listingType: listing?.listingType,
     onMarkedSold: fetchListing,
   });
 
@@ -144,6 +148,7 @@ export default function ListingDetailScreen() {
 
   const title = getListingDisplayTitle(listing);
   const isOwner = isListingOwner(listing.sellerId, user?.userId);
+  const isLabour = listing.listingType === 'labour';
 
   return (
     <>
@@ -159,12 +164,18 @@ export default function ListingDetailScreen() {
               <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, flex: 1 }}>
                 {title}
               </Text>
-              <ListingStatusBadge status={listing.status} compact={false} />
+              <ListingStatusBadge
+                status={listing.status}
+                listingType={listing.listingType}
+                compact={false}
+              />
             </View>
 
             {isOwner && listing.status === 'SOLD' ? (
               <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                {marketplaceStrings.detail.soldMessage}
+                {isLabour
+                  ? marketplaceStrings.detail.hiredMessage
+                  : marketplaceStrings.detail.soldMessage}
               </Text>
             ) : null}
 
@@ -175,25 +186,63 @@ export default function ListingDetailScreen() {
             ) : null}
 
             <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginTop: spacing.sm }}>
-              {formatPrice(listing.price)}
+              {isLabour
+                ? formatLabourRate(listing.price, listing.rateType)
+                : formatPrice(listing.price)}
             </Text>
 
-            {listing.quantity != null && listing.unit ? (
-              <DetailRow
-                label={marketplaceStrings.detail.quantity}
-                value={`${listing.quantity} ${listing.unit}`}
-              />
-            ) : null}
+            {isLabour ? (
+              <>
+                <DetailRow
+                  label={marketplaceStrings.detail.category}
+                  value={getCategoryLabel(listing.category)}
+                />
+                {listing.availableWorkers != null ? (
+                  <DetailRow
+                    label={marketplaceStrings.detail.availableWorkers}
+                    value={`${listing.availableWorkers} (${
+                      getLabourGroupLabel(listing.availableWorkers) === 'Individual'
+                        ? marketplaceStrings.detail.individual
+                        : marketplaceStrings.detail.group
+                    })`}
+                  />
+                ) : null}
+                {listing.gender ? (
+                  <DetailRow
+                    label={marketplaceStrings.detail.gender}
+                    value={getGenderLabel(listing.gender)}
+                  />
+                ) : null}
+                {listing.availableFrom ? (
+                  <DetailRow
+                    label={marketplaceStrings.detail.availableFrom}
+                    value={formatHarvestDateDisplay(listing.availableFrom)}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <>
+                {listing.quantity != null && listing.unit ? (
+                  <DetailRow
+                    label={marketplaceStrings.detail.quantity}
+                    value={`${listing.quantity} ${listing.unit}`}
+                  />
+                ) : null}
 
-            {listing.brand ? (
-              <DetailRow label={marketplaceStrings.detail.brand} value={listing.brand} />
-            ) : null}
+                {listing.brand ? (
+                  <DetailRow label={marketplaceStrings.detail.brand} value={listing.brand} />
+                ) : null}
 
-            {listing.stock != null ? (
-              <DetailRow label={marketplaceStrings.detail.stock} value={String(listing.stock)} />
-            ) : null}
+                {listing.stock != null ? (
+                  <DetailRow label={marketplaceStrings.detail.stock} value={String(listing.stock)} />
+                ) : null}
 
-            <DetailRow label={marketplaceStrings.detail.category} value={getCategoryLabel(listing.category)} />
+                <DetailRow
+                  label={marketplaceStrings.detail.category}
+                  value={getCategoryLabel(listing.category)}
+                />
+              </>
+            )}
 
             {listing.description ? (
               <>
@@ -211,10 +260,28 @@ export default function ListingDetailScreen() {
               <>
                 <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
                 <DetailRow label={marketplaceStrings.detail.seller} value={listing.seller.name} />
+                {isLabour && listing.village ? (
+                  <DetailRow label={marketplaceStrings.detail.village} value={listing.village} />
+                ) : null}
+                {isLabour && listing.taluka ? (
+                  <DetailRow label={marketplaceStrings.detail.taluka} value={listing.taluka} />
+                ) : null}
                 <DetailRow label={marketplaceStrings.detail.district} value={listing.district} />
                 <DetailRow label={marketplaceStrings.detail.phone} value={listing.seller.phone} />
               </>
-            ) : null}
+            ) : (
+              <>
+                {isLabour && listing.village ? (
+                  <DetailRow label={marketplaceStrings.detail.village} value={listing.village} />
+                ) : null}
+                {isLabour && listing.taluka ? (
+                  <DetailRow label={marketplaceStrings.detail.taluka} value={listing.taluka} />
+                ) : null}
+                {isLabour ? (
+                  <DetailRow label={marketplaceStrings.detail.district} value={listing.district} />
+                ) : null}
+              </>
+            )}
 
             <DetailRow
               label={marketplaceStrings.detail.posted}
@@ -244,18 +311,20 @@ export default function ListingDetailScreen() {
                 <Button
                   mode="outlined"
                   icon="check-circle-outline"
-                  onPress={() => openMarkSoldDialog(listing.id)}
+                  onPress={() => openMarkSoldDialog(listing.id, listing.listingType)}
                   style={styles.actionButton}
                   contentStyle={styles.actionButtonContent}
                   disabled={lifecycleLoading}
                 >
-                  {marketplaceStrings.detail.markSold}
+                  {isLabour
+                    ? marketplaceStrings.detail.markHired
+                    : marketplaceStrings.detail.markSold}
                 </Button>
                 <Button
                   mode="outlined"
                   icon="archive-outline"
                   textColor={theme.colors.error}
-                  onPress={() => openArchiveDialog(listing.id)}
+                  onPress={() => openArchiveDialog(listing.id, listing.listingType)}
                   style={styles.actionButton}
                   contentStyle={styles.actionButtonContent}
                   disabled={lifecycleLoading}
@@ -309,6 +378,7 @@ export default function ListingDetailScreen() {
       <ListingLifecycleDialogs
         dialog={dialog}
         loading={lifecycleLoading}
+        isLabour={lifecycleIsLabour}
         onDismiss={closeDialog}
         onConfirmMarkSold={handleConfirmMarkSold}
         onConfirmArchive={handleConfirmArchive}

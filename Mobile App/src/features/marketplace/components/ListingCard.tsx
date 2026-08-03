@@ -9,11 +9,14 @@ import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from 
 import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 import type { MarketplaceListing } from '../marketplace.types';
 import {
+  formatHarvestDateDisplay,
+  formatLabourRate,
   formatListingDate,
   formatPrice,
   getListingDisplayTitle,
   getListingImageUrl,
   getListingImageUrls,
+  getLabourGroupLabel,
   isListingOwner,
 } from '../marketplace.utils';
 import { ListingStatusBadge } from './ListingStatusBadge';
@@ -44,18 +47,41 @@ function ListingCardComponent({
   const title = getListingDisplayTitle(listing);
   const isOwner = isListingOwner(listing.sellerId, currentUserId);
   const showSaveButton = !!onToggleSave && !isOwner;
+  const isLabour = listing.listingType === 'labour';
 
   const handlePress = useCallback(() => onPress(listing), [listing, onPress]);
   const handleToggleSave = useCallback(() => {
     onToggleSave?.(listing);
   }, [listing, onToggleSave]);
 
-  const quantityText =
-    listing.quantity != null && listing.unit
+  const quantityText = isLabour
+    ? listing.availableWorkers != null
+      ? `${listing.availableWorkers} · ${
+          getLabourGroupLabel(listing.availableWorkers) === 'Individual'
+            ? marketplaceStrings.detail.individual
+            : marketplaceStrings.detail.group
+        }`
+      : null
+    : listing.quantity != null && listing.unit
       ? `${listing.quantity} ${listing.unit}`
       : listing.stock != null
         ? `${listing.stock} ${marketplaceStrings.detail.inStock}`
         : null;
+
+  const priceText = isLabour
+    ? formatLabourRate(listing.price, listing.rateType)
+    : formatPrice(listing.price);
+
+  const locationText = isLabour
+    ? [listing.village, listing.district].filter(Boolean).join(', ') || listing.district
+    : listing.district;
+
+  const placeholderIcon =
+    listing.listingType === 'produce'
+      ? 'sprout'
+      : listing.listingType === 'labour'
+        ? 'account-hard-hat'
+        : 'package-variant';
 
   return (
     <Pressable
@@ -83,7 +109,7 @@ function ListingCardComponent({
                 ]}
               >
                 <MaterialCommunityIcons
-                  name={listing.listingType === 'produce' ? 'sprout' : 'package-variant'}
+                  name={placeholderIcon}
                   size={iconSize.xl}
                   color={theme.colors.onSurfaceVariant}
                 />
@@ -130,7 +156,7 @@ function ListingCardComponent({
 
             {showStatus ? (
               <View style={styles.badgeRow}>
-                <ListingStatusBadge status={listing.status} />
+                <ListingStatusBadge status={listing.status} listingType={listing.listingType} />
               </View>
             ) : null}
 
@@ -141,12 +167,19 @@ function ListingCardComponent({
             ) : null}
 
             <Text style={[typography.sectionTitle, styles.price, { color: theme.colors.primary }]}>
-              {formatPrice(listing.price)}
+              {priceText}
             </Text>
 
             {quantityText ? (
               <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
                 {quantityText}
+              </Text>
+            ) : null}
+
+            {isLabour && listing.availableFrom ? (
+              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+                {marketplaceStrings.detail.availableFrom}:{' '}
+                {formatHarvestDateDisplay(listing.availableFrom)}
               </Text>
             ) : null}
 
@@ -157,7 +190,7 @@ function ListingCardComponent({
                   numberOfLines={1}
                   style={[typography.caption, { color: theme.colors.onSurfaceVariant, flex: 1 }]}
                 >
-                  {listing.district}
+                  {locationText}
                 </Text>
               </View>
             </View>

@@ -6,6 +6,7 @@ import type { LifecycleDialog } from '../hooks/useListingLifecycleActions';
 type ListingLifecycleDialogsProps = {
   dialog: LifecycleDialog;
   loading: boolean;
+  isLabour?: boolean;
   onDismiss: () => void;
   onConfirmMarkSold: () => void;
   onConfirmArchive: () => void;
@@ -14,6 +15,7 @@ type ListingLifecycleDialogsProps = {
 export function ListingLifecycleDialogs({
   dialog,
   loading,
+  isLabour = false,
   onDismiss,
   onConfirmMarkSold,
   onConfirmArchive,
@@ -21,16 +23,26 @@ export function ListingLifecycleDialogs({
   return (
     <Portal>
       <Dialog visible={dialog === 'sold'} onDismiss={onDismiss}>
-        <Dialog.Title>{marketplaceStrings.lifecycle.markSoldTitle}</Dialog.Title>
+        <Dialog.Title>
+          {isLabour
+            ? marketplaceStrings.lifecycle.markHiredTitle
+            : marketplaceStrings.lifecycle.markSoldTitle}
+        </Dialog.Title>
         <Dialog.Content>
-          <Text variant="bodyMedium">{marketplaceStrings.lifecycle.markSoldMessage}</Text>
+          <Text variant="bodyMedium">
+            {isLabour
+              ? marketplaceStrings.lifecycle.markHiredMessage
+              : marketplaceStrings.lifecycle.markSoldMessage}
+          </Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss} disabled={loading}>
             {marketplaceStrings.lifecycle.cancel}
           </Button>
           <Button onPress={onConfirmMarkSold} loading={loading} disabled={loading}>
-            {marketplaceStrings.lifecycle.markSoldConfirm}
+            {isLabour
+              ? marketplaceStrings.lifecycle.markHiredConfirm
+              : marketplaceStrings.lifecycle.markSoldConfirm}
           </Button>
         </Dialog.Actions>
       </Dialog>

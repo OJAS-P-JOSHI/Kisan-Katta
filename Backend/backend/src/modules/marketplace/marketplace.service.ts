@@ -5,9 +5,15 @@ import { resolveDistrict } from "../../config/maharashtraDistrictCoordinates";
 import { AuthUser } from "../auth/auth.model";
 import { FarmerProfile } from "../profile/profile.model";
 import { getProfile } from "../profile/profile.service";
-import { LISTING_EXPIRY_DAYS } from "./marketplace.constants";
+import {
+  LABOUR_CATEGORIES,
+  LISTING_EXPIRY_DAYS,
+  MAX_ACTIVE_LABOUR_LISTINGS,
+  MAX_LABOUR_LISTING_IMAGES,
+} from "./marketplace.constants";
 import { normalizeListingImages, toStoredListingImages } from "./marketplace.image.utils";
 import { MarketplaceListing, MarketplaceSaved } from "./marketplace.model";
+import { buildLabourTitle } from "./marketplace.validation";
 import type {
   CreateListingBody,
   IMarketplaceListing,
@@ -40,6 +46,8 @@ const toListingDTO = (
   unit: doc.unit,
   images: normalizeListingImages(doc.images as unknown[]),
   district: doc.district,
+  village: doc.village,
+  taluka: doc.taluka,
   status: doc.status,
   views: doc.views,
   contactClicks: doc.contactClicks,
@@ -50,6 +58,10 @@ const toListingDTO = (
   expectedPrice: doc.expectedPrice,
   brand: doc.brand,
   stock: doc.stock,
+  availableWorkers: doc.availableWorkers,
+  gender: doc.gender,
+  rateType: doc.rateType,
+  availableFrom: doc.availableFrom,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
 });
@@ -227,6 +239,28 @@ export const createListing = async (
     );
   }
 
+  if (data.listingType === "labour") {
+    if (!profile.village || !profile.taluka) {
+      throw new AppError(
+        "Your profile must include village and taluka before creating a labour listing.",
+        400
+      );
+    }
+
+    const activeLabourCount = await MarketplaceListing.countDocuments({
+      sellerId: new Types.ObjectId(userId),
+      listingType: "labour",
+      status: "ACTIVE",
+    });
+
+    if (activeLabourCount >= MAX_ACTIVE_LABOUR_LISTINGS) {
+      throw new AppError(
+        `You can have at most ${MAX_ACTIVE_LABOUR_LISTINGS} active labour listings.`,
+        400
+      );
+    }
+  }
+
   const listing = await MarketplaceListing.create({
     sellerId: new Types.ObjectId(userId),
     listingType: data.listingType,
@@ -239,6 +273,8 @@ export const createListing = async (
     unit: data.unit,
     images: toStoredListingImages(data.images ?? []),
     district: profile.district,
+    village: data.listingType === "labour" ? profile.village : undefined,
+    taluka: data.listingType === "labour" ? profile.taluka : undefined,
     status: "ACTIVE",
     views: 0,
     contactClicks: 0,
@@ -249,6 +285,10 @@ export const createListing = async (
     expectedPrice: data.expectedPrice,
     brand: data.brand,
     stock: data.stock,
+    availableWorkers: data.availableWorkers,
+    gender: data.gender,
+    rateType: data.rateType,
+    availableFrom: data.availableFrom,
   });
 
   return toListingDTO(listing);
@@ -332,11 +372,63 @@ export const updateListing = async (
     throw new AppError("Archived listings cannot be updated.", 400);
   }
 
+  if (listing.listingType === "labour") {
+    if (data.category !== undefined) {
+      if (!(LABOUR_CATEGORIES as readonly string[]).includes(data.category)) {
+        throw new AppError(
+          `category must be one of: ${LABOUR_CATEGORIES.join(", ")} for labour listings.`,
+          400
+        );
+      }
+    }
+
+    if (data.description !== undefined && (!data.description || data.description.trim().length === 0)) {
+      throw new AppError("description is required for labour listings.", 400);
+    }
+
+    if (data.images !== undefined) {
+      if (data.images.length === 0) {
+        throw new AppError("At least one image is required for labour listings.", 400);
+      }
+      if (data.images.length > MAX_LABOUR_LISTING_IMAGES) {
+        throw new AppError(
+          `Labour listings can have at most ${MAX_LABOUR_LISTING_IMAGES} images.`,
+          400
+        );
+      }
+    }
+  }
+
+  if (
+    listing.listingType === "labour" &&
+    listing.status !== "ACTIVE" &&
+    data.status === "ACTIVE"
+  ) {
+    const activeLabourCount = await MarketplaceListing.countDocuments({
+      sellerId: listing.sellerId,
+      listingType: "labour",
+      status: "ACTIVE",
+      _id: { $ne: listing._id },
+    });
+
+    if (activeLabourCount >= MAX_ACTIVE_LABOUR_LISTINGS) {
+      throw new AppError(
+        `You can have at most ${MAX_ACTIVE_LABOUR_LISTINGS} active labour listings.`,
+        400
+      );
+    }
+  }
+
   const { images, ...rest } = data;
   Object.assign(listing, rest);
 
   if (images !== undefined) {
     listing.images = toStoredListingImages(images);
+  }
+
+  if (listing.listingType === "labour") {
+    const workers = listing.availableWorkers ?? 1;
+    listing.title = buildLabourTitle(listing.category, workers);
   }
 
   await listing.save();

@@ -15,7 +15,9 @@
     "payment:reset": "ts-node scripts/payment-reset.ts",
     "generate:location-master": "ts-node scripts/generate-location-master.ts",
     "generate:crop-master": "ts-node scripts/generate-crop-master.ts",
-    "qa:farmer-price": "ts-node scripts/farmer-price.qa.ts"
+    "qa:farmer-price": "ts-node scripts/farmer-price.qa.ts",
+    "migrate:marketplace-labour-indexes": "ts-node scripts/migrate-marketplace-labour-indexes.ts",
+    "qa:marketplace": "ts-node --transpile-only scripts/marketplace-pre-release.qa.ts"
   },
   "dependencies": {
     "axios": "^1.19.0",

@@ -1,5 +1,7 @@
 import { Types } from "mongoose";
 import type {
+  LABOUR_GENDERS,
+  LABOUR_RATE_TYPES,
   LISTING_SORT_OPTIONS,
   LISTING_STATUSES,
   LISTING_TYPES,
@@ -16,6 +18,8 @@ export type MarketplaceCategory = (typeof MARKETPLACE_CATEGORIES)[number];
 export type MarketplaceUnit = (typeof MARKETPLACE_UNITS)[number];
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 export type ListingSortOption = (typeof LISTING_SORT_OPTIONS)[number];
+export type LabourGender = (typeof LABOUR_GENDERS)[number];
+export type LabourRateType = (typeof LABOUR_RATE_TYPES)[number];
 
 // ---------------------------------------------------------------------------
 // Image shapes
@@ -50,6 +54,8 @@ export interface IMarketplaceListing {
   unit?: MarketplaceUnit;
   images: ListingImage[];
   district: string;
+  village?: string;
+  taluka?: string;
   status: ListingStatus;
   views: number;
   contactClicks: number;
@@ -60,6 +66,14 @@ export interface IMarketplaceListing {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  /** Labour: number of available workers. */
+  availableWorkers?: number;
+  /** Labour: Male | Female | Mixed Group. */
+  gender?: LabourGender;
+  /** Labour: per_day | per_hour (price holds the amount). */
+  rateType?: LabourRateType;
+  /** Labour: date available from. */
+  availableFrom?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -90,6 +104,10 @@ export interface CreateListingBody {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  availableWorkers?: number;
+  gender?: LabourGender;
+  rateType?: LabourRateType;
+  availableFrom?: Date;
 }
 
 export interface UpdateListingBody {
@@ -108,6 +126,10 @@ export interface UpdateListingBody {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  availableWorkers?: number;
+  gender?: LabourGender;
+  rateType?: LabourRateType;
+  availableFrom?: Date;
 }
 
 export interface ListingsQuery {
@@ -143,6 +165,8 @@ export interface ListingResponseDTO {
   unit?: MarketplaceUnit;
   images: ListingImage[];
   district: string;
+  village?: string;
+  taluka?: string;
   status: ListingStatus;
   views: number;
   contactClicks: number;
@@ -153,6 +177,10 @@ export interface ListingResponseDTO {
   expectedPrice?: number;
   brand?: string;
   stock?: number;
+  availableWorkers?: number;
+  gender?: LabourGender;
+  rateType?: LabourRateType;
+  availableFrom?: Date;
   createdAt: Date;
   updatedAt: Date;
 }

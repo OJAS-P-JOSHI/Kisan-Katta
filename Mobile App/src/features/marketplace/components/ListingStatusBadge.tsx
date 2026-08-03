@@ -5,15 +5,20 @@ import { Chip } from 'react-native-paper';
 import { useAppTheme } from '@/theme';
 
 import { getStatusLabel } from '../marketplace.strings';
-import type { ListingStatus } from '../marketplace.types';
+import type { ListingStatus, ListingType } from '../marketplace.types';
 import { getStatusBadgeColors } from '../marketplace.utils';
 
 type ListingStatusBadgeProps = {
   status: ListingStatus;
+  listingType?: ListingType;
   compact?: boolean;
 };
 
-function ListingStatusBadgeComponent({ status, compact = true }: ListingStatusBadgeProps) {
+function ListingStatusBadgeComponent({
+  status,
+  listingType,
+  compact = true,
+}: ListingStatusBadgeProps) {
   const theme = useAppTheme();
   const colors = getStatusBadgeColors(status, theme);
 
@@ -23,7 +28,7 @@ function ListingStatusBadgeComponent({ status, compact = true }: ListingStatusBa
       style={[styles.chip, { backgroundColor: colors.background }]}
       textStyle={[styles.chipText, { color: colors.text }]}
     >
-      {getStatusLabel(status)}
+      {getStatusLabel(status, listingType)}
     </Chip>
   );
 }

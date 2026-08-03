@@ -1,7 +1,19 @@
-export const LISTING_TYPES = ["product", "produce"] as const;
+export const LISTING_TYPES = ["product", "produce", "labour"] as const;
 
-export const MARKETPLACE_CATEGORIES = [
-  "Produce",
+export const LABOUR_CATEGORIES = [
+  "Harvesting",
+  "Plantation",
+  "Sugarcane Cutting",
+  "Spraying",
+  "Weeding",
+  "Tractor Driver",
+  "Farm Supervisor",
+  "General Labour",
+  "Daily Helper",
+] as const;
+
+/** Product listing categories (excludes Produce and Labour). */
+export const PRODUCT_CATEGORIES = [
   "Seeds",
   "Fertilizers",
   "Pesticides",
@@ -9,6 +21,13 @@ export const MARKETPLACE_CATEGORIES = [
   "Tools",
   "Irrigation",
   "Crop Protection",
+] as const;
+
+/** All values allowed on the shared `category` field. */
+export const MARKETPLACE_CATEGORIES = [
+  "Produce",
+  ...PRODUCT_CATEGORIES,
+  ...LABOUR_CATEGORIES,
 ] as const;
 
 export const MARKETPLACE_UNITS = [
@@ -21,6 +40,10 @@ export const MARKETPLACE_UNITS = [
   "Litre",
 ] as const;
 
+export const LABOUR_GENDERS = ["Male", "Female", "Mixed Group"] as const;
+
+export const LABOUR_RATE_TYPES = ["per_day", "per_hour"] as const;
+
 export const LISTING_STATUSES = ["ACTIVE", "SOLD", "ARCHIVED"] as const;
 
 export const LISTING_SORT_OPTIONS = [
@@ -31,6 +54,8 @@ export const LISTING_SORT_OPTIONS = [
 
 export const LISTING_EXPIRY_DAYS = 30;
 export const MAX_LISTING_IMAGES = 3;
+export const MAX_LABOUR_LISTING_IMAGES = 2;
+export const MAX_ACTIVE_LABOUR_LISTINGS = 3;
 export const MAX_UPLOAD_IMAGES = 3;
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 

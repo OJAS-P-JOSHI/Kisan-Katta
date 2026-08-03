@@ -3,30 +3,38 @@ import { useCallback, useState } from 'react';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { archiveListing, updateListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
+import type { ListingType } from '../marketplace.types';
 
 export type LifecycleDialog = 'sold' | 'archive' | null;
 
 type UseListingLifecycleActionsOptions = {
+  listingType?: ListingType;
   onMarkedSold?: () => void | Promise<void>;
   onArchived?: () => void | Promise<void>;
 };
 
 /** Shared mark-sold / archive flow with confirmation and loading guard. */
 export function useListingLifecycleActions(options: UseListingLifecycleActionsOptions = {}) {
-  const { onMarkedSold, onArchived } = options;
+  const { listingType: defaultListingType, onMarkedSold, onArchived } = options;
   const [dialog, setDialog] = useState<LifecycleDialog>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [pendingListingType, setPendingListingType] = useState<ListingType | undefined>(
+    defaultListingType,
+  );
   const [loading, setLoading] = useState(false);
+  const isLabour = (pendingListingType ?? defaultListingType) === 'labour';
 
-  const openMarkSoldDialog = useCallback((listingId: string) => {
+  const openMarkSoldDialog = useCallback((listingId: string, listingType?: ListingType) => {
     setPendingId(listingId);
+    setPendingListingType(listingType ?? defaultListingType);
     setDialog('sold');
-  }, []);
+  }, [defaultListingType]);
 
-  const openArchiveDialog = useCallback((listingId: string) => {
+  const openArchiveDialog = useCallback((listingId: string, listingType?: ListingType) => {
     setPendingId(listingId);
+    setPendingListingType(listingType ?? defaultListingType);
     setDialog('archive');
-  }, []);
+  }, [defaultListingType]);
 
   const closeDialog = useCallback(() => {
     if (loading) return;
@@ -43,13 +51,17 @@ export function useListingLifecycleActions(options: UseListingLifecycleActionsOp
       await onMarkedSold?.();
       setDialog(null);
       setPendingId(null);
-      return marketplaceStrings.lifecycle.markedSold;
-    } catch (err) {
-      return marketplaceStrings.lifecycle.unableMarkSold;
+      return isLabour
+        ? marketplaceStrings.lifecycle.markedHired
+        : marketplaceStrings.lifecycle.markedSold;
+    } catch {
+      return isLabour
+        ? marketplaceStrings.lifecycle.unableMarkHired
+        : marketplaceStrings.lifecycle.unableMarkSold;
     } finally {
       setLoading(false);
     }
-  }, [loading, onMarkedSold, pendingId]);
+  }, [isLabour, loading, onMarkedSold, pendingId]);
 
   const confirmArchive = useCallback(async (): Promise<string | null> => {
     if (!pendingId || loading) return null;
@@ -71,6 +83,7 @@ export function useListingLifecycleActions(options: UseListingLifecycleActionsOp
   return {
     dialog,
     loading,
+    isLabour,
     openMarkSoldDialog,
     openArchiveDialog,
     closeDialog,

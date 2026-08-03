@@ -1,7 +1,15 @@
-import type { ListingImage, ListingStatus } from './marketplace.types';
+import type { LabourRateType, ListingImage, ListingStatus, ListingType } from './marketplace.types';
 
 /** Formats a price in Indian Rupees. */
 export const formatPrice = (value: number): string => `\u20B9${value.toLocaleString('en-IN')}`;
+
+/** Formats labour rate with /day or /hour suffix. */
+export const formatLabourRate = (price: number, rateType?: LabourRateType): string => {
+  const amount = formatPrice(price);
+  if (rateType === 'per_hour') return `${amount}/तास`;
+  if (rateType === 'per_day') return `${amount}/दिवस`;
+  return amount;
+};
 
 /** Formats an ISO date string for display. */
 export const formatListingDate = (isoDate: string): string => {
@@ -48,18 +56,33 @@ export const getListingImageUrls = (images: ListingImage[]): string[] =>
 export const getListingImageUrl = (images: ListingImage[]): string | undefined =>
   getListingImageUrls(images)[0];
 
-/** Builds a display title for produce listings. */
+/** Builds a display title for produce / labour / product listings. */
 export const getListingDisplayTitle = (listing: {
   listingType: string;
   title: string;
   crop?: string;
-  brand?: string;
 }): string => {
   if (listing.listingType === 'produce' && listing.crop) {
     return listing.crop;
   }
   return listing.title;
 };
+
+/** Auto-generates a labour listing title (mirrors backend). */
+export const buildLabourTitle = (category: string, availableWorkers: number): string => {
+  if (availableWorkers <= 1) return category;
+  if (category === 'Tractor Driver' || category === 'Farm Supervisor') {
+    return `${category} Team`;
+  }
+  if (category.endsWith('Labour') || category.endsWith('Helper')) {
+    return `${category} Group`;
+  }
+  return `${category} Workers`;
+};
+
+/** Individual vs Group label from worker count. */
+export const getLabourGroupLabel = (availableWorkers: number): 'Individual' | 'Group' =>
+  availableWorkers <= 1 ? 'Individual' : 'Group';
 
 /** Formats YYYY-MM-DD for farmer-friendly DD/MM/YYYY display. */
 export const formatHarvestDateDisplay = (isoDate: string): string => {
@@ -139,3 +162,5 @@ export const getStatusBadgeColors = (
       };
   }
 };
+
+export type { ListingType };

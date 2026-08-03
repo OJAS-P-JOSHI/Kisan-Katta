@@ -16,9 +16,17 @@ type HarvestDateFieldProps = {
   value: string;
   onChange: (isoDate: string) => void;
   error?: string;
+  label?: string;
+  placeholder?: string;
 };
 
-export function HarvestDateField({ value, onChange, error }: HarvestDateFieldProps) {
+export function HarvestDateField({
+  value,
+  onChange,
+  error,
+  label = marketplaceStrings.create.harvestDate,
+  placeholder = marketplaceStrings.create.harvestDatePlaceholder,
+}: HarvestDateFieldProps) {
   const theme = useAppTheme();
   const [iosVisible, setIosVisible] = useState(false);
   const [iosDate, setIosDate] = useState<Date>(() => parseHarvestDateApi(value) ?? new Date());
@@ -63,8 +71,8 @@ export function HarvestDateField({ value, onChange, error }: HarvestDateFieldPro
         <View pointerEvents="none">
           <TextInput
             mode="outlined"
-            label={marketplaceStrings.create.harvestDate}
-            placeholder={marketplaceStrings.create.harvestDatePlaceholder}
+            label={label}
+            placeholder={placeholder}
             value={displayValue}
             editable={false}
             error={!!error}

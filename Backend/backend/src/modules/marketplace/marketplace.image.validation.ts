@@ -43,7 +43,10 @@ const validateListingImageInput = (value: unknown, index: number): ListingImage 
 // Exported validators
 // ---------------------------------------------------------------------------
 
-export const validateListingImages = (value: unknown): ListingImage[] => {
+export const validateListingImages = (
+  value: unknown,
+  maxImages: number = MAX_LISTING_IMAGES
+): ListingImage[] => {
   if (value === undefined || value === null) {
     return [];
   }
@@ -52,8 +55,8 @@ export const validateListingImages = (value: unknown): ListingImage[] => {
     throw new AppError("images must be an array of image objects.", 400);
   }
 
-  if (value.length > MAX_LISTING_IMAGES) {
-    throw new AppError(`images cannot contain more than ${MAX_LISTING_IMAGES} items.`, 400);
+  if (value.length > maxImages) {
+    throw new AppError(`images cannot contain more than ${maxImages} items.`, 400);
   }
 
   return value.map((item, index) => validateListingImageInput(item, index));

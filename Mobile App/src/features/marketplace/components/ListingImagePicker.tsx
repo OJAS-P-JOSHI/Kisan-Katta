@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, ProgressBar, Text } from 'react-native-paper';
 
 import { radius, spacing, useAppTheme } from '@/theme';
@@ -12,13 +12,20 @@ type ListingImagePickerProps = {
   images: UseListingImagesReturn;
   disabled?: boolean;
   onRetry?: () => void;
+  /** Override max images display/limit (e.g. 2 for labour). */
+  maxImages?: number;
 };
 
-function ListingImagePickerComponent({ images, disabled = false, onRetry }: ListingImagePickerProps) {
+function ListingImagePickerComponent({
+  images,
+  disabled = false,
+  onRetry,
+  maxImages,
+}: ListingImagePickerProps) {
   const theme = useAppTheme();
   const {
     previewUris,
-    canAddMore,
+    canAddMore: hookCanAddMore,
     isUploading,
     uploadProgress,
     uploadError,
@@ -26,6 +33,21 @@ function ListingImagePickerComponent({ images, disabled = false, onRetry }: List
     removeImage,
     clearUploadError,
   } = images;
+
+  const canAddMore =
+    maxImages !== undefined ? previewUris.length < maxImages && hookCanAddMore : hookCanAddMore;
+  const maxReachedMessage =
+    maxImages !== undefined && maxImages <= 2
+      ? marketplaceStrings.images.maxReachedLabour
+      : marketplaceStrings.images.maxReached;
+
+  const handleAddPress = () => {
+    if (!canAddMore) {
+      Alert.alert(maxReachedMessage);
+      return;
+    }
+    showImageSourcePicker();
+  };
 
   const progressValue =
     uploadProgress && uploadProgress.total > 0
@@ -52,7 +74,7 @@ function ListingImagePickerComponent({ images, disabled = false, onRetry }: List
         {canAddMore ? (
           <Pressable
             style={[styles.addTile, { borderColor: theme.colors.outlineVariant, backgroundColor: theme.colors.surface }]}
-            onPress={showImageSourcePicker}
+            onPress={handleAddPress}
             disabled={disabled || isUploading}
           >
             <MaterialCommunityIcons name="camera-plus-outline" size={28} color={theme.colors.primary} />
@@ -65,7 +87,7 @@ function ListingImagePickerComponent({ images, disabled = false, onRetry }: List
 
       {!canAddMore ? (
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-          {marketplaceStrings.images.maxReached}
+          {maxReachedMessage}
         </Text>
       ) : null}
 

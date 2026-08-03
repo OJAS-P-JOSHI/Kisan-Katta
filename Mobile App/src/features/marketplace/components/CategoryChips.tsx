@@ -14,10 +14,19 @@ import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
 type CategoryChipsProps = {
   selected: CategoryFilter;
   onSelect: (category: CategoryFilter) => void;
+  /** Override chip list (e.g. labour categories). Defaults to all marketplace categories. */
+  categories?: readonly string[];
 };
 
-export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
-  const categories: CategoryFilter[] = [CATEGORY_FILTER_ALL, ...MARKETPLACE_CATEGORIES];
+export function CategoryChips({
+  selected,
+  onSelect,
+  categories: categoriesProp,
+}: CategoryChipsProps) {
+  const categories: CategoryFilter[] = [
+    CATEGORY_FILTER_ALL,
+    ...((categoriesProp ?? MARKETPLACE_CATEGORIES) as CategoryFilter[]),
+  ];
 
   const renderChip = useCallback(
     (category: CategoryFilter) => {

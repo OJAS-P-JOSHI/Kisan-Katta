@@ -10,19 +10,32 @@ import { CropSelector } from './CropSelector';
 import { HarvestDateField } from './HarvestDateField';
 import { ListingImagePicker } from './ListingImagePicker';
 import {
+  LABOUR_CATEGORIES,
+  LABOUR_GENDERS,
+  LABOUR_RATE_TYPES,
   MARKETPLACE_UNITS,
+  MAX_LABOUR_LISTING_IMAGES,
+  MAX_LISTING_IMAGES,
   PRODUCT_CATEGORIES,
 } from '../marketplace.constants';
 import type { UseListingImagesReturn } from '../hooks/useListingImages';
-import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
+import {
+  getCategoryLabel,
+  getGenderLabel,
+  getRateTypeLabel,
+  marketplaceStrings,
+} from '../marketplace.strings';
 import type {
   CreateListingPayload,
+  LabourGender,
+  LabourRateType,
   ListingType,
   MarketplaceCategory,
   MarketplaceListing,
   MarketplaceUnit,
   UpdateListingPayload,
 } from '../marketplace.types';
+import { buildLabourTitle, getLabourGroupLabel } from '../marketplace.utils';
 
 export type ListingFormValues = {
   listingType: ListingType;
@@ -37,6 +50,10 @@ export type ListingFormValues = {
   stock: string;
   price: string;
   description: string;
+  availableWorkers: string;
+  gender: LabourGender | null;
+  rateType: LabourRateType | null;
+  availableFrom: string;
 };
 
 export type ListingCreateSubmitPayload = Omit<CreateListingPayload, 'images'>;
@@ -63,10 +80,14 @@ const emptyValues = (listingType: ListingType = 'produce'): ListingFormValues =>
   harvestDate: '',
   productName: '',
   brand: '',
-  category: null,
+  category: listingType === 'produce' ? 'Produce' : null,
   stock: '',
   price: '',
   description: '',
+  availableWorkers: '',
+  gender: null,
+  rateType: null,
+  availableFrom: '',
 });
 
 const valuesFromListing = (listing: MarketplaceListing): ListingFormValues => ({
@@ -87,6 +108,10 @@ const valuesFromListing = (listing: MarketplaceListing): ListingFormValues => ({
   stock: listing.stock != null ? String(listing.stock) : '',
   price: String(listing.price),
   description: listing.description ?? '',
+  availableWorkers: listing.availableWorkers != null ? String(listing.availableWorkers) : '',
+  gender: listing.gender ?? null,
+  rateType: listing.rateType ?? null,
+  availableFrom: listing.availableFrom ? listing.availableFrom.slice(0, 10) : '',
 });
 
 const parseNumber = (value: string): number | null => {
@@ -94,10 +119,33 @@ const parseNumber = (value: string): number | null => {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 
+const parsePositiveInteger = (value: string): number | null => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : null;
+};
+
 const productCategoryOptions = PRODUCT_CATEGORIES.map((category) => getCategoryLabel(category));
+const labourCategoryOptions = LABOUR_CATEGORIES.map((category) => getCategoryLabel(category));
+const genderOptions = LABOUR_GENDERS.map((gender) => getGenderLabel(gender));
+const rateTypeOptions = LABOUR_RATE_TYPES.map((rateType) => getRateTypeLabel(rateType));
 
 const toProductCategoryValue = (label: string): MarketplaceCategory | null => {
   const match = PRODUCT_CATEGORIES.find((category) => getCategoryLabel(category) === label);
+  return match ?? null;
+};
+
+const toLabourCategoryValue = (label: string): MarketplaceCategory | null => {
+  const match = LABOUR_CATEGORIES.find((category) => getCategoryLabel(category) === label);
+  return match ?? null;
+};
+
+const toGenderValue = (label: string): LabourGender | null => {
+  const match = LABOUR_GENDERS.find((gender) => getGenderLabel(gender) === label);
+  return match ?? null;
+};
+
+const toRateTypeValue = (label: string): LabourRateType | null => {
+  const match = LABOUR_RATE_TYPES.find((rateType) => getRateTypeLabel(rateType) === label);
   return match ?? null;
 };
 
@@ -117,28 +165,65 @@ export function ListingForm({
   const [values, setValues] = useState<ListingFormValues>(() =>
     initialListing ? valuesFromListing(initialListing) : emptyValues(),
   );
-  const [errors, setErrors] = useState<Partial<Record<keyof ListingFormValues, string>>>({});
-
-  const categoryOptions = useMemo(
-    () => (values.listingType === 'produce' ? ['Produce'] : productCategoryOptions),
-    [values.listingType],
+  const [errors, setErrors] = useState<Partial<Record<keyof ListingFormValues | 'images', string>>>(
+    {},
   );
 
-  const districtLabel = profile?.district
-    ? marketplaceStrings.create.districtAuto(profile.district)
-    : marketplaceStrings.create.districtLoading;
+  const imageMax =
+    values.listingType === 'labour' ? MAX_LABOUR_LISTING_IMAGES : undefined;
+
+  const locationLabel = useMemo(() => {
+    if (values.listingType === 'labour') {
+      if (profile?.village && profile?.taluka && profile?.district) {
+        return marketplaceStrings.create.locationAuto(
+          profile.village,
+          profile.taluka,
+          profile.district,
+        );
+      }
+      return marketplaceStrings.create.districtLoading;
+    }
+    return profile?.district
+      ? marketplaceStrings.create.districtAuto(profile.district)
+      : marketplaceStrings.create.districtLoading;
+  }, [profile, values.listingType]);
+
+  const labourTitlePreview = useMemo(() => {
+    if (values.listingType !== 'labour' || !values.category) return null;
+    const workers = parsePositiveInteger(values.availableWorkers) ?? 1;
+    return buildLabourTitle(values.category, workers);
+  }, [values.availableWorkers, values.category, values.listingType]);
 
   const isBusy = submitting || images.isUploading;
 
   const validate = (): boolean => {
-    const nextErrors: Partial<Record<keyof ListingFormValues, string>> = {};
+    const nextErrors: Partial<Record<keyof ListingFormValues | 'images', string>> = {};
 
     if (values.listingType === 'produce') {
       if (!values.crop.trim()) nextErrors.crop = marketplaceStrings.errors.requiredField;
       if (!parseNumber(values.quantity)) nextErrors.quantity = marketplaceStrings.errors.invalidQuantity;
       if (!values.unit) nextErrors.unit = marketplaceStrings.errors.requiredField;
-      if (!parseNumber(values.expectedPrice)) nextErrors.expectedPrice = marketplaceStrings.errors.invalidPrice;
+      if (!parseNumber(values.expectedPrice)) {
+        nextErrors.expectedPrice = marketplaceStrings.errors.invalidPrice;
+      }
       if (!values.harvestDate.trim()) nextErrors.harvestDate = marketplaceStrings.errors.requiredField;
+    } else if (values.listingType === 'labour') {
+      if (!values.category) nextErrors.category = marketplaceStrings.errors.requiredField;
+      if (!parsePositiveInteger(values.availableWorkers)) {
+        nextErrors.availableWorkers = marketplaceStrings.errors.invalidWorkers;
+      }
+      if (!values.gender) nextErrors.gender = marketplaceStrings.errors.requiredField;
+      if (!values.rateType) nextErrors.rateType = marketplaceStrings.errors.requiredField;
+      if (!parseNumber(values.price)) nextErrors.price = marketplaceStrings.errors.invalidPrice;
+      if (!values.availableFrom.trim()) {
+        nextErrors.availableFrom = marketplaceStrings.errors.requiredField;
+      }
+      if (!values.description.trim()) nextErrors.description = marketplaceStrings.errors.requiredField;
+      if (images.previewUris.length === 0) {
+        nextErrors.images = marketplaceStrings.errors.imagesRequired;
+      } else if (images.previewUris.length > MAX_LABOUR_LISTING_IMAGES) {
+        nextErrors.images = marketplaceStrings.images.maxReachedLabour;
+      }
     } else {
       if (!values.productName.trim()) nextErrors.productName = marketplaceStrings.errors.requiredField;
       if (!values.category) nextErrors.category = marketplaceStrings.errors.requiredField;
@@ -175,6 +260,28 @@ export function ListingForm({
       return;
     }
 
+    if (values.listingType === 'labour') {
+      const workers = parsePositiveInteger(values.availableWorkers)!;
+      const labourPayload = {
+        title: buildLabourTitle(values.category!, workers),
+        category: values.category!,
+        price: parseNumber(values.price)!,
+        availableWorkers: workers,
+        gender: values.gender!,
+        rateType: values.rateType!,
+        availableFrom: values.availableFrom.trim(),
+        description: values.description.trim(),
+      };
+
+      if (isEdit) {
+        onSubmit(labourPayload);
+        return;
+      }
+
+      onSubmit({ listingType: 'labour' as const, ...labourPayload });
+      return;
+    }
+
     const productPayload = {
       title: values.productName.trim(),
       category: values.category!,
@@ -197,11 +304,23 @@ export function ListingForm({
     const listingType = nextType as ListingType;
     setValues(emptyValues(listingType));
     setErrors({});
+    images.clearImages();
+    images.setMaxImages(
+      listingType === 'labour' ? MAX_LABOUR_LISTING_IMAGES : MAX_LISTING_IMAGES,
+    );
   };
+
+  const workersCount = parsePositiveInteger(values.availableWorkers);
 
   return (
     <View style={styles.form}>
-      <ListingImagePicker images={images} disabled={isBusy} onRetry={onUploadRetry} />
+      <ListingImagePicker
+        images={images}
+        disabled={isBusy}
+        onRetry={onUploadRetry}
+        maxImages={imageMax}
+      />
+      {errors.images ? <HelperText type="error">{errors.images}</HelperText> : null}
 
       {!isEdit ? (
         <SegmentedButtons
@@ -210,13 +329,14 @@ export function ListingForm({
           buttons={[
             { value: 'produce', label: marketplaceStrings.create.produce },
             { value: 'product', label: marketplaceStrings.create.product },
+            { value: 'labour', label: marketplaceStrings.create.labour },
           ]}
           style={styles.segmented}
         />
       ) : null}
 
       <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-        {districtLabel}
+        {locationLabel}
       </Text>
 
       {values.listingType === 'produce' ? (
@@ -267,7 +387,88 @@ export function ListingForm({
             error={errors.harvestDate}
           />
         </>
-      ) : (
+      ) : null}
+
+      {values.listingType === 'labour' ? (
+        <>
+          <Dropdown
+            label={marketplaceStrings.create.labourCategory}
+            value={values.category ? getCategoryLabel(values.category) : null}
+            options={labourCategoryOptions}
+            onSelect={(label) => {
+              setValues((v) => ({ ...v, category: toLabourCategoryValue(label) }));
+            }}
+            error={errors.category}
+          />
+
+          {labourTitlePreview ? (
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              {marketplaceStrings.create.titlePreview}: {labourTitlePreview}
+            </Text>
+          ) : null}
+
+          <TextInput
+            mode="outlined"
+            label={marketplaceStrings.create.availableWorkers}
+            value={values.availableWorkers}
+            onChangeText={(availableWorkers) => setValues((v) => ({ ...v, availableWorkers }))}
+            keyboardType="number-pad"
+            error={!!errors.availableWorkers}
+          />
+          {errors.availableWorkers ? (
+            <HelperText type="error">{errors.availableWorkers}</HelperText>
+          ) : null}
+          {workersCount != null ? (
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              {getLabourGroupLabel(workersCount) === 'Individual'
+                ? marketplaceStrings.detail.individual
+                : marketplaceStrings.detail.group}
+            </Text>
+          ) : null}
+
+          <Dropdown
+            label={marketplaceStrings.create.gender}
+            value={values.gender ? getGenderLabel(values.gender) : null}
+            options={genderOptions}
+            onSelect={(label) => setValues((v) => ({ ...v, gender: toGenderValue(label) }))}
+            error={errors.gender}
+          />
+
+          <SegmentedButtons
+            value={values.rateType ?? ''}
+            onValueChange={(rateType) =>
+              setValues((v) => ({ ...v, rateType: rateType as LabourRateType }))
+            }
+            buttons={LABOUR_RATE_TYPES.map((rateType) => ({
+              value: rateType,
+              label: getRateTypeLabel(rateType),
+            }))}
+            style={styles.segmented}
+          />
+          {errors.rateType ? <HelperText type="error">{errors.rateType}</HelperText> : null}
+
+          <TextInput
+            mode="outlined"
+            label={marketplaceStrings.create.rate}
+            value={values.price}
+            onChangeText={(price) => setValues((v) => ({ ...v, price }))}
+            keyboardType="numeric"
+            error={!!errors.price}
+            left={<TextInput.Affix text="₹" />}
+          />
+          {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
+
+          <HarvestDateField
+            value={values.availableFrom}
+            onChange={(availableFrom) => setValues((v) => ({ ...v, availableFrom }))}
+            error={errors.availableFrom}
+            label={marketplaceStrings.create.availableFrom}
+            placeholder={marketplaceStrings.create.availableFromPlaceholder}
+          />
+        </>
+      ) : null}
+
+      {values.listingType === 'product' ? (
         <>
           <TextInput
             mode="outlined"
@@ -290,13 +491,9 @@ export function ListingForm({
           <Dropdown
             label={marketplaceStrings.create.category}
             value={values.category ? getCategoryLabel(values.category) : null}
-            options={categoryOptions}
+            options={productCategoryOptions}
             onSelect={(label) => {
-              const category =
-                values.listingType === 'produce'
-                  ? ('Produce' as MarketplaceCategory)
-                  : toProductCategoryValue(label);
-              setValues((v) => ({ ...v, category }));
+              setValues((v) => ({ ...v, category: toProductCategoryValue(label) }));
             }}
             error={errors.category}
           />
@@ -320,17 +517,23 @@ export function ListingForm({
           />
           {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
         </>
-      )}
+      ) : null}
 
       <TextInput
         mode="outlined"
         label={marketplaceStrings.create.description}
-        placeholder={marketplaceStrings.create.descriptionPlaceholder}
+        placeholder={
+          values.listingType === 'labour'
+            ? marketplaceStrings.create.labourDescriptionPlaceholder
+            : marketplaceStrings.create.descriptionPlaceholder
+        }
         value={values.description}
         onChangeText={(description) => setValues((v) => ({ ...v, description }))}
         multiline
         numberOfLines={4}
+        error={!!errors.description}
       />
+      {errors.description ? <HelperText type="error">{errors.description}</HelperText> : null}
 
       {serverError ? <HelperText type="error">{serverError}</HelperText> : null}
 

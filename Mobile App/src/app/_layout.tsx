@@ -40,6 +40,10 @@ function RootNavigator() {
           options={{ headerShown: true, title: marketplaceStrings.listings.productsTitle, presentation: 'card' }}
         />
         <Stack.Screen
+          name="marketplace-labour"
+          options={{ headerShown: true, title: marketplaceStrings.listings.labourTitle, presentation: 'card' }}
+        />
+        <Stack.Screen
           name="marketplace-listing/[id]"
           options={{ headerShown: true, title: marketplaceStrings.detail.title, presentation: 'card' }}
         />
