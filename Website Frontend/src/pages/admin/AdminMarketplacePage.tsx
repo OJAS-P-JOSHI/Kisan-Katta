@@ -199,29 +199,33 @@ export function AdminMarketplacePage() {
           </FilterPanel>
         </div>
 
-      {error ? (
-        <AdminCard>
-          <p className="text-sm text-red-700">
+        {error ? (
+          <p className="px-4 pb-4 text-sm text-red-700">
             {getErrorMessage(error, 'Failed to load listings.')}
           </p>
-        </AdminCard>
-      ) : (
-        <AdminCard padded={false}>
-          <DataTable
-            columns={columns}
-            rows={(data?.items as Array<Record<string, unknown>>) ?? []}
-            loading={isLoading || isFetching}
-            empty="No listings found."
-            onRowClick={(row) => navigate(`/admin/marketplace/${String(row.id)}`)}
-          />
-          <Pagination
-            page={data?.page ?? page}
-            totalPages={data?.totalPages ?? 0}
-            total={data?.total ?? 0}
-            onPageChange={setPage}
-          />
-        </AdminCard>
-      )}
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              rows={(data?.items as Array<Record<string, unknown>>) ?? []}
+              loading={isLoading || isFetching}
+              emptyTitle="No listings found"
+              rowKey={(row) => String(row.id)}
+              onRowClick={(row) =>
+                navigate(`/admin/marketplace/${String(row.id)}`)
+              }
+            />
+            <div className="px-4 pb-4">
+              <Pagination
+                page={data?.page ?? page}
+                totalPages={data?.totalPages ?? 0}
+                total={data?.total ?? 0}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
+        )}
+      </AdminCard>
     </div>
   )
 }
