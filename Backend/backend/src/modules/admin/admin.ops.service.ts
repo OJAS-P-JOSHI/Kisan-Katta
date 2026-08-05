@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { AppError } from "../../utils/AppError";
 import { isRazorpayConfigured } from "../../config/razorpay";
+import { AuthUser } from "../auth/auth.model";
 import { FarmerProfile } from "../profile/profile.model";
 import { GramSahakariApplication } from "../gram-sahakari/gram-sahakari.model";
 import { HelpRequest, HelpRequestReport } from "../assistance/assistance.model";
@@ -148,6 +149,7 @@ export const listPaymentCenter = async (query: PaymentCenterQuery) => {
         amountPaise: row.paymentAmount,
         status: row.paymentStatus,
         userId: String(row.userId),
+        mobile: typeof row.phone === "string" && row.phone.trim() ? row.phone.trim() : null,
         applicationId: String(row._id),
         applicationNumber: row.applicationNumber,
         subscriptionId: null,
@@ -202,6 +204,7 @@ export const listPaymentCenter = async (query: PaymentCenterQuery) => {
           amountPaise: payment.amount,
           status: payment.status,
           userId: String(row.userId),
+          mobile: null,
           applicationId: null,
           applicationNumber: null,
           subscriptionId: row.subscriptionId,
@@ -222,6 +225,27 @@ export const listPaymentCenter = async (query: PaymentCenterQuery) => {
 
   const total = items.length;
   const sliced = items.slice((page - 1) * limit, page * limit);
+
+  const userIds = [
+    ...new Set(
+      sliced
+        .map((item) => String(item.userId ?? ""))
+        .filter((id) => mongoose.isValidObjectId(id))
+    ),
+  ];
+  if (userIds.length > 0) {
+    const users = await AuthUser.find({ _id: { $in: userIds } })
+      .select("mobile")
+      .lean();
+    const mobileById = new Map(
+      users.map((user) => [String(user._id), user.mobile])
+    );
+    for (const item of sliced) {
+      const authMobile = mobileById.get(String(item.userId));
+      if (authMobile) item.mobile = authMobile;
+    }
+  }
+
   return {
     items: sliced,
     page,
@@ -295,6 +319,23 @@ export const getAdminNotifications = async () => {
   return { items: notifications, unreadApprox: notifications.length };
 };
 
+const loadMobileByUserId = async (
+  userIds: Array<string | mongoose.Types.ObjectId | null | undefined>
+): Promise<Map<string, string>> => {
+  const ids = [
+    ...new Set(
+      userIds
+        .map((id) => String(id ?? ""))
+        .filter((id) => mongoose.isValidObjectId(id))
+    ),
+  ];
+  if (ids.length === 0) return new Map();
+  const users = await AuthUser.find({ _id: { $in: ids } })
+    .select("mobile")
+    .lean();
+  return new Map(users.map((u) => [String(u._id), u.mobile]));
+};
+
 export const exportAdminReportCsv = async (
   type: string
 ): Promise<{ filename: string; csv: string }> => {
@@ -303,21 +344,29 @@ export const exportAdminReportCsv = async (
     if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   };
+  const linesOf = (header: string, rows: unknown[][]) =>
+    [header, ...rows.map((cols) => cols.map(escape).join(","))].join("\n");
 
   if (type === "users") {
     const rows = await FarmerProfile.find({})
       .sort({ createdAt: -1 })
       .limit(5000)
       .lean();
-    const header = "userId,name,district,taluka,village,createdAt";
-    const lines = rows.map((r) =>
-      [r.userId, r.name, r.district, r.taluka, r.village, r.createdAt.toISOString()]
-        .map(escape)
-        .join(",")
-    );
+    const mobileById = await loadMobileByUserId(rows.map((r) => r.userId));
     return {
-      filename: "users-export.csv",
-      csv: [header, ...lines].join("\n"),
+      filename: "farmers-export.csv",
+      csv: linesOf(
+        "mobile,name,userId,district,taluka,village,createdAt",
+        rows.map((r) => [
+          mobileById.get(String(r.userId)) ?? "",
+          r.name,
+          r.userId,
+          r.district,
+          r.taluka,
+          r.village,
+          r.createdAt.toISOString(),
+        ])
+      ),
     };
   }
 
@@ -326,24 +375,25 @@ export const exportAdminReportCsv = async (
       .sort({ updatedAt: -1 })
       .limit(5000)
       .lean<IUserSubscription[]>();
-    const header =
-      "id,userId,subscriptionId,status,amount,currentPeriodEnd,latestPaymentId";
-    const lines = rows.map((r) =>
-      [
-        r._id,
-        r.userId,
-        r.subscriptionId,
-        r.status,
-        r.amount,
-        r.currentPeriodEnd?.toISOString() ?? "",
-        r.latestPaymentId,
-      ]
-        .map(escape)
-        .join(",")
-    );
+    const mobileById = await loadMobileByUserId(rows.map((r) => r.userId));
     return {
       filename: "subscriptions-export.csv",
-      csv: [header, ...lines].join("\n"),
+      csv: linesOf(
+        "mobile,userId,subscriptionId,customerId,status,amountPaise,amountInr,currentPeriodEnd,latestPaymentId,cancelledAt,accessRevokedAt",
+        rows.map((r) => [
+          mobileById.get(String(r.userId)) ?? "",
+          r.userId,
+          r.subscriptionId,
+          r.customerId ?? "",
+          r.status,
+          r.amount,
+          (r.amount ?? 0) / 100,
+          r.currentPeriodEnd?.toISOString() ?? "",
+          r.latestPaymentId ?? "",
+          r.cancelledAt?.toISOString() ?? "",
+          r.accessRevokedAt?.toISOString() ?? "",
+        ])
+      ),
     };
   }
 
@@ -352,24 +402,21 @@ export const exportAdminReportCsv = async (
       .sort({ createdAt: -1 })
       .limit(5000)
       .lean();
-    const header = "id,sellerId,listingType,title,status,district,price,createdAt";
-    const lines = rows.map((r) =>
-      [
-        r._id,
-        r.sellerId,
-        r.listingType,
-        r.title,
-        r.status,
-        r.district,
-        r.price,
-        r.createdAt.toISOString(),
-      ]
-        .map(escape)
-        .join(",")
-    );
     return {
       filename: "marketplace-export.csv",
-      csv: [header, ...lines].join("\n"),
+      csv: linesOf(
+        "id,sellerId,listingType,title,status,district,price,createdAt",
+        rows.map((r) => [
+          r._id,
+          r.sellerId,
+          r.listingType,
+          r.title,
+          r.status,
+          r.district,
+          r.price,
+          r.createdAt.toISOString(),
+        ])
+      ),
     };
   }
 
@@ -378,46 +425,183 @@ export const exportAdminReportCsv = async (
       .sort({ updatedAt: -1 })
       .limit(5000)
       .lean();
-    const header =
-      "id,applicationNumber,userId,status,paymentStatus,district,paidAt";
-    const lines = rows.map((r) =>
-      [
-        r._id,
-        r.applicationNumber,
-        r.userId,
-        r.status,
-        r.paymentStatus,
-        r.district,
-        r.paidAt?.toISOString() ?? "",
-      ]
-        .map(escape)
-        .join(",")
-    );
+    const mobileById = await loadMobileByUserId(rows.map((r) => r.userId));
     return {
       filename: "gram-sahakari-export.csv",
-      csv: [header, ...lines].join("\n"),
+      csv: linesOf(
+        "applicationNumber,mobile,fullName,userId,status,paymentStatus,district,taluka,village,amountInr,razorpayOrderId,razorpayPaymentId,refundId,paidAt,createdAt",
+        rows.map((r) => [
+          r.applicationNumber,
+          mobileById.get(String(r.userId)) ?? r.phone ?? "",
+          r.fullName ?? "",
+          r.userId,
+          r.status,
+          r.paymentStatus,
+          r.district ?? "",
+          r.taluka ?? "",
+          r.village ?? "",
+          typeof r.paymentAmount === "number" ? r.paymentAmount / 100 : "",
+          r.razorpayOrderId ?? "",
+          r.razorpayPaymentId ?? "",
+          r.refundId ?? "",
+          r.paidAt?.toISOString() ?? "",
+          r.createdAt.toISOString(),
+        ])
+      ),
+    };
+  }
+
+  if (type === "payments") {
+    const gsRows = await GramSahakariApplication.find({
+      razorpayPaymentId: { $type: "string" },
+    })
+      .sort({ paidAt: -1, updatedAt: -1 })
+      .limit(5000)
+      .lean();
+    const subRows = await UserSubscription.find({
+      "billingPayments.0": { $exists: true },
+    })
+      .sort({ updatedAt: -1 })
+      .limit(2000)
+      .lean<IUserSubscription[]>();
+
+    const mobileById = await loadMobileByUserId([
+      ...gsRows.map((r) => r.userId),
+      ...subRows.map((r) => r.userId),
+    ]);
+
+    const paymentLines: unknown[][] = [];
+    for (const r of gsRows) {
+      paymentLines.push([
+        r.paidAt?.toISOString() ?? r.updatedAt.toISOString(),
+        "GS",
+        mobileById.get(String(r.userId)) ?? r.phone ?? "",
+        r.fullName ?? "",
+        r.userId,
+        r.district ?? "",
+        typeof r.paymentAmount === "number" ? r.paymentAmount / 100 : "",
+        r.paymentStatus,
+        r.refundId ? "REFUNDED" : "NONE",
+        r.refundId && typeof r.paymentAmount === "number"
+          ? r.paymentAmount / 100
+          : "",
+        r.razorpayPaymentId ?? "",
+        r.razorpayOrderId ?? "",
+        "",
+        "",
+        r.paymentMethod ?? "",
+        r.applicationNumber,
+        r.refundId ?? "",
+      ]);
+    }
+    for (const row of subRows) {
+      for (const payment of row.billingPayments ?? []) {
+        paymentLines.push([
+          payment.paidAt?.toISOString() ?? row.updatedAt.toISOString(),
+          "SUBSCRIPTION",
+          mobileById.get(String(row.userId)) ?? "",
+          "",
+          row.userId,
+          "",
+          (payment.amount ?? 0) / 100,
+          payment.status,
+          payment.refundId ? "REFUNDED" : "NONE",
+          typeof payment.refundAmount === "number"
+            ? payment.refundAmount / 100
+            : payment.refundId
+              ? (payment.amount ?? 0) / 100
+              : "",
+          payment.paymentId ?? "",
+          "",
+          row.subscriptionId ?? "",
+          row.customerId ?? "",
+          payment.paymentMethod ?? row.paymentMethod ?? "",
+          "",
+          payment.refundId ?? "",
+        ]);
+      }
+    }
+
+    paymentLines.sort(
+      (a, b) =>
+        new Date(String(b[0])).getTime() - new Date(String(a[0])).getTime()
+    );
+
+    return {
+      filename: "payments-ledger-export.csv",
+      csv: linesOf(
+        "date,paymentType,mobile,name,userId,district,amountInr,status,refundStatus,refundAmountInr,razorpayPaymentId,razorpayOrderId,subscriptionId,customerId,paymentMethod,applicationNumber,refundId",
+        paymentLines
+      ),
     };
   }
 
   if (type === "revenue") {
-    const gsPaid = await GramSahakariApplication.countDocuments({
-      paymentStatus: "PAID",
-    });
-    const subAgg = await UserSubscription.aggregate([
-      { $unwind: "$billingPayments" },
-      { $match: { "billingPayments.status": "PAID" } },
-      { $group: { _id: null, total: { $sum: "$billingPayments.amount" } } },
+    const [gsPaid, gsRefunded, subAgg] = await Promise.all([
+      GramSahakariApplication.countDocuments({ paymentStatus: "PAID" }),
+      GramSahakariApplication.countDocuments({ paymentStatus: "REFUNDED" }),
+      UserSubscription.aggregate([
+        { $unwind: "$billingPayments" },
+        {
+          $match: {
+            "billingPayments.status": { $in: ["PAID", "REFUNDED"] },
+          },
+        },
+        {
+          $group: {
+            _id: "$billingPayments.status",
+            total: { $sum: "$billingPayments.amount" },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
     ]);
-    const csv = [
-      "source,amountInr",
-      `gram_sahakari,${(gsPaid * REGISTRATION_FEE_PAISE) / 100}`,
-      `subscriptions,${(subAgg[0]?.total ?? 0) / 100}`,
-    ].join("\n");
-    return { filename: "revenue-export.csv", csv };
+    const paidBilling = subAgg.find((r) => r._id === "PAID");
+    const refundedBilling = subAgg.find((r) => r._id === "REFUNDED");
+    const gsGross = (gsPaid * REGISTRATION_FEE_PAISE) / 100;
+    const gsRefunds = (gsRefunded * REGISTRATION_FEE_PAISE) / 100;
+    const subGross = (paidBilling?.total ?? 0) / 100;
+    const subRefunds = (refundedBilling?.total ?? 0) / 100;
+    const generatedAt = new Date().toISOString();
+    return {
+      filename: "revenue-summary-export.csv",
+      csv: linesOf(
+        "source,grossInr,refundsInr,netInr,paidCount,refundedCount,generatedAt",
+        [
+          [
+            "gram_sahakari",
+            gsGross,
+            gsRefunds,
+            gsGross - gsRefunds,
+            gsPaid,
+            gsRefunded,
+            generatedAt,
+          ],
+          [
+            "subscriptions",
+            subGross,
+            subRefunds,
+            subGross - subRefunds,
+            paidBilling?.count ?? 0,
+            refundedBilling?.count ?? 0,
+            generatedAt,
+          ],
+          [
+            "TOTAL",
+            gsGross + subGross,
+            gsRefunds + subRefunds,
+            gsGross + subGross - (gsRefunds + subRefunds),
+            gsPaid + (paidBilling?.count ?? 0),
+            gsRefunded + (refundedBilling?.count ?? 0),
+            generatedAt,
+          ],
+        ]
+      ),
+    };
   }
 
   throw new AppError(
-    "Unknown report type. Use users|subscriptions|marketplace|gram-sahakari|revenue.",
+    "Unknown report type. Use users|subscriptions|marketplace|gram-sahakari|payments|revenue.",
     400
   );
 };
