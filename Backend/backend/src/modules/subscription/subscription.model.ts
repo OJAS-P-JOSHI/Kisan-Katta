@@ -48,6 +48,10 @@ const BillingPaymentSchema = new Schema(
     periodEnd: { type: Date, default: null },
     gateway: { type: String, required: true, default: "RAZORPAY" },
     subscriptionId: { type: String, default: null, trim: true },
+    refundId: { type: String, default: null, trim: true },
+    refundedAt: { type: Date, default: null },
+    refundAmount: { type: Number, default: null, min: 0 },
+    refundReason: { type: String, default: null, trim: true },
   },
   { _id: false }
 );
@@ -82,6 +86,7 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
     latestPaymentId: { type: String, default: null, trim: true },
     cancelledAt: { type: Date, default: null },
     cancelAtCycleEnd: { type: Boolean, required: true, default: false },
+    accessRevokedAt: { type: Date, default: null },
     shortUrl: { type: String, default: null, trim: true },
     notes: { type: Schema.Types.Mixed, default: {} },
     events: { type: [SubscriptionEventSchema], default: [] },

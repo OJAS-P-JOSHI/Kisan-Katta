@@ -34,6 +34,7 @@ export interface SubscriptionDTO {
   latestPaymentId: string | null;
   cancelledAt: string | null;
   cancelAtCycleEnd: boolean;
+  accessRevokedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +76,11 @@ export interface BillingPaymentDTO {
   periodEnd: string | null;
   gateway: string;
   subscriptionId: string | null;
+  refundId: string | null;
+  refundedAt: string | null;
+  refundAmount: number | null;
+  refundAmountRupees: number | null;
+  refundReason: string | null;
 }
 
 const toIso = (value: Date | null | undefined): string | null =>
@@ -103,6 +109,12 @@ export const toBillingPaymentDTO = (
   periodEnd: toIso(payment.periodEnd),
   gateway: payment.gateway,
   subscriptionId: payment.subscriptionId,
+  refundId: payment.refundId ?? null,
+  refundedAt: toIso(payment.refundedAt ?? null),
+  refundAmount: payment.refundAmount ?? null,
+  refundAmountRupees:
+    payment.refundAmount != null ? payment.refundAmount / 100 : null,
+  refundReason: payment.refundReason ?? null,
 });
 
 export const toSubscriptionDTO = (
@@ -131,6 +143,7 @@ export const toSubscriptionDTO = (
   latestPaymentId: doc.latestPaymentId,
   cancelledAt: toIso(doc.cancelledAt),
   cancelAtCycleEnd: doc.cancelAtCycleEnd,
+  accessRevokedAt: toIso(doc.accessRevokedAt ?? null),
   createdAt: doc.createdAt.toISOString(),
   updatedAt: doc.updatedAt.toISOString(),
 });

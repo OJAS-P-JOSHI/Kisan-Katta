@@ -120,6 +120,10 @@ export const upsertBillingPayment = async (
         "billingPayments.$.periodEnd": payment.periodEnd,
         "billingPayments.$.gateway": payment.gateway,
         "billingPayments.$.subscriptionId": payment.subscriptionId,
+        "billingPayments.$.refundId": payment.refundId ?? null,
+        "billingPayments.$.refundedAt": payment.refundedAt ?? null,
+        "billingPayments.$.refundAmount": payment.refundAmount ?? null,
+        "billingPayments.$.refundReason": payment.refundReason ?? null,
       },
     },
     { new: true }
@@ -147,3 +151,24 @@ export const findReconcileCandidates = (
     .sort({ updatedAt: 1 })
     .limit(limit)
     .lean<IUserSubscription[]>();
+
+export const findByBillingPaymentId = (
+  paymentId: string
+): Promise<IUserSubscription | null> =>
+  UserSubscription.findOne({
+    "billingPayments.paymentId": paymentId,
+  }).lean<IUserSubscription | null>();
+
+export const listSubscriptionsAdmin = (params: {
+  filter: Record<string, unknown>;
+  skip: number;
+  limit: number;
+}): Promise<{ rows: IUserSubscription[]; total: number }> =>
+  Promise.all([
+    UserSubscription.countDocuments(params.filter),
+    UserSubscription.find(params.filter)
+      .sort({ updatedAt: -1 })
+      .skip(params.skip)
+      .limit(params.limit)
+      .lean<IUserSubscription[]>(),
+  ]).then(([total, rows]) => ({ total, rows }));

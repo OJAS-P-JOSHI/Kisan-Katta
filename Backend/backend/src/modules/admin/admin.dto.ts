@@ -54,19 +54,6 @@ export interface DashboardSummaryDTO {
     registeredAt: string;
     accountStatus: "ACTIVE" | "INACTIVE";
   }>;
-  /** Manual Village Representative rewards (record-only; no money movement). */
-  rewardsPaidThisMonth: number;
-  rewardsPaidThisMonthAmount: number;
-  pendingRewards: number;
-  pendingRewardsAmount: number;
-  topRewardedRepresentatives: Array<{
-    applicationId: string;
-    villageRepresentativeName: string;
-    volunteerId: string;
-    district: string | null;
-    totalAmount: number;
-    rewardCount: number;
-  }>;
 }
 
 export interface FarmerListItemDTO {
@@ -134,6 +121,16 @@ export interface AnalyticsSummaryDTO {
   monthlyGrowth: Array<{ month: string; applications: number; revenueInr: number }>;
   districtDistribution: Array<{ district: string; count: number }>;
   statusBreakdown: Array<{ status: string; count: number }>;
+}
+
+/** Farmer profile location drill-down: district → taluka → village. */
+export interface AnalyticsLocationBreakdownDTO {
+  source: "farmers";
+  level: "district" | "taluka" | "village";
+  district: string | null;
+  taluka: string | null;
+  items: Array<{ name: string; count: number }>;
+  totalInScope: number;
 }
 
 export interface PaymentListItemDTO {

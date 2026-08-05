@@ -31,6 +31,10 @@ export interface IBillingPayment {
   periodEnd: Date | null;
   gateway: string;
   subscriptionId: string | null;
+  refundId?: string | null;
+  refundedAt?: Date | null;
+  refundAmount?: number | null;
+  refundReason?: string | null;
 }
 
 export interface IUserSubscription {
@@ -52,6 +56,8 @@ export interface IUserSubscription {
   latestPaymentId: string | null;
   cancelledAt: Date | null;
   cancelAtCycleEnd: boolean;
+  /** When set, premium access is revoked regardless of period end. */
+  accessRevokedAt: Date | null;
   shortUrl: string | null;
   notes: Record<string, unknown>;
   events: ISubscriptionEvent[];

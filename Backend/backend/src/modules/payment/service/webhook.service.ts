@@ -195,6 +195,32 @@ export const handleWebhook = async (
 
   const application = await findApplication(entities);
   if (!application) {
+    // Subscription charges also emit refund.* — apply when paymentId matches billing.
+    if (
+      entities.paymentId &&
+      (kind === "REFUNDED" ||
+        kind === "REFUND_CREATED" ||
+        kind === "REFUND_FAILED")
+    ) {
+      const {
+        applySubscriptionRefundFromWebhook,
+      } = await import("../../subscription/service/refund.service");
+      const updated = await applySubscriptionRefundFromWebhook({
+        paymentId: entities.paymentId,
+        refundId: entities.refundId,
+        refundAmount: entities.amount,
+        processed: kind === "REFUNDED",
+      });
+      if (updated) {
+        await completeEvent(eventId, "PROCESSED");
+        return {
+          status: "ok",
+          httpStatus: 200,
+          detail: "Subscription refund processed.",
+        };
+      }
+    }
+
     await completeEvent(eventId, "IGNORED");
     return {
       status: "ignored",

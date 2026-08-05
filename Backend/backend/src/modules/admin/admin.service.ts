@@ -21,6 +21,7 @@ import {
 } from "./admin.constants";
 import type {
   AdminProfileDTO,
+  AnalyticsLocationBreakdownDTO,
   AnalyticsSummaryDTO,
   DashboardSummaryDTO,
   PaginatedPaymentsDTO,
@@ -38,7 +39,7 @@ import {
   countFarmers,
   getRecentFarmerRegistrations,
 } from "./admin.farmers.service";
-import { getDashboardRewardStats } from "../rewards/reward.service";
+import { FarmerProfile } from "../profile/profile.model";
 
 const REGISTRATION_FEE_PAISE = 50_000; // ₹500
 
@@ -174,7 +175,6 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
     recent,
     totalFarmers,
     recentFarmers,
-    rewardStats,
   ] = await Promise.all([
     GramSahakariApplication.countDocuments({}),
     GramSahakariApplication.countDocuments({
@@ -201,7 +201,6 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       .lean(),
     countFarmers(),
     getRecentFarmerRegistrations(8),
-    getDashboardRewardStats(),
   ]);
 
   const totalRevenuePaise = paidCount * REGISTRATION_FEE_PAISE;
@@ -250,11 +249,6 @@ export const getDashboardSummary = async (): Promise<DashboardSummaryDTO> => {
       registeredAt: farmer.registeredAt,
       accountStatus: farmer.accountStatus,
     })),
-    rewardsPaidThisMonth: rewardStats.rewardsPaidThisMonth,
-    rewardsPaidThisMonthAmount: rewardStats.rewardsPaidThisMonthAmount,
-    pendingRewards: rewardStats.pendingRewards,
-    pendingRewardsAmount: rewardStats.pendingRewardsAmount,
-    topRewardedRepresentatives: rewardStats.topRewardedRepresentatives,
   };
 };
 
@@ -314,6 +308,69 @@ export const getAnalyticsSummary = async (): Promise<AnalyticsSummaryDTO> => {
       status: row._id,
       count: row.count,
     })),
+  };
+};
+
+/**
+ * Farmer profile location breakdown.
+ * - no filters → districts
+ * - district → talukas in that district
+ * - district + taluka → villages in that taluka
+ */
+export const getAnalyticsLocationBreakdown = async (input: {
+  district?: string;
+  taluka?: string;
+  limit?: number;
+}): Promise<AnalyticsLocationBreakdownDTO> => {
+  const limit = Math.min(Math.max(input.limit ?? 20, 1), 50);
+  const district = input.district?.trim() || null;
+  const taluka = input.taluka?.trim() || null;
+
+  if (taluka && !district) {
+    throw new AppError("district is required when filtering by taluka.", 400);
+  }
+
+  const match: Record<string, unknown> = {};
+  let level: AnalyticsLocationBreakdownDTO["level"] = "district";
+  let groupField = "$district";
+
+  if (district && taluka) {
+    match.district = district;
+    match.taluka = taluka;
+    match.village = { $type: "string", $ne: "" };
+    level = "village";
+    groupField = "$village";
+  } else if (district) {
+    match.district = district;
+    match.taluka = { $type: "string", $ne: "" };
+    level = "taluka";
+    groupField = "$taluka";
+  } else {
+    match.district = { $type: "string", $ne: "" };
+    level = "district";
+    groupField = "$district";
+  }
+
+  const [items, totalInScope] = await Promise.all([
+    FarmerProfile.aggregate<{ _id: string | null; count: number }>([
+      { $match: match },
+      { $group: { _id: groupField, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: limit },
+    ]),
+    FarmerProfile.countDocuments(match),
+  ]);
+
+  return {
+    source: "farmers",
+    level,
+    district,
+    taluka,
+    items: items.map((row) => ({
+      name: (row._id && String(row._id).trim()) || "Unknown",
+      count: row.count,
+    })),
+    totalInScope,
   };
 };
 

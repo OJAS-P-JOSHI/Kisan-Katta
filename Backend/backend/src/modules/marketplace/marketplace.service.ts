@@ -31,8 +31,8 @@ import type {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const toListingDTO = (
-  doc: HydratedDocument<IMarketplaceListing>
+export const toListingDTO = (
+  doc: HydratedDocument<IMarketplaceListing> | IMarketplaceListing & { _id: Types.ObjectId; createdAt: Date; updatedAt: Date }
 ): ListingResponseDTO => ({
   id: doc._id.toString(),
   sellerId: doc.sellerId.toString(),

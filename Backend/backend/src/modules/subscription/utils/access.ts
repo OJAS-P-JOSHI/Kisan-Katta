@@ -11,10 +11,14 @@ import type { IUserSubscription } from "../interfaces/subscription.interface";
 export const hasSubscriptionAccess = (
   subscription: Pick<
     IUserSubscription,
-    "status" | "currentPeriodEnd"
+    "status" | "currentPeriodEnd" | "accessRevokedAt"
   > | null
 ): boolean => {
   if (!subscription) return false;
+
+  if (subscription.accessRevokedAt != null) {
+    return false;
+  }
 
   const { status, currentPeriodEnd } = subscription;
   const now = Date.now();

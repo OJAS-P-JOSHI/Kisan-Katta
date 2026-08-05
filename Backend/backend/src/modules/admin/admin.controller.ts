@@ -9,6 +9,7 @@ import type {
 import { getPortalAdmin } from "./admin.middleware";
 import type {
   AdminProfileDTO,
+  AnalyticsLocationBreakdownDTO,
   AnalyticsSummaryDTO,
   DashboardSummaryDTO,
   FarmerDetailDTO,
@@ -19,6 +20,7 @@ import type {
 } from "./admin.dto";
 import {
   getAdminApplicationById,
+  getAnalyticsLocationBreakdown,
   getAnalyticsSummary,
   getDashboardSummary,
   listAdminApplications,
@@ -65,6 +67,24 @@ export const getAnalyticsHandler = async (
   res: Response<ApiSuccessResponse<AnalyticsSummaryDTO>>
 ): Promise<void> => {
   const data = await getAnalyticsSummary();
+  res.status(200).json({ success: true, data });
+};
+
+export const getAnalyticsLocationsHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<AnalyticsLocationBreakdownDTO>>
+): Promise<void> => {
+  const district =
+    typeof req.query.district === "string" ? req.query.district : undefined;
+  const taluka =
+    typeof req.query.taluka === "string" ? req.query.taluka : undefined;
+  const limitRaw =
+    typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+  const data = await getAnalyticsLocationBreakdown({
+    district,
+    taluka,
+    limit: Number.isFinite(limitRaw) ? limitRaw : undefined,
+  });
   res.status(200).json({ success: true, data });
 };
 
