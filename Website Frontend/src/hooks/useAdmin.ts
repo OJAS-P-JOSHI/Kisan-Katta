@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import {
   getAdminAnalytics,
+  getAdminAnalyticsLocations,
   getAdminApplication,
   getAdminDashboard,
   getAdminFarmer,
@@ -19,6 +20,10 @@ export const adminKeys = {
   me: () => [...adminKeys.all, 'me'] as const,
   dashboard: () => [...adminKeys.all, 'dashboard'] as const,
   analytics: () => [...adminKeys.all, 'analytics'] as const,
+  analyticsLocations: (query?: {
+    district?: string
+    taluka?: string
+  }) => [...adminKeys.all, 'analytics', 'locations', query ?? {}] as const,
   system: () => [...adminKeys.all, 'system'] as const,
   applications: (query?: AdminListQuery) =>
     [...adminKeys.all, 'applications', query ?? {}] as const,
@@ -46,6 +51,16 @@ export const useAdminAnalytics = () =>
   useQuery({
     queryKey: adminKeys.analytics(),
     queryFn: getAdminAnalytics,
+    staleTime: 60_000,
+  })
+
+export const useAdminAnalyticsLocations = (query?: {
+  district?: string
+  taluka?: string
+}) =>
+  useQuery({
+    queryKey: adminKeys.analyticsLocations(query),
+    queryFn: () => getAdminAnalyticsLocations(query),
     staleTime: 60_000,
   })
 

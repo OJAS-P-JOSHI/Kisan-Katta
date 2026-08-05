@@ -4,6 +4,9 @@ export const ADMIN_ROLES = [
   'ADMIN',
   'MANAGER',
   'SUPPORT',
+  'FINANCE',
+  'MODERATOR',
+  'GRAM_SAHAKARI_TEAM',
   'READ_ONLY',
 ] as const
 
@@ -15,11 +18,17 @@ export const ADMIN_PERMISSIONS = [
   'payments',
   'volunteers',
   'farmers',
-  'rewards',
+  'subscriptions',
   'analytics',
   'settings',
   'reports',
   'admins',
+  'notifications',
 ] as const
 
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number]
+
+export const hasAdminPermission = (
+  permissions: readonly string[] | undefined,
+  permission: AdminPermission,
+): boolean => Boolean(permissions?.includes(permission))

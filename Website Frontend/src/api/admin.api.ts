@@ -5,6 +5,7 @@ import type {
   AdminListQuery,
   AdminProfile,
   AnalyticsSummary,
+  AnalyticsLocationBreakdown,
   DashboardSummary,
   FarmerDetail,
   PaginatedApplications,
@@ -47,6 +48,17 @@ export const getAdminAnalytics = async (): Promise<AnalyticsSummary> => {
   const { data } = await api.get<ApiSuccessResponse<AnalyticsSummary>>(
     `${BASE}/analytics`,
   )
+  return data.data
+}
+
+export const getAdminAnalyticsLocations = async (query?: {
+  district?: string
+  taluka?: string
+  limit?: number
+}): Promise<AnalyticsLocationBreakdown> => {
+  const { data } = await api.get<
+    ApiSuccessResponse<AnalyticsLocationBreakdown>
+  >(`${BASE}/analytics/locations`, { params: toParams(query) })
   return data.data
 }
 

@@ -76,7 +76,7 @@ export function AdminFarmersPage() {
       header: 'Name',
       render: (row) => (
         <Link
-          to={`/admin/farmers/${row.id}`}
+          to={`/admin/users/${row.userId}`}
           className="font-medium text-forest-800 hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
@@ -243,7 +243,7 @@ export function AdminFarmersPage() {
             mobileTitleKey="name"
             emptyTitle="No farmers found"
             emptyDescription="Try adjusting search or filters."
-            onRowClick={(row) => navigate(`/admin/farmers/${row.id}`)}
+            onRowClick={(row) => navigate(`/admin/users/${row.userId}`)}
           />
           <div className="px-0">
             <Pagination

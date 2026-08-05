@@ -46,9 +46,9 @@ This document treats **backend + mobile + MongoDB** as **one production module**
 | Thank-you / already voted | `ThankYouCard` + SecureStore cache | Authoritative state = `poll.hasVoted` |
 | Pull-to-refresh / focus revalidate | Home screen | Silent refresh when returning from detail |
 | Background sync | `farmer-price.scheduler` | Every **60** minutes + once on server start |
-| **Milk (दूध)** | Profile `favoriteCrops` + ensure/sync | Special favourite item — polls/votes like any crop; **no** Agmarknet government price (`governmentPriceAvailable: false`) |
+| **Milk (दूध)** | Profile `favoriteCrops` + ensure/sync | Special favourite item — polls/votes like any crop; **no** Agmarknet government price (`governmentPriceAvailable: false`); fixed vote band **₹30–₹150 / Litre** via `MILK_PRICE_RANGE` |
 
-> **Milk note:** Milk is treated as a special supported favourite item for Farmer Expected Price. It is intentionally excluded from Government Market Prices because no official Agmarknet government price exists. Stored as `"Milk"` in `favoriteCrops[]` — no separate Dairy module.
+> **Milk note:** Milk is treated as a special supported favourite item for Farmer Expected Price. It is intentionally excluded from Government Market Prices because no official Agmarknet government price exists. Stored as `"Milk"` in `favoriteCrops[]` — no separate Dairy module. Sold **per litre** (not quintal); voting uses a fixed allowed range, not Government ±40%.
 
 ---
 
@@ -132,16 +132,16 @@ Scripts (ops / QA, not runtime APIs):
 | `farmer-price.types.ts` | TypeScript contracts mirrored from backend |
 | `farmer-price.strings.ts` | Feature-local UI copy + reason/confidence labels |
 | `farmer-price.constants.ts` | Client mirrors of thresholds (UI gating only) |
-| `farmer-price.utils.ts` | `resolveAllowedRange`, formatters, `resolveDisplayVote` |
+| `farmer-price.utils.ts` | `resolveAllowedRange`, `resolvePriceUnit`, `defaultVotePrice`, formatters, `resolveDisplayVote` |
 | `farmer-price.vote-storage.ts` | Per-user SecureStore map of submitted votes |
 | `useMyFarmerPricePoll` | Load / refresh / silent revalidate of hydrated polls |
 | `useFarmerPricePollDetail` | Single poll + optimistic/local display vote |
 | `useSubmitFarmerVote` | POST vote; persist SecureStore on success |
 | `FarmerPriceScreen` | Home list orchestration + empty/error states |
-| `PollDetailScreen` | Vote + community layout + snackbars |
+| `PollDetailScreen` | Vote + community layout + snackbars; unit from `resolvePriceUnit` |
 | `PollCard` | Summary + CTA focus `vote` \| `community` |
-| `VoteCard` | Slider, digits, reason chips, client validation |
-| `ThankYouCard` | Confirmation after vote |
+| `VoteCard` | Slider, digits, allowed-range hint, reason chips, client validation |
+| `ThankYouCard` | Confirmation after vote (unit-aware suffix) |
 | `MarketSignals` / `CommunityInsights` | Community view blocks |
 | `ConfidenceBadge` / `PriceDelta` | Visual chips |
 | `FarmerPriceSkeleton` | Initial list loading |
@@ -156,10 +156,10 @@ Scripts (ops / QA, not runtime APIs):
 | `farmer-price.sync.service.ts` | Scan profiles → create missing open polls |
 | `farmer-price.scheduler.ts` | Hourly + startup sync; in-process single-flight |
 | `farmer-price.slot.ts` | Unique `(district, crop)` open-slot claim/release/bind |
-| `farmer-price.validation.ts` | Integer price band; reason rules |
+| `farmer-price.validation.ts` | Integer price band via `getAllowedPriceRange` (Milk litre band + crop ±40%); reason rules |
 | `farmer-price.stats.ts` | Pure median / confidence / difference helpers |
 | `farmer-price.model.ts` | Mongoose schemas + indexes |
-| `farmer-price.constants.ts` | Single source of numeric / enum constants |
+| `farmer-price.constants.ts` | Single source of numeric / enum constants (`MILK_PRICE_RANGE`, `isMilkCrop`, …) |
 
 ### Related modules (not under `farmer-price/`)
 
@@ -367,13 +367,28 @@ There is **no** global Zustand/Redux store for farmer-price. State lives in hook
 | Rule | Detail |
 |---|---|
 | Create poll | `crop`, `district` required non-empty strings |
-| Vote price | Must be **integer**; within `getAllowedPriceRange` |
-| Band with gov | `min = ceil(snapshot * 0.6)`, `max = floor(snapshot * 1.4)` (±40%) |
-| Band without gov | `1000` … `100000` |
+| Vote price | Must be **integer**; within `getAllowedPriceRange(context)` |
+| **Single helper** | `getAllowedPriceRange({ crop, governmentPriceAvailable, governmentPriceSnapshot })` — DTO + vote validator share this |
+| **Milk band** | When `isMilkCrop(crop)`: always `{ min: 30, max: 150, unit: "Litre" }` from `MILK_PRICE_RANGE` — **ignores** ±40% and the no-gov 1000–100000 band |
+| Band with gov (other crops) | `min = ceil(snapshot * 0.6)`, `max = floor(snapshot * 1.4)` (±40%) |
+| Band without gov (other crops) | `1000` … `100000` (no `unit` field) |
 | Reason when ≠ gov | Both `reasonType` and `reasonText` required |
 | Reason length | Trimmed text **10–200** chars |
 | Reason enum | Must be one of `REASON_TYPES` |
 | Query | Empty string filters → 400; `page >= 1`; `limit` 1..100 |
+
+#### `MILK_PRICE_RANGE` (backend + mirrored on mobile)
+
+```ts
+export const MILK_PRICE_RANGE = {
+  min: 30,
+  max: 150,
+  default: 60,   // slider default when no gov / no community yet
+  unit: "Litre",
+} as const;
+```
+
+Milk is sold per litre. Do **not** scatter `if (crop === "Milk")` — use `isMilkCrop` / `getAllowedPriceRange` / `resolveAllowedRange` / `resolvePriceUnit`.
 
 ### DTOs
 
@@ -700,12 +715,12 @@ When price **equals** government snapshot (and gov available), `reasonType` / `r
 | 6 | Favourite crop restriction | Crop must be in `profile.favoriteCrops` or **403** `"Favourite Crop Required"` |
 | 7 | District restriction | Profile district must match poll district or **403** `"Invalid District"` |
 | 8 | Government price snapshot | Taken at create via `getMarketPrices` (Maharashtra, district, commodity); highest positive `modalPrice` among returned; unit `"Quintal"` |
-| 9 | Missing government price | Poll still created; `governmentPriceAvailable: false`; wider price band |
+| 9 | Missing government price | Poll still created; `governmentPriceAvailable: false`; other crops use 1000–100000 band; **Milk** still uses 30–150 Litre |
 | 10 | Community price reveal | `communityExpectedPrice` null until `voteCount >= MINIMUM_VOTES_REQUIRED` (**10**) |
 | 11 | Community statistic | **Median** of expected prices (even count → round average of two middles) |
 | 12 | Confidence | &lt;10 `NOT_AVAILABLE`; &lt;50 `LOW`; &lt;150 `MEDIUM`; else `HIGH` |
 | 13 | Difference | `community - gov`; % rounded to 2 decimals; null if community or gov missing/zero |
-| 14 | ±40% validation | With gov: ceil(0.6×) … floor(1.4×); without: 1000…100000. **Milk exception:** fixed ₹30–₹150 / Litre via `MILK_PRICE_RANGE` (never ±40%) |
+| 14 | Vote price band | **Other crops:** gov ±40%, or 1000–100000 without gov. **Milk only:** fixed ₹30–₹150 / Litre (`MILK_PRICE_RANGE`) — never ±40% |
 | 15 | Mandatory reasons | If price ≠ gov snapshot (when available): require `reasonType` + reason text 10–200 |
 | 16 | Reason optional | Only when matching government price |
 | 17 | Insights anonymity | Author always `"Anonymous Farmer"` |
@@ -716,7 +731,8 @@ When price **equals** government snapshot (and gov available), `reasonType` / `r
 | 22 | Integer prices only | Non-integer → `"Invalid Vote"` |
 | 23 | Closed poll voting | **400** `"Poll Closed"` |
 | 24 | Disclaimer | Fixed community estimate disclaimer on detail DTO |
-| 25 | Milk (दूध) | Allowed in `favoriteCrops` as `"Milk"`; ensure/sync/vote identical; no Agmarknet price; `allowedPriceRange` = `{ min: 30, max: 150, unit: "Litre" }` from `getAllowedPriceRange` |
+| 25 | Milk (दूध) | In `favoriteCrops` as `"Milk"`; ensure/sync/vote identical; no Agmarknet price; DTO `allowedPriceRange = { min: 30, max: 150, unit: "Litre" }`; mobile default slider **₹60** / Litre |
+| 26 | Price unit display | Milk → Litre (`allowedPriceRange.unit` / `resolvePriceUnit`); Agmarknet crops → Quintal |
 
 ---
 
@@ -853,7 +869,7 @@ Null when community missing, gov unavailable, or gov snapshot null/0.
 | **Authorization** | Vote only if district matches + crop in favourites |
 | **Vote ownership** | `userId` from auth context; `myVote` only for caller |
 | **Duplicate vote** | Pre-check + unique `{ pollId, userId }`; duplicate key → 409 |
-| **Abuse prevention** | ±40% / 1000–100000 band; reason length; integer-only; closed poll reject |
+| **Abuse prevention** | Crop ±40% / 1000–100000 band; Milk 30–150 Litre; reason length; integer-only; closed poll reject |
 | **Validation** | Server authoritative; client mirrors for UX |
 | **PII** | Insights never expose farmer name/phone — fixed anonymous author |
 | **Client cache** | Keys `vote:<userId>:<pollId>`; `clearUserVoteCache` exported but **not wired to logout** today |
@@ -890,7 +906,9 @@ Null when community missing, gov unavailable, or gov snapshot null/0.
 | **10-vote reveal gate** | Avoid publishing a “community price” from 1–2 opinions |
 | **Confidence tiers** | Communicate reliability without fake precision |
 | **Freeze gov snapshot at create** | Stable vote band and fair comparison for the 72h window |
-| **±40% band** | Block nonsense prices while allowing real market disagreement |
+| **±40% band** | Block nonsense prices while allowing real market disagreement (Agmarknet crops only) |
+| **Milk fixed litre band** | Milk has no Agmarknet rate and is sold per litre — fixed ₹30–₹150 / Litre via `MILK_PRICE_RANGE` / `getAllowedPriceRange` (never ±40%) |
+| **Single range helper** | DTO + vote validator + mobile fallback all share one band definition — avoid scattered `if (crop === "Milk")` |
 | **Reasons only when ≠ gov** | Reduce friction when agreeing with mandi; capture signal when disagreeing |
 | **Open-slot collection** | Prevent duplicate open polls without a fragile unique partial index on polls |
 | **Ensure on `/polls/my`** | Farmer always sees actionable polls without waiting for the hourly job |
@@ -950,7 +968,7 @@ Rules future engineers must **not** break:
 1. **Server is authority** for community price, confidence, hasVoted, and validation — never invent consensus on the client.  
 2. **Do not remove** the unique `{ pollId, userId }` index.  
 3. **Do not reveal** `communityExpectedPrice` below 10 votes.  
-4. **Do not change** ±40% / reason length rules in only one of mobile vs backend.  
+4. **Do not change** ±40% / reason length / Milk litre band in only one of mobile vs backend — keep `MILK_PRICE_RANGE` and `getAllowedPriceRange` / `resolveAllowedRange` aligned.  
 5. **Do not expose** real farmer identity in insights.  
 6. **Do not skip** open-slot claim on ensure/sync create paths.  
 7. **Do not treat** SecureStore as source of truth over `poll.hasVoted`.  
@@ -958,7 +976,9 @@ Rules future engineers must **not** break:
 9. Prefer fixing races with slots/transactions over “check then insert” alone.  
 10. Keep `disclaimer` honest: community estimate ≠ official mandi price.  
 11. When adding History UI, reuse `GET /history/:crop` — do not scrape closed polls client-side incorrectly.  
-12. Wire `clearUserVoteCache(userId)` on logout if touching auth cleanup.
+12. Wire `clearUserVoteCache(userId)` on logout if touching auth cleanup.  
+13. **Milk pricing:** only change `MILK_PRICE_RANGE` (and the shared helpers). Never hardcode 30/150 in VoteCard or validators. Never apply ±40% to Milk. Never invent Agmarknet prices for Milk.  
+14. **Do not create** a Dairy module — Milk stays a special favourite crop string `"Milk"`.
 
 ---
 
@@ -984,6 +1004,18 @@ Rules future engineers must **not** break:
 - [ ] Double submit → Already Voted / no duplicate  
 - [ ] Wrong district / non-favourite crop → error  
 - [ ] Closed poll → no VoteCard  
+
+### Manual QA — Milk (दूध)
+
+- [ ] Profile can select Milk; stored as `"Milk"` in `favoriteCrops`  
+- [ ] `GET /polls/my` ensures an open Milk poll  
+- [ ] Milk DTO `allowedPriceRange` = `{ min: 30, max: 150, unit: "Litre" }`  
+- [ ] Vote UI shows Allowed Range ₹30 – ₹150 / Litre  
+- [ ] Slider defaults to ₹60 when no community yet  
+- [ ] Values &lt;30 or &gt;150 rejected (same out-of-range UX)  
+- [ ] Unit labels show Litre (not Quintal) on vote / thank-you / community  
+- [ ] Onion (or any crop) still uses government ±40% band  
+- [ ] Milk never appears on Government Market Price screen  
 
 ### Manual QA — Community
 
@@ -1042,6 +1074,7 @@ Realistic production follow-ups (not invented architecture):
 | `/polls/my` ensure | On-demand poll creation for favourites |
 | Hourly scheduler | Profile-scan sync + startup run |
 | Milk (दूध) favourite | Special supported item for Farmer Expected Price; excluded from Government Market; no Agmarknet price |
+| Milk litre pricing | Fixed ₹30–₹150 / Litre via `MILK_PRICE_RANGE` + `getAllowedPriceRange`; optional DTO `unit`; mobile default ₹60; other crops unchanged ±40% |
 | Vote transactions | Session txn + retries / compensating path |
 | Mobile home + detail | Tab list, VoteCard, community sections |
 | SecureStore thank-you | Local submitted-vote snapshot |
@@ -1117,6 +1150,11 @@ type ReasonType =
 | `MAX_REASON_LENGTH` | 200 |
 | `RECENT_INSIGHTS_LIMIT` | 5 |
 | `DEFAULT_GOVERNMENT_UNIT` | `"Quintal"` |
+| `MILK_PRICE_RANGE.min` | 30 |
+| `MILK_PRICE_RANGE.max` | 150 |
+| `MILK_PRICE_RANGE.default` | 60 |
+| `MILK_PRICE_RANGE.unit` | `"Litre"` |
+| `MILK_CROP_NAME` | `"Milk"` (from crop special favourite) |
 | `FARMER_PRICE_SYNC_INTERVAL_MINUTES` | 60 |
 | `MIN_FARMERS_PER_POLL` | 1 |
 | `ENSURE_PEER_WAIT_MS` | 8000 |
@@ -1129,7 +1167,12 @@ type ReasonType =
 ### F — DTOs (abridged)
 
 ```ts
-type AllowedPriceRangeDTO = { min: number; max: number };
+/** Vote band — `unit` present for Milk ("Litre"); omitted for Agmarknet crops. */
+type AllowedPriceRangeDTO = {
+  min: number;
+  max: number;
+  unit?: string;
+};
 
 type MyVoteDTO = {
   expectedPrice: number;
@@ -1257,6 +1300,40 @@ type HistoryResponseDTO = {
 }
 ```
 
+### G2 — Sample success: Milk poll (no Agmarknet price)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "66f1a2b3c4d5e6f7a8b9c0d2",
+    "crop": "Milk",
+    "district": "Nashik",
+    "governmentPriceSnapshot": null,
+    "governmentPriceDate": null,
+    "governmentUnit": null,
+    "governmentPriceAvailable": false,
+    "communityExpectedPrice": null,
+    "voteCount": 3,
+    "confidence": "NOT_AVAILABLE",
+    "minimumVotesReached": false,
+    "differenceFromGovernmentPrice": null,
+    "differencePercentage": null,
+    "allowedPriceRange": { "min": 30, "max": 150, "unit": "Litre" },
+    "status": "OPEN",
+    "hasVoted": false,
+    "myVote": null,
+    "remainingHours": 60,
+    "marketSignals": [],
+    "recentInsights": [],
+    "isCommunityEstimate": true,
+    "disclaimer": "This is generated from anonymous farmer submissions. It is not an official market price."
+  }
+}
+```
+
+Mobile VoteCard for this poll: Allowed Range **₹30 – ₹150 / Litre**, slider default **₹60**, unit suffix `/ Litre`.
+
 ### H — Sample vote request (disagree with gov)
 
 ```json
@@ -1294,6 +1371,7 @@ type HistoryResponseDTO = {
 | Change | Start here |
 |---|---|
 | Vote thresholds / hours | `farmer-price.constants.ts` (backend) + mirror mobile constants |
+| **Milk litre band (30–150 / default 60)** | Backend `MILK_PRICE_RANGE` in `farmer-price.constants.ts` + mobile mirror; band logic only in `getAllowedPriceRange` / `resolveAllowedRange` |
 | Median / confidence math | `farmer-price.stats.ts` |
 | Vote / ensure / history logic | `farmer-price.service.ts` |
 | Open-slot locking | `farmer-price.slot.ts` |
@@ -1301,6 +1379,7 @@ type HistoryResponseDTO = {
 | Mobile API calls | `farmer-price.service.ts` |
 | Home list UX | `FarmerPriceScreen.tsx` + `PollCard.tsx` |
 | Vote composer | `VoteCard.tsx` + `PriceSlider.tsx` + `ReasonChips.tsx` |
+| Price unit (Litre / Quintal) | `resolvePriceUnit` in `farmer-price.utils.ts` |
 | Community blocks | `MarketSignals.tsx`, `CommunityInsights.tsx`, `PollDetailScreen.tsx` |
 | Copy | `farmer-price.strings.ts` |
 | Thank-you cache | `farmer-price.vote-storage.ts` |

@@ -30,3 +30,7 @@ Thumbs.db
 
 # Misc
 coverage
+
+# IntelliJ / Android Studio
+**/.idea/
+*.iml

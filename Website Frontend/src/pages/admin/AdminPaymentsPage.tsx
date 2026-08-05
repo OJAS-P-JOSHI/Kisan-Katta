@@ -1,146 +1,213 @@
+import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { listPaymentCenter } from '@/api/admin-ops.api'
 import { DataTable, Pagination, type Column } from '@/components/admin/DataTable'
+import { filterControlClass } from '@/components/admin/FilterPanel'
 import {
   AdminCard,
   AdminPageHeader,
   formatDateTime,
   formatInr,
 } from '@/components/admin/AdminUI'
-import { useAdminPayments } from '@/hooks/useAdmin'
-import type { PaymentListItem } from '@/types/admin.types'
-
-const PAYMENT_STATUSES = [
-  '',
-  'PENDING',
-  'AUTHORIZED',
-  'PAID',
-  'FAILED',
-  'REFUNDED',
-] as const
+import { getErrorMessage } from '@/lib/api-error'
 
 export function AdminPaymentsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [paymentStatus, setPaymentStatus] = useState('')
+  const [source, setSource] = useState<'ALL' | 'GS' | 'SUBSCRIPTION'>('ALL')
+  const [status, setStatus] = useState('')
 
   const query = useMemo(
     () => ({
       page,
       limit: 20,
       search: search || undefined,
-      paymentStatus: paymentStatus || undefined,
+      source,
+      status: status || undefined,
     }),
-    [page, search, paymentStatus],
+    [page, search, source, status],
   )
 
-  const { data, isLoading, isFetching } = useAdminPayments(query)
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ['admin', 'payments-center', query],
+    queryFn: () => listPaymentCenter(query),
+    placeholderData: (prev) => prev,
+  })
 
-  const columns: Column<PaymentListItem>[] = [
+  const columns: Column<Record<string, unknown>>[] = [
     {
-      key: 'razorpayPaymentId',
+      key: 'source',
+      header: 'Source',
+      render: (row) => String(row.source),
+    },
+    {
+      key: 'paymentId',
       header: 'Payment ID',
       render: (row) => (
+        <span className="font-mono text-xs">{String(row.paymentId ?? '—')}</span>
+      ),
+    },
+    {
+      key: 'orderId',
+      header: 'Order / Sub',
+      hideOnMobile: true,
+      render: (row) => (
         <span className="font-mono text-xs">
-          {row.razorpayPaymentId ?? '—'}
+          {String(row.orderId ?? row.subscriptionId ?? '—')}
         </span>
       ),
     },
     {
-      key: 'razorpayOrderId',
-      header: 'Order ID',
-      render: (row) => (
-        <span className="font-mono text-xs">{row.razorpayOrderId ?? '—'}</span>
-      ),
-    },
-    {
-      key: 'amountInr',
+      key: 'amount',
       header: 'Amount',
-      render: (row) => formatInr(row.amountInr),
+      render: (row) =>
+        formatInr(
+          typeof row.amountPaise === 'number' ? row.amountPaise / 100 : 0,
+        ),
     },
     {
-      key: 'paymentStatus',
+      key: 'status',
       header: 'Status',
+      render: (row) => String(row.status),
+    },
+    {
+      key: 'refundId',
+      header: 'Refund ID',
+      hideOnMobile: true,
       render: (row) => (
-        <span className="rounded-full border border-mist px-2.5 py-0.5 text-xs font-medium">
-          {row.paymentStatus}
-        </span>
+        <span className="font-mono text-xs">{String(row.refundId ?? '—')}</span>
       ),
     },
     {
-      key: 'application',
-      header: 'Application',
-      render: (row) => (
-        <div>
+      key: 'user',
+      header: 'User',
+      render: (row) =>
+        row.userId ? (
           <Link
-            to={`/admin/applications/${row.applicationId}`}
-            className="font-medium text-forest-800 hover:underline"
+            to={`/admin/users/${String(row.userId)}?tab=payments`}
+            className="text-forest-800 hover:underline"
           >
-            {row.applicationNumber}
+            Open vault
           </Link>
-          <p className="text-xs text-steel">{row.fullName ?? '—'}</p>
-        </div>
-      ),
+        ) : (
+          '—'
+        ),
+    },
+    {
+      key: 'related',
+      header: 'Related',
+      render: (row) =>
+        row.applicationId ? (
+          <Link
+            to={`/admin/gram-sahakari/${String(row.applicationId)}`}
+            className="text-forest-800 hover:underline"
+          >
+            {String(row.applicationNumber)}
+          </Link>
+        ) : row.userId ? (
+          <Link
+            to={`/admin/users/${String(row.userId)}?tab=subscription`}
+            className="text-forest-800 hover:underline"
+          >
+            Subscription
+          </Link>
+        ) : (
+          '—'
+        ),
     },
     {
       key: 'updatedAt',
-      header: 'Date',
-      render: (row) => formatDateTime(row.paidAt ?? row.updatedAt),
+      header: 'Updated',
+      render: (row) => formatDateTime(String(row.updatedAt)),
     },
   ]
 
   return (
-    <div>
+    <div className="space-y-5">
       <AdminPageHeader
-        title="Payments"
-        description="Read-only payment records from Village Representative applications."
+        title="Payment Center"
+        description="Gram Sahakari fees and subscription billing in one place."
       />
 
-      <AdminCard>
-        <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <AdminCard padded={false}>
+        <div className="space-y-3 p-4 sm:p-5">
           <input
             value={search}
             onChange={(e) => {
               setPage(1)
               setSearch(e.target.value)
             }}
-            placeholder="Search payment / order / application…"
-            className="rounded-xl border border-mist px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-forest-500/30 lg:col-span-2"
+            placeholder="Payment ID, order ID, subscription ID, application number…"
+            className={filterControlClass}
           />
-          <select
-            value={paymentStatus}
-            onChange={(e) => {
-              setPage(1)
-              setPaymentStatus(e.target.value)
-            }}
-            className="rounded-xl border border-mist px-3 py-2 text-sm"
-            aria-label="Filter by payment status"
-          >
-            <option value="">All statuses</option>
-            {PAYMENT_STATUSES.filter(Boolean).map((s) => (
-              <option key={s} value={s}>
+          <div className="flex flex-wrap gap-2">
+            {(['ALL', 'GS', 'SUBSCRIPTION'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setSource(s)
+                  setPage(1)
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  source === s
+                    ? 'bg-forest-800 text-white'
+                    : 'border border-mist text-slate'
+                }`}
+              >
                 {s}
-              </option>
+              </button>
             ))}
-          </select>
+            <select
+              className={filterControlClass}
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="">All statuses</option>
+              {['PENDING', 'AUTHORIZED', 'PAID', 'FAILED', 'REFUNDED'].map(
+                (s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ),
+              )}
+            </select>
+          </div>
         </div>
 
-        <DataTable
-          columns={columns}
-          rows={data?.items ?? []}
-          loading={isLoading || (isFetching && !data)}
-          rowKey={(row) =>
-            `${row.applicationId}-${row.razorpayPaymentId ?? row.updatedAt}`
-          }
-          emptyTitle="No payment records found"
-        />
-        <Pagination
-          page={data?.page ?? page}
-          totalPages={data?.totalPages ?? 1}
-          total={data?.total ?? 0}
-          onPageChange={setPage}
-        />
+        {error ? (
+          <p className="px-4 pb-4 text-sm text-red-700">
+            {getErrorMessage(error, 'Failed to load payments.')}
+          </p>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              rows={(data?.items as Array<Record<string, unknown>>) ?? []}
+              loading={isLoading || isFetching}
+              rowKey={(row) =>
+                String(
+                  row.paymentId ??
+                    `${String(row.source)}-${String(row.userId)}-${String(row.updatedAt)}`,
+                )
+              }
+              emptyTitle="No payments found"
+            />
+            <div className="px-4 pb-4">
+              <Pagination
+                page={data?.page ?? page}
+                totalPages={data?.totalPages ?? 0}
+                total={data?.total ?? 0}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
+        )}
       </AdminCard>
     </div>
   )

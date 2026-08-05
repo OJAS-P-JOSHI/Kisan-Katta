@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AdminRoute } from '@/components/admin/AdminRoute'
@@ -84,9 +84,9 @@ const AdminDashboardPage = lazy(() =>
     default: m.AdminDashboardPage,
   })),
 )
-const AdminApplicationsPage = lazy(() =>
-  import('@/pages/admin/AdminApplicationsPage').then((m) => ({
-    default: m.AdminApplicationsPage,
+const AdminGramSahakariPage = lazy(() =>
+  import('@/pages/admin/AdminGramSahakariPage').then((m) => ({
+    default: m.AdminGramSahakariPage,
   })),
 )
 const AdminApplicationDetailPage = lazy(() =>
@@ -94,24 +94,9 @@ const AdminApplicationDetailPage = lazy(() =>
     default: m.AdminApplicationDetailPage,
   })),
 )
-const AdminGramSahakarisPage = lazy(() =>
-  import('@/pages/admin/AdminGramSahakarisPage').then((m) => ({
-    default: m.AdminGramSahakarisPage,
-  })),
-)
 const AdminPaymentsPage = lazy(() =>
   import('@/pages/admin/AdminPaymentsPage').then((m) => ({
     default: m.AdminPaymentsPage,
-  })),
-)
-const AdminRewardsPage = lazy(() =>
-  import('@/pages/admin/AdminRewardsPage').then((m) => ({
-    default: m.AdminRewardsPage,
-  })),
-)
-const AdminRewardDetailPage = lazy(() =>
-  import('@/pages/admin/AdminRewardDetailPage').then((m) => ({
-    default: m.AdminRewardDetailPage,
   })),
 )
 const AdminAnalyticsPage = lazy(() =>
@@ -129,11 +114,21 @@ const AdminSettingsPage = lazy(() =>
     default: m.AdminSettingsPage,
   })),
 )
-const AdminAssistancePage = lazy(() =>
-  import('@/pages/admin/AdminAssistancePage').then((m) => ({
-    default: m.AdminAssistancePage,
+const AdminUserVaultPage = lazy(() =>
+  import('@/pages/admin/AdminUserVaultPage').then((m) => ({
+    default: m.AdminUserVaultPage,
   })),
 )
+const AdminSubscriptionsPage = lazy(() =>
+  import('@/pages/admin/AdminSubscriptionsPage').then((m) => ({
+    default: m.AdminSubscriptionsPage,
+  })),
+)
+
+function RedirectToGramSahakariDetail() {
+  const { id = '' } = useParams()
+  return <Navigate to={`/admin/gram-sahakari/${id}`} replace />
+}
 
 function RouteFallback() {
   const { t } = useTranslation()
@@ -212,13 +207,28 @@ export function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="farmers" element={<AdminFarmersPage />} />
             <Route path="farmers/:id" element={<AdminFarmerDetailPage />} />
-            <Route path="assistance" element={<AdminAssistancePage />} />
-            <Route path="applications" element={<AdminApplicationsPage />} />
-            <Route path="applications/:id" element={<AdminApplicationDetailPage />} />
-            <Route path="gram-sahakaris" element={<AdminGramSahakarisPage />} />
+            <Route path="users/:userId" element={<AdminUserVaultPage />} />
+            <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+            <Route path="gram-sahakari" element={<AdminGramSahakariPage />} />
+            <Route path="gram-sahakari/:id" element={<AdminApplicationDetailPage />} />
+            <Route
+              path="applications"
+              element={<Navigate to="/admin/gram-sahakari" replace />}
+            />
+            <Route
+              path="applications/:id"
+              element={<RedirectToGramSahakariDetail />}
+            />
+            <Route
+              path="gram-sahakaris"
+              element={
+                <Navigate
+                  to="/admin/gram-sahakari?view=representatives"
+                  replace
+                />
+              }
+            />
             <Route path="payments" element={<AdminPaymentsPage />} />
-            <Route path="rewards" element={<AdminRewardsPage />} />
-            <Route path="rewards/:id" element={<AdminRewardDetailPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />

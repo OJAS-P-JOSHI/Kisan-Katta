@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
+import { getAdminOpsDashboard } from '@/api/admin-ops.api'
 import { StatusBadge } from '@/components/application/StatusBadge'
 import {
   AccountStatusBadge,
@@ -17,7 +19,15 @@ import { useAuth } from '@/hooks/useAuth'
 export function AdminDashboardPage() {
   const { user } = useAuth()
   const { data, isLoading, isError } = useAdminDashboard()
+  const ops = useQuery({
+    queryKey: ['admin', 'dashboard', 'ops'],
+    queryFn: getAdminOpsDashboard,
+    staleTime: 30_000,
+  })
   const name = user?.admin?.name ?? 'Administrator'
+  const opsData = ops.data as Record<string, unknown> | undefined
+  const health = opsData?.systemHealth as Record<string, unknown> | undefined
+  const scheduler = opsData?.schedulerHealth as Record<string, unknown> | undefined
 
   return (
     <div className="overflow-x-hidden">
@@ -82,72 +92,45 @@ export function AdminDashboardPage() {
           value={isLoading ? '—' : `${data?.paymentSuccessRate ?? 0}%`}
           tone="blue"
         />
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3 min-[390px]:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Rewards Paid This Month"
+          label="Today's Farmers"
+          value={ops.isLoading ? '—' : Number(opsData?.todayFarmers ?? 0)}
+        />
+        <StatCard
+          label="Active Subscriptions"
+          value={ops.isLoading ? '—' : Number(opsData?.activeSubscriptions ?? 0)}
+          tone="green"
+        />
+        <StatCard
+          label="Subscription Revenue"
           value={
-            isLoading
+            ops.isLoading
               ? '—'
-              : `${data?.rewardsPaidThisMonth ?? 0} · ${formatInr(data?.rewardsPaidThisMonthAmount ?? 0)}`
+              : formatInr(Number(opsData?.subscriptionRevenueInr ?? 0))
           }
           tone="green"
         />
         <StatCard
-          label="Pending Rewards"
-          value={
-            isLoading
-              ? '—'
-              : `${data?.pendingRewards ?? 0} · ${formatInr(data?.pendingRewardsAmount ?? 0)}`
-          }
+          label="Pending GS Payments"
+          value={ops.isLoading ? '—' : Number(opsData?.pendingGsPayments ?? 0)}
           tone="amber"
         />
-      </div>
-
-      {(data?.topRewardedRepresentatives?.length ?? 0) > 0 || isLoading ? (
-        <AdminCard
-          title="Top Rewarded Village Representatives"
-          className="mt-5"
-          action={
-            <Link
-              to="/admin/rewards"
-              className="text-xs font-semibold text-forest-700 hover:underline"
-            >
-              Manage rewards
-            </Link>
+        <StatCard
+          label="System Health"
+          value={
+            ops.isLoading
+              ? '—'
+              : `${String(health?.databaseStatus ?? '—')} · RPZ ${
+                  health?.razorpayConfigured ? 'on' : 'off'
+                }`
           }
-          padded={false}
-        >
-          {isLoading ? (
-            <div className="p-4">
-              <TableSkeleton rows={3} />
-            </div>
-          ) : (
-            <ul className="divide-y divide-mist">
-              {(data?.topRewardedRepresentatives ?? []).map((row) => (
-                <li key={row.applicationId}>
-                  <Link
-                    to={`/admin/applications/${row.applicationId}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-forest-50/40 sm:px-5"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-ink">
-                        {row.villageRepresentativeName}
-                      </p>
-                      <p className="truncate text-xs text-steel">
-                        {row.volunteerId}
-                        {row.district ? ` · ${row.district}` : ''}
-                        {` · ${row.rewardCount} reward${row.rewardCount === 1 ? '' : 's'}`}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold tabular-nums text-forest-800">
-                      {formatInr(row.totalAmount)}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </AdminCard>
-      ) : null}
+          tone="blue"
+          hint={String(scheduler?.note ?? '')}
+        />
+      </div>
 
       <div className="mt-5 grid gap-4 lg:mt-6 lg:grid-cols-2">
         <AdminCard
@@ -205,7 +188,7 @@ export function AdminDashboardPage() {
           title="Recent Applications"
           action={
             <Link
-              to="/admin/applications"
+              to="/admin/gram-sahakari"
               className="text-xs font-semibold text-forest-700 hover:underline"
             >
               View all
@@ -238,7 +221,7 @@ export function AdminDashboardPage() {
                     >
                       <td className="px-4 py-3 sm:px-5">
                         <Link
-                          to={`/admin/applications/${row.id}`}
+                          to={`/admin/gram-sahakari/${row.id}`}
                           className="font-medium text-forest-800 hover:underline"
                         >
                           {row.applicationNumber}

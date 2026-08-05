@@ -56,18 +56,6 @@ export type DashboardSummary = {
     registeredAt: string
     accountStatus: 'ACTIVE' | 'INACTIVE'
   }>
-  rewardsPaidThisMonth: number
-  rewardsPaidThisMonthAmount: number
-  pendingRewards: number
-  pendingRewardsAmount: number
-  topRewardedRepresentatives: Array<{
-    applicationId: string
-    villageRepresentativeName: string
-    volunteerId: string
-    district: string | null
-    totalAmount: number
-    rewardCount: number
-  }>
 }
 
 export type AnalyticsSummary = {
@@ -77,6 +65,15 @@ export type AnalyticsSummary = {
   monthlyGrowth: Array<{ month: string; applications: number; revenueInr: number }>
   districtDistribution: Array<{ district: string; count: number }>
   statusBreakdown: Array<{ status: string; count: number }>
+}
+
+export type AnalyticsLocationBreakdown = {
+  source: 'farmers'
+  level: 'district' | 'taluka' | 'village'
+  district: string | null
+  taluka: string | null
+  items: Array<{ name: string; count: number }>
+  totalInScope: number
 }
 
 export type PaymentListItem = {

@@ -49,13 +49,21 @@ export function AdminFarmerDetailPage() {
         title={data.name}
         description={`${data.village}, ${data.district}`}
         actions={
-          <Link
-            to="/admin/farmers"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-mist bg-white px-3 py-2 text-sm font-medium text-ink"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={`/admin/users/${data.userId}`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-forest-800 px-3 py-2 text-sm font-medium text-white"
+            >
+              Open support vault
+            </Link>
+            <Link
+              to="/admin/farmers"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-mist bg-white px-3 py-2 text-sm font-medium text-ink"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </div>
         }
       />
 

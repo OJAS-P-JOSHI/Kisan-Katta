@@ -1,9 +1,6 @@
 import {
   BarChart3,
   CreditCard,
-  FileText,
-  Gift,
-  HandHeart,
   IdCard,
   LayoutDashboard,
   LogOut,
@@ -11,6 +8,8 @@ import {
   Settings,
   Sprout,
   X,
+  Repeat,
+  FileText,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
@@ -18,12 +17,10 @@ import { cn } from '@/lib/utils'
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/applications', label: 'Applications', icon: FileText },
-  { to: '/admin/gram-sahakaris', label: 'Village Representatives', icon: IdCard },
   { to: '/admin/farmers', label: 'Farmers', icon: Sprout },
-  { to: '/admin/assistance', label: 'Assistance', icon: HandHeart },
+  { to: '/admin/subscriptions', label: 'Subscriptions', icon: Repeat },
   { to: '/admin/payments', label: 'Payments', icon: CreditCard },
-  { to: '/admin/rewards', label: 'Rewards', icon: Gift },
+  { to: '/admin/gram-sahakari', label: 'Gram Sahakari', icon: IdCard },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports', label: 'Reports', icon: FileText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
@@ -79,33 +76,33 @@ export function AdminSidebar({
           )}
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl p-2 text-steel hover:bg-forest-50 hover:text-forest-900 lg:hidden"
+            className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl text-slate hover:bg-mist/70 lg:hidden"
             onClick={onClose}
-            aria-label="Close sidebar"
+            aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3">
-          {NAV.map(({ to, label, icon: Icon }) => (
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+          {NAV.map((item) => (
             <NavLink
-              key={to}
-              to={to}
+              key={item.to}
+              to={item.to}
               onClick={onClose}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  collapsed && 'lg:justify-center lg:px-2',
                   isActive
                     ? 'bg-forest-50 text-forest-900'
                     : 'text-slate hover:bg-mist/60 hover:text-ink',
-                  collapsed && 'lg:justify-center lg:px-2',
                 )
               }
-              title={label}
+              title={item.label}
             >
-              <Icon className="h-5 w-5 shrink-0" aria-hidden />
-              <span className={cn(collapsed && 'lg:hidden')}>{label}</span>
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span className="truncate">{item.label}</span>}
             </NavLink>
           ))}
         </nav>
@@ -115,12 +112,12 @@ export function AdminSidebar({
             type="button"
             onClick={onLogout}
             className={cn(
-              'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate transition-colors hover:bg-red-50 hover:text-red-700',
+              'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate hover:bg-mist/60 hover:text-ink',
               collapsed && 'lg:justify-center lg:px-2',
             )}
           >
-            <LogOut className="h-5 w-5 shrink-0" aria-hidden />
-            <span className={cn(collapsed && 'lg:hidden')}>Logout</span>
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
@@ -132,9 +129,9 @@ export function AdminMenuButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      onClick={onClick}
       className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl p-2 text-slate hover:bg-mist/60 lg:hidden"
-      aria-label="Open sidebar"
+      onClick={onClick}
+      aria-label="Open menu"
     >
       <Menu className="h-5 w-5" />
     </button>

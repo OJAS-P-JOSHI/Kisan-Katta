@@ -31,8 +31,8 @@ const fieldValidators = {
     .refine((v) => (GENDERS as readonly string[]).includes(v), 'Please select a gender.'),
   dob: z.string().trim().refine(dobRefinement, 'Enter a valid date of birth.'),
   district: z.string().trim().min(1, 'Select a district.'),
-  taluka: z.string().trim().min(1, 'Taluka is required.'),
-  village: z.string().trim().min(1, 'Village is required.'),
+  taluka: z.string().trim().min(1, 'Select a taluka.'),
+  village: z.string().trim().min(1, 'Select a village.'),
   address: z.string().trim().min(1, 'Address is required.'),
   pincode: z.string().trim().regex(PINCODE_REGEX, 'Enter a valid 6-digit pincode.'),
   aadhaarNumber: z

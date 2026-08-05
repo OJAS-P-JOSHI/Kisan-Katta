@@ -1,45 +1,8 @@
 /**
- * Dropdown option lists for the application wizard. District values are the
- * canonical Maharashtra district names the backend resolves against.
- * Gender labels are localized via `app.gender.*` translation keys at render time.
+ * Legacy wizard constants file.
+ * District / taluka / village lists live in Location Master via `@/features/location`
+ * (same backend APIs as Mobile App Profile). Gender options live in
+ * `@/types/application.types`.
  */
 
-/** Canonical Maharashtra districts accepted by the backend. */
-export const DISTRICTS: string[] = [
-  'Ahmednagar',
-  'Akola',
-  'Amravati',
-  'Beed',
-  'Bhandara',
-  'Buldhana',
-  'Chandrapur',
-  'Chhatrapati Sambhajinagar',
-  'Dharashiv',
-  'Dhule',
-  'Gadchiroli',
-  'Gondia',
-  'Hingoli',
-  'Jalgaon',
-  'Jalna',
-  'Kolhapur',
-  'Latur',
-  'Mumbai City',
-  'Mumbai Suburban',
-  'Nagpur',
-  'Nanded',
-  'Nandurbar',
-  'Nashik',
-  'Palghar',
-  'Parbhani',
-  'Pune',
-  'Raigad',
-  'Ratnagiri',
-  'Sangli',
-  'Satara',
-  'Sindhudurg',
-  'Solapur',
-  'Thane',
-  'Wardha',
-  'Washim',
-  'Yavatmal',
-]
+export {}
