@@ -152,7 +152,7 @@ export function HeroSection() {
           <source media="(min-width: 640px)" srcSet={brandAssets.hero} width={1920} height={1080} />
           <img
             src={brandAssets.heroMobile}
-            alt="A Maharashtra farmer smiling while using the Kisan Katta app in his field at golden hour"
+            alt="A Maharashtra farmer smiling while using the Kissan Agrisathi app in his field at golden hour"
             width={1080}
             height={1620}
             fetchPriority="high"

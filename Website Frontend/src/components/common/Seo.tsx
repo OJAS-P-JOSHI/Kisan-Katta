@@ -2,10 +2,10 @@ import { useEffect } from 'react'
 
 import { useTranslation } from '@/i18n/LanguageProvider'
 
-const SITE_NAME = 'Kisan Katta'
+const SITE_NAME = 'Kissan Agrisathi'
 const SITE_ORIGIN = 'https://kisankatta.in'
 const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/web-app-manifest-512x512.png`
-const DEFAULT_TITLE = 'Kisan Katta | Empowering Maharashtra Farmers'
+const DEFAULT_TITLE = 'Kissan Agrisathi | Empowering Maharashtra Farmers'
 
 interface SeoProps {
   title: string

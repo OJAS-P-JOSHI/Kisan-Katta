@@ -445,7 +445,7 @@ export function RewardForm({
               </select>
               <p className="mt-1 text-[11px] text-steel">
                 This only records how the money will be transferred manually. No
-                automatic payment is made by Kisan Katta.
+                automatic payment is made by Kissan Agrisathi.
               </p>
             </div>
 

@@ -66,7 +66,7 @@ gramSahakari: '/your-new-filename.webp',
 
 ### Suggested shot list (pick one)
 
-1. Volunteer showing Kisan Katta on a phone to a farmer beside a crop field  
+1. Volunteer showing Kissan Agrisathi on a phone to a farmer beside a crop field  
 2. Small group under a village tree / near a farm shed, phone in hand  
 3. Gram Sahakari helping an older farmer install or open the app  
 

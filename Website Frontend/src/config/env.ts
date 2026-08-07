@@ -19,7 +19,7 @@ export const IS_DEV: boolean = APP_ENV === 'development'
 
 /**
  * Public website origin used for QR verification links.
- * Example: https://kisan-katta.vercel.app
+ * Example: https://kissan-agrisathi.vercel.app
  * Falls back to `window.location.origin` in the browser when unset.
  */
 export const WEBSITE_URL: string = (

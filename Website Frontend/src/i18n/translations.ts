@@ -29,23 +29,23 @@ export const translations = {
     'section.quickFeatures.eyebrow': 'Explore',
     'section.quickFeatures.title': 'Quick Features',
 
-    'cta.downloadApp': 'Download Kisan Katta App',
+    'cta.downloadApp': 'Download Kissan Agrisathi App',
     'cta.becomeGramSahakari': 'Become Village Representative',
 
     'section.about.eyebrow': 'About Us',
-    'section.about.title': 'About Kisan Katta',
+    'section.about.title': 'About Kissan Agrisathi',
     'section.about.subtitle':
       'Born in Maharashtra, built for Maharashtra — bridging the gap between traditional farming wisdom and modern technology.',
 
     'section.features.eyebrow': 'Features',
     'section.features.title': 'Everything a Farmer Needs',
     'section.features.subtitle':
-      'From weather alerts to mandi prices and community marketplace — Kisan Katta is your complete farming companion.',
+      'From weather alerts to mandi prices and community marketplace — Kissan Agrisathi is your complete farming companion.',
     'section.features.explore': 'Explore All Features',
 
-    'section.why.eyebrow': 'Why Kisan Katta',
-    'section.why.title': 'Why Farmers Choose Kisan Katta',
-    'section.why.marathiTitle': 'शेतकरी किसान कट्टा का निवडतात',
+    'section.why.eyebrow': 'Why Kissan Agrisathi',
+    'section.why.title': 'Why Farmers Choose Kissan Agrisathi',
+    'section.why.marathiTitle': 'शेतकरी किसन अ‍ॅग्रीसाथी का निवडतात',
     'section.why.subtitle':
       'Trusted by farmers across 36 districts — because it was designed with them, not for a boardroom.',
 
@@ -61,7 +61,7 @@ export const translations = {
     'section.testimonials.subtitle':
       'Stories from farmers and Village Representatives across Maharashtra.',
 
-    'section.about.marathiTitle': 'किसान कट्टा बद्दल',
+    'section.about.marathiTitle': 'किसन अ‍ॅग्रीसाथी बद्दल',
 
     'section.gramSahakari.eyebrow': 'Join the Movement',
     'section.gramSahakari.title': 'Become a Village Representative',
@@ -70,7 +70,7 @@ export const translations = {
     'section.gramSahakari.apply': 'Apply Now — Become Village Representative',
     'section.gramSahakari.whoTitle': 'Who is a Village Representative?',
     'section.gramSahakari.whoBody':
-      'A trusted village volunteer who helps fellow farmers adopt Kisan Katta. Village Representatives are the heart of our network — connecting gram panchayats, onboarding new users, and ensuring no farmer is left behind.',
+      'A trusted village volunteer who helps fellow farmers adopt Kissan Agrisathi. Village Representatives are the heart of our network — connecting gram panchayats, onboarding new users, and ensuring no farmer is left behind.',
     'section.gramSahakari.responsibilitiesTitle': 'Responsibilities',
     'section.gramSahakari.benefitsTitle': 'Benefits',
     'section.gramSahakari.impactTitle': 'Village Impact',
@@ -78,7 +78,7 @@ export const translations = {
     'section.faq.eyebrow': 'FAQ',
     'section.faq.title': 'Frequently Asked Questions',
     'section.faq.subtitle':
-      'Quick answers to common questions about Kisan Katta and the Village Representative program.',
+      'Quick answers to common questions about Kissan Agrisathi and the Village Representative program.',
     'section.faq.viewAll': 'View All FAQs',
 
     'footer.tagline':
@@ -96,9 +96,9 @@ export const translations = {
     'footer.refund': 'Refund & Cancellation Policy',
     'footer.company': 'Company',
     'footer.resources': 'Resources',
-    'footer.aboutKisanKatta': 'About Kisan Katta',
+    'footer.aboutKisanKatta': 'About Kissan Agrisathi',
     'footer.disclaimer':
-      'Kisan Katta is an independent agritech platform. Government market price information, weather data, and similar external information are sourced from third-party or government providers where applicable. Availability and accuracy may vary.',
+      'Kissan Agrisathi is an independent agritech platform. Government market price information, weather data, and similar external information are sourced from third-party or government providers where applicable. Availability and accuracy may vary.',
 
     'landing.cta.title': "Ready to Join Maharashtra's Digital Farming Revolution?",
     'landing.cta.description':
@@ -124,7 +124,7 @@ export const translations = {
     'common.errorTitle': 'Something went wrong',
     'common.errorBody': 'An unexpected error occurred. Please try again.',
     'common.somethingWrong': 'Something went wrong. Please try again.',
-    'common.brandHome': 'Kisan Katta home',
+    'common.brandHome': 'Kissan Agrisathi home',
 
     'idCard.sectionTitle': 'My Village Representative Digital ID',
     'idCard.sectionSubtitle': 'Official digital identity for verified Village Representatives.',
@@ -144,10 +144,10 @@ export const translations = {
     'idCard.authorizedBy': 'Authorized Signature',
     'idCard.authorizedName': 'MAHESH SHRIDHAR CHAUTMAL',
     'idCard.authorizedNameCoFounder': 'BALASAHEB BHAGWAN CHAUTMAL',
-    'idCard.authorizedOrg': 'Kisan Katta',
+    'idCard.authorizedOrg': 'Kissan Agrisathi',
     'idCard.scanToVerify': 'Scan to Verify',
     'idCard.officialFooter': 'Official Village Representative Identity Card',
-    'idCard.issuedBy': 'Issued by Kisan Katta',
+    'idCard.issuedBy': 'Issued by Kissan Agrisathi',
     'idCard.verifiedSecurity': 'Verified',
     'idCard.version': 'Card Version {{version}}',
     'idCard.exportLanguage': 'ID Card Language',
@@ -166,7 +166,7 @@ export const translations = {
     'idCard.copied': 'Volunteer ID copied',
     'idCard.actionFailed': 'Could not complete that action. Please try again.',
     'idCard.verifyPageTitle': 'Village Representative Verification',
-    'idCard.verifyPageDescription': 'Verify a Kisan Katta Village Representative digital identity.',
+    'idCard.verifyPageDescription': 'Verify a Kissan Agrisathi Village Representative digital identity.',
     'idCard.verifyPageBody':
       'This QR links to the official verification page for a Village Representative Digital ID. Live public lookup will be enabled once the verification service is online.',
     'idCard.verifyPageSoon': 'Verification service coming soon.',
@@ -214,43 +214,43 @@ export const translations = {
     'validation.ifsc': 'IFSC must match format ABCD0123456.',
     'validation.bankName': 'Bank name is required.',
 
-    'seo.home.title': 'Kisan Katta — AgriTech for Maharashtra Farmers',
+    'seo.home.title': 'Kissan Agrisathi — AgriTech for Maharashtra Farmers',
     'seo.home.description':
       'Weather, government mandi prices, farmer community insights, and a local marketplace — all in Marathi for every village in Maharashtra.',
-    'seo.about.title': 'About Kisan Katta',
+    'seo.about.title': 'About Kissan Agrisathi',
     'seo.about.description':
-      'Learn about Kisan Katta — a Maharashtra-born AgriTech platform empowering farmers with Marathi-first digital tools.',
-    'seo.features.title': 'Features — Kisan Katta',
+      'Learn about Kissan Agrisathi — a Maharashtra-born AgriTech platform empowering farmers with Marathi-first digital tools.',
+    'seo.features.title': 'Features — Kissan Agrisathi',
     'seo.features.description':
-      'Explore Kisan Katta features: weather updates, government mandi prices, farmer expected prices, marketplace, and community — all in Marathi.',
-    'seo.become.title': 'Become a Village Representative — Kisan Katta',
+      'Explore Kissan Agrisathi features: weather updates, government mandi prices, farmer expected prices, marketplace, and community — all in Marathi.',
+    'seo.become.title': 'Become a Village Representative — Kissan Agrisathi',
     'seo.become.description':
-      'Join Maharashtra’s Village Representative network. Help farmers in your village adopt digital farming tools with Kisan Katta.',
-    'seo.faq.title': 'FAQ — Kisan Katta',
+      'Join Maharashtra’s Village Representative network. Help farmers in your village adopt digital farming tools with Kissan Agrisathi.',
+    'seo.faq.title': 'FAQ — Kissan Agrisathi',
     'seo.faq.description':
-      'Frequently asked questions about Kisan Katta, the mobile app, and the Village Representative program.',
-    'seo.contact.title': 'Contact Us — Kisan Katta',
+      'Frequently asked questions about Kissan Agrisathi, the mobile app, and the Village Representative program.',
+    'seo.contact.title': 'Contact Us — Kissan Agrisathi',
     'seo.contact.description':
-      'Get in touch with the Kisan Katta team — call, email, or visit us. We help farmers and Village Representatives across Maharashtra.',
+      'Get in touch with the Kissan Agrisathi team — call, email, or visit us. We help farmers and Village Representatives across Maharashtra.',
     'seo.login.title': 'Login — Village Representative Portal',
     'seo.login.description': 'Sign in with your mobile number to continue your Village Representative application.',
-    'seo.verifyOtp.title': 'Verify OTP — Kisan Katta',
+    'seo.verifyOtp.title': 'Verify OTP — Kissan Agrisathi',
     'seo.verifyOtp.description': 'Enter the one-time password sent to your mobile to complete login.',
     'seo.application.title': 'Village Representative Application',
-    'seo.application.description': 'Complete your Village Representative application for the Kisan Katta network.',
-    'seo.status.title': 'Application Status — Kisan Katta',
+    'seo.application.description': 'Complete your Village Representative application for the Kissan Agrisathi network.',
+    'seo.status.title': 'Application Status — Kissan Agrisathi',
     'seo.status.description': 'Track your Village Representative application status and payment progress.',
-    'seo.success.title': 'Application Submitted — Kisan Katta',
+    'seo.success.title': 'Application Submitted — Kissan Agrisathi',
     'seo.success.description': 'Your Village Representative application has been submitted successfully.',
-    'seo.profile.title': 'Profile — Kisan Katta',
-    'seo.profile.description': 'Manage your Village Representative profile on Kisan Katta.',
-    'seo.notFound.title': 'Page Not Found — Kisan Katta',
-    'seo.notFound.description': 'The page you are looking for could not be found on Kisan Katta.',
-    'seo.privacy.title': 'Privacy Policy — Kisan Katta',
-    'seo.privacy.description': 'Read how Kisan Katta collects, uses, and protects your personal information.',
-    'seo.terms.title': 'Terms & Conditions — Kisan Katta',
-    'seo.terms.description': 'Terms and conditions for using the Kisan Katta website and services.',
-    'seo.refund.title': 'Refund & Cancellation Policy — Kisan Katta',
+    'seo.profile.title': 'Profile — Kissan Agrisathi',
+    'seo.profile.description': 'Manage your Village Representative profile on Kissan Agrisathi.',
+    'seo.notFound.title': 'Page Not Found — Kissan Agrisathi',
+    'seo.notFound.description': 'The page you are looking for could not be found on Kissan Agrisathi.',
+    'seo.privacy.title': 'Privacy Policy — Kissan Agrisathi',
+    'seo.privacy.description': 'Read how Kissan Agrisathi collects, uses, and protects your personal information.',
+    'seo.terms.title': 'Terms & Conditions — Kissan Agrisathi',
+    'seo.terms.description': 'Terms and conditions for using the Kissan Agrisathi website and services.',
+    'seo.refund.title': 'Refund & Cancellation Policy — Kissan Agrisathi',
     'seo.refund.description':
       'Refund and cancellation policy for Village Representative registration fees and related payments.',
 
@@ -262,7 +262,7 @@ export const translations = {
     'become.farmlandAlt': 'Green farmland in Maharashtra',
     'become.whoTitle': 'Who is a Village Representative?',
     'become.whoBody':
-      'A Village Representative is a trusted volunteer from your village or taluka who helps farmers install and use the Kisan Katta app. They are the human connection between technology and tradition — guiding farmers, answering questions, and ensuring every member of the community benefits from digital farming tools.',
+      'A Village Representative is a trusted volunteer from your village or taluka who helps farmers install and use the Kissan Agrisathi app. They are the human connection between technology and tradition — guiding farmers, answering questions, and ensuring every member of the community benefits from digital farming tools.',
     'become.benefitsTitle': 'Benefits',
     'become.requirementsTitle': 'Requirements',
     'become.impactTitle': 'Village Impact',
@@ -277,10 +277,10 @@ export const translations = {
     'become.req.hours': 'Willing to dedicate 2–4 hours per week to helping farmers',
     'become.req.passion': 'Passion for agriculture and community service',
 
-    'become.resp.install': 'Help farmers install the Kisan Katta app',
+    'become.resp.install': 'Help farmers install the Kissan Agrisathi app',
     'become.resp.guide': 'Guide them through weather, prices, and marketplace features',
     'become.resp.promote': 'Promote digital farming in your village',
-    'become.resp.connect': 'Connect your gram panchayat to the Kisan Katta network',
+    'become.resp.connect': 'Connect your gram panchayat to the Kissan Agrisathi network',
     'become.resp.assist': 'Assist farmers with questions and onboarding',
 
     'become.benefit.digitalId.title': 'Digital ID Card',
@@ -312,7 +312,7 @@ export const translations = {
     'become.timeline.registration.description':
       'Finalize your registration in the Village Representative network.',
     'become.timeline.approval.title': 'Approval',
-    'become.timeline.approval.description': 'Receive official approval from the Kisan Katta team.',
+    'become.timeline.approval.description': 'Receive official approval from the Kissan Agrisathi team.',
     'become.timeline.idCard.title': 'Digital ID Card',
     'become.timeline.idCard.description': 'Get your verified digital Village Representative ID card.',
     'become.timeline.start.title': 'Start Helping Farmers',
@@ -321,7 +321,7 @@ export const translations = {
     'contact.heroTitle': 'Contact Us',
     'contact.heroMarathi': 'आमच्याशी संपर्क साधा',
     'contact.heroSubtitle':
-      "Have questions about Kisan Katta or the Village Representative program? We'd love to hear from you.",
+      "Have questions about Kissan Agrisathi or the Village Representative program? We'd love to hear from you.",
     'contact.getInTouch': 'Get in Touch',
     'contact.getInTouchBody':
       "Whether you're a farmer, a potential Village Representative, or a partner — reach out and our team will respond as soon as possible.",
@@ -357,7 +357,7 @@ export const translations = {
     'notFound.backHome': 'Back to Home',
     'notFound.contactSupport': 'Contact Support',
 
-    'download.title': 'Download Kisan Katta',
+    'download.title': 'Download Kissan Agrisathi',
     'download.body':
       'Get weather, mandi prices, and marketplace tools on your phone — built in Marathi for Maharashtra farmers.',
     'download.ctaLabel': 'Download App',
@@ -369,7 +369,7 @@ export const translations = {
       'Everything you need to farm smarter — from weather to marketplace, all in one app.',
     'featuresPage.ctaTitle': 'Experience It Yourself',
     'featuresPage.ctaDescription':
-      'Download Kisan Katta and see how technology can transform your farming day.',
+      'Download Kissan Agrisathi and see how technology can transform your farming day.',
     'featuresPage.ctaDownload': 'Download App',
     'featuresPage.ctaGram': 'Learn About Village Representative',
 
@@ -420,7 +420,7 @@ export const translations = {
     'testimonial.1.role': 'Soybean Farmer',
     'testimonial.1.location': 'Nashik, Maharashtra',
     'testimonial.1.quote':
-      'Kisan Katta helped me check mandi prices before selling my crop. I got a better rate because I knew what to expect.',
+      'Kissan Agrisathi helped me check mandi prices before selling my crop. I got a better rate because I knew what to expect.',
     'testimonial.2.name': 'Sanjay Deshmukh',
     'testimonial.2.role': 'Village Representative',
     'testimonial.2.location': 'Solapur, Maharashtra',
@@ -440,29 +440,29 @@ export const translations = {
       'A digitally connected Maharashtra where every village farmer makes informed decisions and earns fair prices for their hard work.',
     'about.why.title': 'Why We Exist',
     'about.why.description':
-      'Farmers deserve technology that respects their language, their land, and their livelihood. Kisan Katta was built for them, not for spreadsheets.',
+      'Farmers deserve technology that respects their language, their land, and their livelihood. Kissan Agrisathi was built for them, not for spreadsheets.',
 
     'gram.overlay': 'Help farmers in your village',
     'gram.imageAlt': 'Village Representative helping farmers in a Maharashtra village',
 
-    'faq.whatIs.q': 'What is Kisan Katta?',
+    'faq.whatIs.q': 'What is Kissan Agrisathi?',
     'faq.whatIs.a':
-      'Kisan Katta is a Maharashtra-focused AgriTech platform that helps farmers access weather updates, government mandi prices, community price insights, and a local marketplace — all in Marathi.',
-    'faq.whoCan.q': 'Who can use the Kisan Katta app?',
+      'Kissan Agrisathi is a Maharashtra-focused AgriTech platform that helps farmers access weather updates, government mandi prices, community price insights, and a local marketplace — all in Marathi.',
+    'faq.whoCan.q': 'Who can use the Kissan Agrisathi app?',
     'faq.whoCan.a':
       'Any farmer, agricultural worker, or rural community member in Maharashtra can download and use the app for free. Village Representatives help onboard new users in villages.',
     'faq.whatGram.q': 'What is a Village Representative?',
     'faq.whatGram.a':
-      'A Village Representative is a trusted village volunteer who helps farmers install the app, guides them through features, promotes digital farming, and connects villages to the Kisan Katta ecosystem.',
+      'A Village Representative is a trusted village volunteer who helps farmers install the app, guides them through features, promotes digital farming, and connects villages to the Kissan Agrisathi ecosystem.',
     'faq.howBecome.q': 'How do I become a Village Representative?',
     'faq.howBecome.a':
       'Login with your mobile number using OTP, complete the application wizard, pay the registration fee, then track your application status until approval.',
     'faq.isFree.q': 'Is the app free to use?',
     'faq.isFree.a':
-      'Yes, Kisan Katta is completely free for farmers. There are no hidden charges for accessing weather, market prices, or community features.',
-    'faq.districts.q': 'Which districts does Kisan Katta cover?',
+      'Yes, Kissan Agrisathi is completely free for farmers. There are no hidden charges for accessing weather, market prices, or community features.',
+    'faq.districts.q': 'Which districts does Kissan Agrisathi cover?',
     'faq.districts.a':
-      'Kisan Katta is built for all 36 districts of Maharashtra. Market data and community features are localized to your district and nearby mandis.',
+      'Kissan Agrisathi is built for all 36 districts of Maharashtra. Market data and community features are localized to your district and nearby mandis.',
     'faq.dataSource.q': 'Where do market prices come from?',
     'faq.dataSource.a':
       'Government mandi prices are sourced from official agricultural market data. Farmer expected prices come from community submissions within your district.',
@@ -470,12 +470,12 @@ export const translations = {
     'faq.contact.a':
       'You can reach us through the Contact page, email us at m.chautmal2020@gmail.com, or ask your local Village Representative for assistance.',
 
-    'about.heroTitle': 'About Kisan Katta',
-    'about.heroMarathi': 'किसान कट्टा बद्दल',
+    'about.heroTitle': 'About Kissan Agrisathi',
+    'about.heroMarathi': 'किसन अ‍ॅग्रीसाथी बद्दल',
     'about.heroSubtitle':
       'A Maharashtra-born AgriTech platform on a mission to empower every farmer with technology that speaks their language.',
     'about.body1':
-      "Kisan Katta was born from a simple observation: Maharashtra's farmers have smartphones, but lack tools built for them. Existing apps are in English, focused on other states, or too complex for daily use.",
+      "Kissan Agrisathi was born from a simple observation: Maharashtra's farmers have smartphones, but lack tools built for them. Existing apps are in English, focused on other states, or too complex for daily use.",
     'about.body2':
       'We set out to change that — building a platform that delivers weather alerts, government mandi prices, community price insights, and a local marketplace, all in Marathi, all for Maharashtra.',
     'about.value.root.title': 'Rooted in Agriculture',
@@ -665,23 +665,23 @@ export const translations = {
     'section.quickFeatures.eyebrow': 'शोधा',
     'section.quickFeatures.title': 'त्वरित वैशिष्ट्ये',
 
-    'cta.downloadApp': 'किसान कट्टा अॅप डाउनलोड करा',
+    'cta.downloadApp': 'किसन अ‍ॅग्रीसाथी अॅप डाउनलोड करा',
     'cta.becomeGramSahakari': 'गाव प्रतिनिधी बना',
 
     'section.about.eyebrow': 'आमच्याबद्दल',
-    'section.about.title': 'किसान कट्टा बद्दल',
+    'section.about.title': 'किसन अ‍ॅग्रीसाथी बद्दल',
     'section.about.subtitle':
       'महाराष्ट्रात जन्मले, महाराष्ट्रासाठी बांधले — पारंपरिक शेती ज्ञान आणि आधुनिक तंत्रज्ञान यांचा पुल.',
 
     'section.features.eyebrow': 'वैशिष्ट्ये',
     'section.features.title': 'शेतकऱ्याला लागणारी सर्व सुविधा',
     'section.features.subtitle':
-      'हवामान सूचना ते बाजार भाव आणि समुदाय बाजारपेठ — किसान कट्टा हा तुमचा संपूर्ण शेती सहकारी.',
+      'हवामान सूचना ते बाजार भाव आणि समुदाय बाजारपेठ — किसन अ‍ॅग्रीसाथी हा तुमचा संपूर्ण शेती सहकारी.',
     'section.features.explore': 'सर्व वैशिष्ट्ये पहा',
 
-    'section.why.eyebrow': 'का किसान कट्टा',
-    'section.why.title': 'शेतकरी किसान कट्टा का निवडतात',
-    'section.why.marathiTitle': 'शेतकरी किसान कट्टा का निवडतात',
+    'section.why.eyebrow': 'का किसन अ‍ॅग्रीसाथी',
+    'section.why.title': 'शेतकरी किसन अ‍ॅग्रीसाथी का निवडतात',
+    'section.why.marathiTitle': 'शेतकरी किसन अ‍ॅग्रीसाथी का निवडतात',
     'section.why.subtitle':
       '३६ जिल्ह्यांतील शेतकऱ्यांचा विश्वास — कारण हे त्यांच्यासाठी, बोर्डरूमसाठी नाही, डिझाइन केले.',
 
@@ -697,7 +697,7 @@ export const translations = {
     'section.testimonials.subtitle':
       'महाराष्ट्रातील शेतकरी आणि गाव प्रतिनिधीांच्या कथा.',
 
-    'section.about.marathiTitle': 'किसान कट्टा बद्दल',
+    'section.about.marathiTitle': 'किसन अ‍ॅग्रीसाथी बद्दल',
 
     'section.gramSahakari.eyebrow': 'चळवळीत सामील व्हा',
     'section.gramSahakari.title': 'गाव प्रतिनिधी बना',
@@ -706,7 +706,7 @@ export const translations = {
     'section.gramSahakari.apply': 'अर्ज करा — गाव प्रतिनिधी बना',
     'section.gramSahakari.whoTitle': 'गाव प्रतिनिधी कोण?',
     'section.gramSahakari.whoBody':
-      'हा विश्वासू गाव स्वयंसेवक आहे जो सहशेतकऱ्यांना किसान कट्टा स्वीकारायला मदत करतो. गाव प्रतिनिधी आमच्या नेटवर्कचे हृदय आहेत — ग्रामपंचायती जोडणे, नवीन वापरकर्ते सामील करणे आणि कोणताही शेतकरी मागे राहणार नाही याची काळजी घेणे.',
+      'हा विश्वासू गाव स्वयंसेवक आहे जो सहशेतकऱ्यांना किसन अ‍ॅग्रीसाथी स्वीकारायला मदत करतो. गाव प्रतिनिधी आमच्या नेटवर्कचे हृदय आहेत — ग्रामपंचायती जोडणे, नवीन वापरकर्ते सामील करणे आणि कोणताही शेतकरी मागे राहणार नाही याची काळजी घेणे.',
     'section.gramSahakari.responsibilitiesTitle': 'जबाबदाऱ्या',
     'section.gramSahakari.benefitsTitle': 'फायदे',
     'section.gramSahakari.impactTitle': 'गावावरील प्रभाव',
@@ -714,7 +714,7 @@ export const translations = {
     'section.faq.eyebrow': 'प्रश्नोत्तरे',
     'section.faq.title': 'वारंवार विचारले जाणारे प्रश्न',
     'section.faq.subtitle':
-      'किसान कट्टा आणि गाव प्रतिनिधी कार्यक्रमाबद्दल सामान्य प्रश्नांची उत्तरे.',
+      'किसन अ‍ॅग्रीसाथी आणि गाव प्रतिनिधी कार्यक्रमाबद्दल सामान्य प्रश्नांची उत्तरे.',
     'section.faq.viewAll': 'सर्व प्रश्नोत्तरे पहा',
 
     'footer.tagline':
@@ -732,9 +732,9 @@ export const translations = {
     'footer.refund': 'परतावा व रद्दीकरण धोरण',
     'footer.company': 'कंपनी',
     'footer.resources': 'संसाधने',
-    'footer.aboutKisanKatta': 'किसान कट्टा बद्दल',
+    'footer.aboutKisanKatta': 'किसन अ‍ॅग्रीसाथी बद्दल',
     'footer.disclaimer':
-      'किसान कट्टा हे एक स्वतंत्र अ‍ॅग्रीटेक व्यासपीठ आहे. सरकारी बाजारभाव माहिती, हवामान डेटा आणि तत्सम बाह्य माहिती लागू असेल तेथे तृतीय-पक्ष किंवा सरकारी स्रोतांकडून घेतली जाते. उपलब्धता व अचूकता बदलू शकते.',
+      'किसन अ‍ॅग्रीसाथी हे एक स्वतंत्र अ‍ॅग्रीटेक व्यासपीठ आहे. सरकारी बाजारभाव माहिती, हवामान डेटा आणि तत्सम बाह्य माहिती लागू असेल तेथे तृतीय-पक्ष किंवा सरकारी स्रोतांकडून घेतली जाते. उपलब्धता व अचूकता बदलू शकते.',
 
     'landing.cta.title': 'महाराष्ट्राच्या डिजिटल शेती क्रांतीत सामील व्हाल?',
     'landing.cta.description':
@@ -760,7 +760,7 @@ export const translations = {
     'common.errorTitle': 'काहीतरी चुकीचे झाले',
     'common.errorBody': 'अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा.',
     'common.somethingWrong': 'काहीतरी चुकीचे झाले. कृपया पुन्हा प्रयत्न करा.',
-    'common.brandHome': 'किसान कट्टा मुख्यपृष्ठ',
+    'common.brandHome': 'किसन अ‍ॅग्रीसाथी मुख्यपृष्ठ',
 
     'idCard.sectionTitle': 'माझे गाव प्रतिनिधी डिजिटल ओळखपत्र',
     'idCard.sectionSubtitle': 'पडताळणी झालेल्या गाव प्रतिनिधीांसाठी अधिकृत डिजिटल ओळख.',
@@ -780,10 +780,10 @@ export const translations = {
     'idCard.authorizedBy': 'अधिकृत स्वाक्षरी',
     'idCard.authorizedName': 'MAHESH SHRIDHAR CHAUTMAL',
     'idCard.authorizedNameCoFounder': 'BALASAHEB BHAGWAN CHAUTMAL',
-    'idCard.authorizedOrg': 'Kisan Katta',
+    'idCard.authorizedOrg': 'Kissan Agrisathi',
     'idCard.scanToVerify': 'पडताळणीसाठी स्कॅन करा',
     'idCard.officialFooter': 'अधिकृत गाव प्रतिनिधी ओळखपत्र',
-    'idCard.issuedBy': 'किसान कट्टा द्वारे जारी',
+    'idCard.issuedBy': 'किसन अ‍ॅग्रीसाथी द्वारे जारी',
     'idCard.verifiedSecurity': 'पडताळलेले',
     'idCard.version': 'कार्ड आवृत्ती {{version}}',
     'idCard.exportLanguage': 'ओळखपत्र भाषा',
@@ -802,7 +802,7 @@ export const translations = {
     'idCard.copied': 'स्वयंसेवक आयडी कॉपी झाली',
     'idCard.actionFailed': 'ही क्रिया पूर्ण होऊ शकली नाही. कृपया पुन्हा प्रयत्न करा.',
     'idCard.verifyPageTitle': 'गाव प्रतिनिधी पडताळणी',
-    'idCard.verifyPageDescription': 'किसान कट्टा गाव प्रतिनिधी डिजिटल ओळखपत्राची पडताळणी करा.',
+    'idCard.verifyPageDescription': 'किसन अ‍ॅग्रीसाथी गाव प्रतिनिधी डिजिटल ओळखपत्राची पडताळणी करा.',
     'idCard.verifyPageBody':
       'हा QR अधिकृत पडताळणी पृष्ठाशी जोडतो. पडताळणी सेवा सुरू झाल्यावर सार्वजनिक तपासणी उपलब्ध होईल.',
     'idCard.verifyPageSoon': 'पडताळणी सेवा लवकरच येत आहे.',
@@ -850,43 +850,43 @@ export const translations = {
     'validation.ifsc': 'IFSC फॉरमॅट ABCD0123456 असावा.',
     'validation.bankName': 'बँकेचे नाव आवश्यक आहे.',
 
-    'seo.home.title': 'किसान कट्टा — महाराष्ट्रातील शेतकऱ्यांसाठी अ‍ॅग्रीटेक',
+    'seo.home.title': 'किसन अ‍ॅग्रीसाथी — महाराष्ट्रातील शेतकऱ्यांसाठी अ‍ॅग्रीटेक',
     'seo.home.description':
       'हवामान, सरकारी बाजार भाव, शेतकरी समुदाय अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व मराठीत, महाराष्ट्रातील प्रत्येक गावासाठी.',
-    'seo.about.title': 'किसान कट्टा बद्दल',
+    'seo.about.title': 'किसन अ‍ॅग्रीसाथी बद्दल',
     'seo.about.description':
-      'किसान कट्टा बद्दल जाणून घ्या — मराठी-प्रथम डिजिटल साधनांनी शेतकऱ्यांना सक्षम करणारे महाराष्ट्रातील अ‍ॅग्रीटेक व्यासपीठ.',
-    'seo.features.title': 'वैशिष्ट्ये — किसान कट्टा',
+      'किसन अ‍ॅग्रीसाथी बद्दल जाणून घ्या — मराठी-प्रथम डिजिटल साधनांनी शेतकऱ्यांना सक्षम करणारे महाराष्ट्रातील अ‍ॅग्रीटेक व्यासपीठ.',
+    'seo.features.title': 'वैशिष्ट्ये — किसन अ‍ॅग्रीसाथी',
     'seo.features.description':
-      'किसान कट्टाची वैशिष्ट्ये पहा: हवामान अद्यतने, सरकारी बाजार भाव, अपेक्षित भाव, बाजारपेठ आणि समुदाय — सर्व मराठीत.',
-    'seo.become.title': 'गाव प्रतिनिधी बना — किसान कट्टा',
+      'किसन अ‍ॅग्रीसाथीची वैशिष्ट्ये पहा: हवामान अद्यतने, सरकारी बाजार भाव, अपेक्षित भाव, बाजारपेठ आणि समुदाय — सर्व मराठीत.',
+    'seo.become.title': 'गाव प्रतिनिधी बना — किसन अ‍ॅग्रीसाथी',
     'seo.become.description':
       'महाराष्ट्राच्या गाव प्रतिनिधी नेटवर्कमध्ये सामील व्हा. तुमच्या गावातील शेतकऱ्यांना डिजिटल शेती साधने स्वीकारायला मदत करा.',
-    'seo.faq.title': 'प्रश्नोत्तरे — किसान कट्टा',
+    'seo.faq.title': 'प्रश्नोत्तरे — किसन अ‍ॅग्रीसाथी',
     'seo.faq.description':
-      'किसान कट्टा, मोबाइल अॅप आणि गाव प्रतिनिधी कार्यक्रमाबद्दल वारंवार विचारले जाणारे प्रश्न.',
-    'seo.contact.title': 'संपर्क — किसान कट्टा',
+      'किसन अ‍ॅग्रीसाथी, मोबाइल अॅप आणि गाव प्रतिनिधी कार्यक्रमाबद्दल वारंवार विचारले जाणारे प्रश्न.',
+    'seo.contact.title': 'संपर्क — किसन अ‍ॅग्रीसाथी',
     'seo.contact.description':
-      'किसान कट्टा टीमशी संपर्क साधा — कॉल, ईमेल किंवा भेट. आम्ही महाराष्ट्रातील शेतकरी व गाव प्रतिनिधीांना मदत करतो.',
+      'किसन अ‍ॅग्रीसाथी टीमशी संपर्क साधा — कॉल, ईमेल किंवा भेट. आम्ही महाराष्ट्रातील शेतकरी व गाव प्रतिनिधीांना मदत करतो.',
     'seo.login.title': 'लॉगिन — गाव प्रतिनिधी पोर्टल',
     'seo.login.description': 'तुमचा गाव प्रतिनिधी अर्ज सुरू ठेवण्यासाठी मोबाइल नंबरने साइन इन करा.',
-    'seo.verifyOtp.title': 'OTP पडताळा — किसान कट्टा',
+    'seo.verifyOtp.title': 'OTP पडताळा — किसन अ‍ॅग्रीसाथी',
     'seo.verifyOtp.description': 'लॉगिन पूर्ण करण्यासाठी मोबाइलवर आलेला वन-टाइम पासवर्ड टाका.',
     'seo.application.title': 'गाव प्रतिनिधी अर्ज',
-    'seo.application.description': 'किसान कट्टा नेटवर्कसाठी तुमचा गाव प्रतिनिधी अर्ज पूर्ण करा.',
-    'seo.status.title': 'अर्ज स्थिती — किसान कट्टा',
+    'seo.application.description': 'किसन अ‍ॅग्रीसाथी नेटवर्कसाठी तुमचा गाव प्रतिनिधी अर्ज पूर्ण करा.',
+    'seo.status.title': 'अर्ज स्थिती — किसन अ‍ॅग्रीसाथी',
     'seo.status.description': 'तुमच्या गाव प्रतिनिधी अर्जाची स्थिती आणि पेमेंट प्रगती ट्रॅक करा.',
-    'seo.success.title': 'अर्ज सादर झाला — किसान कट्टा',
+    'seo.success.title': 'अर्ज सादर झाला — किसन अ‍ॅग्रीसाथी',
     'seo.success.description': 'तुमचा गाव प्रतिनिधी अर्ज यशस्वीरित्या सादर झाला आहे.',
-    'seo.profile.title': 'प्रोफाइल — किसान कट्टा',
-    'seo.profile.description': 'किसान कट्टावर तुमचे गाव प्रतिनिधी प्रोफाइल व्यवस्थापित करा.',
-    'seo.notFound.title': 'पृष्ठ सापडले नाही — किसान कट्टा',
-    'seo.notFound.description': 'तुम्ही शोधत असलेले पृष्ठ किसान कट्टावर सापडले नाही.',
-    'seo.privacy.title': 'गोपनीयता धोरण — किसान कट्टा',
-    'seo.privacy.description': 'किसान कट्टा तुमची वैयक्तिक माहिती कशी गोळा करते, वापरते आणि संरक्षित करते ते वाचा.',
-    'seo.terms.title': 'अटी व शर्ती — किसान कट्टा',
-    'seo.terms.description': 'किसान कट्टा वेबसाइट व सेवा वापरण्यासाठी अटी व शर्ती.',
-    'seo.refund.title': 'परतावा व रद्दीकरण धोरण — किसान कट्टा',
+    'seo.profile.title': 'प्रोफाइल — किसन अ‍ॅग्रीसाथी',
+    'seo.profile.description': 'किसन अ‍ॅग्रीसाथीवर तुमचे गाव प्रतिनिधी प्रोफाइल व्यवस्थापित करा.',
+    'seo.notFound.title': 'पृष्ठ सापडले नाही — किसन अ‍ॅग्रीसाथी',
+    'seo.notFound.description': 'तुम्ही शोधत असलेले पृष्ठ किसन अ‍ॅग्रीसाथीवर सापडले नाही.',
+    'seo.privacy.title': 'गोपनीयता धोरण — किसन अ‍ॅग्रीसाथी',
+    'seo.privacy.description': 'किसन अ‍ॅग्रीसाथी तुमची वैयक्तिक माहिती कशी गोळा करते, वापरते आणि संरक्षित करते ते वाचा.',
+    'seo.terms.title': 'अटी व शर्ती — किसन अ‍ॅग्रीसाथी',
+    'seo.terms.description': 'किसन अ‍ॅग्रीसाथी वेबसाइट व सेवा वापरण्यासाठी अटी व शर्ती.',
+    'seo.refund.title': 'परतावा व रद्दीकरण धोरण — किसन अ‍ॅग्रीसाथी',
     'seo.refund.description':
       'गाव प्रतिनिधी नोंदणी शुल्क व संबंधित पेमेंटसाठी परतावा व रद्दीकरण धोरण.',
 
@@ -898,7 +898,7 @@ export const translations = {
     'become.farmlandAlt': 'महाराष्ट्रातील हिरवी शेतजमीन',
     'become.whoTitle': 'गाव प्रतिनिधी कोण?',
     'become.whoBody':
-      'गाव प्रतिनिधी हा तुमच्या गावातील किंवा तालुक्यातील विश्वासू स्वयंसेवक आहे जो शेतकऱ्यांना किसान कट्टा अॅप इन्स्टॉल व वापरण्यास मदत करतो. ते तंत्रज्ञान आणि परंपरा यांच्यातील मानवी दुवा आहेत — शेतकऱ्यांना मार्गदर्शन करणे, प्रश्न सोडवणे आणि समुदायातील प्रत्येकाला डिजिटल शेती साधनांचा फायदा मिळेल याची खात्री करणे.',
+      'गाव प्रतिनिधी हा तुमच्या गावातील किंवा तालुक्यातील विश्वासू स्वयंसेवक आहे जो शेतकऱ्यांना किसन अ‍ॅग्रीसाथी अॅप इन्स्टॉल व वापरण्यास मदत करतो. ते तंत्रज्ञान आणि परंपरा यांच्यातील मानवी दुवा आहेत — शेतकऱ्यांना मार्गदर्शन करणे, प्रश्न सोडवणे आणि समुदायातील प्रत्येकाला डिजिटल शेती साधनांचा फायदा मिळेल याची खात्री करणे.',
     'become.benefitsTitle': 'फायदे',
     'become.requirementsTitle': 'आवश्यकता',
     'become.impactTitle': 'गावावरील प्रभाव',
@@ -913,10 +913,10 @@ export const translations = {
     'become.req.hours': 'शेतकऱ्यांना मदत करण्यासाठी आठवड्यात २–४ तास देण्यास तयार',
     'become.req.passion': 'शेती व समाजसेवेबद्दल आवड',
 
-    'become.resp.install': 'शेतकऱ्यांना किसान कट्टा अॅप इन्स्टॉल करण्यास मदत करा',
+    'become.resp.install': 'शेतकऱ्यांना किसन अ‍ॅग्रीसाथी अॅप इन्स्टॉल करण्यास मदत करा',
     'become.resp.guide': 'हवामान, भाव आणि बाजारपेठ वैशिष्ट्यांमध्ये मार्गदर्शन करा',
     'become.resp.promote': 'तुमच्या गावात डिजिटल शेतीचा प्रचार करा',
-    'become.resp.connect': 'तुमची ग्रामपंचायत किसान कट्टा नेटवर्कशी जोडा',
+    'become.resp.connect': 'तुमची ग्रामपंचायत किसन अ‍ॅग्रीसाथी नेटवर्कशी जोडा',
     'become.resp.assist': 'प्रश्न आणि ऑनबोर्डिंगमध्ये शेतकऱ्यांना मदत करा',
 
     'become.benefit.digitalId.title': 'डिजिटल ओळखपत्र',
@@ -948,7 +948,7 @@ export const translations = {
     'become.timeline.registration.description':
       'गाव प्रतिनिधी नेटवर्कमध्ये तुमची नोंदणी पूर्ण करा.',
     'become.timeline.approval.title': 'मंजुरी',
-    'become.timeline.approval.description': 'किसान कट्टा टीमकडून अधिकृत मंजुरी मिळवा.',
+    'become.timeline.approval.description': 'किसन अ‍ॅग्रीसाथी टीमकडून अधिकृत मंजुरी मिळवा.',
     'become.timeline.idCard.title': 'डिजिटल ओळखपत्र',
     'become.timeline.idCard.description': 'पडताळलेले डिजिटल गाव प्रतिनिधी ओळखपत्र मिळवा.',
     'become.timeline.start.title': 'शेतकऱ्यांना मदत सुरू करा',
@@ -957,7 +957,7 @@ export const translations = {
     'contact.heroTitle': 'संपर्क',
     'contact.heroMarathi': 'आमच्याशी संपर्क साधा',
     'contact.heroSubtitle':
-      'किसान कट्टा किंवा गाव प्रतिनिधी कार्यक्रमाबद्दल प्रश्न आहेत? आम्हाला तुमच्याकडून ऐकायला आवडेल.',
+      'किसन अ‍ॅग्रीसाथी किंवा गाव प्रतिनिधी कार्यक्रमाबद्दल प्रश्न आहेत? आम्हाला तुमच्याकडून ऐकायला आवडेल.',
     'contact.getInTouch': 'संपर्क साधा',
     'contact.getInTouchBody':
       'तुम्ही शेतकरी असाल, संभाव्य गाव प्रतिनिधी असाल किंवा भागीदार असाल — संपर्क साधा; आमची टीम शक्य तितक्या लवकर उत्तर देईल.',
@@ -993,7 +993,7 @@ export const translations = {
     'notFound.backHome': 'मुख्यपृष्ठावर परत',
     'notFound.contactSupport': 'सहाय्याशी संपर्क',
 
-    'download.title': 'किसान कट्टा डाउनलोड करा',
+    'download.title': 'किसन अ‍ॅग्रीसाथी डाउनलोड करा',
     'download.body':
       'तुमच्या फोनवर हवामान, बाजार भाव आणि बाजारपेठ साधने मिळवा — महाराष्ट्रातील शेतकऱ्यांसाठी मराठीत.',
     'download.ctaLabel': 'अॅप डाउनलोड करा',
@@ -1005,7 +1005,7 @@ export const translations = {
       'हुशारीने शेतीसाठी लागणारे सर्व — हवामानापासून बाजारपेठेपर्यंत, एकाच अॅपमध्ये.',
     'featuresPage.ctaTitle': 'स्वतः अनुभवा',
     'featuresPage.ctaDescription':
-      'किसान कट्टा डाउनलोड करा आणि तंत्रज्ञान तुमच्या शेतीच्या दिवसाला कसा बदलू शकते ते पहा.',
+      'किसन अ‍ॅग्रीसाथी डाउनलोड करा आणि तंत्रज्ञान तुमच्या शेतीच्या दिवसाला कसा बदलू शकते ते पहा.',
     'featuresPage.ctaDownload': 'अॅप डाउनलोड करा',
     'featuresPage.ctaGram': 'गाव प्रतिनिधीबद्दल जाणून घ्या',
 
@@ -1056,7 +1056,7 @@ export const translations = {
     'testimonial.1.role': 'सोयाबीन शेतकरी',
     'testimonial.1.location': 'नाशिक, महाराष्ट्र',
     'testimonial.1.quote':
-      'पिक विकण्यापूर्वी बाजार भाव तपासण्यासाठी किसान कट्टाने मला मदत केली. काय अपेक्षा करावी हे माहित असल्याने मला चांगला दर मिळाला.',
+      'पिक विकण्यापूर्वी बाजार भाव तपासण्यासाठी किसन अ‍ॅग्रीसाथीने मला मदत केली. काय अपेक्षा करावी हे माहित असल्याने मला चांगला दर मिळाला.',
     'testimonial.2.name': 'संजय देशमुख',
     'testimonial.2.role': 'गाव प्रतिनिधी',
     'testimonial.2.location': 'सोलापूर, महाराष्ट्र',
@@ -1076,29 +1076,29 @@ export const translations = {
       'डिजिटलरीत्या जोडलेले महाराष्ट्र जिथे प्रत्येक गावातील शेतकरी माहितीपूर्ण निर्णय घेतात आणि त्यांच्या मेहनतीचा योग्य मोबदला मिळवतात.',
     'about.why.title': 'आम्ही का अस्तित्वात आहोत',
     'about.why.description':
-      'शेतकऱ्यांना अशी तंत्रज्ञानाची गरज आहे जी त्यांची भाषा, जमीन आणि उपजीविका यांचा आदर करते. किसान कट्टा त्यांच्यासाठी बांधले — स्प्रेडशीटसाठी नाही.',
+      'शेतकऱ्यांना अशी तंत्रज्ञानाची गरज आहे जी त्यांची भाषा, जमीन आणि उपजीविका यांचा आदर करते. किसन अ‍ॅग्रीसाथी त्यांच्यासाठी बांधले — स्प्रेडशीटसाठी नाही.',
 
     'gram.overlay': 'तुमच्या गावातील शेतकऱ्यांना मदत करा',
     'gram.imageAlt': 'महाराष्ट्रातील गावात शेतकऱ्यांना मदत करणारा गाव प्रतिनिधी',
 
-    'faq.whatIs.q': 'किसान कट्टा म्हणजे काय?',
+    'faq.whatIs.q': 'किसन अ‍ॅग्रीसाथी म्हणजे काय?',
     'faq.whatIs.a':
-      'किसान कट्टा हे महाराष्ट्र-केंद्रित अ‍ॅग्रीटेक व्यासपीठ आहे जे शेतकऱ्यांना हवामान अद्यतने, सरकारी बाजार भाव, समुदाय भाव अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व मराठीत — उपलब्ध करून देते.',
-    'faq.whoCan.q': 'किसान कट्टा अॅप कोण वापरू शकतो?',
+      'किसन अ‍ॅग्रीसाथी हे महाराष्ट्र-केंद्रित अ‍ॅग्रीटेक व्यासपीठ आहे जे शेतकऱ्यांना हवामान अद्यतने, सरकारी बाजार भाव, समुदाय भाव अंतर्दृष्टी आणि स्थानिक बाजारपेठ — सर्व मराठीत — उपलब्ध करून देते.',
+    'faq.whoCan.q': 'किसन अ‍ॅग्रीसाथी अॅप कोण वापरू शकतो?',
     'faq.whoCan.a':
       'महाराष्ट्रातील कोणताही शेतकरी, शेतमजूर किंवा ग्रामीण समुदाय सदस्य अॅप मोफत डाउनलोड व वापरू शकतो. गाव प्रतिनिधी गावांमध्ये नवीन वापरकर्त्यांना सामील करण्यास मदत करतात.',
     'faq.whatGram.q': 'गाव प्रतिनिधी म्हणजे काय?',
     'faq.whatGram.a':
-      'गाव प्रतिनिधी हा विश्वासू गाव स्वयंसेवक आहे जो शेतकऱ्यांना अॅप इन्स्टॉल करण्यास मदत करतो, वैशिष्ट्ये समजावतो, डिजिटल शेतीचा प्रसार करतो आणि गावे किसान कट्टा परिसंस्थेशी जोडतो.',
+      'गाव प्रतिनिधी हा विश्वासू गाव स्वयंसेवक आहे जो शेतकऱ्यांना अॅप इन्स्टॉल करण्यास मदत करतो, वैशिष्ट्ये समजावतो, डिजिटल शेतीचा प्रसार करतो आणि गावे किसन अ‍ॅग्रीसाथी परिसंस्थेशी जोडतो.',
     'faq.howBecome.q': 'मी गाव प्रतिनिधी कसा होऊ?',
     'faq.howBecome.a':
       'मोबाइल OTP ने लॉगिन करा, अर्ज विझार्ड पूर्ण करा, नोंदणी शुल्क भरा आणि मंजुरीपर्यंत अर्जाची स्थिती ट्रॅक करा.',
     'faq.isFree.q': 'अॅप वापरणे मोफत आहे का?',
     'faq.isFree.a':
-      'होय, किसान कट्टा शेतकऱ्यांसाठी पूर्णपणे मोफत आहे. हवामान, बाजार भाव किंवा समुदाय वैशिष्ट्यांसाठी कोणतेही लपवलेले शुल्क नाही.',
-    'faq.districts.q': 'किसान कट्टा कोणत्या जिल्ह्यांमध्ये आहे?',
+      'होय, किसन अ‍ॅग्रीसाथी शेतकऱ्यांसाठी पूर्णपणे मोफत आहे. हवामान, बाजार भाव किंवा समुदाय वैशिष्ट्यांसाठी कोणतेही लपवलेले शुल्क नाही.',
+    'faq.districts.q': 'किसन अ‍ॅग्रीसाथी कोणत्या जिल्ह्यांमध्ये आहे?',
     'faq.districts.a':
-      'किसान कट्टा महाराष्ट्रातील सर्व ३६ जिल्ह्यांसाठी बांधले आहे. बाजार डेटा व समुदाय वैशिष्ट्ये तुमच्या जिल्हा व जवळच्या बाजारांसाठी स्थानिक आहेत.',
+      'किसन अ‍ॅग्रीसाथी महाराष्ट्रातील सर्व ३६ जिल्ह्यांसाठी बांधले आहे. बाजार डेटा व समुदाय वैशिष्ट्ये तुमच्या जिल्हा व जवळच्या बाजारांसाठी स्थानिक आहेत.',
     'faq.dataSource.q': 'बाजार भाव कुठून येतात?',
     'faq.dataSource.a':
       'सरकारी बाजार भाव अधिकृत कृषी बाजार डेटावरून घेतले जातात. शेतकऱ्यांचा अपेक्षित भाव तुमच्या जिल्ह्यातील समुदाय सबमिशनमधून येतो.',
@@ -1106,12 +1106,12 @@ export const translations = {
     'faq.contact.a':
       'तुम्ही संपर्क पृष्ठावरून आमच्याशी संपर्क साधू शकता, m.chautmal2020@gmail.com वर ईमेल करू शकता किंवा स्थानिक गाव प्रतिनिधीाची मदत घेऊ शकता.',
 
-    'about.heroTitle': 'किसान कट्टा बद्दल',
-    'about.heroMarathi': 'किसान कट्टा बद्दल',
+    'about.heroTitle': 'किसन अ‍ॅग्रीसाथी बद्दल',
+    'about.heroMarathi': 'किसन अ‍ॅग्रीसाथी बद्दल',
     'about.heroSubtitle':
       'प्रत्येक शेतकऱ्याला त्याच्या भाषेत बोलणाऱ्या तंत्रज्ञानाने सक्षम करण्याच्या मिशनवर असलेले महाराष्ट्रात जन्मलेले अ‍ॅग्रीटेक व्यासपीठ.',
     'about.body1':
-      'किसान कट्टा एका साध्या निरीक्षणातून जन्माला आले: महाराष्ट्रातील शेतकऱ्यांकडे स्मार्टफोन आहेत, पण त्यांच्यासाठी बनवलेली साधने नाहीत. विद्यमान अॅप्स इंग्रजीत आहेत, इतर राज्यांवर केंद्रित आहेत किंवा रोजच्या वापरासाठी गुंतागुंतीची आहेत.',
+      'किसन अ‍ॅग्रीसाथी एका साध्या निरीक्षणातून जन्माला आले: महाराष्ट्रातील शेतकऱ्यांकडे स्मार्टफोन आहेत, पण त्यांच्यासाठी बनवलेली साधने नाहीत. विद्यमान अॅप्स इंग्रजीत आहेत, इतर राज्यांवर केंद्रित आहेत किंवा रोजच्या वापरासाठी गुंतागुंतीची आहेत.',
     'about.body2':
       'आम्ही ते बदलण्याचे ठरवले — हवामान सूचना, सरकारी बाजार भाव, समुदाय भाव अंतर्दृष्टी आणि स्थानिक बाजारपेठ देणारे व्यासपीठ, सर्व मराठीत, सर्व महाराष्ट्रासाठी.',
     'about.value.root.title': 'शेतीत रुजलेले',

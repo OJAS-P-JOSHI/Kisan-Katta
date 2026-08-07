@@ -67,7 +67,7 @@ export function AdminSidebar({
           {!collapsed && (
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-forest-500">
-                Kisan Katta
+                Kissan Agrisathi
               </p>
               <p className="truncate text-sm font-semibold text-ink">
                 Admin Portal

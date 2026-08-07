@@ -111,7 +111,7 @@ export function Footer() {
           </p>
           <div className="mt-6 flex flex-col items-center gap-1 text-center text-sm text-muted-foreground">
             <p>
-              &copy; {Math.max(2026, new Date().getFullYear())} Kisan Katta. {t('footer.rights')}
+              &copy; {Math.max(2026, new Date().getFullYear())} Kissan Agrisathi. {t('footer.rights')}
             </p>
             <p className="font-marathi text-forest-700">{t('footer.forFarmers')}</p>
           </div>

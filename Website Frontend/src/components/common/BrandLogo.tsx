@@ -30,7 +30,7 @@ export function BrandLogo({
   const image = (
     <OptimizedImage
       src={brandAssets.logo}
-      alt="Kisan Katta"
+      alt="Kissan Agrisathi"
       width={size === 'xl' ? 80 : size === 'lg' ? 56 : size === 'md' ? 44 : 36}
       height={size === 'xl' ? 80 : size === 'lg' ? 56 : size === 'md' ? 44 : 36}
       priority={priority}

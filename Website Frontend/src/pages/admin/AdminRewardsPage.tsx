@@ -210,7 +210,7 @@ export function AdminRewardsPage() {
   const handleExportCsv = async () => {
     setExporting(true)
     try {
-      await downloadRewardsCsv(query, `kisan-katta-rewards-${Date.now()}.csv`)
+      await downloadRewardsCsv(query, `kissan-agrisathi-rewards-${Date.now()}.csv`)
       success('CSV downloaded.')
     } catch (err) {
       toastError(getErrorMessage(err, 'Unable to export CSV.'))
@@ -222,7 +222,7 @@ export function AdminRewardsPage() {
   const handleExportPdf = () => {
     const doc = new jsPDF()
     doc.setFontSize(14)
-    doc.text('Kisan Katta — Reward History', 14, 18)
+    doc.text('Kissan Agrisathi — Reward History', 14, 18)
     doc.setFontSize(9)
     doc.text(`Exported ${new Date().toLocaleString()}`, 14, 24)
     let y = 34
@@ -238,7 +238,7 @@ export function AdminRewardsPage() {
       )
       y += 7
     }
-    doc.save(`kisan-katta-rewards-${Date.now()}.pdf`)
+    doc.save(`kissan-agrisathi-rewards-${Date.now()}.pdf`)
   }
 
   return (

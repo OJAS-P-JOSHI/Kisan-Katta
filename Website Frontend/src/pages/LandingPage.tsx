@@ -22,7 +22,7 @@ import { defaultTransition, fadeUp } from '@/lib/motion'
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Kisan Katta',
+  name: 'Kissan Agrisathi',
   url: 'https://kisankatta.in',
   logo: 'https://kisankatta.in/web-app-manifest-512x512.png',
   description:

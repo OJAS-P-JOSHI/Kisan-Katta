@@ -65,7 +65,7 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
         />
         <div className="min-w-0 flex-1 pr-1 text-white">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-forest-100">
-            Kisan Katta
+            Kissan Agrisathi
           </p>
           <h2 className="text-[13px] font-bold leading-snug text-balance md:truncate md:text-[15px] md:leading-snug">
             {t('idCard.title')}

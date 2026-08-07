@@ -142,18 +142,18 @@ export function VerifyVolunteerPage() {
     /inactive/i.test(data.message)
 
   const seoTitle = !volunteerId
-    ? 'Volunteer Verification — Kisan Katta'
+    ? 'Volunteer Verification — Kissan Agrisathi'
     : isLoading || isFetching
-      ? 'Verifying Volunteer — Kisan Katta'
+      ? 'Verifying Volunteer — Kissan Agrisathi'
       : data?.verified
         ? `Verified Volunteer — ${data.name}`
         : isInactive
-          ? 'Volunteer Inactive — Kisan Katta'
-          : 'Volunteer Not Found — Kisan Katta'
+          ? 'Volunteer Inactive — Kissan Agrisathi'
+          : 'Volunteer Not Found — Kissan Agrisathi'
 
   const seoDescription = data?.verified
     ? `Official verification for Village Representative ${data.volunteerId} (${data.name}).`
-    : 'Official Kisan Katta Village Representative Digital Verification Portal.'
+    : 'Official Kissan Agrisathi Village Representative Digital Verification Portal.'
 
   return (
     <>
@@ -168,13 +168,13 @@ export function VerifyVolunteerPage() {
           <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-4 sm:px-6">
             <img
               src="/logo-circle.png"
-              alt="Kisan Katta"
+              alt="Kissan Agrisathi"
               className="h-10 w-10 rounded-full"
               width={40}
               height={40}
             />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink">Kisan Katta</p>
+              <p className="text-sm font-semibold text-ink">Kissan Agrisathi</p>
               <p className="text-[11px] text-steel">Digital Verification</p>
             </div>
           </div>
@@ -227,7 +227,7 @@ export function VerifyVolunteerPage() {
             Verified by
             <br />
             <span className="font-semibold text-ink">
-              Kisan Katta Digital Verification System
+              Kissan Agrisathi Digital Verification System
             </span>
           </p>
 

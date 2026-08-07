@@ -39,7 +39,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
           <BrandLogo size="lg" priority />
           <div className="max-w-md">
             <h2 className="text-3xl font-bold leading-tight text-white xl:text-4xl">
-              Kisan Katta
+              Kissan Agrisathi
             </h2>
             <p className="font-marathi mt-2 text-lg text-gold-100">
               शेतकऱ्यांचे डिजिटल व्यासपीठ

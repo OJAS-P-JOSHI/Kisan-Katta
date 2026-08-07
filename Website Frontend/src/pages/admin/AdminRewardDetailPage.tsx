@@ -92,7 +92,7 @@ function MarkPaidDialog({
           <h2 className="text-lg font-semibold text-ink">Mark as Paid</h2>
           <p className="mt-1 text-sm text-steel">
             Confirm transfer of <strong>{formatInr(amount)}</strong> to {name}{' '}
-            outside this system. No money is sent from Kisan Katta.
+            outside this system. No money is sent from Kissan Agrisathi.
           </p>
         </div>
         <div className="space-y-3 px-5 py-4">

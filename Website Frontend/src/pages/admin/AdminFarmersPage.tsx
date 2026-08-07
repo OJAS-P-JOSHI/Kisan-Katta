@@ -150,7 +150,7 @@ export function AdminFarmersPage() {
     <div>
       <AdminPageHeader
         title="Farmers"
-        description="Every farmer registered on Kisan Katta."
+        description="Every farmer registered on Kissan Agrisathi."
       />
 
       <AdminCard padded={false}>

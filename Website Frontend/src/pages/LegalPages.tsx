@@ -7,7 +7,7 @@ import { contactInfo } from '@/data/site'
 
 const POLICY_VERSION = '1.0'
 const LAST_UPDATED = '19 July 2026'
-const COMPANY_NAME = 'Kisan Katta Agritech Platform'
+const COMPANY_NAME = 'Kissan Agrisathi Agritech Platform'
 
 function LegalLayout({
   title,
@@ -62,12 +62,12 @@ export function PrivacyPage() {
   return (
     <LegalLayout
       title="Privacy Policy"
-      subtitle="How Kisan Katta collects, uses, stores, and protects your information."
-      seoDescription="Read the Kisan Katta Privacy Policy: what data we collect, how we use it, how it is stored and secured, and your rights."
+      subtitle="How Kissan Agrisathi collects, uses, stores, and protects your information."
+      seoDescription="Read the Kissan Agrisathi Privacy Policy: what data we collect, how we use it, how it is stored and secured, and your rights."
     >
       <Section title="1. Introduction">
         <p>
-          {COMPANY_NAME} (&ldquo;Kisan Katta&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or
+          {COMPANY_NAME} (&ldquo;Kissan Agrisathi&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or
           &ldquo;our&rdquo;) is a digital agritech platform serving farmers across Maharashtra. This
           Privacy Policy explains what personal information we collect through our website, mobile
           application, and related services (collectively, the &ldquo;Platform&rdquo;), how we use
@@ -208,12 +208,12 @@ export function TermsPage() {
   return (
     <LegalLayout
       title="Terms & Conditions"
-      subtitle="The terms that govern your use of the Kisan Katta platform."
-      seoDescription="Read the Kisan Katta Terms & Conditions covering platform use, Village Representative applications, payments, user responsibilities, liability, and governing law."
+      subtitle="The terms that govern your use of the Kissan Agrisathi platform."
+      seoDescription="Read the Kissan Agrisathi Terms & Conditions covering platform use, Village Representative applications, payments, user responsibilities, liability, and governing law."
     >
       <Section title="1. About the Platform">
         <p>
-          {COMPANY_NAME} (&ldquo;Kisan Katta&rdquo;) is a digital agritech platform that provides
+          {COMPANY_NAME} (&ldquo;Kissan Agrisathi&rdquo;) is a digital agritech platform that provides
           farmers in Maharashtra with tools such as weather information, government market (mandi)
           prices, community insights, a local marketplace, and the Village Representative program. By
           accessing or using the Platform, you agree to be bound by these Terms &amp; Conditions.
@@ -224,7 +224,7 @@ export function TermsPage() {
         <p>
           Applications to become a Village Representative are subject to review. Submitting an application
           does <strong>not</strong> guarantee approval. Approval is granted solely at the discretion
-          of Kisan Katta, based on our verification and eligibility criteria.
+          of Kissan Agrisathi, based on our verification and eligibility criteria.
         </p>
       </Section>
 
@@ -249,7 +249,7 @@ export function TermsPage() {
         <p>
           Payment of this fee does <strong>not</strong> guarantee approval. The fee is generally
           non-refundable once the verification process has started, except where required by
-          applicable law or where Kisan Katta cancels the application before processing has begun.
+          applicable law or where Kissan Agrisathi cancels the application before processing has begun.
         </p>
 
         <h3 className="mt-6 text-base font-semibold text-ink">Subscriptions &amp; Premium Features</h3>
@@ -285,7 +285,7 @@ export function TermsPage() {
         <p>
           The Platform and its content are provided on an &ldquo;as is&rdquo; and &ldquo;as
           available&rdquo; basis, without warranties of any kind, whether express or implied. To the
-          maximum extent permitted by applicable law, Kisan Katta shall not be liable for any
+          maximum extent permitted by applicable law, Kissan Agrisathi shall not be liable for any
           indirect, incidental, special, consequential, or punitive damages, or for any loss of
           profits, data, or goodwill, arising out of or in connection with your use of, or inability
           to use, the Platform.
@@ -332,13 +332,13 @@ export function RefundPage() {
   return (
     <LegalLayout
       title="Refund & Cancellation Policy"
-      subtitle="How refunds and cancellations work on the Kisan Katta platform."
-      seoDescription="Kisan Katta Refund & Cancellation Policy for the Village Representative registration fee and future Farmer subscription."
+      subtitle="How refunds and cancellations work on the Kissan Agrisathi platform."
+      seoDescription="Kissan Agrisathi Refund & Cancellation Policy for the Village Representative registration fee and future Farmer subscription."
     >
       <Section title="1. Overview">
         <p>
           This Refund &amp; Cancellation Policy explains the terms that apply to fees paid on the
-          Kisan Katta platform. Please read it carefully before making any payment.
+          Kissan Agrisathi platform. Please read it carefully before making any payment.
         </p>
       </Section>
 
@@ -349,7 +349,7 @@ export function RefundPage() {
         </p>
         <p>
           Once verification has commenced, the fee is generally <strong>non-refundable</strong>{' '}
-          except where required by applicable law or where Kisan Katta cancels the application before
+          except where required by applicable law or where Kissan Agrisathi cancels the application before
           processing.
         </p>
         <p>
