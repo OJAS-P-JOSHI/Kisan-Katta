@@ -11,7 +11,7 @@ export const SUBSCRIPTION_CURRENCY = "INR";
 export const SUBSCRIPTION_FEE_RUPEES = SUBSCRIPTION_FEE_PAISE / 100;
 
 /** Human-readable plan label for billing UI (Dashboard plan: App Payment). */
-export const SUBSCRIPTION_PLAN_DISPLAY_NAME = "Kisan Katta Monthly";
+export const SUBSCRIPTION_PLAN_DISPLAY_NAME = "Kissan Agrisathi Monthly";
 
 export const SUBSCRIPTION_BILLING_FREQUENCY_LABEL = "Every 1 Month";
 

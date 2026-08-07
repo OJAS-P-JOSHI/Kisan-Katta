@@ -129,7 +129,7 @@ export const translations = {
     'idCard.sectionTitle': 'My Village Representative Digital ID',
     'idCard.sectionSubtitle': 'Official digital identity for verified Village Representatives.',
     'idCard.title': 'Village Representative Digital Identity Card',
-    'idCard.subtitle': 'Maharashtra Volunteer Network',
+    'idCard.subtitle': '',
     'idCard.active': 'Active',
     'idCard.noPhoto': 'Photo',
     'idCard.name': 'Volunteer Name',
@@ -506,7 +506,7 @@ export const translations = {
     'app.status.msg.SUBMITTED': 'Application has already been submitted.',
     'app.status.paymentReadyTitle': 'Application is ready for payment.',
     'app.status.paymentReadyBody':
-      'Complete the ₹500 registration fee to submit your application. Editing is disabled until payment succeeds or you return later to retry.',
+      'Complete the ₹1 registration fee to submit your application. Editing is disabled until payment succeeds or you return later to retry.',
     'app.status.paymentNotCompletedTitle': 'Payment not completed.',
     'app.status.paymentNotCompletedBody':
       'Your application has been saved. You can retry payment anytime.',
@@ -765,7 +765,7 @@ export const translations = {
     'idCard.sectionTitle': 'माझे गाव प्रतिनिधी डिजिटल ओळखपत्र',
     'idCard.sectionSubtitle': 'पडताळणी झालेल्या गाव प्रतिनिधीांसाठी अधिकृत डिजिटल ओळख.',
     'idCard.title': 'गाव प्रतिनिधी डिजिटल ओळखपत्र',
-    'idCard.subtitle': 'महाराष्ट्र स्वयंसेवक नेटवर्क',
+    'idCard.subtitle': '',
     'idCard.active': 'सक्रिय',
     'idCard.noPhoto': 'फोटो',
     'idCard.name': 'स्वयंसेवकाचे नाव',
@@ -1143,7 +1143,7 @@ export const translations = {
     'app.status.msg.SUBMITTED': 'अर्ज आधीच सादर झाला आहे.',
     'app.status.paymentReadyTitle': 'अर्ज पेमेंटसाठी तयार आहे.',
     'app.status.paymentReadyBody':
-      'अर्ज सादर करण्यासाठी ₹५०० नोंदणी शुल्क पूर्ण करा. पेमेंट यशस्वी होईपर्यंत किंवा नंतर पुन्हा प्रयत्न करेपर्यंत संपादन बंद आहे.',
+      'अर्ज सादर करण्यासाठी ₹१ नोंदणी शुल्क पूर्ण करा. पेमेंट यशस्वी होईपर्यंत किंवा नंतर पुन्हा प्रयत्न करेपर्यंत संपादन बंद आहे.',
     'app.status.paymentNotCompletedTitle': 'पेमेंट पूर्ण झाले नाही.',
     'app.status.paymentNotCompletedBody':
       'तुमचा अर्ज जतन झाला आहे. तुम्ही कधीही पेमेंट पुन्हा करू शकता.',

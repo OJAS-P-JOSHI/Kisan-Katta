@@ -70,9 +70,6 @@ export const IDCardFace = forwardRef<HTMLDivElement, IDCardFaceProps>(function I
           <h2 className="text-[13px] font-bold leading-snug text-balance md:truncate md:text-[15px] md:leading-snug">
             {t('idCard.title')}
           </h2>
-          <p className="mt-0.5 text-[10px] leading-snug text-white/70 md:mt-0 md:text-[11px]">
-            {t('idCard.subtitle')}
-          </p>
         </div>
         <span className="inline-flex h-7 shrink-0 items-center gap-1.5 self-start rounded-full bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-forest-800 md:px-2.5 md:text-[10px]">
           <span

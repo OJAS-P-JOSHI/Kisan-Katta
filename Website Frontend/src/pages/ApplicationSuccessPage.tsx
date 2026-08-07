@@ -119,7 +119,7 @@ export function ApplicationSuccessPage() {
             </div>
             <div className="flex items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3">
               <dt className="text-xs text-muted-foreground">{t('app.success.amount')}</dt>
-              <dd className="text-sm font-semibold text-ink">₹500</dd>
+              <dd className="text-sm font-semibold text-ink">₹1</dd>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3">
               <dt className="text-xs text-muted-foreground">{t('app.success.paymentId')}</dt>

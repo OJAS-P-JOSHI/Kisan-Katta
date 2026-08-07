@@ -1,7 +1,7 @@
 {
   "name": "kisan-katta-backend",
   "version": "1.0.0",
-  "description": "Kisan Katta backend API server",
+  "description": "Kissan Agrisathi backend API server",
   "main": "dist/server.js",
   "private": true,
   "scripts": {

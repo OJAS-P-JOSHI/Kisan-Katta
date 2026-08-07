@@ -106,7 +106,7 @@ const startServer = async (): Promise<void> => {
   const server: Server = app.listen(env.port, env.host, () => {
     // eslint-disable-next-line no-console
     console.log(
-      `[server] Listening on http://${env.host}:${env.port} (env=${env.nodeEnv}, node=${process.version})`
+      `[server] Kissan Agrisathi API listening on http://${env.host}:${env.port} (env=${env.nodeEnv}, node=${process.version})`
     );
 
     if (env.host === "0.0.0.0" && !isProduction()) {
