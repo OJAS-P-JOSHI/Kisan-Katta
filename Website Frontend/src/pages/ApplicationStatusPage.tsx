@@ -21,9 +21,14 @@ import { GramSahakariIDCard } from '@/components/id-card'
 import { FullScreenLoader } from '@/components/FullScreenLoader'
 import { Button } from '@/components/ui/button'
 import { useApplicationPayment } from '@/hooks/useApplicationPayment'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
 import type { TranslationKeys } from '@/i18n/translations'
 import { getErrorMessage } from '@/lib/api-error'
+import {
+  getAdminPortalDestination,
+  isAdminIdentity,
+} from '@/lib/auth-routing'
 import { paymentDebug } from '@/lib/payment-debug'
 import { defaultTransition, fadeUp } from '@/lib/motion'
 import type { ApplicationDTO, ApplicationStatusDTO } from '@/types/application.types'
@@ -38,6 +43,12 @@ const STATUS_MESSAGE_KEYS: Record<ApplicationDTO['status'], TranslationKeys> = {
 
 export function ApplicationStatusPage() {
   const { t, locale } = useTranslation()
+  const { user, role, loading: authLoading } = useAuth()
+  const adminBlocked = isAdminIdentity({
+    role: role ?? user?.role,
+    isAdmin: user?.isAdmin,
+  })
+
   const [data, setData] = useState<Data | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -73,6 +84,11 @@ export function ApplicationStatusPage() {
   }, [])
 
   useEffect(() => {
+    if (authLoading || adminBlocked) {
+      setLoading(false)
+      return
+    }
+
     let cancelled = false
     ;(async () => {
       try {
@@ -91,7 +107,7 @@ export function ApplicationStatusPage() {
     return () => {
       cancelled = true
     }
-  }, [fetchData, t])
+  }, [fetchData, t, authLoading, adminBlocked])
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true)
@@ -128,6 +144,14 @@ export function ApplicationStatusPage() {
       /* ignore — payment hook surfaces its own error */
     }
   }, [data?.application, fetchData, payment])
+
+  if (authLoading) {
+    return <FullScreenLoader message={t('app.status.loading')} />
+  }
+
+  if (adminBlocked) {
+    return <Navigate to={getAdminPortalDestination()} replace />
+  }
 
   if (loading) {
     return <FullScreenLoader message={t('app.status.loading')} />

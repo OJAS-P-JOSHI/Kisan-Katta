@@ -1,6 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, CircleAlert, Download, Loader2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+  Check,
+  CheckCircle2,
+  CircleAlert,
+  Copy,
+  Download,
+  Loader2,
+} from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { listPaymentCenter } from '@/api/admin-ops.api'
@@ -15,6 +22,61 @@ import {
 import { downloadAdminReportXlsx } from '@/lib/admin-report-download'
 import { getErrorMessage } from '@/lib/api-error'
 import { cn } from '@/lib/utils'
+
+const ID_PREVIEW_LEN = 5
+
+function TruncatedCopyId({ value }: { value: unknown }) {
+  const full =
+    typeof value === 'string' && value.trim()
+      ? value.trim()
+      : value != null && value !== ''
+        ? String(value)
+        : null
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(async () => {
+    if (!full) return
+    try {
+      await navigator.clipboard.writeText(full)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch {
+      /* ignore — clipboard may be unavailable */
+    }
+  }, [full])
+
+  if (!full) return <span>—</span>
+
+  const preview =
+    full.length <= ID_PREVIEW_LEN ? full : `${full.slice(0, ID_PREVIEW_LEN)}…`
+
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="font-mono text-xs" title={full}>
+        {preview}
+      </span>
+      <button
+        type="button"
+        onClick={() => void handleCopy()}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate transition hover:bg-mist/60 hover:text-forest-900"
+        aria-label={copied ? 'Copied' : 'Copy full ID'}
+        title={copied ? 'Copied' : 'Copy full ID'}
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-forest-700" aria-hidden />
+        ) : (
+          <Copy className="h-3.5 w-3.5" aria-hidden />
+        )}
+      </button>
+    </span>
+  )
+}
+
+function formatPaymentSource(source: unknown): string {
+  const value = String(source ?? '')
+  if (value === 'SUBSCRIPTION') return 'sub'
+  return value
+}
 
 export function AdminPaymentsPage() {
   const [page, setPage] = useState(1)
@@ -67,23 +129,19 @@ export function AdminPaymentsPage() {
     {
       key: 'source',
       header: 'Source',
-      render: (row) => String(row.source),
+      render: (row) => formatPaymentSource(row.source),
     },
     {
       key: 'paymentId',
       header: 'Payment ID',
-      render: (row) => (
-        <span className="font-mono text-xs">{String(row.paymentId ?? '—')}</span>
-      ),
+      render: (row) => <TruncatedCopyId value={row.paymentId} />,
     },
     {
       key: 'orderId',
       header: 'Order / Sub',
       hideOnMobile: true,
       render: (row) => (
-        <span className="font-mono text-xs">
-          {String(row.orderId ?? row.subscriptionId ?? '—')}
-        </span>
+        <TruncatedCopyId value={row.orderId ?? row.subscriptionId} />
       ),
     },
     {

@@ -47,6 +47,8 @@ router.post("/application/payment/webhook", asyncHandler(webhookHandler));
 router.get(
   "/application/payment/details",
   authenticate,
+  // Own-application payment details — applicants only.
+  requireFarmerApplicant,
   asyncHandler(paymentDetailsHandler)
 );
 

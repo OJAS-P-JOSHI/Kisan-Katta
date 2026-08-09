@@ -12,7 +12,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useSendOtp, useVerifyOtp } from '@/hooks/useOtp'
 import { useTranslation } from '@/i18n/LanguageProvider'
-import { resolveAuthRedirect, ADMIN_DASHBOARD_PATH } from '@/lib/application-entry'
+import { resolveAuthRedirect } from '@/lib/application-entry'
+import { getPostLoginDestination } from '@/lib/auth-routing'
 import { getErrorMessage } from '@/lib/api-error'
 import { COUNTRY_CODE, OTP_LENGTH, RESEND_COOLDOWN_SECONDS } from '@/lib/validation'
 
@@ -53,11 +54,12 @@ export function VerifyOtpPage() {
           setFinalizing(true)
           try {
             const me = await login(result.token)
-            if (result.isAdmin || me?.isAdmin) {
-              navigate(ADMIN_DASHBOARD_PATH, { replace: true })
-              return
+            // Prefer /auth/me; fall back to verify-otp payload if refresh lags.
+            const identity = me ?? {
+              role: result.role,
+              isAdmin: result.isAdmin,
             }
-            navigate(from, { replace: true })
+            navigate(getPostLoginDestination(identity, from), { replace: true })
           } catch {
             setFinalizing(false)
           }

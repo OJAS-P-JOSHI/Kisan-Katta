@@ -25,8 +25,11 @@ import {
   villageImpactStats,
 } from '@/data/gram-sahakari'
 import { brandAssets } from '@/data/images'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
 import type { TranslationKeys } from '@/i18n/translations'
+import { APPLICATION_ENTRY_PATH } from '@/lib/application-entry'
+import { getApplicantEntryPath } from '@/lib/auth-routing'
 import { fadeUp, staggerContainer, defaultTransition } from '@/lib/motion'
 
 const benefitIcons = [Award, Heart, Users, BadgeCheck]
@@ -41,6 +44,10 @@ const requirements: { icon: typeof MapPin; textKey: TranslationKeys }[] = [
 
 export function BecomeGramSahakariPage() {
   const { t } = useTranslation()
+  const { user, isAuthenticated } = useAuth()
+  const applyHref = isAuthenticated
+    ? getApplicantEntryPath(user)
+    : APPLICATION_ENTRY_PATH
 
   return (
     <PageLayout>
@@ -174,7 +181,7 @@ export function BecomeGramSahakariPage() {
         title={t('become.ctaTitle')}
         description={t('become.ctaDescription')}
         primaryLabel={t('become.startApplication')}
-        primaryHref="/application"
+        primaryHref={applyHref}
       />
     </PageLayout>
   )

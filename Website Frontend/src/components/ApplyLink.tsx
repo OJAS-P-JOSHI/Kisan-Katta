@@ -1,6 +1,8 @@
 import { Link, type LinkProps } from 'react-router-dom'
 
+import { useAuth } from '@/hooks/useAuth'
 import { APPLICATION_ENTRY_PATH } from '@/lib/application-entry'
+import { getApplicantEntryPath } from '@/lib/auth-routing'
 import { cn } from '@/lib/utils'
 
 type ApplyLinkProps = Omit<LinkProps, 'to'> & {
@@ -8,15 +10,18 @@ type ApplyLinkProps = Omit<LinkProps, 'to'> & {
 }
 
 /**
- * Primary CTA into the Gram Sahakari application flow.
+ * Primary CTA into the Gram Sahakari application flow (or Admin Portal).
  *
- * Routes to `/application`. Unauthenticated users are sent to login by
- * `ProtectedRoute` (with `from` preserved). Authenticated users with a
- * non-DRAFT application are redirected to the status page by `ApplicationPage`.
+ * - Unauthenticated → `/application` (ProtectedRoute sends them through login)
+ * - Farmer → `/application`
+ * - ADMIN → `/admin/dashboard` (never the applicant wizard)
  */
 export function ApplyLink({ className, children, ...props }: ApplyLinkProps) {
+  const { user, isAuthenticated } = useAuth()
+  const to = isAuthenticated ? getApplicantEntryPath(user) : APPLICATION_ENTRY_PATH
+
   return (
-    <Link to={APPLICATION_ENTRY_PATH} className={cn(className)} {...props}>
+    <Link to={to} className={cn(className)} {...props}>
       {children}
     </Link>
   )

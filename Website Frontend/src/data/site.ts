@@ -16,9 +16,11 @@ export const desktopNavLinks = [
 ] as const
 
 /**
- * Portal enters the application flow (`/application`).
- * Unauthenticated users are redirected to login by ProtectedRoute.
- * Non-DRAFT applications are redirected to status by ApplicationPage.
+ * Portal enters the Gram Sahakari application for farmers (`/application`).
+ * Authenticated ADMINs are remapped to `/admin/dashboard` via
+ * `getApplicantEntryPath` in Navbar / MobileDrawer / ApplyLink.
+ * Unauthenticated users hit login via ProtectedRoute.
+ * Non-DRAFT farmer applications redirect to status on ApplicationPage.
  */
 export const drawerPortalLinks = [
   { key: 'nav.portal' as const, href: '/application', highlight: true as const },

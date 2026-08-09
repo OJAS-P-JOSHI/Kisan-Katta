@@ -11,8 +11,9 @@ export const APPLICATION_SUCCESS_PATH = '/application/success' as const
 export const ADMIN_DASHBOARD_PATH = '/admin/dashboard' as const
 
 /**
- * Safe post-login redirect targets. Only allow in-app routes so
- * an open-redirect cannot be injected via `location.state.from`.
+ * Sanitizes a farmer/applicant `from` target after login.
+ * Open-redirect safe. Does **not** apply role rules — use
+ * `getPostLoginDestination` from `@/lib/auth-routing` for that.
  */
 export function resolveAuthRedirect(from: unknown): string {
   if (typeof from !== 'string' || !from.startsWith('/')) {

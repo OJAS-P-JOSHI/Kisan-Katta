@@ -7,7 +7,10 @@ import { BrandLogo } from '@/components/common/BrandLogo'
 import { LanguageToggle } from '@/components/common/LanguageToggle'
 import { Button } from '@/components/ui/button'
 import { appDownloadHref, drawerPortalLinks, navLinks } from '@/data/site'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import { APPLICATION_ENTRY_PATH } from '@/lib/application-entry'
+import { getApplicantEntryPath } from '@/lib/auth-routing'
 import { cn } from '@/lib/utils'
 
 interface MobileDrawerProps {
@@ -18,6 +21,10 @@ interface MobileDrawerProps {
 export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   const location = useLocation()
   const { t, locale } = useTranslation()
+  const { user, isAuthenticated } = useAuth()
+  const portalHref = isAuthenticated
+    ? getApplicantEntryPath(user)
+    : APPLICATION_ENTRY_PATH
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -86,22 +93,26 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
               <div className="my-5 border-t border-border/60" />
 
               <ul className="space-y-1">
-                {drawerPortalLinks.map((link) => (
-                  <li key={link.key}>
-                    <Link
-                      to={link.href}
-                      className={cn(
-                        'flex min-h-12 items-center rounded-2xl px-4 text-[15px] font-medium transition-colors',
-                        locale === 'mr' && 'font-marathi',
-                        link.highlight
-                          ? 'bg-forest-900 text-white hover:bg-forest-700'
-                          : 'text-slate hover:bg-cream-dark hover:text-forest-900',
-                      )}
-                    >
-                      {t(link.key)}
-                    </Link>
-                  </li>
-                ))}
+                {drawerPortalLinks.map((link) => {
+                  const href =
+                    link.href === APPLICATION_ENTRY_PATH ? portalHref : link.href
+                  return (
+                    <li key={link.key}>
+                      <Link
+                        to={href}
+                        className={cn(
+                          'flex min-h-12 items-center rounded-2xl px-4 text-[15px] font-medium transition-colors',
+                          locale === 'mr' && 'font-marathi',
+                          link.highlight
+                            ? 'bg-forest-900 text-white hover:bg-forest-700'
+                            : 'text-slate hover:bg-cream-dark hover:text-forest-900',
+                        )}
+                      >
+                        {t(link.key)}
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
             </nav>
 

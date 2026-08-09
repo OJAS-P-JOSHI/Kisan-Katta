@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { motion } from 'framer-motion'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 
 import { getMyApplication } from '@/api/application.api'
 import { BrandLogo } from '@/components/common/BrandLogo'
@@ -11,6 +11,11 @@ import { GramSahakariIDCard } from '@/components/id-card'
 import { FullScreenLoader } from '@/components/FullScreenLoader'
 import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import {
+  getAdminPortalDestination,
+  getApplicantEntryPath,
+  isAdminIdentity,
+} from '@/lib/auth-routing'
 import { isIDCardEligible } from '@/lib/gram-sahakari-id'
 import { defaultTransition, fadeUp } from '@/lib/motion'
 import type { ApplicationDTO } from '@/types/application.types'
@@ -49,15 +54,26 @@ function AuthenticatedShell({ children }: { children: ReactNode }) {
 }
 
 /**
- * Profile shell — ready to host the reusable Digital ID when the volunteer
- * is SUBMITTED + PAID. Other profile features remain forthcoming.
+ * Profile shell — Digital ID for eligible farmers.
+ * Admins are redirected to the Admin Portal (not the applicant profile).
  */
 export function ProfilePage() {
   const { t } = useTranslation()
+  const { user, role, loading: authLoading } = useAuth()
+  const adminBlocked = isAdminIdentity({
+    role: role ?? user?.role,
+    isAdmin: user?.isAdmin,
+  })
+
   const [loading, setLoading] = useState(true)
   const [application, setApplication] = useState<ApplicationDTO | null>(null)
 
   useEffect(() => {
+    if (authLoading || adminBlocked) {
+      setLoading(false)
+      return
+    }
+
     let cancelled = false
     ;(async () => {
       try {
@@ -74,13 +90,22 @@ export function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authLoading, adminBlocked])
+
+  if (authLoading) {
+    return <FullScreenLoader message={t('common.loading')} />
+  }
+
+  if (adminBlocked) {
+    return <Navigate to={getAdminPortalDestination()} replace />
+  }
 
   if (loading) {
     return <FullScreenLoader message={t('common.loading')} />
   }
 
   const showId = isIDCardEligible(application)
+  const backHref = getApplicantEntryPath(user)
 
   return (
     <AuthenticatedShell>
@@ -94,7 +119,7 @@ export function ProfilePage() {
           </p>
         )}
         <Link
-          to="/application"
+          to={backHref}
           className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-forest-700 transition-colors hover:bg-forest-50 hover:text-forest-900"
         >
           ← {t('app.profile.backToApp')}

@@ -9,7 +9,12 @@ import { Seo } from '@/components/common/Seo'
 import { GramSahakariIDCard } from '@/components/id-card'
 import { FullScreenLoader } from '@/components/FullScreenLoader'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import {
+  getAdminPortalDestination,
+  isAdminIdentity,
+} from '@/lib/auth-routing'
 import { isIDCardEligible } from '@/lib/gram-sahakari-id'
 import { defaultTransition, fadeUp } from '@/lib/motion'
 import type { ApplicationDTO, PaymentStatus } from '@/types/application.types'
@@ -24,6 +29,11 @@ type SuccessLocationState = {
 export function ApplicationSuccessPage() {
   const { t, locale } = useTranslation()
   const location = useLocation()
+  const { user, role, loading: authLoading } = useAuth()
+  const adminBlocked = isAdminIdentity({
+    role: role ?? user?.role,
+    isAdmin: user?.isAdmin,
+  })
   const state = (location.state as SuccessLocationState | null) ?? null
 
   const [loading, setLoading] = useState(true)
@@ -49,6 +59,11 @@ export function ApplicationSuccessPage() {
   }
 
   useEffect(() => {
+    if (authLoading || adminBlocked) {
+      setLoading(false)
+      return
+    }
+
     let cancelled = false
     ;(async () => {
       try {
@@ -70,7 +85,15 @@ export function ApplicationSuccessPage() {
     return () => {
       cancelled = true
     }
-  }, [state?.applicationNumber])
+  }, [state?.applicationNumber, authLoading, adminBlocked])
+
+  if (authLoading) {
+    return <FullScreenLoader message={t('app.success.loading')} />
+  }
+
+  if (adminBlocked) {
+    return <Navigate to={getAdminPortalDestination()} replace />
+  }
 
   if (loading) {
     return <FullScreenLoader message={t('app.success.loading')} />

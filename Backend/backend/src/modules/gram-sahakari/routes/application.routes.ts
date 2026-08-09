@@ -26,6 +26,8 @@ router.post(
 router.get(
   "/application/me",
   authenticate,
+  // Own-application read — applicants only (ADMIN manages via /admin/*).
+  requireFarmerApplicant,
   asyncHandler(getMyApplicationHandler)
 );
 
@@ -54,6 +56,8 @@ router.post(
 router.get(
   "/application/status",
   authenticate,
+  // Own-application status — applicants only (ADMIN manages via /admin/*).
+  requireFarmerApplicant,
   asyncHandler(getApplicationStatusHandler)
 );
 

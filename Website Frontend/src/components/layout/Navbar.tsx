@@ -6,7 +6,10 @@ import { LanguageToggle } from '@/components/common/LanguageToggle'
 import { BrandLogo } from '@/components/common/BrandLogo'
 import { DrawerTrigger, MobileDrawer } from '@/components/layout/MobileDrawer'
 import { desktopNavLinks } from '@/data/site'
+import { useAuth } from '@/hooks/useAuth'
 import { useTranslation } from '@/i18n/LanguageProvider'
+import { APPLICATION_ENTRY_PATH } from '@/lib/application-entry'
+import { getApplicantEntryPath } from '@/lib/auth-routing'
 import { cn } from '@/lib/utils'
 
 export function Navbar() {
@@ -14,6 +17,10 @@ export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
   const { t, locale } = useTranslation()
+  const { user, isAuthenticated } = useAuth()
+  const applyHref = isAuthenticated
+    ? getApplicantEntryPath(user)
+    : APPLICATION_ENTRY_PATH
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 16)
@@ -82,7 +89,7 @@ export function Navbar() {
               )
             })}
             <Link
-              to="/application"
+              to={applyHref}
               className={cn(
                 'ml-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300',
                 locale === 'mr' && 'font-marathi',
