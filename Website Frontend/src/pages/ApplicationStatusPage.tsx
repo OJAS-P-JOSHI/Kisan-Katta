@@ -285,7 +285,7 @@ export function ApplicationStatusPage() {
                         <CreditCard className="h-4 w-4" />
                         {payment.phase === 'failed'
                           ? t('app.status.retryPayment')
-                          : t('app.status.payAmount', { amount: 1 })}
+                          : t('app.status.payAmount', { amount: 500 })}
                       </>
                     )}
                   </Button>

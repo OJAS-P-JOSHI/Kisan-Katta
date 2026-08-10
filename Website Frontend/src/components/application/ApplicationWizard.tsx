@@ -266,7 +266,7 @@ export function ApplicationWizard({
             <div className="mt-6 rounded-2xl border border-forest-100 bg-forest-50/60 p-5 sm:p-6">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-sm font-semibold text-ink">Registration Fee</p>
-                <p className="text-2xl font-bold text-forest-900">₹1</p>
+                <p className="text-2xl font-bold text-forest-900">₹500</p>
               </div>
               <p className="mt-3 text-sm text-slate">
                 By clicking the button below you agree to submit your application after

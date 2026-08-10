@@ -506,7 +506,7 @@ export const translations = {
     'app.status.msg.SUBMITTED': 'Application has already been submitted.',
     'app.status.paymentReadyTitle': 'Application is ready for payment.',
     'app.status.paymentReadyBody':
-      'Complete the ₹1 registration fee to submit your application. Editing is disabled until payment succeeds or you return later to retry.',
+      'Complete the ₹500 registration fee to submit your application. Editing is disabled until payment succeeds or you return later to retry.',
     'app.status.paymentNotCompletedTitle': 'Payment not completed.',
     'app.status.paymentNotCompletedBody':
       'Your application has been saved. You can retry payment anytime.',
@@ -1143,7 +1143,7 @@ export const translations = {
     'app.status.msg.SUBMITTED': 'अर्ज आधीच सादर झाला आहे.',
     'app.status.paymentReadyTitle': 'अर्ज पेमेंटसाठी तयार आहे.',
     'app.status.paymentReadyBody':
-      'अर्ज सादर करण्यासाठी ₹१ नोंदणी शुल्क पूर्ण करा. पेमेंट यशस्वी होईपर्यंत किंवा नंतर पुन्हा प्रयत्न करेपर्यंत संपादन बंद आहे.',
+      'अर्ज सादर करण्यासाठी ₹५०० नोंदणी शुल्क पूर्ण करा. पेमेंट यशस्वी होईपर्यंत किंवा नंतर पुन्हा प्रयत्न करेपर्यंत संपादन बंद आहे.',
     'app.status.paymentNotCompletedTitle': 'पेमेंट पूर्ण झाले नाही.',
     'app.status.paymentNotCompletedBody':
       'तुमचा अर्ज जतन झाला आहे. तुम्ही कधीही पेमेंट पुन्हा करू शकता.',

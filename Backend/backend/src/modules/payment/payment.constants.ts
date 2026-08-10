@@ -2,14 +2,12 @@ import type { PaymentStatus } from "../gram-sahakari/types/application.types";
 
 /**
  * Gram Sahakari registration fee, expressed in the smallest currency subunit
- * (paise) as required by the Razorpay Orders API.
- *
- * TEMP TEST (prod keys): ₹1 => 100 paise. Restore to ₹500 => 50000 before go-live.
+ * (paise) as required by the Razorpay Orders API. ₹500 => 50000 paise.
  *
  * The amount is defined ONLY here on the backend and is never accepted from the
  * client, so the frontend can never influence how much is charged or verified.
  */
-export const REGISTRATION_FEE_PAISE = 100;
+export const REGISTRATION_FEE_PAISE = 50000;
 
 /** ISO currency code for every registration payment. */
 export const PAYMENT_CURRENCY = "INR";

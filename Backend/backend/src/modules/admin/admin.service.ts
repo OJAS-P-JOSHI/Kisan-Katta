@@ -41,8 +41,7 @@ import {
 } from "./admin.farmers.service";
 import { FarmerProfile } from "../profile/profile.model";
 
-/** TEMP TEST: keep in sync with payment.constants REGISTRATION_FEE_PAISE (₹1). Restore to 50_000. */
-const REGISTRATION_FEE_PAISE = 100;
+const REGISTRATION_FEE_PAISE = 50_000; // ₹500
 
 const toVolunteerId = (applicationNumber: string): string => {
   const raw = applicationNumber.trim().toUpperCase();
