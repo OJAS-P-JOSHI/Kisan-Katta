@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, type ReactNode } from 'react';
 import {
   Image,
   Linking,
@@ -9,7 +9,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import {
   iconSize,
@@ -20,7 +20,7 @@ import {
   useAppTheme,
 } from '@/theme';
 
-import { homeColors, homeSpacing, homeSurfaces, homeText } from '@/features/home/home.theme';
+import { homeColors, homeSurfaces, homeText } from '@/features/home/home.theme';
 
 import {
   gramSahakariStrings,
@@ -49,7 +49,7 @@ function RepresentativeAvatar({ name, photoUrl }: { name: string; photoUrl: stri
 
   return (
     <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: theme.colors.primaryContainer }]}>
-      <Text style={[typography.sectionTitle, { color: theme.colors.primary }]}>{initial}</Text>
+      <Text style={[styles.avatarInitial, { color: theme.colors.primary }]}>{initial}</Text>
     </View>
   );
 }
@@ -89,7 +89,7 @@ function ContactActions({ phone }: { phone: string }) {
           { backgroundColor: theme.colors.primary, opacity: pressed ? 0.9 : 1 },
         ]}
       >
-        <MaterialCommunityIcons name="phone" size={18} color={theme.colors.onPrimary} />
+        <MaterialCommunityIcons name="phone" size={16} color={theme.colors.onPrimary} />
         <Text style={[styles.actionLabel, { color: theme.colors.onPrimary }]}>
           {gramSahakariStrings.call}
         </Text>
@@ -105,7 +105,7 @@ function ContactActions({ phone }: { phone: string }) {
           { opacity: pressed ? 0.9 : 1 },
         ]}
       >
-        <MaterialCommunityIcons name="whatsapp" size={18} color={palette.green900} />
+        <MaterialCommunityIcons name="whatsapp" size={16} color={palette.green900} />
         <Text style={[styles.actionLabel, { color: palette.green900 }]}>
           {gramSahakariStrings.whatsapp}
         </Text>
@@ -127,39 +127,32 @@ function RepresentativeTile({
   return (
     <View style={styles.repTile}>
       <View style={styles.repHeader}>
-        <View style={styles.avatarRing}>
-          <RepresentativeAvatar name={rep.name} photoUrl={rep.photoUrl} />
-        </View>
+        <RepresentativeAvatar name={rep.name} photoUrl={rep.photoUrl} />
         <View style={styles.repBody}>
-          <Text style={[styles.repName, { color: theme.colors.onSurface }]} numberOfLines={2}>
+          <Text style={[styles.repName, { color: theme.colors.onSurface }]} numberOfLines={1}>
             {rep.name}
           </Text>
           <Text
             style={[styles.repLocation, { color: theme.colors.onSurfaceVariant }]}
-            numberOfLines={2}
+            numberOfLines={1}
           >
             {formatLocationLine(rep.village, rep.taluka, rep.district)}
           </Text>
+          {matchLevel ? (
+            <View style={[styles.badge, { backgroundColor: theme.colors.secondaryContainer }]}>
+              <MaterialCommunityIcons name="shield-check" size={11} color={theme.colors.secondary} />
+              <Text style={[styles.badgeText, { color: theme.colors.onSecondaryContainer }]}>
+                {matchLevelBadge(matchLevel)}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
       <ContactActions phone={rep.phone} />
 
-      {matchLevel ? (
-        <View style={[styles.badge, { backgroundColor: theme.colors.secondaryContainer }]}>
-          <MaterialCommunityIcons
-            name="shield-check"
-            size={13}
-            color={theme.colors.secondary}
-          />
-          <Text style={[typography.caption, { color: theme.colors.onSecondaryContainer, fontWeight: '600', fontSize: 10 }]}>
-            {matchLevelBadge(matchLevel)}
-          </Text>
-        </View>
-      ) : null}
-
       {fallback ? (
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, marginTop: spacing.xs, fontSize: 11 }]}>
+        <Text style={[styles.fallbackNote, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
           {fallback.body}
         </Text>
       ) : null}
@@ -167,16 +160,39 @@ function RepresentativeTile({
   );
 }
 
+function CardShell({ children }: { children: ReactNode }) {
+  return <View style={[styles.shell, homeSurfaces.support]}>{children}</View>;
+}
+
+function CardHeader() {
+  const theme = useAppTheme();
+  return (
+    <View style={styles.cardHeader}>
+      <View style={[styles.headerIcon, { backgroundColor: palette.amber100 }]}>
+        <MaterialCommunityIcons name="account-supervisor" size={iconSize.sm} color={homeColors.supportAccent} />
+      </View>
+      <View style={styles.headerText}>
+        <Text style={[homeText.sectionUtility, { color: theme.colors.onSurface }]} numberOfLines={1}>
+          {gramSahakariStrings.title}
+        </Text>
+        <Text style={[styles.headerSubtitle, { color: homeColors.inkMuted }]} numberOfLines={1}>
+          {gramSahakariStrings.subtitle}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function GramSahakariSkeleton() {
   const theme = useAppTheme();
   return (
-    <Card mode="elevated" style={[styles.card, homeSurfaces.support]}>
-      <Card.Content style={styles.cardContent}>
-        <View style={[styles.skeletonLine, { backgroundColor: theme.colors.surfaceVariant, width: '55%' }]} />
-        <View style={[styles.skeletonLine, { backgroundColor: theme.colors.surfaceVariant, width: '80%', marginTop: spacing.sm }]} />
+    <CardShell>
+      <CardHeader />
+      <View style={styles.body}>
+        <View style={[styles.skeletonLine, { backgroundColor: theme.colors.surfaceVariant, width: '70%' }]} />
         <View style={[styles.skeletonBlock, { backgroundColor: theme.colors.surfaceVariant }]} />
-      </Card.Content>
-    </Card>
+      </View>
+    </CardShell>
   );
 }
 
@@ -192,7 +208,6 @@ export const GramSahakariCard = memo(function GramSahakariCard({
   if (loading) {
     return (
       <View style={styles.wrap}>
-        <SectionHeading />
         <GramSahakariSkeleton />
       </View>
     );
@@ -201,17 +216,17 @@ export const GramSahakariCard = memo(function GramSahakariCard({
   if (error) {
     return (
       <View style={styles.wrap}>
-        <SectionHeading />
-        <Card mode="elevated" style={[styles.card, homeSurfaces.support]}>
-          <Card.Content style={styles.cardContent}>
+        <CardShell>
+          <CardHeader />
+          <View style={styles.body}>
             <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
               {error ?? gramSahakariStrings.loadError}
             </Text>
-            <Button compact mode="text" onPress={onRetry}>
+            <Button compact mode="text" onPress={onRetry} style={styles.retryBtn}>
               {gramSahakariStrings.retry}
             </Button>
-          </Card.Content>
-        </Card>
+          </View>
+        </CardShell>
       </View>
     );
   }
@@ -219,24 +234,25 @@ export const GramSahakariCard = memo(function GramSahakariCard({
   if (!data.profileComplete) {
     return (
       <View style={styles.wrap}>
-        <SectionHeading />
-        <Card mode="elevated" style={[styles.card, homeSurfaces.support]}>
-          <Card.Content style={styles.cardContent}>
-            <Text style={[typography.body, { color: theme.colors.onSurface, fontWeight: '600' }]}>
+        <CardShell>
+          <CardHeader />
+          <View style={styles.body}>
+            <Text style={[typography.body, styles.compactTitle, { color: theme.colors.onSurface }]}>
               {gramSahakariStrings.profileIncompleteTitle}
             </Text>
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }]}>
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
               {gramSahakariStrings.profileIncompleteBody}
             </Text>
             <Button
               mode="contained"
-              style={{ marginTop: spacing.md }}
+              compact
               onPress={() => router.push('/edit-profile' as Href)}
+              style={styles.profileBtn}
             >
               {gramSahakariStrings.completeProfile}
             </Button>
-          </Card.Content>
-        </Card>
+          </View>
+        </CardShell>
       </View>
     );
   }
@@ -244,20 +260,17 @@ export const GramSahakariCard = memo(function GramSahakariCard({
   if (!data.available || data.representatives.length === 0) {
     return (
       <View style={styles.wrap}>
-        <SectionHeading />
-        <Card mode="elevated" style={[styles.card, homeSurfaces.support]}>
-          <Card.Content style={styles.cardContent}>
-            <View style={[styles.iconCircle, { backgroundColor: theme.colors.primaryContainer }]}>
-              <MaterialCommunityIcons name="account-group-outline" size={28} color={theme.colors.primary} />
-            </View>
-            <Text style={[typography.body, { color: theme.colors.onSurface, fontWeight: '600', marginTop: spacing.sm }]}>
+        <CardShell>
+          <CardHeader />
+          <View style={styles.body}>
+            <Text style={[typography.body, styles.compactTitle, { color: theme.colors.onSurface }]}>
               {gramSahakariStrings.emptyTitle}
             </Text>
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, marginTop: spacing.xs }]}>
+            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
               {gramSahakariStrings.emptyBody}
             </Text>
-          </Card.Content>
-        </Card>
+          </View>
+        </CardShell>
       </View>
     );
   }
@@ -267,18 +280,12 @@ export const GramSahakariCard = memo(function GramSahakariCard({
 
   return (
     <View style={styles.wrap}>
-      <SectionHeading />
-      <Card mode="elevated" style={[styles.card, homeSurfaces.support]}>
-        <View style={[styles.supportBanner, homeSurfaces.supportHeader]}>
-          <MaterialCommunityIcons name="account-supervisor-outline" size={18} color={homeColors.supportAccent} />
-          <Text style={[styles.supportTagline, { color: homeColors.inkSoft }]}>
-            {gramSahakariStrings.subtitle}
-          </Text>
-        </View>
-        <Card.Content style={styles.cardContent}>
+      <CardShell>
+        <CardHeader />
+        <View style={styles.body}>
           {fallback ? (
             <View style={[styles.fallbackBanner, { backgroundColor: homeColors.supportWarm }]}>
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '600', fontSize: 11 }]}>
+              <Text style={[styles.fallbackTitle, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
                 {fallback.title}
               </Text>
             </View>
@@ -299,151 +306,124 @@ export const GramSahakariCard = memo(function GramSahakariCard({
               ))}
             </ScrollView>
           )}
-
-          <Text style={[typography.caption, { color: theme.colors.outline, marginTop: spacing.sm, textAlign: 'center', fontSize: 10 }]}>
-            {gramSahakariStrings.brand}
-          </Text>
-        </Card.Content>
-      </Card>
+        </View>
+      </CardShell>
     </View>
   );
 });
 
-function SectionHeading() {
-  const theme = useAppTheme();
-  return (
-    <View style={styles.sectionHeader}>
-      <View style={[styles.sectionIcon, { backgroundColor: palette.amber100 }]}>
-        <MaterialCommunityIcons name="account-supervisor" size={iconSize.sm} color={homeColors.supportAccent} />
-      </View>
-      <View style={styles.sectionTitleBlock}>
-        <Text style={[homeText.sectionUtility, { color: theme.colors.onBackground }]}>
-          {gramSahakariStrings.title}
-        </Text>
-        <Text style={[homeText.marathiCaption, { color: homeColors.inkMuted, fontSize: 11 }]} numberOfLines={1}>
-          {gramSahakariStrings.subtitle}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   wrap: {
-    marginBottom: homeSpacing.sectionGap,
+    marginBottom: 0,
   },
-  sectionHeader: {
+  shell: {
+    overflow: 'hidden',
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: homeSpacing.horizontal,
-    paddingTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: homeColors.divider,
+    backgroundColor: homeColors.supportWarm,
   },
-  sectionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.md,
+  headerIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionTitleBlock: {
+  headerText: {
     flex: 1,
     gap: 1,
     minWidth: 0,
   },
-  card: {
-    borderColor: homeColors.supportBorder,
-    overflow: 'hidden',
+  headerSubtitle: {
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '500',
   },
-  supportBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  body: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
   },
-  supportTagline: {
-    flex: 1,
-    fontSize: 12,
+  compactTitle: {
     fontWeight: '600',
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 19,
   },
-  cardContent: {
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fallbackBanner: {
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  profileBtn: {
+    alignSelf: 'flex-start',
     marginTop: spacing.xs,
   },
+  retryBtn: {
+    alignSelf: 'flex-start',
+  },
+  fallbackBanner: {
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs + 2,
+  },
+  fallbackTitle: {
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '600',
+  },
   repTile: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: homeColors.supportBorder,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: spacing.sm,
     gap: spacing.sm,
-    backgroundColor: palette.white,
   },
   repHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   repBody: {
     flex: 1,
     minWidth: 0,
+    gap: 2,
   },
   repName: {
-    fontSize: 16,
-    lineHeight: 21,
+    fontSize: 15,
+    lineHeight: 19,
     fontWeight: '700',
-    letterSpacing: -0.15,
+    letterSpacing: -0.1,
   },
   repLocation: {
-    marginTop: 2,
     fontSize: 11,
-    lineHeight: 15,
-  },
-  avatarRing: {
-    padding: 2,
-    borderRadius: 26,
-    borderWidth: 2,
-    borderColor: homeColors.supportBorder,
+    lineHeight: 14,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
   },
   avatarFallback: {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarInitial: {
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
   actions: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.xs,
   },
   actionBtn: {
     flex: 1,
-    minHeight: 44,
-    borderRadius: radius.lg,
+    minHeight: 40,
+    borderRadius: radius.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
+    gap: 4,
   },
   whatsappBtn: {
     backgroundColor: palette.green100,
@@ -452,31 +432,41 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   badge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: radius.pill,
+    marginTop: 2,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: '600',
+    lineHeight: 11,
+  },
+  fallbackNote: {
+    fontSize: 10,
+    lineHeight: 14,
   },
   horizontalList: {
     gap: spacing.sm,
     paddingRight: spacing.xs,
   },
   horizontalItem: {
-    width: 280,
+    width: 260,
   },
   skeletonLine: {
-    height: 14,
+    height: 12,
     borderRadius: radius.sm,
   },
   skeletonBlock: {
-    height: 120,
-    borderRadius: radius.lg,
-    marginTop: spacing.md,
+    height: 72,
+    borderRadius: radius.md,
+    marginTop: spacing.xs,
   },
 });
