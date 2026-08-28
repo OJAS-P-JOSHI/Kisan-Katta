@@ -9,7 +9,7 @@ import { TabBarSpotlight } from './TabBarSpotlight';
 import { tabBarColors, tabBarTokens } from './tabBar.theme';
 
 /**
- * Harvest Dock — floating shell with sliding spotlight.
+ * Emerald Meridian — floating glass dock with a sliding inverted-emerald active pill.
  * Navigation behavior remains owned by React Navigation's BottomTabBar.
  */
 export const PremiumTabBar = memo(function PremiumTabBar(props: BottomTabBarProps) {
@@ -29,11 +29,13 @@ export const PremiumTabBar = memo(function PremiumTabBar(props: BottomTabBarProp
       ]}
       pointerEvents="box-none"
     >
+      <View style={styles.glowHalo} pointerEvents="none" />
       <View style={styles.rim}>
         <View
           style={styles.shell}
           onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         >
+          <View style={styles.surfaceTint} pointerEvents="none" />
           <View style={styles.topHighlight} pointerEvents="none" />
           <TabBarSpotlight
             activeIndex={state.index}
@@ -50,6 +52,17 @@ export const PremiumTabBar = memo(function PremiumTabBar(props: BottomTabBarProp
 const styles = StyleSheet.create({
   outer: {
     backgroundColor: tabBarColors.outer,
+  },
+  glowHalo: {
+    position: 'absolute',
+    left: tabBarTokens.floatMarginH + 14,
+    right: tabBarTokens.floatMarginH + 14,
+    bottom: tabBarTokens.floatMarginBottom + 1,
+    height: 10,
+    borderRadius: 12,
+    backgroundColor: tabBarColors.pillGlow,
+    opacity: 0.28,
+    transform: [{ scaleX: 0.9 }],
   },
   rim: {
     borderRadius: tabBarTokens.rimRadius,
@@ -71,11 +84,17 @@ const styles = StyleSheet.create({
     paddingVertical: tabBarTokens.shellPadV,
     paddingHorizontal: tabBarTokens.horizontalInset,
   },
+  surfaceTint: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: tabBarTokens.shellRadius,
+    backgroundColor: tabBarColors.surfaceTint,
+    zIndex: 0,
+  },
   topHighlight: {
     position: 'absolute',
     top: 0,
-    left: 24,
-    right: 24,
+    left: 20,
+    right: 20,
     height: StyleSheet.hairlineWidth,
     backgroundColor: tabBarColors.highlight,
     zIndex: 3,

@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import type { ColorValue } from 'react-native';
 
 import { PremiumTabBar } from '@/components/navigation/PremiumTabBar';
+import { tabBarLabels } from '@/components/navigation/tabBar.labels';
 import { TabBarIcon, type TabIconPair } from '@/components/navigation/TabBarIcon';
 import { tabBarColors, tabBarLayout, tabBarTokens } from '@/components/navigation/tabBar.theme';
 import { strings } from '@/constants';
@@ -62,14 +63,14 @@ export default function TabsLayout() {
         options={{
           title: strings.tabs.home,
           headerShown: false,
-          tabBarIcon: makeTabIcon(TAB_ICONS.home, strings.tabs.home),
+          tabBarIcon: makeTabIcon(TAB_ICONS.home, tabBarLabels.home),
         }}
       />
       <Tabs.Screen
         name="market"
         options={{
           title: strings.tabs.market,
-          tabBarIcon: makeTabIcon(TAB_ICONS.market, strings.tabs.market),
+          tabBarIcon: makeTabIcon(TAB_ICONS.market, tabBarLabels.market),
         }}
       />
       <Tabs.Screen
@@ -77,7 +78,7 @@ export default function TabsLayout() {
         options={{
           title: strings.tabs.farmerPrice,
           headerShown: false,
-          tabBarIcon: makeTabIcon(TAB_ICONS.farmerPrice, strings.tabs.farmerPrice),
+          tabBarIcon: makeTabIcon(TAB_ICONS.farmerPrice, tabBarLabels.farmerPrice),
         }}
       />
       <Tabs.Screen
@@ -85,7 +86,7 @@ export default function TabsLayout() {
         options={{
           title: strings.tabs.marketplace,
           headerShown: false,
-          tabBarIcon: makeTabIcon(TAB_ICONS.marketplace, strings.tabs.marketplace),
+          tabBarIcon: makeTabIcon(TAB_ICONS.marketplace, tabBarLabels.marketplace),
         }}
       />
       <Tabs.Screen
@@ -93,7 +94,7 @@ export default function TabsLayout() {
         options={{
           title: strings.tabs.assistance,
           headerShown: false,
-          tabBarIcon: makeTabIcon(TAB_ICONS.assistance, strings.tabs.assistance),
+          tabBarIcon: makeTabIcon(TAB_ICONS.assistance, tabBarLabels.assistance),
         }}
       />
       <Tabs.Screen
@@ -101,7 +102,7 @@ export default function TabsLayout() {
         options={{
           title: strings.tabs.profile,
           headerShown: false,
-          tabBarIcon: makeTabIcon(TAB_ICONS.profile, strings.tabs.profile),
+          tabBarIcon: makeTabIcon(TAB_ICONS.profile, tabBarLabels.profile),
         }}
       />
     </Tabs>

@@ -30,7 +30,7 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
       Animated.parallel([
         Animated.timing(focusProgress, {
           toValue: 1,
-          duration: tabBarAnim.popDurationMs + 80,
+          duration: tabBarAnim.popDurationMs + 70,
           useNativeDriver: true,
         }),
         Animated.sequence([
@@ -63,14 +63,11 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
     }
   }, [focused, focusProgress, iconPop]);
 
-  const labelSlide = focusProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-5, 0],
-  });
   const inactiveOpacity = focusProgress.interpolate({
     inputRange: [0, 1],
     outputRange: [1, 0],
   });
+  const activeOpacity = focusProgress;
   const inactiveScale = focusProgress.interpolate({
     inputRange: [0, 1],
     outputRange: [1, tabBarAnim.iconInactiveScale],
@@ -82,11 +79,11 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
   });
   const iconLift = iconPop.interpolate({
     inputRange: [0, 0.65, 1],
-    outputRange: [1, tabBarAnim.iconLiftPeak, tabBarAnim.iconLiftSettle],
+    outputRange: [0, tabBarAnim.iconLiftPeak, tabBarAnim.iconLiftSettle],
   });
-  const iconOpacity = iconPop.interpolate({
-    inputRange: [0, 0.3, 1],
-    outputRange: [0.88, 1, 1],
+  const labelRise = focusProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [2, 0],
   });
 
   return (
@@ -94,7 +91,7 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
       <Animated.View
         pointerEvents={focused ? 'none' : 'auto'}
         style={[
-          styles.inactiveLayer,
+          styles.column,
           {
             opacity: inactiveOpacity,
             transform: [{ scale: inactiveScale }],
@@ -108,36 +105,31 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
             size={tabBarTokens.iconSize}
           />
         </View>
+        <Text style={styles.inactiveLabel} numberOfLines={1} ellipsizeMode="tail">
+          {label}
+        </Text>
       </Animated.View>
 
       <Animated.View
         pointerEvents={focused ? 'auto' : 'none'}
-        style={[styles.capsule, { opacity: focusProgress }]}
+        style={[styles.column, styles.activeColumn, { opacity: activeOpacity }]}
       >
         <Animated.View
           style={[
             styles.iconBox,
             {
-              opacity: iconOpacity,
               transform: [{ scale: iconScale }, { translateY: iconLift }],
             },
           ]}
         >
           <MaterialCommunityIcons
             name={pair.filled}
-            color={tabBarColors.activeIcon}
+            color={tabBarColors.onPill}
             size={tabBarTokens.iconActiveSize}
           />
         </Animated.View>
-        <Animated.View
-          style={{
-            transform: [{ translateX: labelSlide }],
-            flexShrink: 1,
-            minWidth: 0,
-            opacity: focusProgress,
-          }}
-        >
-          <Text style={styles.label} numberOfLines={1} ellipsizeMode="tail">
+        <Animated.View style={{ transform: [{ translateY: labelRise }], width: '100%' }}>
+          <Text style={styles.activeLabel} numberOfLines={1} ellipsizeMode="tail">
             {label}
           </Text>
         </Animated.View>
@@ -149,43 +141,47 @@ export const TabBarIcon = memo(function TabBarIcon({ pair, label, color, focused
 const styles = StyleSheet.create({
   slot: {
     width: '100%',
-    minHeight: tabBarTokens.slotHeight,
+    height: tabBarTokens.slotHeight,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'visible',
   },
-  inactiveLayer: {
-    position: 'absolute',
+  column: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: tabBarTokens.touchTarget,
-    height: tabBarTokens.touchTarget,
+    width: '100%',
     overflow: 'visible',
+  },
+  activeColumn: {
+    position: 'absolute',
   },
   iconBox: {
     width: tabBarTokens.iconBox,
-    height: tabBarTokens.iconBox,
+    height: tabBarTokens.iconBox - 2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'visible',
   },
-  capsule: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: tabBarTokens.capsuleGap,
-    paddingHorizontal: tabBarTokens.capsulePadH,
-    paddingVertical: tabBarTokens.capsulePadV,
-    maxWidth: '100%',
-    minWidth: 0,
-    overflow: 'visible',
+  inactiveLabel: {
+    marginTop: tabBarTokens.labelGap,
+    fontSize: tabBarTokens.labelSize,
+    lineHeight: tabBarTokens.labelLineHeight,
+    fontWeight: '500',
+    color: tabBarColors.inactiveLabel,
+    textAlign: 'center',
+    width: '100%',
+    includeFontPadding: false,
+    letterSpacing: 0.1,
   },
-  label: {
+  activeLabel: {
+    marginTop: tabBarTokens.labelGap,
     fontSize: tabBarTokens.labelSize,
     lineHeight: tabBarTokens.labelLineHeight,
     fontWeight: '700',
-    color: tabBarColors.activeLabel,
-    flexShrink: 1,
+    color: tabBarColors.onPillMuted,
+    textAlign: 'center',
+    width: '100%',
     includeFontPadding: false,
+    letterSpacing: 0.1,
   },
 });
