@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
 import { memo, useCallback } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import type { ListingStatus, MyMarketplaceSummary } from '@/features/marketplace/marketplace.types';
@@ -15,7 +15,7 @@ import {
   useAppTheme,
 } from '@/theme';
 
-import { homeSurfaces, homeText } from '../home.theme';
+import { homeColors, homeSurfaces, homeText } from '../home.theme';
 
 type MyMarketplaceCardProps = {
   summary: MyMarketplaceSummary;
@@ -26,11 +26,17 @@ type MyMarketplaceCardProps = {
 
 type StatTone = 'active' | 'sold' | 'archived' | 'saved';
 
-const STAT_TONES: Record<StatTone, { dot: string; iconBg: string }> = {
-  active: { dot: palette.green700, iconBg: palette.green50 },
-  sold: { dot: palette.blue800, iconBg: palette.blue100 },
-  archived: { dot: palette.steel, iconBg: palette.mist },
-  saved: { dot: palette.red700, iconBg: palette.red100 },
+type StatConfig = {
+  icon: 'store-check-outline' | 'check-circle-outline' | 'archive-outline' | 'bookmark-outline';
+  accent: string;
+  wash: string;
+};
+
+const STAT_CONFIG: Record<StatTone, StatConfig> = {
+  active: { icon: 'store-check-outline', accent: palette.green700, wash: palette.green50 },
+  sold: { icon: 'check-circle-outline', accent: palette.blue800, wash: palette.blue100 },
+  archived: { icon: 'archive-outline', accent: palette.steel, wash: homeColors.utilityMuted },
+  saved: { icon: 'bookmark-outline', accent: palette.amber700, wash: palette.amber100 },
 };
 
 const copy = marketplaceStrings.homeSummary;
@@ -40,46 +46,37 @@ function StatCell({
   label,
   value,
   onPress,
+  showDivider,
 }: {
   tone: StatTone;
   label: string;
   value: number;
   onPress: () => void;
+  showDivider?: boolean;
 }) {
-  const theme = useAppTheme();
-  const colors = STAT_TONES[tone];
+  const config = STAT_CONFIG[tone];
 
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${value}`}
-      style={({ pressed }) => [
-        styles.statCell,
-        { backgroundColor: colors.iconBg, borderColor: theme.colors.outlineVariant },
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={styles.statLabelRow}>
-        <View style={[styles.dot, { backgroundColor: colors.dot }]} />
-        <Text
-          style={[typography.caption, styles.statLabel, { color: theme.colors.onSurfaceVariant }]}
-          numberOfLines={1}
-        >
+    <>
+      {showDivider ? <View style={styles.statDivider} /> : null}
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${value}`}
+        style={({ pressed }) => [styles.statCell, pressed && styles.pressed]}
+      >
+        <View style={[styles.statIconWrap, { backgroundColor: config.wash }]}>
+          <MaterialCommunityIcons name={config.icon} size={16} color={config.accent} />
+        </View>
+        <Text style={[styles.statValue, { color: palette.ink }]}>{value}</Text>
+        <Text style={[styles.statLabel, { color: homeColors.inkMuted }]} numberOfLines={1}>
           {label}
         </Text>
-      </View>
-      <Text style={[typography.sectionTitle, styles.statValue, { color: theme.colors.onSurface }]}>
-        {value}
-      </Text>
-    </Pressable>
+      </Pressable>
+    </>
   );
 }
 
-/**
- * Home dashboard card — Marketplace activity counts only.
- * Navigates into existing My Listings / Saved / Create screens.
- */
 export const MyMarketplaceCard = memo(function MyMarketplaceCard({
   summary,
   loading,
@@ -111,200 +108,271 @@ export const MyMarketplaceCard = memo(function MyMarketplaceCard({
   }, [router]);
 
   const header = (
-    <View style={styles.header}>
-      <Text style={[homeText.sectionPrimary, { color: theme.colors.onSurface }]} numberOfLines={2}>
-        {copy.title}
-      </Text>
-      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
-        {copy.subtitle}
-      </Text>
+    <View style={styles.headerBand}>
+      <View style={styles.headerMain}>
+        <View style={[styles.headerIcon, { backgroundColor: palette.green50 }]}>
+          <MaterialCommunityIcons name="storefront-outline" size={iconSize.md} color={theme.colors.primary} />
+        </View>
+        <View style={styles.headerText}>
+          <Text style={[homeText.sectionPrimary, { color: theme.colors.onSurface }]} numberOfLines={1}>
+            {copy.title}
+          </Text>
+          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontSize: 11 }]} numberOfLines={2}>
+            {copy.subtitle}
+          </Text>
+        </View>
+      </View>
+      {!hasNoListings ? (
+        <View style={[styles.totalPill, { backgroundColor: homeColors.heroAccentSoft }]}>
+          <Text style={[styles.totalPillText, { color: theme.colors.primary }]}>
+            {ownedTotal}
+          </Text>
+          <Text style={[styles.totalPillLabel, { color: homeColors.inkMuted }]}>जाहिराती</Text>
+        </View>
+      ) : null}
     </View>
   );
 
   if (loading && ownedTotal === 0 && summary.saved === 0 && !error) {
     return (
-      <Card mode="elevated" style={[homeSurfaces.primary]}>
-        <Card.Content style={styles.loadingContent}>
-          {header}
-          <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-          <View style={styles.loadingRow}>
-            <ActivityIndicator animating color={theme.colors.primary} />
-            <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-              {copy.loading}
-            </Text>
-          </View>
-        </Card.Content>
-      </Card>
+      <View style={[styles.shell, homeSurfaces.primary]}>
+        {header}
+        <View style={styles.loadingRow}>
+          <ActivityIndicator animating color={theme.colors.primary} />
+          <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, fontSize: 13 }]}>
+            {copy.loading}
+          </Text>
+        </View>
+      </View>
     );
   }
 
   if (error && ownedTotal === 0 && summary.saved === 0) {
     return (
-      <Card mode="elevated" style={homeSurfaces.primary}>
-        <Card.Content style={styles.errorContent}>
-          <MaterialCommunityIcons name="storefront-outline" size={iconSize.md} color={theme.colors.error} />
-          <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
-            {error}
-          </Text>
-          <Button compact mode="text" onPress={onRetry}>
-            {marketplaceStrings.listings.retry}
-          </Button>
-        </Card.Content>
-      </Card>
+      <View style={[styles.shell, homeSurfaces.primary, styles.errorContent]}>
+        <MaterialCommunityIcons name="storefront-outline" size={iconSize.md} color={theme.colors.error} />
+        <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
+          {error}
+        </Text>
+        <Button compact mode="text" onPress={onRetry}>
+          {marketplaceStrings.listings.retry}
+        </Button>
+      </View>
     );
   }
 
   return (
-    <Card mode="elevated" style={homeSurfaces.primary}>
-      <Card.Content style={styles.content}>
-        {header}
+    <View style={[styles.shell, homeSurfaces.primary]}>
+      {header}
 
-        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
-        {hasNoListings ? (
-          <View style={styles.emptyBlock}>
-            <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-              {copy.emptyTitle}
-            </Text>
-            <Button
-              mode="contained"
-              onPress={openCreate}
-              style={styles.createButton}
-              contentStyle={styles.createButtonContent}
-            >
-              {copy.createFirst}
-            </Button>
-            {summary.saved > 0 ? (
-              <Pressable
-                onPress={openSaved}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.savedOnlyRow, pressed && styles.pressed]}
-              >
-                <View style={styles.statLabelRow}>
-                  <View style={[styles.dot, { backgroundColor: STAT_TONES.saved.dot }]} />
-                  <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-                    {copy.saved}
-                  </Text>
-                </View>
-                <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
-                  {summary.saved}
-                </Text>
-              </Pressable>
-            ) : null}
+      {hasNoListings ? (
+        <View style={styles.emptyBlock}>
+          <View style={[styles.emptyIcon, { backgroundColor: homeColors.utilityMuted }]}>
+            <MaterialCommunityIcons name="plus-box-outline" size={28} color={theme.colors.primary} />
           </View>
-        ) : (
-          <>
-            <View style={styles.grid}>
-              <StatCell
-                tone="active"
-                label={copy.active}
-                value={summary.active}
-                onPress={() => openMyListings('ACTIVE')}
-              />
-              <StatCell
-                tone="sold"
-                label={copy.sold}
-                value={summary.sold}
-                onPress={() => openMyListings('SOLD')}
-              />
-              <StatCell
-                tone="archived"
-                label={copy.archived}
-                value={summary.archived}
-                onPress={() => openMyListings('ARCHIVED')}
-              />
-              <StatCell
-                tone="saved"
-                label={copy.saved}
-                value={summary.saved}
-                onPress={openSaved}
-              />
-            </View>
-
+          <Text style={[typography.body, styles.emptyTitle, { color: theme.colors.onSurface }]}>
+            {copy.emptyTitle}
+          </Text>
+          <Button
+            mode="contained"
+            onPress={openCreate}
+            style={styles.createButton}
+            contentStyle={styles.createButtonContent}
+            icon="plus"
+          >
+            {copy.createFirst}
+          </Button>
+          {summary.saved > 0 ? (
             <Pressable
-              onPress={() => openMyListings()}
+              onPress={openSaved}
               accessibilityRole="button"
-              accessibilityLabel={copy.viewAll}
-              style={({ pressed }) => [styles.viewAll, pressed && styles.pressed]}
-              hitSlop={8}
+              style={({ pressed }) => [styles.savedOnlyRow, pressed && styles.pressed]}
             >
-              <Text style={[styles.viewAllText, { color: theme.colors.primary }]}>{copy.viewAll}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={iconSize.sm} color={theme.colors.primary} />
+              <View style={styles.savedOnlyLeft}>
+                <View style={[styles.statIconWrap, { backgroundColor: palette.amber100 }]}>
+                  <MaterialCommunityIcons name="bookmark-outline" size={16} color={palette.amber700} />
+                </View>
+                <Text style={[styles.statLabel, { color: homeColors.inkMuted }]}>{copy.saved}</Text>
+              </View>
+              <Text style={[styles.statValue, { color: palette.ink }]}>{summary.saved}</Text>
             </Pressable>
-          </>
-        )}
-      </Card.Content>
-    </Card>
+          ) : null}
+        </View>
+      ) : (
+        <>
+          <View style={styles.statsStrip}>
+            <StatCell
+              tone="active"
+              label={copy.active}
+              value={summary.active}
+              onPress={() => openMyListings('ACTIVE')}
+            />
+            <StatCell
+              tone="sold"
+              label={copy.sold}
+              value={summary.sold}
+              onPress={() => openMyListings('SOLD')}
+              showDivider
+            />
+            <StatCell
+              tone="archived"
+              label={copy.archived}
+              value={summary.archived}
+              onPress={() => openMyListings('ARCHIVED')}
+              showDivider
+            />
+            <StatCell
+              tone="saved"
+              label={copy.saved}
+              value={summary.saved}
+              onPress={openSaved}
+              showDivider
+            />
+          </View>
+
+          <Pressable
+            onPress={() => openMyListings()}
+            accessibilityRole="button"
+            accessibilityLabel={copy.viewAll}
+            style={({ pressed }) => [styles.viewAll, pressed && styles.pressed]}
+            hitSlop={8}
+          >
+            <Text style={[styles.viewAllText, { color: theme.colors.primary }]}>{copy.viewAll}</Text>
+            <MaterialCommunityIcons name="arrow-right" size={iconSize.sm} color={theme.colors.primary} />
+          </Pressable>
+        </>
+      )}
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  content: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+  shell: {
+    overflow: 'hidden',
   },
-  loadingContent: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
-  header: {
-    gap: 4,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: spacing.md,
-  },
-  grid: {
+  headerBand: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     gap: spacing.sm,
-  },
-  statCell: {
-    width: '48%',
-    flexGrow: 1,
-    minWidth: '46%',
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    gap: spacing.xs,
-    minHeight: 64,
-    justifyContent: 'center',
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: homeColors.sandInset,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: homeColors.divider,
   },
-  statLabelRow: {
+  headerMain: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
+    minWidth: 0,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: radius.pill,
+  headerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statLabel: {
+  headerText: {
     flex: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  totalPill: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.md,
+    minWidth: 52,
+  },
+  totalPillText: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 22,
+    letterSpacing: -0.3,
+  },
+  totalPillLabel: {
+    fontSize: 9,
     fontWeight: '600',
+    lineHeight: 11,
+  },
+  statsStrip: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  statCell: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 2,
+    minHeight: 72,
+  },
+  statDivider: {
+    width: StyleSheet.hairlineWidth,
+    alignSelf: 'stretch',
+    backgroundColor: homeColors.divider,
+    marginVertical: spacing.sm,
+  },
+  statIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statValue: {
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: 20,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    lineHeight: 24,
+    letterSpacing: -0.3,
+  },
+  statLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    lineHeight: 12,
+    textAlign: 'center',
+    letterSpacing: 0.2,
   },
   viewAll: {
-    marginTop: spacing.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
     minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
+    borderRadius: radius.md,
+    backgroundColor: homeColors.heroAccentSoft,
   },
   viewAllText: {
     fontSize: 14,
     fontWeight: '600',
   },
   emptyBlock: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
     gap: spacing.md,
+  },
+  emptyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 20,
   },
   createButton: {
     borderRadius: radius.md,
@@ -317,22 +385,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    alignSelf: 'stretch',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: palette.red100,
+    borderRadius: radius.md,
+    backgroundColor: palette.amber100,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(201, 162, 39, 0.25)',
+  },
+  savedOnlyLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   loadingRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: spacing.sm,
-    minHeight: 48,
+    minHeight: 80,
+    padding: spacing.md,
   },
   errorContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
+    padding: spacing.md,
   },
   errorText: { flex: 1, minWidth: 0 },
   pressed: { opacity: 0.88 },

@@ -6,7 +6,7 @@ export const tabBarLabels = {
   home: 'Home',
   market: 'बाजार',
   farmerPrice: 'भाव',
-  marketplace: 'Shop',
+  marketplace: 'बाजारपेठ',
   assistance: 'साथ',
   profile: 'Profile',
 } as const;

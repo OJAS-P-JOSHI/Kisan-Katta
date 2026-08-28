@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { strings } from '@/constants';
 import { iconSize, palette, radius, spacing, useAppTheme } from '@/theme';
 
+import { homeColors } from '../home.theme';
 import type { ForecastDay } from '../weather.types';
 import { formatDayShort, getWeatherIcon } from '../weather.utils';
 
@@ -22,10 +23,11 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
       style={[
         styles.item,
         isToday
-          ? { backgroundColor: palette.white, borderColor: palette.mist }
-          : { backgroundColor: palette.sand, borderColor: palette.mist },
+          ? styles.itemToday
+          : styles.itemDefault,
       ]}
     >
+      {isToday ? <View style={[styles.todayMarker, { backgroundColor: theme.colors.primary }]} /> : null}
       <Text
         style={[
           styles.dayLabel,
@@ -38,21 +40,21 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
         {isToday ? strings.home.forecast.today : formatDayShort(day.date)}
       </Text>
 
-      <View style={[styles.iconWrap, { backgroundColor: theme.colors.surface }]}>
-        <MaterialCommunityIcons
-          name={getWeatherIcon(day.condition)}
-          size={iconSize.lg}
-          color={theme.colors.primary}
-        />
-      </View>
+      <MaterialCommunityIcons
+        name={getWeatherIcon(day.condition)}
+        size={isToday ? iconSize.md : iconSize.sm}
+        color={isToday ? theme.colors.primary : homeColors.inkMuted}
+      />
 
-      <Text style={styles.maxTemp}>{Math.round(day.maxTempC)}°</Text>
+      <Text style={[styles.maxTemp, isToday && styles.maxTempToday]}>
+        {Math.round(day.maxTempC)}°
+      </Text>
       <Text style={[styles.minTemp, { color: theme.colors.onSurfaceVariant }]}>
         {Math.round(day.minTempC)}°
       </Text>
 
       <View style={styles.rainRow}>
-        <MaterialCommunityIcons name="water-outline" size={iconSize.xs} color={theme.colors.primary} />
+        <MaterialCommunityIcons name="water-outline" size={10} color={theme.colors.primary} />
         <Text style={[styles.rainText, { color: theme.colors.onSurfaceVariant }]}>
           {day.dailyChanceOfRain}%
         </Text>
@@ -63,39 +65,54 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
 
 const styles = StyleSheet.create({
   item: {
-    width: 84,
+    width: 68,
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.xl,
+    gap: 4,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
+    borderColor: homeColors.divider,
+    backgroundColor: palette.white,
+    overflow: 'hidden',
+  },
+  itemToday: {
+    borderColor: 'rgba(46, 125, 50, 0.2)',
+    backgroundColor: homeColors.heroAccentSoft,
+  },
+  itemDefault: {
+    backgroundColor: 'rgba(255,255,255,0.85)',
+  },
+  todayMarker: {
+    position: 'absolute',
+    top: 0,
+    left: '20%',
+    right: '20%',
+    height: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
   },
   dayLabel: {
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 0.2,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 2,
+    fontSize: 10,
+    lineHeight: 13,
+    letterSpacing: 0.15,
   },
   maxTemp: {
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 18,
     fontWeight: '700',
     color: palette.green900,
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
+  },
+  maxTempToday: {
+    fontSize: 16,
   },
   minTemp: {
-    fontSize: 13,
-    lineHeight: 16,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '500',
+    marginTop: -2,
   },
-  rainRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  rainText: { fontSize: 11, lineHeight: 14, fontWeight: '500' },
+  rainRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 1 },
+  rainText: { fontSize: 9, lineHeight: 11, fontWeight: '600' },
 });

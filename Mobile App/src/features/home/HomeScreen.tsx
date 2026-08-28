@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { flex: 1 },
   content: {
-    paddingBottom: spacing.xxl + spacing.md,
+    paddingBottom: spacing.xl + spacing.md,
     gap: homeRhythm.block,
   },
   weatherError: {

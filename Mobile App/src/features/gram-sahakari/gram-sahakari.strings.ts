@@ -1,7 +1,7 @@
 import type { RepresentativeMatchLevel } from './gram-sahakari.types';
 
 export const gramSahakariStrings = {
-  title: 'Gram Sahakari Seva',
+  title: 'गाव प्रतिनिधी',
   subtitle: 'तुमच्या गावातील प्रतिनिधीकडून मदत मिळवा',
   subtitleEn: 'Get help from your local village representative',
   badgeVillage: 'गाव प्रतिनिधी',
@@ -11,17 +11,16 @@ export const gramSahakariStrings = {
   fallbackTalukaBody: 'जवळचा तालुका प्रतिनिधी:',
   fallbackDistrictTitle: 'तुमच्या गावात किंवा तालुक्यात प्रतिनिधी नाही',
   fallbackDistrictBody: 'जिल्हा प्रतिनिधी:',
-  emptyTitle: 'Gram Sahakari अद्याप उपलब्ध नाही',
-  emptyBody:
-    'तुमच्या जिल्ह्यात प्रतिनिधी नोंदणी झाल्यावर येथे दिसेल.',
+  emptyTitle: 'सध्या प्रतिनिधी उपलब्ध नाही',
+  emptyBody: 'तुमच्या जिल्ह्यात प्रतिनिधी नोंदणी झाल्यावर येथे दिसेल.',
   profileIncompleteTitle: 'प्रोफाइल पूर्ण करा',
   profileIncompleteBody:
-    'तुमचा स्थानिक Gram Sahakari शोधण्यासाठी जिल्हा, तालुका आणि गाव निवडा.',
+    'तुमचा स्थानिक गाव प्रतिनिधी शोधण्यासाठी जिल्हा, तालुका आणि गाव निवडा.',
   completeProfile: 'प्रोफाइल पूर्ण करा',
   call: 'कॉल',
   whatsapp: 'WhatsApp',
   retry: 'पुन्हा प्रयत्न',
-  loadError: 'Gram Sahakari लोड करता आले नाही',
+  loadError: 'गाव प्रतिनिधी माहिती लोड करता आली नाही',
   brand: 'Kissan Agrisathi',
 } as const;
 

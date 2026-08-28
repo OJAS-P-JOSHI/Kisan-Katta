@@ -13,25 +13,25 @@ export const HomeBackground = memo(function HomeBackground() {
   return (
     <>
       <OrganicBackground intensity="subtle" />
+      <View style={styles.baseWash} pointerEvents="none" />
       <View style={styles.topFade} pointerEvents="none" />
-      <View style={styles.bottomWash} pointerEvents="none" />
     </>
   );
 });
 
 const styles = StyleSheet.create({
-  topFade: {
+  baseWash: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: homeColors.heroGradientTop,
-    opacity: 0.35,
+    backgroundColor: palette.sand,
+    opacity: 0.22,
   },
-  bottomWash: {
+  topFade: {
     position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    height: 120,
-    backgroundColor: palette.sand,
-    opacity: 0.5,
+    height: 280,
+    backgroundColor: homeColors.heroGradientTop,
+    opacity: 0.55,
   },
 });

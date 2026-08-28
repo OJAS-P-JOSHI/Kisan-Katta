@@ -32,8 +32,8 @@ const MiniBadge = memo(function MiniBadge({
   label: string;
   tone: 'best' | 'today';
 }) {
-  const bg = tone === 'best' ? '#F5E6A8' : palette.green100;
-  const color = tone === 'best' ? '#7A6210' : palette.green900;
+  const bg = tone === 'best' ? '#F3E8B8' : palette.green100;
+  const color = tone === 'best' ? '#6B5410' : palette.green900;
 
   return (
     <View style={[styles.miniBadge, { backgroundColor: bg }]}>
@@ -44,7 +44,15 @@ const MiniBadge = memo(function MiniBadge({
   );
 });
 
-const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCardModel }) {
+const PricedCropRow = memo(function PricedCropRow({
+  item,
+  isLast,
+  index,
+}: {
+  item: MarketCropCardModel;
+  isLast: boolean;
+  index: number;
+}) {
   const parts = useMemo(() => getCropDisplayParts(item.crop), [item.crop]);
   const emoji = useMemo(() => getCropEmoji(item.crop), [item.crop]);
   const price = item.data?.highestPrice;
@@ -57,10 +65,15 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
   return (
     <Pressable
       accessibilityRole="text"
-      style={({ pressed }) => [styles.rowShell, homeSurfaces.marketRow, pressed && styles.rowPressed]}
+      style={({ pressed }) => [styles.rowShell, pressed && styles.rowPressed]}
     >
       <View style={styles.rowMain}>
-        <Text style={styles.rowEmoji}>{emoji}</Text>
+        <View style={styles.rankCol}>
+          <Text style={styles.rankText}>{index + 1}</Text>
+        </View>
+        <View style={styles.emojiCircle}>
+          <Text style={styles.rowEmoji}>{emoji}</Text>
+        </View>
         <View style={styles.cropTextBlock}>
           <Text style={styles.cropMr} numberOfLines={2}>
             {parts.marathi}
@@ -69,15 +82,19 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
             {parts.english}
           </Text>
           {mandi ? (
-            <Text numberOfLines={2} style={styles.mandiName}>
-              {mandi}
-            </Text>
+            <View style={styles.mandiRow}>
+              <MaterialCommunityIcons name="map-marker-outline" size={10} color={homeColors.marketMandi} />
+              <Text numberOfLines={1} style={styles.mandiName}>
+                {mandi}
+              </Text>
+            </View>
           ) : null}
         </View>
         <View style={styles.priceCol}>
           <Text style={[homeText.priceHero, styles.heroPrice]} numberOfLines={1}>
             {price != null ? formatPrice(price) : '—'}
           </Text>
+          <Text style={styles.perUnit}>/ क्विंटल</Text>
           <View style={styles.badgeCluster}>
             <MiniBadge label={strings.home.marketBestShort} tone="best" />
             {freshness === 'today' ? (
@@ -86,6 +103,7 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
           </View>
         </View>
       </View>
+      {!isLast ? <View style={styles.rowDivider} /> : null}
     </Pressable>
   );
 });
@@ -94,12 +112,19 @@ function SectionHeader() {
   const theme = useAppTheme();
   return (
     <View style={styles.sectionHeader}>
-      <Text style={[homeText.sectionEyebrow, { color: homeColors.heroAccentMuted }]}>
-        {strings.home.marketSubtitle}
-      </Text>
-      <Text style={[homeText.sectionHero, { color: theme.colors.onBackground }]} numberOfLines={2}>
-        {strings.home.marketTitle}
-      </Text>
+      <View style={styles.sectionTitleRow}>
+        <View style={[styles.sectionIcon, { backgroundColor: homeColors.heroAccentSoft }]}>
+          <MaterialCommunityIcons name="chart-box-outline" size={iconSize.sm} color={homeColors.marketAccent} />
+        </View>
+        <View style={styles.sectionText}>
+          <Text style={[homeText.sectionEyebrow, { color: homeColors.heroAccentMuted }]}>
+            {strings.home.marketSubtitle}
+          </Text>
+          <Text style={[homeText.sectionHero, { color: theme.colors.onBackground }]} numberOfLines={2}>
+            {strings.home.marketTitle}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -138,7 +163,8 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
       <View style={styles.wrap}>
         <SectionHeader />
         <View style={[styles.cardBody, homeSurfaces.marketHero]}>
-          <Text style={[typography.body, homeText.marathiBody, { color: theme.colors.onSurfaceVariant }]}>
+          <View style={homeSurfaces.marketAccentBar} />
+          <Text style={[typography.body, homeText.marathiBody, styles.bodyPad, { color: theme.colors.onSurfaceVariant }]}>
             {strings.home.marketNoFavourites}
           </Text>
         </View>
@@ -150,14 +176,17 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
     return (
       <View style={styles.wrap}>
         <SectionHeader />
-        <View style={[styles.cardBody, homeSurfaces.marketHero, styles.errorRow]}>
-          <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.error} />
-          <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
-            {error}
-          </Text>
-          <Button compact mode="text" onPress={onRetry}>
-            {strings.home.retry}
-          </Button>
+        <View style={[styles.cardBody, homeSurfaces.marketHero]}>
+          <View style={homeSurfaces.marketAccentBar} />
+          <View style={[styles.bodyPad, styles.errorInner]}>
+            <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.error} />
+            <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
+              {error}
+            </Text>
+            <Button compact mode="text" onPress={onRetry}>
+              {strings.home.retry}
+            </Button>
+          </View>
         </View>
       </View>
     );
@@ -170,8 +199,9 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
     <View style={styles.wrap}>
       <SectionHeader />
       <View style={[styles.cardBody, homeSurfaces.marketHero]}>
+        <View style={homeSurfaces.marketAccentBar} />
         {showEmpty ? (
-          <View style={styles.emptyBlock}>
+          <View style={[styles.emptyBlock, styles.bodyPad]}>
             <Text style={[typography.body, { color: theme.colors.onSurface }]}>
               {strings.home.marketNoPricesMr}
             </Text>
@@ -181,8 +211,13 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
           </View>
         ) : (
           <View style={styles.list}>
-            {visibleCards.map((item) => (
-              <PricedCropRow key={item.crop} item={item} />
+            {visibleCards.map((item, index) => (
+              <PricedCropRow
+                key={item.crop}
+                item={item}
+                index={index}
+                isLast={index === visibleCards.length - 1 && hiddenCount === 0}
+              />
             ))}
             {hiddenCount > 0 ? (
               <Pressable
@@ -214,20 +249,40 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
 const styles = StyleSheet.create({
   wrap: {
     gap: homeRhythm.utility,
-    marginBottom: homeRhythm.block - homeSpacing.sectionGapTight,
   },
   sectionHeader: {
     paddingHorizontal: homeSpacing.horizontal,
-    gap: 4,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionText: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
   },
   cardBody: {
+    gap: 0,
+    overflow: 'hidden',
+  },
+  bodyPad: {
     padding: spacing.md,
     gap: spacing.sm,
   },
-  list: { gap: spacing.sm },
+  list: {},
   rowShell: {
-    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm + 2,
+    paddingBottom: 0,
   },
   rowPressed: {
     opacity: 0.92,
@@ -236,61 +291,102 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
+    paddingBottom: spacing.sm + 2,
+  },
+  rowDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: homeColors.divider,
+    marginLeft: 56,
+  },
+  rankCol: {
+    width: 14,
+    paddingTop: 10,
+    alignItems: 'center',
+  },
+  rankText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: homeColors.inkMuted,
+    lineHeight: 12,
+  },
+  emojiCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: homeColors.sandInset,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   rowEmoji: {
-    fontSize: 24,
-    lineHeight: 30,
-    marginTop: 2,
+    fontSize: 17,
+    lineHeight: 20,
   },
   cropTextBlock: {
     flex: 1,
     minWidth: 0,
-    gap: 2,
+    gap: 1,
+    paddingTop: 2,
   },
   cropMr: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
     fontWeight: '700',
     color: palette.ink,
-    letterSpacing: -0.2,
+    letterSpacing: -0.15,
   },
   cropEn: {
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 10,
+    lineHeight: 13,
     fontWeight: '500',
     color: palette.steel,
   },
+  mandiRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 3,
+    minWidth: 0,
+  },
   mandiName: {
-    marginTop: 4,
-    fontSize: 12,
-    lineHeight: 16,
+    flex: 1,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '600',
-    color: palette.blue800,
+    color: homeColors.marketMandi,
   },
   priceCol: {
     alignItems: 'flex-end',
-    gap: spacing.xs,
-    maxWidth: '42%',
-    minWidth: 88,
+    gap: 2,
+    maxWidth: '38%',
+    minWidth: 84,
   },
   heroPrice: {
-    color: palette.green700,
+    color: homeColors.marketPrice,
     textAlign: 'right',
+  },
+  perUnit: {
+    fontSize: 9,
+    lineHeight: 11,
+    fontWeight: '600',
+    color: homeColors.inkMuted,
+    letterSpacing: 0.2,
   },
   badgeCluster: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
     gap: 4,
+    marginTop: 2,
   },
   miniBadge: {
     borderRadius: radius.pill,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   miniBadgeText: {
-    fontSize: 9,
-    lineHeight: 11,
+    fontSize: 8,
+    lineHeight: 10,
     fontWeight: '700',
   },
   moreButton: {
@@ -300,16 +396,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.sm,
-    borderRadius: radius.lg,
-    backgroundColor: palette.green50,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: homeColors.heroAccentSoft,
   },
   morePressed: { opacity: 0.7 },
   moreText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   emptyBlock: { gap: spacing.xs },
-  errorRow: {
+  errorInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
