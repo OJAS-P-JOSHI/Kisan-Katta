@@ -24,7 +24,7 @@ It is responsible for:
 | **Local commodity filter** | Favourites filtered in-process after district fetch |
 | **Retry / concurrency** | Gov client retries 429/connect failures; max 2 concurrent OGD calls |
 
-Without favourite crops and a completed profile district, Market cards and Home market summary stay empty. The mobile app **never** calls data.gov.in directly — only the Kisan Katta backend does.
+Without favourite crops and a completed profile district, Market cards and Home market summary stay empty. The mobile app **never** calls data.gov.in directly — only the Kissan Agrisathi backend does.
 
 > **Milk exclusion:** Favourite `"Milk"` is intentionally excluded from Government Market Prices (no Agmarknet mandi rate). Home **Favourite Crops** chips still show Milk; Market cards / intelligence / favourites APIs ignore it. Farmer Expected Price handles Milk separately.
 
@@ -1066,7 +1066,7 @@ Invalid / unparsable arrival dates are **dropped** in the recent filter.
 
 ```
 ┌────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│ Market Tab │────▶│ Favourite Store  │────▶│ Kisan Katta API │
+│ Market Tab │────▶│ Favourite Store  │────▶│ Kissan Agrisathi API │
 │ Home Sum.  │     │ (Zustand)        │     │ /intelligence   │
 └────────────┘     └──────────────────┘     └────────┬────────┘
                                                      │

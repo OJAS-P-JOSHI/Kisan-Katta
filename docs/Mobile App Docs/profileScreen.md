@@ -1,6 +1,6 @@
 # Profile Module
 
-> **Scope:** Kisan Katta mobile Profile feature (`Mobile App/src/features/profile/`)  
+> **Scope:** Kissan Agrisathi mobile Profile feature (`Mobile App/src/features/profile/`)  
 > **Audience:** Engineers joining or maintaining the Profile module  
 > **Source of truth:** Current repository implementation (July 2026)  
 > **Related docs:** [`mobile-app-documentation.md`](./mobile-app-documentation.md), [`backend-documentation.md`](./backend-documentation.md)
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-The Profile module owns the farmer’s identity and personalization data inside the Kisan Katta app. It is responsible for:
+The Profile module owns the farmer’s identity and personalization data inside the Kissan Agrisathi app. It is responsible for:
 
 | Responsibility | Description |
 |---|---|

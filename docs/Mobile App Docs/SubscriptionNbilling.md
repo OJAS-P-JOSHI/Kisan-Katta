@@ -440,7 +440,7 @@ Error envelope: `{ success: false, message: string }`
 | Field | Required | Notes |
 |---|---|---|
 | `id`, `userId`, `planId` | yes | Mongo + Dashboard plan |
-| `planName` | yes | Constant `"Kisan Katta Monthly"` |
+| `planName` | yes | Constant `"Kissan Agrisathi Monthly"` |
 | `billingFrequency` | yes | `"Every 1 Month"` |
 | `subscriptionId`, `customerId` | nullable | Razorpay ids |
 | `status` | yes | Local enum |
@@ -945,7 +945,7 @@ Realistic only:
 | `SUBSCRIPTION_FEE_PAISE` | 10000 |
 | `SUBSCRIPTION_FEE_RUPEES` | 100 |
 | `SUBSCRIPTION_CURRENCY` | INR |
-| `SUBSCRIPTION_PLAN_DISPLAY_NAME` | Kisan Katta Monthly |
+| `SUBSCRIPTION_PLAN_DISPLAY_NAME` | Kissan Agrisathi Monthly |
 | `SUBSCRIPTION_BILLING_FREQUENCY_LABEL` | Every 1 Month |
 | `SUBSCRIPTION_TOTAL_COUNT` | 120 |
 | `SUBSCRIPTION_QUANTITY` | 1 |
