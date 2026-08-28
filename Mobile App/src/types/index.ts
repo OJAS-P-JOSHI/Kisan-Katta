@@ -9,7 +9,7 @@ export type ApiResponse<T> = {
 };
 
 /**
- * Envelope shape returned by every Kisan Katta backend endpoint.
+ * Envelope shape returned by every Kissan Agrisathi backend endpoint.
  * Success responses are `{ success: true, data: T }`; the global error
  * handler returns `{ success: false, message: string }` (see `getErrorMessage`
  * in `@/utils` for how errors are normalized into a display string).

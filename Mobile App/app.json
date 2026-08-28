@@ -1,21 +1,19 @@
 {
   "expo": {
-    "name": "Kisan Katta",
+    "name": "Kissan Agrisathi",
     "slug": "kisan-katta",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/branding/logo-circle.png",
     "scheme": "kisankatta",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/branding/logo-circle.png"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#1A4D2E",
+        "foregroundImage": "./assets/branding/logo-circle.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.kisankatta.app",

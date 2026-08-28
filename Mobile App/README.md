@@ -1,4 +1,4 @@
-# Kisan Katta
+# Kissan Agrisathi
 
 A production React Native application built with Expo.
 

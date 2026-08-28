@@ -151,7 +151,7 @@ export const assistanceStrings = {
   share: {
     dialogTitle: 'शेअर करा',
     message: (title: string, name: string, place: string, link: string) =>
-      `${name} (${place}) यांना मदत हवी आहे.\n\n${title}\n\nकिसान कट्टा वर पहा: ${link}`,
+      `${name} (${place}) यांना मदत हवी आहे.\n\n${title}\n\nकिसन अ‍ॅग्रीसाथी वर पहा: ${link}`,
     failed: 'शेअर जमत नाही.',
   },
   lifecycle: {

@@ -22,8 +22,8 @@ export const ForecastCard = memo(function ForecastCard({ day, isToday }: Forecas
       style={[
         styles.item,
         isToday
-          ? { backgroundColor: theme.colors.primaryContainer, borderColor: palette.green100 }
-          : { backgroundColor: palette.green50, borderColor: palette.mist },
+          ? { backgroundColor: palette.white, borderColor: palette.mist }
+          : { backgroundColor: palette.sand, borderColor: palette.mist },
       ]}
     >
       <Text

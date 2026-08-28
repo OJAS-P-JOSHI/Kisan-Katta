@@ -2,12 +2,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
 import { memo, useCallback } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { Button, Card, Divider, Text } from 'react-native-paper';
+import { Button, Card, Text } from 'react-native-paper';
 
 import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
 import type { ListingStatus, MyMarketplaceSummary } from '@/features/marketplace/marketplace.types';
 import {
-  cardSurface,
   iconSize,
   palette,
   radius,
@@ -15,6 +14,8 @@ import {
   typography,
   useAppTheme,
 } from '@/theme';
+
+import { homeSurfaces, homeText } from '../home.theme';
 
 type MyMarketplaceCardProps = {
   summary: MyMarketplaceSummary;
@@ -111,26 +112,21 @@ export const MyMarketplaceCard = memo(function MyMarketplaceCard({
 
   const header = (
     <View style={styles.header}>
-      <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name="storefront-outline" size={iconSize.md} color={theme.colors.primary} />
-      </View>
-      <View style={styles.titleBlock}>
-        <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={1}>
-          {copy.title}
-        </Text>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={1}>
-          {copy.subtitle}
-        </Text>
-      </View>
+      <Text style={[homeText.sectionPrimary, { color: theme.colors.onSurface }]} numberOfLines={2}>
+        {copy.title}
+      </Text>
+      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
+        {copy.subtitle}
+      </Text>
     </View>
   );
 
   if (loading && ownedTotal === 0 && summary.saved === 0 && !error) {
     return (
-      <Card mode="elevated" style={[styles.card, cardSurface]}>
+      <Card mode="elevated" style={[homeSurfaces.primary]}>
         <Card.Content style={styles.loadingContent}>
           {header}
-          <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+          <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
           <View style={styles.loadingRow}>
             <ActivityIndicator animating color={theme.colors.primary} />
             <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
@@ -144,7 +140,7 @@ export const MyMarketplaceCard = memo(function MyMarketplaceCard({
 
   if (error && ownedTotal === 0 && summary.saved === 0) {
     return (
-      <Card mode="elevated" style={[styles.card, cardSurface]}>
+      <Card mode="elevated" style={homeSurfaces.primary}>
         <Card.Content style={styles.errorContent}>
           <MaterialCommunityIcons name="storefront-outline" size={iconSize.md} color={theme.colors.error} />
           <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
@@ -159,11 +155,11 @@ export const MyMarketplaceCard = memo(function MyMarketplaceCard({
   }
 
   return (
-    <Card mode="elevated" style={[styles.card, cardSurface]}>
+    <Card mode="elevated" style={homeSurfaces.primary}>
       <Card.Content style={styles.content}>
         {header}
 
-        <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
         {hasNoListings ? (
           <View style={styles.emptyBlock}>
@@ -243,30 +239,21 @@ export const MyMarketplaceCard = memo(function MyMarketplaceCard({
 });
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
   content: {
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   loadingContent: {
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    gap: 4,
   },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: spacing.md,
   },
-  titleBlock: { flex: 1, gap: 3, minWidth: 0 },
-  divider: { marginVertical: spacing.md },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

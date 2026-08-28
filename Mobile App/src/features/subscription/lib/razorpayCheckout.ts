@@ -35,7 +35,7 @@ export const openSubscriptionCheckout = async (params: {
   const options = {
     key: params.order.key,
     subscription_id: params.order.subscriptionId,
-    name: 'Kisan Katta',
+    name: 'Kissan Agrisathi',
     description: 'Monthly App Subscription — ₹100',
     currency: params.order.currency,
     prefill: params.prefill ?? {},

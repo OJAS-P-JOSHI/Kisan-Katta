@@ -1,10 +1,11 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { spacing, typography, useAppTheme } from '@/theme';
+
+import { homeRhythm, homeSurfaces, homeSpacing, homeText } from '../home.theme';
 
 import type { ForecastDay } from '../weather.types';
 import { ForecastCard } from './ForecastCard';
@@ -29,76 +30,64 @@ export const ForecastList = memo(function ForecastList({
 
   return (
     <View style={styles.container}>
-      <View style={styles.titleRow}>
-        <View style={[styles.titleIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-          <MaterialCommunityIcons name="calendar-week" size={iconSize.sm} color={theme.colors.primary} />
-        </View>
-        <View style={styles.titleText}>
-          <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
-            {strings.home.forecast.title}
-          </Text>
-          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
-            {strings.home.forecast.subtitle}
-          </Text>
-        </View>
+      <View style={styles.titleBlock}>
+        <Text style={[homeText.sectionUtility, { color: theme.colors.onBackground }]}>
+          {strings.home.forecast.title}
+        </Text>
+        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
+          {strings.home.forecast.subtitle}
+        </Text>
       </View>
 
       {isInitialLoading && <ForecastSkeleton />}
 
       {hasError && (
-        <Card mode="elevated" style={[styles.errorCard, cardSurface]}>
-          <Card.Content style={styles.errorRow}>
-            <Text style={[typography.body, { color: theme.colors.error, flex: 1 }]}>
-              {error}
-            </Text>
-            <Button compact mode="text" onPress={onRetry}>
-              {strings.home.retry}
-            </Button>
-          </Card.Content>
-        </Card>
+        <View style={[styles.errorCard, homeSurfaces.utility, { marginHorizontal: homeSpacing.horizontal }]}>
+          <Text style={[typography.body, { color: theme.colors.error, flex: 1 }]}>
+            {error}
+          </Text>
+          <Button compact mode="text" onPress={onRetry}>
+            {strings.home.retry}
+          </Button>
+        </View>
       )}
 
       {!isInitialLoading && !hasError && (
-        <Card mode="elevated" style={[styles.forecastCard, cardSurface]}>
-          <Card.Content style={styles.forecastContent}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-            >
-              {days.map((day, index) => (
-                <ForecastCard key={day.date} day={day} isToday={index === 0} />
-              ))}
-            </ScrollView>
-          </Card.Content>
-        </Card>
+        <View style={[styles.forecastCard, homeSurfaces.utility, { marginHorizontal: homeSpacing.horizontal }]}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {days.map((day, index) => (
+              <ForecastCard key={day.date} day={day} isToday={index === 0} />
+            ))}
+          </ScrollView>
+        </View>
       )}
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.lg },
-  titleRow: {
+  container: {
+    gap: homeRhythm.utility,
+  },
+  titleBlock: {
+    paddingHorizontal: homeSpacing.horizontal,
+    gap: 4,
+  },
+  forecastCard: {
+    paddingVertical: spacing.md,
+  },
+  scrollContent: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  errorCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    padding: spacing.md,
   },
-  titleText: { flex: 1, gap: 2 },
-  titleIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  forecastCard: {
-    marginHorizontal: spacing.md,
-  },
-  forecastContent: { paddingVertical: spacing.md, paddingHorizontal: 0 },
-  scrollContent: { paddingHorizontal: spacing.md, gap: spacing.sm },
-  errorCard: { marginHorizontal: spacing.md },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 });

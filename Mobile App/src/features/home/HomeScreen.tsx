@@ -1,61 +1,45 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
-import type { ComponentProps } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
+import { GramSahakariCard } from '@/features/gram-sahakari/components/GramSahakariCard';
+import { useGramSahakariRepresentative } from '@/features/gram-sahakari/hooks/useGramSahakariRepresentative';
 import { useFavouriteMarketCards } from '@/features/market/hooks/useFavouriteMarketCards';
 import { useMyMarketplaceSummary } from '@/features/marketplace/hooks/useMyMarketplaceSummary';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
-
-import { useCurrentWeather } from './hooks/useCurrentWeather';
-import { useForecast } from './hooks/useForecast';
-import { useWeatherAlerts } from './hooks/useWeatherAlerts';
+import { iconSize, spacing, typography, useAppTheme } from '@/theme';
 
 import { DashboardHeader } from './components/DashboardHeader';
 import { FavouriteCropsCard } from './components/FavouriteCropsCard';
 import { ForecastList } from './components/ForecastList';
+import { HomeBackground } from './components/HomeBackground';
+import { HomeHeroShell } from './components/HomeHeroShell';
 import { MarketSummaryCard } from './components/MarketSummaryCard';
 import { MyMarketplaceCard } from './components/MyMarketplaceCard';
-import { PlaceholderCard } from './components/PlaceholderCard';
 import { WeatherAlertCard } from './components/WeatherAlertCard';
 import { WeatherCard } from './components/WeatherCard';
+import { WeatherSection } from './components/WeatherSection';
 import { WeatherCardSkeleton } from './components/WeatherSkeleton';
+import { homeRhythm } from './home.theme';
+import { useCurrentWeather } from './hooks/useCurrentWeather';
+import { useForecast } from './hooks/useForecast';
+import { useWeatherAlerts } from './hooks/useWeatherAlerts';
 import { getFarmingAdvice } from './weather.localization';
-
-type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
-
-function SectionHeader({ icon, title }: { icon: IconName; title: string }) {
-  const theme = useAppTheme();
-  return (
-    <View style={styles.sectionHeader}>
-      <View style={[styles.sectionIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name={icon} size={iconSize.sm} color={theme.colors.primary} />
-      </View>
-      <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
-        {title}
-      </Text>
-    </View>
-  );
-}
 
 function WeatherErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   const theme = useAppTheme();
   return (
-    <Card mode="elevated" style={[styles.errorCard, cardSurface]}>
-      <Card.Content style={styles.errorContent}>
-        <MaterialCommunityIcons name="cloud-off-outline" size={iconSize.md} color={theme.colors.error} />
-        <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
-          {message}
-        </Text>
-        <Button compact mode="text" onPress={onRetry}>
-          {strings.home.retry}
-        </Button>
-      </Card.Content>
-    </Card>
+    <View style={styles.weatherError}>
+      <MaterialCommunityIcons name="cloud-off-outline" size={iconSize.md} color={theme.colors.error} />
+      <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
+        {message}
+      </Text>
+      <Button compact mode="text" onPress={onRetry}>
+        {strings.home.retry}
+      </Button>
+    </View>
   );
 }
 
@@ -91,6 +75,13 @@ export default function HomeScreen() {
     refresh: refreshMarketplaceSummary,
   } = useMyMarketplaceSummary();
 
+  const {
+    data: gramSahakari,
+    loading: gramSahakariLoading,
+    error: gramSahakariError,
+    silentRefresh: refreshGramSahakari,
+  } = useGramSahakariRepresentative();
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -100,6 +91,7 @@ export default function HomeScreen() {
         refreshForecast(),
         refreshAlerts(),
         refreshMarketplaceSummary(),
+        refreshGramSahakari(),
       ]);
     } finally {
       setRefreshing(false);
@@ -110,6 +102,7 @@ export default function HomeScreen() {
     refreshForecast,
     refreshAlerts,
     refreshMarketplaceSummary,
+    refreshGramSahakari,
   ]);
 
   const todayRainChance =
@@ -131,9 +124,26 @@ export default function HomeScreen() {
       ? profileError
       : null;
 
+  const village =
+    profile?.location?.village?.nameMr?.trim() ||
+    profile?.location?.village?.name ||
+    profile?.village;
+  const taluka =
+    profile?.location?.taluka?.nameMr?.trim() ||
+    profile?.talukaNameMr?.trim() ||
+    profile?.location?.taluka?.name ||
+    profile?.taluka;
+  const districtLabel =
+    profile?.location?.district?.nameMr?.trim() ||
+    profile?.districtNameMr?.trim() ||
+    profile?.location?.district?.name ||
+    profile?.district;
+
+  const weatherLocationLabel = [village, taluka, districtLabel].filter(Boolean).join(' · ');
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <OrganicBackground />
+      <HomeBackground />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xs }]}
@@ -147,60 +157,37 @@ export default function HomeScreen() {
           />
         }
       >
-        <DashboardHeader
-          name={profile?.name ?? strings.home.farmerFallback}
-          village={
-            profile?.location?.village?.nameMr?.trim() ||
-            profile?.location?.village?.name ||
-            profile?.village
-          }
-          taluka={
-            profile?.location?.taluka?.nameMr?.trim() ||
-            profile?.talukaNameMr?.trim() ||
-            profile?.location?.taluka?.name ||
-            profile?.taluka
-          }
-          district={
-            profile?.location?.district?.nameMr?.trim() ||
-            profile?.districtNameMr?.trim() ||
-            profile?.location?.district?.name ||
-            profile?.district
-          }
-        />
-
-        <SectionHeader icon="weather-partly-cloudy" title={strings.home.weatherTitle} />
-
-        {weatherLoading && !weather ? (
-          <WeatherCardSkeleton />
-        ) : weatherError && !weather ? (
-          <WeatherErrorCard message={weatherError} onRetry={refreshWeather} />
-        ) : weather ? (
-          <WeatherCard
-            weather={weather}
-            todayRainChance={todayRainChance}
-            farmingAdvice={farmingAdvice}
+        <HomeHeroShell>
+          <DashboardHeader
+            name={profile?.name ?? strings.home.farmerFallback}
+            village={village}
+            taluka={taluka}
+            district={districtLabel}
           />
-        ) : null}
 
-        <WeatherAlertCard
-          alerts={alerts}
-          loading={alertsLoading}
-          error={alertsError}
-          onRetry={refreshAlerts}
-          farmingAdvice={farmingAdvice}
-        />
+          <WeatherSection>
+            {weatherLoading && !weather ? (
+              <WeatherCardSkeleton />
+            ) : weatherError && !weather ? (
+              <WeatherErrorCard message={weatherError} onRetry={refreshWeather} />
+            ) : weather ? (
+              <WeatherCard
+                weather={weather}
+                todayRainChance={todayRainChance}
+                farmingAdvice={farmingAdvice}
+                locationLabel={weatherLocationLabel || undefined}
+              />
+            ) : null}
 
-        <ForecastList
-          days={forecast}
-          loading={forecastLoading}
-          error={forecastError}
-          onRetry={refreshForecast}
-        />
-
-        <FavouriteCropsCard
-          crops={favoriteCrops}
-          loading={profileLoading && !profile}
-        />
+            <WeatherAlertCard
+              alerts={alerts}
+              loading={alertsLoading}
+              error={alertsError}
+              onRetry={refreshAlerts}
+              farmingAdvice={farmingAdvice}
+            />
+          </WeatherSection>
+        </HomeHeroShell>
 
         <MarketSummaryCard
           pricedCards={pricedCards}
@@ -222,17 +209,25 @@ export default function HomeScreen() {
           }}
         />
 
-        <PlaceholderCard
-          icon="file-document-outline"
-          title={strings.home.govTitle}
-          subtitle={strings.home.govSubtitle}
-          message={strings.home.govComing}
+        <ForecastList
+          days={forecast}
+          loading={forecastLoading}
+          error={forecastError}
+          onRetry={refreshForecast}
         />
-        <PlaceholderCard
-          icon="newspaper-variant-outline"
-          title={strings.home.newsTitle}
-          subtitle={strings.home.newsSubtitle}
-          message={strings.home.newsComing}
+
+        <FavouriteCropsCard
+          crops={favoriteCrops}
+          loading={profileLoading && !profile}
+        />
+
+        <GramSahakariCard
+          data={gramSahakari}
+          loading={gramSahakariLoading}
+          error={gramSahakariError}
+          onRetry={() => {
+            void refreshGramSahakari();
+          }}
         />
       </ScrollView>
     </View>
@@ -242,27 +237,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { flex: 1 },
-  content: { paddingBottom: spacing.xxl + spacing.md },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+  content: {
+    paddingBottom: spacing.xxl + spacing.md,
+    gap: homeRhythm.block,
   },
-  sectionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorCard: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  errorContent: {
+  weatherError: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,

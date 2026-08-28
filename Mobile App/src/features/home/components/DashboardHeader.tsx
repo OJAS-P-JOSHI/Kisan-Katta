@@ -3,20 +3,20 @@ import { memo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { BrandLeaves } from '@/components/BrandLeaves';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { strings } from '@/constants';
+import { iconSize, spacing, useAppTheme } from '@/theme';
 
+import { homeColors, homeText } from '../home.theme';
 import { getGreetingByTime } from '../weather.localization';
 
 export type DashboardHeaderProps = {
-  /** Farmer's name from the authenticated profile (`GET /api/v1/profile/me`). */
   name: string;
   village?: string;
   taluka?: string;
   district?: string;
 };
 
-const LOGO_SIZE = 36;
+const LOGO_SIZE = 44;
 
 export const DashboardHeader = memo(function DashboardHeader({
   name,
@@ -28,7 +28,6 @@ export const DashboardHeader = memo(function DashboardHeader({
   const { text: greetingText, emoji: greetingEmoji } = getGreetingByTime();
   const hasLocation = !!(village || taluka || district);
 
-  // Village-first hierarchy: village → taluka · district
   const primaryLocation = village || taluka || district || '';
   const detailParts = [taluka, district].filter(
     (part) => !!part && part !== primaryLocation,
@@ -36,99 +35,102 @@ export const DashboardHeader = memo(function DashboardHeader({
   const locationDetail = detailParts.join(' · ');
 
   return (
-    <View style={styles.wrapper}>
-      <View style={[styles.card, { backgroundColor: theme.colors.surface }, cardSurface]}>
-        <BrandLeaves variant="greeting" />
-
-        <Image
-          source={require('@/assets/branding/logo-circle.png')}
-          style={styles.logo}
-          resizeMode="contain"
-          accessibilityLabel="Kisan Katta"
-        />
-
-        <View style={styles.textBlock}>
-          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-            {greetingText} {greetingEmoji}
+    <View style={styles.root}>
+      <View style={styles.topRow}>
+        <View style={styles.brandBlock}>
+          <Image
+            source={require('@/assets/branding/logo-circle.png')}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="Kissan Agrisathi"
+          />
+          <Text style={[homeText.heroBrand, { color: homeColors.heroAccent }]}>
+            {strings.app.name}
           </Text>
-          <Text
-            style={[typography.largeHeading, { color: theme.colors.onBackground }]}
-            numberOfLines={2}
-          >
-            {name}
-          </Text>
-          {hasLocation ? (
-            <View style={styles.locationRow}>
-              <View style={[styles.locationIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-                <MaterialCommunityIcons
-                  name="map-marker"
-                  size={iconSize.xs}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <View style={styles.locationTextBlock}>
-                <Text
-                  style={[typography.body, { color: theme.colors.onSurface, fontWeight: '500' }]}
-                  numberOfLines={2}
-                >
-                  {primaryLocation}
-                </Text>
-                {locationDetail ? (
-                  <Text
-                    style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}
-                    numberOfLines={2}
-                  >
-                    {locationDetail}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-          ) : null}
         </View>
+        <Text style={[homeText.heroGreeting, { color: theme.colors.onSurfaceVariant }]}>
+          {greetingText} {greetingEmoji}
+        </Text>
       </View>
+
+      <Text
+        style={[homeText.heroName, styles.farmerName, { color: theme.colors.onBackground }]}
+        numberOfLines={2}
+      >
+        {name}
+      </Text>
+
+      {hasLocation ? (
+        <View style={styles.locationRow}>
+          <MaterialCommunityIcons
+            name="map-marker-outline"
+            size={iconSize.sm}
+            color={theme.colors.primary}
+          />
+          <View style={styles.locationTextBlock}>
+            <Text
+              style={[homeText.marathiBody, styles.locationPrimary, { color: theme.colors.onSurface }]}
+              numberOfLines={2}
+            >
+              {primaryLocation}
+            </Text>
+            {locationDetail ? (
+              <Text
+                style={[homeText.marathiCaption, { color: theme.colors.onSurfaceVariant, fontSize: 12 }]}
+                numberOfLines={2}
+              >
+                {locationDetail}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg,
+  root: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.xs,
   },
-  card: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    position: 'relative',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  brandBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flexShrink: 1,
+    minWidth: 0,
   },
   logo: {
     width: LOGO_SIZE,
     height: LOGO_SIZE,
     borderRadius: LOGO_SIZE / 2,
   },
-  textBlock: {
-    flex: 1,
-    gap: 3,
-    paddingRight: spacing.xs,
+  farmerName: {
+    marginTop: spacing.xs,
   },
   locationRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing.sm,
     marginTop: spacing.xs,
-  },
-  locationIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: homeColors.sandLine,
   },
   locationTextBlock: {
     flex: 1,
-    gap: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  locationPrimary: {
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

@@ -1,5 +1,5 @@
 export const subscriptionStrings = {
-  title: 'Kisan Katta Subscription',
+  title: 'Kissan Agrisathi Subscription',
   subtitle: 'Unlock the full app with a monthly plan',
   amountLabel: '₹100 / month',
   description:
@@ -11,7 +11,7 @@ export const subscriptionStrings = {
   verifying: 'Verifying payment…',
   refreshing: 'Refreshing status…',
   successTitle: 'Subscription active',
-  successBody: 'Welcome to Kisan Katta. Redirecting you to Home…',
+  successBody: 'Welcome to Kissan Agrisathi. Redirecting you to Home…',
   cancelHint: 'Payment cancelled. You can try again anytime.',
   requiredHint: 'An active subscription is required to use the app.',
 } as const;

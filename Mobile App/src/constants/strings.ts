@@ -4,7 +4,7 @@
  */
 export const strings = {
   app: {
-    name: 'Kisan Katta',
+    name: 'Kissan Agrisathi',
   },
   tabs: {
     home: 'Home',

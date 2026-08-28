@@ -1,22 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { LayoutAnimation, Pressable, StyleSheet, View } from 'react-native';
-import { Button, Card, Divider, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
 import { getArrivalFreshness } from '@/features/market/market.freshness';
 import { getCropDisplayParts, getCropEmoji } from '@/features/market/market.translate';
 import type { MarketCropCardModel } from '@/features/market/market.types';
-import {
-  cardSurface,
-  iconSize,
-  palette,
-  radius,
-  spacing,
-  typography,
-  useAppTheme,
-} from '@/theme';
+import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 
+import { homeColors, homeRhythm, homeSurfaces, homeSpacing, homeText } from '../home.theme';
 import { MarketSummarySkeleton } from './MarketSummarySkeleton';
 
 const HOME_VISIBLE_CROP_COUNT = 4;
@@ -64,43 +57,53 @@ const PricedCropRow = memo(function PricedCropRow({ item }: { item: MarketCropCa
   return (
     <Pressable
       accessibilityRole="text"
-      style={({ pressed }) => [styles.rowShell, pressed && styles.rowPressed]}
+      style={({ pressed }) => [styles.rowShell, homeSurfaces.marketRow, pressed && styles.rowPressed]}
     >
-      <View style={styles.rowTop}>
+      <View style={styles.rowMain}>
         <Text style={styles.rowEmoji}>{emoji}</Text>
         <View style={styles.cropTextBlock}>
           <Text style={styles.cropMr} numberOfLines={2}>
             {parts.marathi}
           </Text>
-          <Text style={styles.cropEn} numberOfLines={2}>
+          <Text style={styles.cropEn} numberOfLines={1}>
             {parts.english}
           </Text>
-        </View>
-        <View style={styles.badgeCluster}>
-          <MiniBadge label={strings.home.marketBestShort} tone="best" />
-          {freshness === 'today' ? (
-            <MiniBadge label={strings.market.badgeUpdatedToday} tone="today" />
+          {mandi ? (
+            <Text numberOfLines={2} style={styles.mandiName}>
+              {mandi}
+            </Text>
           ) : null}
         </View>
+        <View style={styles.priceCol}>
+          <Text style={[homeText.priceHero, styles.heroPrice]} numberOfLines={1}>
+            {price != null ? formatPrice(price) : '—'}
+          </Text>
+          <View style={styles.badgeCluster}>
+            <MiniBadge label={strings.home.marketBestShort} tone="best" />
+            {freshness === 'today' ? (
+              <MiniBadge label={strings.market.badgeUpdatedToday} tone="today" />
+            ) : null}
+          </View>
+        </View>
       </View>
-
-      <Text style={styles.heroPrice} numberOfLines={1}>
-        {price != null ? formatPrice(price) : '—'}
-      </Text>
-
-      {mandi ? (
-        <Text numberOfLines={2} style={styles.mandiName}>
-          {mandi}
-        </Text>
-      ) : null}
     </Pressable>
   );
 });
 
-/**
- * Home market summary — presentation only.
- * Data comes from the shared Market favourites store (no Home-specific API).
- */
+function SectionHeader() {
+  const theme = useAppTheme();
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={[homeText.sectionEyebrow, { color: homeColors.heroAccentMuted }]}>
+        {strings.home.marketSubtitle}
+      </Text>
+      <Text style={[homeText.sectionHero, { color: theme.colors.onBackground }]} numberOfLines={2}>
+        {strings.home.marketTitle}
+      </Text>
+    </View>
+  );
+}
+
 export const MarketSummaryCard = memo(function MarketSummaryCard({
   pricedCards,
   favoriteCropsCount,
@@ -122,43 +125,32 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
   }, []);
 
   if (loading && pricedCards.length === 0) {
-    return <MarketSummarySkeleton />;
+    return (
+      <View style={styles.wrap}>
+        <SectionHeader />
+        <MarketSummarySkeleton />
+      </View>
+    );
   }
-
-  const cardHeader = (
-    <View style={styles.header}>
-      <View style={[styles.iconContainer, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.primary} />
-      </View>
-      <View style={styles.titleBlock}>
-        <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]} numberOfLines={2}>
-          {strings.home.marketTitle}
-        </Text>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
-          {strings.home.marketSubtitle}
-        </Text>
-      </View>
-    </View>
-  );
 
   if (favoriteCropsCount === 0) {
     return (
-      <Card mode="elevated" style={[styles.card, cardSurface]}>
-        <Card.Content style={styles.content}>
-          {cardHeader}
-          <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-          <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
+      <View style={styles.wrap}>
+        <SectionHeader />
+        <View style={[styles.cardBody, homeSurfaces.marketHero]}>
+          <Text style={[typography.body, homeText.marathiBody, { color: theme.colors.onSurfaceVariant }]}>
             {strings.home.marketNoFavourites}
           </Text>
-        </Card.Content>
-      </Card>
+        </View>
+      </View>
     );
   }
 
   if (error && pricedCards.length === 0 && settled) {
     return (
-      <Card mode="elevated" style={[styles.card, cardSurface]}>
-        <Card.Content style={styles.errorContent}>
+      <View style={styles.wrap}>
+        <SectionHeader />
+        <View style={[styles.cardBody, homeSurfaces.marketHero, styles.errorRow]}>
           <MaterialCommunityIcons name="chart-line" size={iconSize.md} color={theme.colors.error} />
           <Text style={[typography.body, styles.errorText, { color: theme.colors.onSurfaceVariant }]}>
             {error}
@@ -166,8 +158,8 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
           <Button compact mode="text" onPress={onRetry}>
             {strings.home.retry}
           </Button>
-        </Card.Content>
-      </Card>
+        </View>
+      </View>
     );
   }
 
@@ -175,12 +167,9 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
     settled && favoriteCropsCount > 0 && pricedCards.length === 0 && !loading;
 
   return (
-    <Card mode="elevated" style={[styles.card, cardSurface]}>
-      <Card.Content style={styles.content}>
-        {cardHeader}
-
-        <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
+    <View style={styles.wrap}>
+      <SectionHeader />
+      <View style={[styles.cardBody, homeSurfaces.marketHero]}>
         {showEmpty ? (
           <View style={styles.emptyBlock}>
             <Text style={[typography.body, { color: theme.colors.onSurface }]}>
@@ -217,56 +206,41 @@ export const MarketSummaryCard = memo(function MarketSummaryCard({
             ) : null}
           </View>
         )}
-      </Card.Content>
-    </Card>
+      </View>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.lg,
+  wrap: {
+    gap: homeRhythm.utility,
+    marginBottom: homeRhythm.block - homeSpacing.sectionGapTight,
   },
-  content: {
-    paddingVertical: spacing.md,
+  sectionHeader: {
+    paddingHorizontal: homeSpacing.horizontal,
+    gap: 4,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  cardBody: {
+    padding: spacing.md,
+    gap: spacing.sm,
   },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleBlock: { flex: 1, gap: 3, minWidth: 0 },
-  divider: { marginVertical: spacing.md },
-  list: { gap: spacing.md },
+  list: { gap: spacing.sm },
   rowShell: {
-    borderRadius: radius.xl,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    gap: spacing.sm,
-    backgroundColor: palette.green50,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: palette.green100,
   },
   rowPressed: {
     opacity: 0.92,
-    transform: [{ scale: 0.995 }],
   },
-  rowTop: {
+  rowMain: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
   },
   rowEmoji: {
-    fontSize: 22,
-    lineHeight: 28,
-    marginTop: 1,
+    fontSize: 24,
+    lineHeight: 30,
+    marginTop: 2,
   },
   cropTextBlock: {
     flex: 1,
@@ -281,43 +255,46 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   cropEn: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '500',
     color: palette.steel,
   },
-  heroPrice: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '700',
-    color: palette.green700,
-    letterSpacing: -0.6,
-  },
   mandiName: {
-    fontSize: 13,
-    lineHeight: 18,
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: '600',
     color: palette.blue800,
+  },
+  priceCol: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
+    maxWidth: '42%',
+    minWidth: 88,
+  },
+  heroPrice: {
+    color: palette.green700,
+    textAlign: 'right',
   },
   badgeCluster: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
     gap: 4,
-    maxWidth: '36%',
   },
   miniBadge: {
     borderRadius: radius.pill,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
   },
   miniBadgeText: {
-    fontSize: 10,
-    lineHeight: 12,
+    fontSize: 9,
+    lineHeight: 11,
     fontWeight: '700',
   },
   moreButton: {
-    minHeight: 48,
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -332,11 +309,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   emptyBlock: { gap: spacing.xs },
-  errorContent: {
+  errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
   },
   errorText: { flex: 1, minWidth: 0 },
 });

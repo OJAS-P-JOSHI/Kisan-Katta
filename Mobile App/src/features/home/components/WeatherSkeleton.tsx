@@ -1,13 +1,12 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
-import { Card } from 'react-native-paper';
 
-import { cardSurface, palette, radius, spacing } from '@/theme';
+import { palette, radius, spacing } from '@/theme';
 
-/** Animated pulsing grey box — the primitive for all skeleton states. */
+import { homeSpacing } from '../home.theme';
+
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
-  const opacityRef = useRef(new Animated.Value(0.3));
-  const opacity = opacityRef.current;
+  const opacity = useMemo(() => new Animated.Value(0.3), []);
 
   useEffect(() => {
     const anim = Animated.loop(
@@ -29,34 +28,19 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 
 export function WeatherCardSkeleton() {
   return (
-    <Card mode="elevated" style={[sk.card, cardSurface]}>
-      <SkeletonBox style={sk.heroBand} />
-      <Card.Content style={sk.content}>
-        <SkeletonBox style={sk.msgBox} />
-        <SkeletonBox style={sk.divider} />
-        <View style={sk.statsRow}>
-          <SkeletonBox style={sk.stat} />
-          <SkeletonBox style={sk.stat} />
-          <SkeletonBox style={sk.stat} />
-        </View>
-        <View style={[sk.statsRow, { marginTop: spacing.sm }]}>
-          <SkeletonBox style={sk.stat} />
-          <SkeletonBox style={sk.stat} />
-          <SkeletonBox style={sk.stat} />
-        </View>
-      </Card.Content>
-    </Card>
+    <View style={sk.root}>
+      <View style={sk.primaryRow}>
+        <SkeletonBox style={sk.temp} />
+        <SkeletonBox style={sk.condition} />
+      </View>
+      <SkeletonBox style={sk.advice} />
+      <SkeletonBox style={sk.stats} />
+    </View>
   );
 }
 
 export function AlertSkeleton() {
-  return (
-    <Card mode="elevated" style={[sk.card, cardSurface]}>
-      <Card.Content>
-        <SkeletonBox style={sk.alertBox} />
-      </Card.Content>
-    </Card>
-  );
+  return <SkeletonBox style={sk.alertBar} />;
 }
 
 export function ForecastSkeleton() {
@@ -72,15 +56,14 @@ export function ForecastSkeleton() {
 }
 
 const sk = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md },
-  heroBand: { height: 160, borderRadius: 0 },
-  content: { gap: spacing.md, paddingTop: spacing.md },
-  msgBox: { height: 44, borderRadius: radius.md },
-  divider: { height: 1, marginVertical: spacing.xs },
-  statsRow: { flexDirection: 'row', gap: spacing.sm },
-  stat: { flex: 1, height: 72, borderRadius: radius.md },
-  alertBox: { height: 72, borderRadius: radius.md },
-  forecastWrapper: { marginHorizontal: spacing.md, marginBottom: spacing.md },
+  root: { gap: spacing.md, paddingTop: spacing.sm },
+  primaryRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
+  temp: { width: 120, height: 64, borderRadius: radius.lg },
+  condition: { width: 100, height: 80, borderRadius: radius.lg },
+  advice: { height: 40, borderRadius: radius.md },
+  stats: { height: 120, borderRadius: radius.lg },
+  alertBar: { height: 36, borderRadius: radius.lg },
+  forecastWrapper: { marginHorizontal: homeSpacing.horizontal },
   forecastRow: { flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.sm },
-  forecastCard: { width: 76, height: 140, borderRadius: radius.md },
+  forecastCard: { width: 76, height: 128, borderRadius: radius.md },
 });

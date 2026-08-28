@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, Divider, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 import type { AppTheme } from '@/theme';
 
+import { homeSurfaces, homeText } from '../home.theme';
 import type { WeatherAlert } from '../weather.types';
 import { AlertSkeleton } from './WeatherSkeleton';
 
@@ -54,7 +55,6 @@ type WeatherAlertCardProps = {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
-  /** Dynamic farming advice shown when there are no active alerts. */
   farmingAdvice?: string;
 };
 
@@ -73,124 +73,86 @@ export const WeatherAlertCard = memo(function WeatherAlertCard({
 
   if (error && alerts === null) {
     return (
-      <Card mode="elevated" style={[styles.card, cardSurface]}>
-        <Card.Content style={styles.row}>
-          <MaterialCommunityIcons name="alert-circle-outline" size={iconSize.md} color={theme.colors.error} />
-          <Text style={[typography.body, { color: theme.colors.error, flex: 1 }]}>
-            {error}
-          </Text>
-          <Button compact mode="text" onPress={onRetry}>
-            {strings.home.retry}
-          </Button>
-        </Card.Content>
-      </Card>
+      <View style={[styles.errorRow, homeSurfaces.utility, { marginHorizontal: 0, padding: spacing.md }]}>
+        <MaterialCommunityIcons name="alert-circle-outline" size={iconSize.md} color={theme.colors.error} />
+        <Text style={[typography.body, { color: theme.colors.error, flex: 1 }]}>
+          {error}
+        </Text>
+        <Button compact mode="text" onPress={onRetry}>
+          {strings.home.retry}
+        </Button>
+      </View>
     );
   }
 
   if (!alerts || alerts.length === 0) {
     return (
-      <Card
-        mode="elevated"
-        style={[styles.card, cardSurface, { backgroundColor: theme.colors.primaryContainer }]}
-      >
-        <Card.Content style={styles.noAlertRow}>
-          <View style={[styles.noAlertIcon, { backgroundColor: theme.colors.surface }]}>
-            <MaterialCommunityIcons name="check-circle-outline" size={iconSize.lg} color={theme.colors.primary} />
-          </View>
-          <View style={styles.noAlertText}>
-            <Text
-              style={[typography.sectionTitle, { color: theme.colors.onPrimaryContainer }]}
-              numberOfLines={2}
-            >
-              {strings.home.alerts.noneTitle}
-            </Text>
-            <Text
-              style={[typography.caption, { color: theme.colors.onPrimaryContainer, opacity: 0.9 }]}
-              numberOfLines={2}
-            >
-              {farmingAdvice ?? strings.home.alerts.noneSubtitle}
-            </Text>
-          </View>
-        </Card.Content>
-      </Card>
+      <View style={[styles.compactBar, { backgroundColor: palette.green50, borderColor: palette.mist }]}>
+        <MaterialCommunityIcons name="check-circle-outline" size={iconSize.sm} color={theme.colors.primary} />
+        <Text
+          style={[homeText.marathiCaption, { color: theme.colors.onSurfaceVariant, flex: 1, fontSize: 12 }]}
+          numberOfLines={2}
+        >
+          {strings.home.alerts.noneTitle}
+          {farmingAdvice ? ` · ${farmingAdvice}` : ''}
+        </Text>
+      </View>
     );
   }
 
   return (
-    <Card mode="elevated" style={[styles.card, cardSurface]}>
-      <Card.Content>
-        <View style={styles.sectionHeader}>
-          <View style={[styles.sectionIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
-            <MaterialCommunityIcons name="alert-outline" size={iconSize.sm} color={theme.colors.secondary} />
-          </View>
-          <Text style={[typography.sectionTitle, { color: theme.colors.onSurface }]}>
-            {strings.home.alerts.title}
-          </Text>
-        </View>
+    <View style={[styles.alertCard, homeSurfaces.primary, { marginHorizontal: 0 }]}>
+      <Text style={[homeText.sectionPrimary, { color: theme.colors.onSurface, marginBottom: spacing.sm }]}>
+        {strings.home.alerts.title}
+      </Text>
 
-        {alerts.map((alert, index) => {
-          const sv = getSeverityStyle(alert.severity, theme);
-          return (
-            <View key={`${alert.event}-${String(index)}`}>
-              {index > 0 && (
-                <Divider style={[styles.alertDivider, { backgroundColor: theme.colors.outlineVariant }]} />
-              )}
-              <View style={[styles.alertItem, { backgroundColor: sv.bg, borderLeftColor: sv.border }]}>
-                <View style={styles.alertHeader}>
-                  <View style={[styles.alertIconBadge, { backgroundColor: theme.colors.surface }]}>
-                    <MaterialCommunityIcons name={sv.icon} size={iconSize.sm} color={sv.iconColor} />
-                  </View>
-                  <Text
-                    style={[typography.sectionTitle, { color: sv.textColor, flex: 1, fontSize: 15 }]}
-                    numberOfLines={1}
-                  >
-                    {alert.event}
-                  </Text>
-                  <View style={[styles.severityPill, { borderColor: sv.border }]}>
-                    <Text style={[typography.caption, { color: sv.textColor, fontWeight: '500' }]}>
-                      {alert.severity}
-                    </Text>
-                  </View>
-                </View>
+      {alerts.map((alert, index) => {
+        const sv = getSeverityStyle(alert.severity, theme);
+        return (
+          <View key={`${alert.event}-${String(index)}`}>
+            {index > 0 ? <View style={[styles.alertDivider, { backgroundColor: theme.colors.outlineVariant }]} /> : null}
+            <View style={[styles.alertItem, { backgroundColor: sv.bg, borderLeftColor: sv.border }]}>
+              <View style={styles.alertHeader}>
+                <MaterialCommunityIcons name={sv.icon} size={iconSize.sm} color={sv.iconColor} />
                 <Text
-                  style={[typography.body, { color: sv.textColor, marginTop: spacing.sm }]}
-                  numberOfLines={3}
+                  style={[typography.sectionTitle, { color: sv.textColor, flex: 1, fontSize: 14 }]}
+                  numberOfLines={1}
                 >
-                  {alert.headline}
+                  {alert.event}
                 </Text>
+                <View style={[styles.severityPill, { borderColor: sv.border }]}>
+                  <Text style={[typography.caption, { color: sv.textColor, fontWeight: '500', fontSize: 10 }]}>
+                    {alert.severity}
+                  </Text>
+                </View>
               </View>
+              <Text
+                style={[typography.body, homeText.marathiBody, { color: sv.textColor, marginTop: spacing.sm, fontSize: 13 }]}
+                numberOfLines={3}
+              >
+                {alert.headline}
+              </Text>
             </View>
-          );
-        })}
-      </Card.Content>
-    </Card>
+          </View>
+        );
+      })}
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: spacing.md, marginBottom: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  noAlertRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  noAlertIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noAlertText: { flex: 1, gap: 3 },
-  sectionHeader: {
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  compactBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  sectionIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+  alertCard: {
+    padding: spacing.md,
   },
   alertItem: {
     borderLeftWidth: 3,
@@ -199,18 +161,11 @@ const styles = StyleSheet.create({
     marginVertical: spacing.xs,
   },
   alertHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  alertIconBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   severityPill: {
     borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
-  alertDivider: { marginVertical: spacing.sm },
+  alertDivider: { height: StyleSheet.hairlineWidth, marginVertical: spacing.sm },
 });
