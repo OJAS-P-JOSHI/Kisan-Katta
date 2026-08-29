@@ -147,6 +147,15 @@ GramSahakariApplicationSchema.index(
 // Backs the reconciliation sweep query: paymentStatus in {PENDING,AUTHORIZED}
 // with razorpayOrderId set, oldest updatedAt first.
 GramSahakariApplicationSchema.index({ paymentStatus: 1, updatedAt: 1 });
+// Farmer app representative discovery (paid + location hierarchy).
+GramSahakariApplicationSchema.index({
+  paymentStatus: 1,
+  status: 1,
+  district: 1,
+  taluka: 1,
+  village: 1,
+  submittedAt: -1,
+});
 
 export const GramSahakariApplication = model<IGramSahakariApplication>(
   "GramSahakariApplication",

@@ -9,6 +9,7 @@ import {
   updateApplicationHandler,
   uploadDocumentHandler,
 } from "../controller/application.controller";
+import { getRepresentativeDiscoveryHandler } from "../controller/representative.controller";
 import {
   gramSahakariDocumentUpload,
 } from "../middlewares/upload.middleware";
@@ -59,6 +60,13 @@ router.get(
   // Own-application status — applicants only (ADMIN manages via /admin/*).
   requireFarmerApplicant,
   asyncHandler(getApplicationStatusHandler)
+);
+
+/** Farmer app: discover paid Village Representatives near the farmer's profile location. */
+router.get(
+  "/representative",
+  authenticate,
+  asyncHandler(getRepresentativeDiscoveryHandler)
 );
 
 export default router;
