@@ -18,14 +18,16 @@ function LinkColumn({
 
   return (
     <div>
-      <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">{heading}</h4>
-      <ul className="space-y-2.5">
+      <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gold-100 sm:mb-4">
+        {heading}
+      </h4>
+      <ul className="space-y-1">
         {links.map((link) => (
           <li key={link.href + link.key}>
             <Link
               to={link.href}
               className={cn(
-                'inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-forest-900',
+                'inline-flex min-h-11 items-center text-sm text-white/70 transition-colors hover:text-white',
                 locale === 'mr' && 'font-marathi',
               )}
             >
@@ -42,14 +44,14 @@ export function Footer() {
   const { t, locale } = useTranslation()
 
   return (
-    <footer className="border-t border-border bg-white">
+    <footer className="border-t border-border bg-forest-900 text-white">
       <div className="container-wide section-padding !py-12 sm:!py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <BrandLogo size="lg" />
             <p
               className={cn(
-                'mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground',
+                'mt-4 max-w-xs text-sm leading-relaxed text-white/70',
                 locale === 'mr' && 'font-marathi',
               )}
             >
@@ -61,27 +63,27 @@ export function Footer() {
           <LinkColumn heading={t('footer.resources')} links={footerLinks.resources} />
 
           <div>
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink sm:mb-4">
+            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gold-100 sm:mb-4">
               {t('footer.support')}
             </h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
-                <a href={`tel:${contactInfo.phoneHref}`} className="hover:text-forest-900">
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-sm text-white/75">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden />
+                <a href={`tel:${contactInfo.phoneHref}`} className="min-h-11 hover:text-white">
                   {contactInfo.phone}
                 </a>
               </li>
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
+              <li className="flex items-start gap-3 text-sm text-white/75">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden />
                 <a
                   href={`mailto:${contactInfo.email}`}
-                  className="break-all hover:text-forest-900"
+                  className="break-all hover:text-white"
                 >
                   {contactInfo.email}
                 </a>
               </li>
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forest-700" aria-hidden />
+              <li className="flex items-start gap-3 text-sm text-white/75">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden />
                 <address className="not-italic leading-relaxed">
                   {contactInfo.addressLines.map((line) => (
                     <span key={line} className="block">
@@ -90,8 +92,8 @@ export function Footer() {
                   ))}
                 </address>
               </li>
-              <li className="text-sm text-muted-foreground">
-                <p className="font-medium text-ink">{t('contact.hours')}</p>
+              <li className="text-sm text-white/70">
+                <p className="font-medium text-white">{t('contact.hours')}</p>
                 <p className="mt-0.5">
                   {t(contactInfo.hours.daysKey)} · {t(contactInfo.hours.timeKey)}
                 </p>
@@ -100,20 +102,21 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-border pt-6 sm:mt-12 sm:pt-8">
+        <div className="mt-10 border-t border-white/15 pt-6 sm:mt-12 sm:pt-8">
           <p
             className={cn(
-              'text-xs leading-relaxed text-muted-foreground',
+              'text-xs leading-relaxed text-white/55',
               locale === 'mr' && 'font-marathi',
             )}
           >
             {t('footer.disclaimer')}
           </p>
-          <div className="mt-6 flex flex-col items-center gap-1 text-center text-sm text-muted-foreground">
+          <div className="mt-6 flex flex-col items-center gap-1 text-center text-sm text-white/65">
             <p>
-              &copy; {Math.max(2026, new Date().getFullYear())} Kissan Agrisathi. {t('footer.rights')}
+              &copy; {Math.max(2026, new Date().getFullYear())} Kissan Agrisathi.{' '}
+              {t('footer.rights')}
             </p>
-            <p className="font-marathi text-forest-700">{t('footer.forFarmers')}</p>
+            <p className="font-marathi text-gold-100">{t('footer.forFarmers')}</p>
           </div>
         </div>
       </div>

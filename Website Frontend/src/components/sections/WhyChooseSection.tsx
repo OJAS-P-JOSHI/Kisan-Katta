@@ -11,7 +11,7 @@ export function WhyChooseSection() {
   const { t } = useTranslation()
 
   return (
-    <section className="section-padding bg-white">
+    <section className="section-padding bg-cream">
       <div className="container-wide">
         <SectionTitle
           eyebrow={t('section.why.eyebrow')}
@@ -34,7 +34,7 @@ export function WhyChooseSection() {
               transition={{ ...defaultTransition, delay: index * 0.08 }}
             >
               <InteractiveCard className="h-full">
-                <div className="flex h-full gap-4 rounded-2xl border border-border/60 bg-cream p-5 sm:p-6">
+                <div className="flex h-full gap-4 rounded-2xl border border-border/50 bg-white p-5 sm:p-6">
                   <CheckCircle2 className="h-6 w-6 shrink-0 text-forest-700" />
                   <div>
                     <h3 className="font-semibold text-ink">{t(item.titleKey)}</h3>

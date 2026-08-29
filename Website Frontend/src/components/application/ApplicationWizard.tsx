@@ -263,11 +263,14 @@ export function ApplicationWizard({
           <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
 
           {currentStep === REVIEW_STEP && (
-            <div className="mt-6 rounded-2xl border border-forest-100 bg-forest-50/60 p-5 sm:p-6">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-sm font-semibold text-ink">Registration Fee</p>
-                <p className="text-2xl font-bold text-forest-900">₹500</p>
-              </div>
+            <div className="mt-6 rounded-2xl border border-forest-100 bg-white p-5 shadow-soft sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-forest-700">
+                Registration Fee
+              </p>
+              <p className="mt-1 text-3xl font-bold tracking-tight text-forest-900">₹500</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate">
+                Village Representative application processing and verification.
+              </p>
               <p className="mt-3 text-sm text-slate">
                 By clicking the button below you agree to submit your application after
                 successful payment.
@@ -276,7 +279,7 @@ export function ApplicationWizard({
           )}
 
           {displayError && (
-            <div className="mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="mt-4 flex items-start gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-3.5 text-sm font-medium text-red-700">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 {payment.phase === 'failed' && !formError ? (
@@ -303,10 +306,11 @@ export function ApplicationWizard({
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between gap-3">
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
               type="button"
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => goToStep(Math.max(0, currentStep - 1))}
               disabled={
                 currentStep === 0 ||
@@ -321,7 +325,7 @@ export function ApplicationWizard({
 
             {currentStep === REVIEW_STEP ? (
               payment.awaitingPayment && payment.phase === 'failed' ? (
-                <Button type="button" onClick={() => void payment.retryPayment()} disabled={locked}>
+                <Button type="button" className="w-full sm:w-auto" onClick={() => void payment.retryPayment()} disabled={locked}>
                   {locked ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -335,7 +339,7 @@ export function ApplicationWizard({
                   )}
                 </Button>
               ) : (
-                <Button type="button" onClick={() => void handlePayAndSubmit()} disabled={locked}>
+                <Button type="button" className="w-full sm:w-auto" onClick={() => void handlePayAndSubmit()} disabled={locked}>
                   {locked ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -350,7 +354,7 @@ export function ApplicationWizard({
                 </Button>
               )
             ) : (
-              <Button type="button" onClick={() => void handleNext()} disabled={advancing || locked}>
+              <Button type="button" className="w-full sm:w-auto" onClick={() => void handleNext()} disabled={advancing || locked}>
                 {advancing ? t('app.autosave.saving') : t('app.wizard.next')}
                 {!advancing && <ArrowRight className="h-4 w-4" />}
               </Button>

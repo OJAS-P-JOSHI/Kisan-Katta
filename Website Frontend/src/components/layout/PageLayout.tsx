@@ -25,7 +25,7 @@ export function PageLayout({ children, hideFooter = false }: PageLayoutProps) {
       <main
         className={cn(
           'flex-1',
-          showMobileCTA && 'pb-28 sm:pb-32 lg:pb-0',
+          showMobileCTA && 'pb-32 sm:pb-36 lg:pb-0',
           showMobileCTA && isLanding && 'lg:pb-0',
         )}
       >
@@ -35,7 +35,7 @@ export function PageLayout({ children, hideFooter = false }: PageLayoutProps) {
       {showMobileCTA && (
         <MobileBottomCTA
           showDownload
-          showGramSahakari={isLanding}
+          showGramSahakari
           observeHero={isLanding}
         />
       )}

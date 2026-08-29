@@ -1,8 +1,9 @@
 import { FeatureCard } from '@/components/cards/FeatureCard'
-import { PageHero } from '@/components/common/SectionTitle'
+import { PageIntro } from '@/components/common/SectionTitle'
 import { Seo } from '@/components/common/Seo'
 import { CTASection } from '@/components/CTASection'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { ProductShowcaseSection } from '@/components/sections/ProductShowcaseSection'
 import { features } from '@/data/features'
 import { useTranslation } from '@/i18n/LanguageProvider'
 
@@ -12,11 +13,14 @@ export function FeaturesPage() {
   return (
     <PageLayout>
       <Seo title={t('seo.features.title')} description={t('seo.features.description')} path="/features" />
-      <PageHero
+      <PageIntro
+        kicker={t('section.features.eyebrow')}
         title={t('featuresPage.heroTitle')}
         marathiTitle={t('featuresPage.heroMarathi')}
         subtitle={t('featuresPage.heroSubtitle')}
       />
+
+      <ProductShowcaseSection />
 
       <section className="section-padding bg-cream">
         <div className="container-wide">
@@ -39,10 +43,10 @@ export function FeaturesPage() {
       <CTASection
         title={t('featuresPage.ctaTitle')}
         description={t('featuresPage.ctaDescription')}
-        primaryLabel={t('featuresPage.ctaDownload')}
-        primaryHref="/#download"
-        secondaryLabel={t('featuresPage.ctaGram')}
-        secondaryHref="/become-gram-sahakari"
+        primaryLabel={t('featuresPage.ctaGram')}
+        primaryHref="/become-gram-sahakari"
+        secondaryLabel={t('cta.downloadSoon')}
+        secondaryHref="/#download"
       />
     </PageLayout>
   )

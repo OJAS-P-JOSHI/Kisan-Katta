@@ -24,6 +24,17 @@ export const brandAssets = {
    */
   gramSahakari: '/gram-sahakari.webp',
   /**
+   * Product screenshots for the phone-frame showcase.
+   * Drop WebP files at these paths to replace the Coming Soon placeholder
+   * automatically — no component change required.
+   */
+  product: {
+    home: '/product/app-home.webp',
+    market: '/product/app-market.webp',
+    weather: '/product/app-weather.webp',
+    marketplace: '/product/app-marketplace.webp',
+  },
+  /**
    * Official signatures for Digital ID authorization block.
    * Final assets live at `/public/sign.png` and `/public/sign2.png`.
    */

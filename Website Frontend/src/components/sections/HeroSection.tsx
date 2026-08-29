@@ -106,7 +106,9 @@ const leafParticles = [
   { left: '78%', top: '40%', size: 15, duration: 10, delay: 1.1, drift: 11 },
 ]
 
-function LeafField() {
+function LeafField({ reduced }: { reduced: boolean }) {
+  if (reduced) return null
+
   return (
     <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden>
       {leafParticles.map((p, i) => (
@@ -157,7 +159,7 @@ export function HeroSection() {
             height={1620}
             fetchPriority="high"
             decoding="async"
-            className="h-full w-full object-cover object-top sm:object-center"
+            className="h-full w-full object-cover object-[center_18%] sm:object-center"
           />
         </picture>
       </motion.div>
@@ -169,7 +171,7 @@ export function HeroSection() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,33,19,0.97)_0%,rgba(14,33,19,0.86)_30%,rgba(14,33,19,0.45)_52%,rgba(14,33,19,0.1)_70%,transparent_86%)] sm:hidden"
+        className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,33,19,0.94)_0%,rgba(14,33,19,0.78)_28%,rgba(14,33,19,0.32)_54%,transparent_78%)] sm:hidden"
       />
 
       {/* ---- Desktop overlays: cinematic directional lighting & depth ---- */}
@@ -190,7 +192,7 @@ export function HeroSection() {
         transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       />
 
-      <LeafField />
+      <LeafField reduced={reduced} />
 
       {/* Smooth transition into the next section (desktop only) */}
       <div className="absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-b from-transparent to-cream sm:block" />
@@ -210,7 +212,7 @@ export function HeroSection() {
       {/* ============ MOBILE HERO (dedicated, simplified) ============ */}
       <div
         className={cn(
-          'relative flex min-h-[100dvh] flex-col justify-end px-5 pb-32 pt-24 sm:hidden',
+          'relative flex min-h-[100dvh] flex-col justify-end px-5 pb-36 pt-24 sm:hidden',
           marathi && 'font-marathi',
         )}
       >
@@ -238,7 +240,7 @@ export function HeroSection() {
 
           <motion.p
             variants={heroItem}
-            className="mt-4 line-clamp-2 max-w-[20rem] text-[15px] leading-relaxed text-white/85"
+            className="mt-4 max-w-[20.5rem] text-[15px] leading-relaxed text-white/88"
           >
             {t('hero.mobileSubheadline')}
           </motion.p>

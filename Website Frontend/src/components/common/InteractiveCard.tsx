@@ -1,4 +1,4 @@
-import { motion, type HTMLMotionProps } from 'framer-motion'
+import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion'
 import { useCallback, useRef, useState, type ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -23,10 +23,11 @@ export function InteractiveCard({
 }: InteractiveCardProps) {
   const [ripples, setRipples] = useState<Ripple[]>([])
   const rippleId = useRef(0)
+  const reduced = useReducedMotion() ?? false
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (disabled) return
+      if (disabled || reduced) return
       const rect = e.currentTarget.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
@@ -36,13 +37,13 @@ export function InteractiveCard({
         setRipples((prev) => prev.filter((r) => r.id !== id))
       }, 600)
     },
-    [disabled],
+    [disabled, reduced],
   )
 
   return (
     <motion.div
-      whileHover={disabled ? undefined : { y: -4, scale: 1.01 }}
-      whileTap={disabled ? undefined : { scale: 0.98 }}
+      whileHover={disabled || reduced ? undefined : { y: -4, scale: 1.01 }}
+      whileTap={disabled || reduced ? undefined : { scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onPointerDown={handlePointerDown}
       className={cn(

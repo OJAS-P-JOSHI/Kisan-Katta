@@ -43,8 +43,8 @@ export function WizardLayout({
         </div>
       </header>
 
-      <div className="relative mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 rounded-2xl border border-border/60 bg-white/70 p-4 shadow-soft backdrop-blur-sm sm:p-5">
+      <div className="relative mx-auto w-full max-w-3xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="mb-5 rounded-2xl border border-border/60 bg-white p-4 shadow-soft sm:mb-6 sm:p-5">
           <Stepper
             steps={steps}
             currentStep={currentStep}

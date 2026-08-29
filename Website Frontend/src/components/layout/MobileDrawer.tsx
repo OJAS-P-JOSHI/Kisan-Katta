@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Download, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -21,6 +21,7 @@ interface MobileDrawerProps {
 export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   const location = useLocation()
   const { t, locale } = useTranslation()
+  const reduced = useReducedMotion() ?? false
   const { user, isAuthenticated } = useAuth()
   const portalHref = isAuthenticated
     ? getApplicantEntryPath(user)
@@ -55,8 +56,12 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-3rem,22rem)] flex-col rounded-l-3xl border-l border-white/20 bg-white/95 shadow-drawer backdrop-blur-2xl"
+            transition={
+              reduced
+                ? { duration: 0.2 }
+                : { type: 'spring', damping: 28, stiffness: 320 }
+            }
+            className="fixed inset-y-0 right-0 z-[70] flex w-[min(100vw-2.5rem,22rem)] flex-col rounded-l-3xl border-l border-border/60 bg-cream shadow-drawer"
           >
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
               <BrandLogo size="md" showLink={false} />
@@ -91,7 +96,6 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
               </ul>
 
               <div className="my-5 border-t border-border/60" />
-
               <ul className="space-y-1">
                 {drawerPortalLinks.map((link) => {
                   const href =
@@ -118,10 +122,10 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
 
             <div className="space-y-3 border-t border-border/60 p-4">
               <LanguageToggle className="w-full justify-center" />
-              <Button asChild size="lg" variant="secondary" className="w-full">
+              <Button asChild size="lg" variant="outline" className="w-full">
                 <a href={appDownloadHref}>
                   <Download className="h-5 w-5" />
-                  {t('nav.downloadApp')}
+                  {t('cta.downloadSoon')}
                 </a>
               </Button>
             </div>

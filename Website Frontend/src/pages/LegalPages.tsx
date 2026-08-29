@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { PageHero } from '@/components/common/SectionTitle'
+import { PageIntro } from '@/components/common/SectionTitle'
 import { Seo } from '@/components/common/Seo'
 import { PageLayout } from '@/components/layout/PageLayout'
 import {
@@ -95,9 +95,9 @@ function LegalDocument({
   return (
     <PageLayout>
       <Seo title={doc.title} description={doc.seoDescription} />
-      <PageHero title={doc.title} subtitle={doc.subtitle} />
-      <section className="section-padding bg-cream">
-        <div className="container-wide mx-auto max-w-3xl">
+      <PageIntro title={doc.title} subtitle={doc.subtitle} />
+      <section className="section-padding !pt-8 bg-cream">
+        <div className="container-wide mx-auto max-w-2xl">
           <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center rounded-full bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
               {shell.versionLabel}

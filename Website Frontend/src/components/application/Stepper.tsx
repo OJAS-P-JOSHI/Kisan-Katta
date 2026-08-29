@@ -54,7 +54,7 @@ export function Stepper({
                   aria-current={isCurrent ? 'step' : undefined}
                   aria-label={`Step ${index + 1}: ${step.title}`}
                   className={cn(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
+                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
                     isCurrent && 'border-forest-900 bg-forest-900 text-white',
                     isComplete && !isCurrent && 'border-forest-500 bg-forest-500 text-white',
                     !isCurrent && !isComplete && 'border-mist bg-white text-steel',
@@ -73,8 +73,8 @@ export function Stepper({
               </div>
               <span
                 className={cn(
-                  'mt-1.5 hidden max-w-full truncate px-1 text-[11px] font-medium sm:block',
-                  isCurrent ? 'text-forest-900' : 'text-muted-foreground',
+                  'mt-1.5 max-w-full truncate px-0.5 text-[10px] font-medium sm:text-[11px]',
+                  isCurrent ? 'text-forest-900' : 'hidden text-muted-foreground sm:block',
                 )}
               >
                 {step.shortTitle}

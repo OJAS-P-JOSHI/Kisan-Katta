@@ -26,8 +26,38 @@ export const translations = {
     'features.farmerPrice': 'Farmer Expected Price',
     'features.community': 'Farmer Community',
 
-    'section.quickFeatures.eyebrow': 'Explore',
-    'section.quickFeatures.title': 'Quick Features',
+    'section.quickFeatures.eyebrow': 'The product',
+    'section.quickFeatures.title': 'What farmers use',
+
+    'section.product.eyebrow': 'The app',
+    'section.product.title': 'Kissan Agrisathi on your phone',
+    'section.product.marathiTitle': 'तुमच्या फोनवर Kissan Agrisathi',
+    'section.product.subtitle':
+      'Weather, government mandi prices, and a local marketplace — built in Marathi for Maharashtra farmers.',
+    'section.product.comingSoonTitle': 'Kissan Agrisathi',
+    'section.product.comingSoonApp': 'Mobile App',
+    'section.product.comingSoonBody': 'App experience is being refined',
+    'section.product.comingSoon': 'Coming Soon',
+    'section.product.comingSoonFeatures': 'Weather • Market • Marketplace',
+    'section.product.screen.home': 'Home',
+    'section.product.screen.market': 'Market Prices',
+    'section.product.screen.weather': 'Weather',
+    'section.product.screen.marketplace': 'Marketplace',
+    'section.product.screen.homeAlt': 'Kissan Agrisathi home screen',
+    'section.product.screen.marketAlt': 'Kissan Agrisathi market prices screen',
+    'section.product.screen.weatherAlt': 'Kissan Agrisathi weather screen',
+    'section.product.screen.marketplaceAlt': 'Kissan Agrisathi marketplace screen',
+
+    'section.trust.eyebrow': 'Built with care',
+    'section.trust.title': 'An honest platform for Maharashtra farmers',
+    'section.trust.maharashtra': 'Maharashtra-focused',
+    'section.trust.maharashtraBody': 'Designed for villages and mandis across the state.',
+    'section.trust.marathi': 'Marathi-first',
+    'section.trust.marathiBody': 'Farmers can use the product in their own language.',
+    'section.trust.farmer': 'Farmer-focused',
+    'section.trust.farmerBody': 'Weather, prices, and marketplace for daily farm decisions.',
+    'section.trust.independent': 'Independent platform',
+    'section.trust.independentBody': 'An independent agritech product — not a government portal.',
 
     'cta.downloadApp': 'Download Kissan Agrisathi App',
     'cta.becomeGramSahakari': 'Become Village Representative',
@@ -47,7 +77,7 @@ export const translations = {
     'section.why.title': 'Why Farmers Choose Kissan Agrisathi',
     'section.why.marathiTitle': 'शेतकरी Kissan Agrisathi का निवडतात',
     'section.why.subtitle':
-      'Trusted by farmers across 36 districts — because it was designed with them, not for a boardroom.',
+      'Designed with Maharashtra farmers — Marathi-first tools for weather, mandi prices, and local trade.',
 
     'section.howItWorks.eyebrow': 'Application Process',
     'section.howItWorks.title': 'How It Works',
@@ -100,9 +130,13 @@ export const translations = {
     'footer.disclaimer':
       'Kissan Agrisathi is an independent agritech platform. Government market price information, weather data, and similar external information are sourced from third-party or government providers where applicable. Availability and accuracy may vary.',
 
-    'landing.cta.title': "Ready to Join Maharashtra's Digital Farming Revolution?",
+    'landing.cta.title': 'Help farmers in your village go digital',
     'landing.cta.description':
-      'Download the app or become a Village Representative and help farmers in your village.',
+      'Become a Village Representative and guide farmers to weather, mandi prices, and marketplace tools in Marathi.',
+    'landing.cta.downloadNote': 'The mobile app is being refined. Store links will appear here when they go live.',
+    'cta.downloadSoon': 'App coming soon',
+    'section.gramSahakari.needTitle': 'What you need',
+    'section.gramSahakari.howTitle': 'How to apply',
 
     'common.loading': 'Loading…',
     'common.tryAgain': 'Try Again',
@@ -291,7 +325,7 @@ export const translations = {
       'Make a lasting impact by helping fellow farmers adopt digital tools.',
     'become.benefit.network.title': 'Join a Network',
     'become.benefit.network.description':
-      'Connect with 2,000+ Village Representatives and share best practices.',
+      'Join other Village Representatives and share what works in your village.',
     'become.benefit.recognition.title': 'Community Recognition',
     'become.benefit.recognition.description':
       'Get recognized for your contribution to digital farming in your district.',
@@ -662,8 +696,38 @@ export const translations = {
     'features.farmerPrice': 'अपेक्षित भाव',
     'features.community': 'शेतकरी समुदाय',
 
-    'section.quickFeatures.eyebrow': 'शोधा',
-    'section.quickFeatures.title': 'त्वरित वैशिष्ट्ये',
+    'section.quickFeatures.eyebrow': 'उत्पादन',
+    'section.quickFeatures.title': 'शेतकरी काय वापरतात',
+
+    'section.product.eyebrow': 'अॅप',
+    'section.product.title': 'तुमच्या फोनवर Kissan Agrisathi',
+    'section.product.marathiTitle': 'तुमच्या फोनवर Kissan Agrisathi',
+    'section.product.subtitle':
+      'हवामान, सरकारी बाजार भाव आणि स्थानिक बाजारपेठ — महाराष्ट्रातील शेतकऱ्यांसाठी मराठीत.',
+    'section.product.comingSoonTitle': 'Kissan Agrisathi',
+    'section.product.comingSoonApp': 'मोबाइल अॅप',
+    'section.product.comingSoonBody': 'अॅप अनुभव सुधारला जात आहे',
+    'section.product.comingSoon': 'लवकरच येत आहे',
+    'section.product.comingSoonFeatures': 'हवामान • बाजार • बाजारपेठ',
+    'section.product.screen.home': 'मुख्य पृष्ठ',
+    'section.product.screen.market': 'बाजार भाव',
+    'section.product.screen.weather': 'हवामान',
+    'section.product.screen.marketplace': 'बाजारपेठ',
+    'section.product.screen.homeAlt': 'Kissan Agrisathi मुख्य स्क्रीन',
+    'section.product.screen.marketAlt': 'Kissan Agrisathi बाजार भाव स्क्रीन',
+    'section.product.screen.weatherAlt': 'Kissan Agrisathi हवामान स्क्रीन',
+    'section.product.screen.marketplaceAlt': 'Kissan Agrisathi बाजारपेठ स्क्रीन',
+
+    'section.trust.eyebrow': 'काळजीपूर्वक बांधले',
+    'section.trust.title': 'महाराष्ट्रातील शेतकऱ्यांसाठी प्रामाणिक व्यासपीठ',
+    'section.trust.maharashtra': 'महाराष्ट्र-केंद्रित',
+    'section.trust.maharashtraBody': 'राज्यातील गावे आणि बाजारांसाठी डिझाइन केले.',
+    'section.trust.marathi': 'मराठी प्रथम',
+    'section.trust.marathiBody': 'शेतकरी स्वतःच्या भाषेत उत्पादन वापरू शकतात.',
+    'section.trust.farmer': 'शेतकरी-केंद्रित',
+    'section.trust.farmerBody': 'दैनंदिन शेती निर्णयांसाठी हवामान, भाव आणि बाजारपेठ.',
+    'section.trust.independent': 'स्वतंत्र व्यासपीठ',
+    'section.trust.independentBody': 'स्वतंत्र अ‍ॅग्रीटेक उत्पादन — सरकारी पोर्टल नाही.',
 
     'cta.downloadApp': 'Kissan Agrisathi अॅप डाउनलोड करा',
     'cta.becomeGramSahakari': 'गाव प्रतिनिधी बना',
@@ -683,7 +747,7 @@ export const translations = {
     'section.why.title': 'शेतकरी Kissan Agrisathi का निवडतात',
     'section.why.marathiTitle': 'शेतकरी Kissan Agrisathi का निवडतात',
     'section.why.subtitle':
-      '३६ जिल्ह्यांतील शेतकऱ्यांचा विश्वास — कारण हे त्यांच्यासाठी, बोर्डरूमसाठी नाही, डिझाइन केले.',
+      'महाराष्ट्रातील शेतकऱ्यांसोबत डिझाइन केले — हवामान, बाजार भाव आणि स्थानिक व्यापारासाठी मराठी-प्रथम साधने.',
 
     'section.howItWorks.eyebrow': 'अर्ज प्रक्रिया',
     'section.howItWorks.title': 'कसे काम करते',
@@ -736,9 +800,13 @@ export const translations = {
     'footer.disclaimer':
       'Kissan Agrisathi हे एक स्वतंत्र अ‍ॅग्रीटेक व्यासपीठ आहे. सरकारी बाजारभाव माहिती, हवामान डेटा आणि तत्सम बाह्य माहिती लागू असेल तेथे तृतीय-पक्ष किंवा सरकारी स्रोतांकडून घेतली जाते. उपलब्धता व अचूकता बदलू शकते.',
 
-    'landing.cta.title': 'महाराष्ट्राच्या डिजिटल शेती क्रांतीत सामील व्हाल?',
+    'landing.cta.title': 'तुमच्या गावातील शेतकऱ्यांना डिजिटल होण्यास मदत करा',
     'landing.cta.description':
-      'अॅप डाउनलोड करा किंवा गाव प्रतिनिधी बना आणि तुमच्या गावातील शेतकऱ्यांना मदत करा.',
+      'गाव प्रतिनिधी बना आणि शेतकऱ्यांना मराठीत हवामान, बाजार भाव आणि बाजारपेठ साधनांपर्यंत मार्गदर्शन करा.',
+    'landing.cta.downloadNote': 'मोबाइल अॅप सुधारले जात आहे. स्टोअर लिंक उपलब्ध झाल्यावर येथे दिसतील.',
+    'cta.downloadSoon': 'अॅप लवकरच येत आहे',
+    'section.gramSahakari.needTitle': 'काय लागते',
+    'section.gramSahakari.howTitle': 'अर्ज कसा करायचा',
 
     'common.loading': 'लोड होत आहे…',
     'common.tryAgain': 'पुन्हा प्रयत्न करा',
@@ -927,7 +995,7 @@ export const translations = {
       'सहशेतकऱ्यांना डिजिटल साधने स्वीकारायला मदत करून दीर्घकाळ टिकणारा प्रभाव पाडा.',
     'become.benefit.network.title': 'नेटवर्कमध्ये सामील व्हा',
     'become.benefit.network.description':
-      '२,०००+ गाव प्रतिनिधीांशी जोडा आणि उत्तम पद्धती शेअर करा.',
+      'इतर गाव प्रतिनिधीांसोबत जोडा आणि तुमच्या गावात काय चालते ते शेअर करा.',
     'become.benefit.recognition.title': 'समुदाय मान्यता',
     'become.benefit.recognition.description':
       'तुमच्या जिल्ह्यातील डिजिटल शेतीतील योगदानासाठी मान्यता मिळवा.',

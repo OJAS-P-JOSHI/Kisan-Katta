@@ -58,7 +58,11 @@ export function CTASection({
               </Button>
               {secondaryLabel && secondaryHref && (
                 <Button asChild size="lg" variant="glass">
-                  <Link to={secondaryHref}>{secondaryLabel}</Link>
+                  {secondaryHref.startsWith('/#') || secondaryHref.startsWith('#') ? (
+                    <a href={secondaryHref}>{secondaryLabel}</a>
+                  ) : (
+                    <Link to={secondaryHref}>{secondaryLabel}</Link>
+                  )}
                 </Button>
               )}
             </div>

@@ -39,9 +39,9 @@ export function Navbar() {
   return (
     <>
       <motion.header
-        initial={{ y: -16, opacity: 0 }}
+        initial={{ y: 0, opacity: 1 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           'fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,border-color,backdrop-filter] duration-500 ease-out',
           transparent
@@ -91,10 +91,10 @@ export function Navbar() {
             <Link
               to={applyHref}
               className={cn(
-                'ml-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300',
+                'ml-2 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold transition-colors duration-300',
                 locale === 'mr' && 'font-marathi',
                 transparent
-                  ? 'bg-white/15 text-white hover:bg-white/25'
+                  ? 'bg-gold-500 text-forest-900 hover:bg-gold-400'
                   : 'bg-forest-900 text-white hover:bg-forest-700',
               )}
             >

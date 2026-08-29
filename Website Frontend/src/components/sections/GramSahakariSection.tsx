@@ -1,38 +1,31 @@
 import { motion } from 'framer-motion'
-import {
-  ArrowRight,
-  Award,
-  HandHeart,
-  MapPin,
-  Smartphone,
-  Sprout,
-  Users,
-  Wifi,
-} from 'lucide-react'
+import { ArrowRight, Clock, Heart, MapPin, Smartphone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { SectionTitle } from '@/components/common/SectionTitle'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import {
-  gramSahakariBenefits,
-  gramSahakariResponsibilities,
-  villageImpactStats,
-} from '@/data/gram-sahakari'
+import { gramSahakariBenefits } from '@/data/gram-sahakari'
 import { brandAssets } from '@/data/images'
 import { useTranslation } from '@/i18n/LanguageProvider'
-import { defaultTransition, fadeUp, staggerContainer } from '@/lib/motion'
+import type { TranslationKeys } from '@/i18n/translations'
+import { defaultTransition, fadeUp } from '@/lib/motion'
+import { cn } from '@/lib/utils'
 
-const responsibilityIcons = [Smartphone, HandHeart, Sprout, Wifi, Users]
+const requirements: { icon: typeof MapPin; textKey: TranslationKeys }[] = [
+  { icon: MapPin, textKey: 'become.req.resident' },
+  { icon: Smartphone, textKey: 'become.req.smartphone' },
+  { icon: Clock, textKey: 'become.req.hours' },
+  { icon: Heart, textKey: 'become.req.passion' },
+]
 
 export function GramSahakariSection() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
+  const marathi = locale === 'mr'
 
   return (
-    <section id="gram-sahakari" className="section-padding relative overflow-hidden bg-cream">
-      <div className="organic-blob pointer-events-none absolute inset-0" />
-      <div className="container-wide relative">
+    <section id="gram-sahakari" className="section-padding bg-white">
+      <div className="container-wide">
         <SectionTitle
           eyebrow={t('section.gramSahakari.eyebrow')}
           title={t('section.gramSahakari.title')}
@@ -40,64 +33,25 @@ export function GramSahakariSection() {
           subtitle={t('section.gramSahakari.subtitle')}
         />
 
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-40px' }}
             variants={fadeUp}
             transition={defaultTransition}
-            className="space-y-6"
           >
-            <Card className="border-forest-100/80 bg-white shadow-card">
-              <CardContent className="p-6 sm:p-8">
-                <h3 className="text-xl font-bold text-ink sm:text-2xl">
-                  {t('section.gramSahakari.whoTitle')}
-                </h3>
-                <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-                  {t('section.gramSahakari.whoBody')}
-                </p>
-              </CardContent>
-            </Card>
-
-            <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-forest-700">
-                {t('section.gramSahakari.responsibilitiesTitle')}
-              </h4>
-              <ul className="space-y-3">
-                {gramSahakariResponsibilities.map((item, i) => {
-                  const Icon = responsibilityIcons[i] ?? Users
-                  return (
-                    <li key={item.textKey} className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-soft">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="pt-2 text-[15px] text-slate">{t(item.textKey)}</span>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-forest-700">
-                {t('section.gramSahakari.benefitsTitle')}
-              </h4>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {gramSahakariBenefits.map((benefit) => (
-                  <div
-                    key={benefit.titleKey}
-                    className="rounded-2xl border border-gold-100 bg-gold-100/40 p-4"
-                  >
-                    <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500 text-white">
-                      <Award className="h-4 w-4" />
-                    </div>
-                    <p className="font-semibold text-ink">{t(benefit.titleKey)}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {t(benefit.descriptionKey)}
-                    </p>
-                  </div>
-                ))}
+            <div className="relative overflow-hidden rounded-3xl shadow-card ring-1 ring-forest-900/5">
+              <OptimizedImage
+                src={brandAssets.gramSahakari}
+                alt={t('gram.imageAlt')}
+                width={800}
+                height={1000}
+                className="aspect-[4/5] w-full object-cover object-top sm:aspect-[5/4] lg:aspect-[4/5]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-forest-900/80 via-forest-900/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-7">
+                <p className="font-marathi text-lg sm:text-xl">{t('gram.overlay')}</p>
               </div>
             </div>
           </motion.div>
@@ -107,61 +61,111 @@ export function GramSahakariSection() {
             whileInView="visible"
             viewport={{ once: true, margin: '-40px' }}
             variants={fadeUp}
-            transition={{ ...defaultTransition, delay: 0.12 }}
-            className="space-y-6"
+            transition={{ ...defaultTransition, delay: 0.08 }}
+            className="space-y-8"
           >
-            <div className="relative overflow-hidden rounded-3xl shadow-lift ring-1 ring-forest-900/5">
-              <OptimizedImage
-                src={brandAssets.gramSahakari}
-                alt={t('gram.imageAlt')}
-                width={800}
-                height={1000}
-                className="aspect-[4/5] w-full object-cover object-top"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-forest-900/75 via-forest-900/15 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white sm:p-8">
-                <p className="font-marathi text-lg sm:text-xl">{t('gram.overlay')}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-white/85">
-                  {t('section.gramSahakari.subtitle')}
-                </p>
-              </div>
+            <div>
+              <h3
+                className={cn(
+                  'text-xl font-bold tracking-tight text-ink sm:text-2xl',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('section.gramSahakari.whoTitle')}
+              </h3>
+              <p
+                className={cn(
+                  'mt-3 text-[15px] leading-relaxed text-muted-foreground',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('section.gramSahakari.whoBody')}
+              </p>
             </div>
 
-            <Card className="border-forest-100 bg-white shadow-card">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-gold-500" />
-                  <h4 className="font-bold text-ink">{t('section.gramSahakari.impactTitle')}</h4>
-                </div>
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={staggerContainer}
-                  className="grid grid-cols-3 gap-3"
-                >
-                  {villageImpactStats.map((stat) => (
-                    <motion.div
-                      key={stat.labelKey}
-                      variants={fadeUp}
-                      className="rounded-2xl bg-forest-50 px-3 py-4 text-center"
+            <div>
+              <h4
+                className={cn(
+                  'text-sm font-semibold uppercase tracking-wider text-forest-700',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('section.gramSahakari.benefitsTitle')}
+              </h4>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {gramSahakariBenefits.map((benefit) => (
+                  <li
+                    key={benefit.titleKey}
+                    className="rounded-2xl border border-border/50 bg-cream px-4 py-4"
+                  >
+                    <p className={cn('font-semibold text-ink', marathi && 'font-marathi')}>
+                      {t(benefit.titleKey)}
+                    </p>
+                    <p
+                      className={cn(
+                        'mt-1 text-sm leading-relaxed text-muted-foreground',
+                        marathi && 'font-marathi',
+                      )}
                     >
-                      <p className="text-xl font-bold text-forest-900 sm:text-2xl">{stat.value}</p>
-                      <p className="mt-1 text-[10px] leading-tight text-muted-foreground sm:text-xs">
-                        {t(stat.labelKey)}
-                      </p>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </CardContent>
-            </Card>
+                      {t(benefit.descriptionKey)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <Button asChild size="lg" className="w-full">
-              <Link to="/become-gram-sahakari">
-                {t('section.gramSahakari.apply')}
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-            </Button>
+            <div>
+              <h4
+                className={cn(
+                  'text-sm font-semibold uppercase tracking-wider text-forest-700',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('section.gramSahakari.needTitle')}
+              </h4>
+              <ul className="mt-3 space-y-2.5">
+                {requirements.map(({ icon: Icon, textKey }) => (
+                  <li key={textKey} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span
+                      className={cn(
+                        'pt-1.5 text-[15px] text-slate',
+                        marathi && 'font-marathi',
+                      )}
+                    >
+                      {t(textKey)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4
+                className={cn(
+                  'text-sm font-semibold uppercase tracking-wider text-forest-700',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('section.gramSahakari.howTitle')}
+              </h4>
+              <p
+                className={cn(
+                  'mt-2 text-[15px] leading-relaxed text-muted-foreground',
+                  marathi && 'font-marathi',
+                )}
+              >
+                {t('become.timeline.apply.description')}
+              </p>
+              <Button asChild size="lg" className="mt-5 w-full sm:w-auto">
+                <Link to="/become-gram-sahakari">
+                  {t('section.gramSahakari.apply')}
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 import { BrandLogo } from '@/components/common/BrandLogo'
 
@@ -8,22 +8,28 @@ interface FullScreenLoaderProps {
 
 /**
  * Branded full-screen loader shown during login, OTP verification, user
- * loading, and session restoration.
+ * loading, and session restoration. Presentation only — callers unchanged.
  */
 export function FullScreenLoader({ message = 'Loading…' }: FullScreenLoaderProps) {
+  const reduced = useReducedMotion() ?? false
+
   return (
-    <div className="fixed inset-0 z-50 flex min-h-[100dvh] flex-col items-center justify-center gap-6 bg-background">
-      <div className="organic-blob absolute inset-0" aria-hidden />
+    <div className="fixed inset-0 z-50 flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-cream">
       <motion.div
-        animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative rounded-full shadow-lift ring-4 ring-white/70"
+        initial={reduced ? false : { opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       >
         <BrandLogo size="xl" showLink={false} priority />
       </motion.div>
-      <p className="relative text-sm font-medium tracking-tight text-muted-foreground">
+      <motion.p
+        initial={reduced ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: reduced ? 0 : 0.12, duration: 0.3 }}
+        className="text-sm font-medium tracking-tight text-muted-foreground"
+      >
         {message}
-      </p>
+      </motion.p>
     </div>
   )
 }

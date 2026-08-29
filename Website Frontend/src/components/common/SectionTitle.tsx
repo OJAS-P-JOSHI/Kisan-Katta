@@ -98,3 +98,65 @@ export function PageHero({ title, subtitle, marathiTitle, children }: PageHeroPr
     </section>
   )
 }
+
+interface PageIntroProps {
+  kicker?: string
+  title: string
+  subtitle?: string
+  marathiTitle?: string
+  children?: ReactNode
+  align?: 'left' | 'center'
+}
+
+/** Light editorial page header — used instead of repeating the dark PageHero. */
+export function PageIntro({
+  kicker,
+  title,
+  subtitle,
+  marathiTitle,
+  children,
+  align = 'left',
+}: PageIntroProps) {
+  const { locale } = useLanguage()
+
+  return (
+    <section className="bg-cream px-4 pb-2 pt-24 sm:px-5 sm:pt-28 md:pt-32">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+        transition={defaultTransition}
+        className={cn(
+          'container-wide',
+          align === 'center' && 'text-center',
+          locale === 'mr' && 'font-marathi',
+        )}
+      >
+        <div className={cn(align === 'left' && 'max-w-3xl')}>
+          {kicker && (
+            <span className="mb-3 inline-block text-[11px] font-bold uppercase tracking-[0.16em] text-forest-700">
+              {kicker}
+            </span>
+          )}
+          <h1 className="text-[1.75rem] font-bold tracking-tight text-ink sm:text-4xl md:text-5xl">
+            {title}
+          </h1>
+          {marathiTitle && locale === 'en' && (
+            <p className="font-marathi mt-2 text-base text-forest-700 sm:text-lg">{marathiTitle}</p>
+          )}
+          {subtitle && (
+            <p
+              className={cn(
+                'mt-4 text-[15px] leading-relaxed text-muted-foreground sm:text-lg',
+                align === 'center' && 'mx-auto max-w-2xl',
+              )}
+            >
+              {subtitle}
+            </p>
+          )}
+          {children && <div className="mt-6">{children}</div>}
+        </div>
+      </motion.div>
+    </section>
+  )
+}
