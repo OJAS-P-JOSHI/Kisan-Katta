@@ -13,7 +13,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#1A4D2E",
-        "foregroundImage": "./assets/branding/logo-circle.png"
+        "foregroundImage": "./assets/branding/logo-adaptive-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.kisankatta.app",

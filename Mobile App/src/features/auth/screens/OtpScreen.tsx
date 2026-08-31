@@ -1,18 +1,22 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
-  Dimensions,
+  Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { HelperText, Text } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { HelperText } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OtpInput } from '../components/OtpInput';
 import { useAuth } from '../context/AuthContext';
@@ -20,31 +24,99 @@ import { useCountdown } from '../hooks/useCountdown';
 import { useSendOtp } from '../hooks/useSendOtp';
 import { useVerifyOtp } from '../hooks/useVerifyOtp';
 
-// ---------------------------------------------------------------------------
-// Design tokens — matches MobileNumberScreen exactly
-// ---------------------------------------------------------------------------
-const C = {
-  primaryGreen:   '#2E7D32',
-  secondaryGreen: '#43A047',
-  lightGreen:     '#F0F7EE',
-  bgTop:          '#EEF5EB',
-  bgBottom:       '#F7FAF6',
-  white:          '#FFFFFF',
-  text:           '#1B1B1B',
-  textSecondary:  '#6B7280',
-  inputBorder:    '#B8DDB9',
-  inputBg:        '#F4FAF4',
-  disabledBg:     '#E0E0E0',
-  disabledText:   '#9E9E9E',
-  subtitleGreen:  '#388E3C',
-  divider:        '#C8E6C9',
-} as const;
+const HERO_PHOTO = require('../../../../assets/branding/otp-hero.webp');
+const LOGO = require('../../../../assets/branding/logo-circle.png');
+const WAVE = require('../../../../assets/branding/login-wave.png');
+const LANDSCAPE = require('../../../../assets/branding/login-landscape.webp');
 
-const S = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
-const { width: SCREEN_W } = Dimensions.get('window');
+const C = {
+  cream: '#FDF9F3',
+  primaryGreen: '#006A2C',
+  welcomeGreen: '#1B6B32',
+  headingBrown: '#4A3728',
+  brandGreen: '#0D5C2E',
+  tagline: '#5C5348',
+  bodyGrey: '#7A746C',
+  paleGreen: '#E8F5EC',
+  trustOrange: '#E09112',
+  divider: '#E4E0D6',
+  white: '#FFFFFF',
+  card: '#FFFCF7',
+} as const;
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 30;
+
+type Layout = {
+  compact: boolean;
+  heroH: number;
+  waveH: number;
+  badge: number;
+  logo: number;
+  padX: number;
+  ctaH: number;
+  gap: number;
+  landscapeMin: number;
+  headingSize: number;
+  subSize: number;
+  brandSize: number;
+  tagSize: number;
+};
+
+function layoutFor(width: number, height: number): Layout {
+  const compact = height < 700;
+  const cozy = height < 800;
+  const v = Math.min(Math.max(height / 844, 0.72), 1.06);
+  const h = Math.min(Math.max(width / 390, 0.82), 1.1);
+  const vs = (n: number) => Math.round(n * v);
+  const hs = (n: number) => Math.round(n * h);
+
+  const heroRatio = compact ? 0.24 : cozy ? 0.28 : 0.30;
+  const heroH = Math.round(height * heroRatio);
+  const waveH = Math.round(Math.max(compact ? 64 : 76, Math.min(heroH * 0.42, width * 0.26)));
+
+  return {
+    compact,
+    heroH,
+    waveH,
+    badge: hs(compact ? 44 : 50),
+    logo: hs(compact ? 42 : 50),
+    padX: hs(20),
+    ctaH: compact ? 48 : 54,
+    gap: compact ? vs(8) : cozy ? vs(10) : vs(12),
+    landscapeMin: compact ? vs(80) : vs(120),
+    headingSize: compact ? 18 : 22,
+    subSize: compact ? 12 : 14,
+    brandSize: compact ? 14 : 16,
+    tagSize: compact ? 9 : 11,
+  };
+}
+
+function TrustColumn({
+  icon,
+  iconColor,
+  title,
+  titleColor,
+  subtitle,
+  compact,
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  iconColor: string;
+  title: string;
+  titleColor: string;
+  subtitle: string;
+  compact: boolean;
+}) {
+  return (
+    <View style={styles.trustCol}>
+      <MaterialCommunityIcons name={icon} size={compact ? 18 : 22} color={iconColor} />
+      <Text style={[styles.trustTitle, { color: titleColor, fontSize: compact ? 11 : 13 }]}>{title}</Text>
+      <Text style={[styles.trustSub, { fontSize: compact ? 9 : 10 }]} numberOfLines={2}>
+        {subtitle}
+      </Text>
+    </View>
+  );
+}
 
 export default function OtpScreen() {
   // ── Business logic — UNTOUCHED ──────────────────────────────────────────
@@ -98,356 +170,469 @@ export default function OtpScreen() {
   const canVerify = code.length === OTP_LENGTH && !verifying;
   // ────────────────────────────────────────────────────────────────────────
 
-  // Animations — same pattern as MobileNumberScreen
-  const cardAnim = useRef(new Animated.Value(0)).current;
-  const btnScale = useRef(new Animated.Value(1)).current;
+  const { width: W, height: H } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [keyboardH, setKeyboardH] = useState(0);
+  const keyboardOpen = keyboardH > 0;
+  const L = useMemo(() => layoutFor(W, H), [W, H]);
+  const digitsReady = code.length === OTP_LENGTH;
 
   useEffect(() => {
-    Animated.timing(cardAnim, { toValue: 1, duration: 480, useNativeDriver: true }).start();
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, (e) => setKeyboardH(e.endCoordinates.height));
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardH(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
   }, []);
 
+  const heroAnim = useMemo(() => new Animated.Value(0), []);
+  const cardAnim = useMemo(() => new Animated.Value(0), []);
+  const btnScale = useMemo(() => new Animated.Value(1), []);
+
+  useEffect(() => {
+    Animated.stagger(90, [
+      Animated.timing(heroAnim, { toValue: 1, duration: 480, useNativeDriver: true }),
+      Animated.timing(cardAnim, { toValue: 1, duration: 420, useNativeDriver: true }),
+    ]).start();
+  }, [cardAnim, heroAnim]);
+
+  const heroStyle = {
+    opacity: heroAnim,
+    transform: [{ translateY: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+  };
   const cardStyle = {
     opacity: cardAnim,
-    transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }],
+    transform: [{ translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }],
   };
 
-  const onPressIn  = () => { if (!canVerify) return; Animated.spring(btnScale, { toValue: 0.97, useNativeDriver: true }).start(); };
-  const onPressOut = () => { Animated.spring(btnScale, { toValue: 1, useNativeDriver: true }).start(); };
+  const onPressIn = () => {
+    if (!canVerify) return;
+    Animated.spring(btnScale, { toValue: 0.97, useNativeDriver: true }).start();
+  };
+  const onPressOut = () => {
+    Animated.spring(btnScale, { toValue: 1, useNativeDriver: true }).start();
+  };
+
+  const heroH = L.heroH;
+  const waveH = L.waveH;
+  const badgeBottom = Math.round(waveH * 0.26 - L.badge / 2);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-
-      {/* ── Full-screen background — same leaf/hill treatment as MobileNumberScreen ── */}
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-        <View style={styles.bgTop} />
-        <View style={styles.bgBottom} />
-
-        <View style={styles.hillWrap}>
-          <View style={[styles.hillBack,  { backgroundColor: '#A5D6A7' }]} />
-          <View style={[styles.hillMid,   { backgroundColor: '#81C784' }]} />
-          <View style={[styles.hillFront, { backgroundColor: '#66BB6A' }]} />
-        </View>
-
-        <View style={styles.leafTL}>
-          <View style={[styles.leafStem, { backgroundColor: '#4CAF50', opacity: 0.55 }]} />
-          <View style={[styles.leafBlade1, { backgroundColor: '#66BB6A', opacity: 0.6 }]} />
-          <View style={[styles.leafBlade2, { backgroundColor: '#81C784', opacity: 0.5 }]} />
-          <View style={[styles.leafBlade3, { backgroundColor: '#A5D6A7', opacity: 0.45 }]} />
-        </View>
-
-        <View style={styles.leafTR}>
-          <View style={[styles.leafBladeR1, { backgroundColor: '#4CAF50', opacity: 0.45 }]} />
-          <View style={[styles.leafBladeR2, { backgroundColor: '#66BB6A', opacity: 0.38 }]} />
-        </View>
-
-        <View style={styles.leafBR}>
-          <View style={[styles.leafBRBlade1, { backgroundColor: '#4CAF50', opacity: 0.4 }]} />
-          <View style={[styles.leafBRBlade2, { backgroundColor: '#66BB6A', opacity: 0.35 }]} />
-        </View>
-
-        <View style={styles.leafBL}>
-          <View style={[styles.leafBLBlade1, { backgroundColor: '#4CAF50', opacity: 0.4 }]} />
-          <View style={[styles.leafBLBlade2, { backgroundColor: '#66BB6A', opacity: 0.35 }]} />
-        </View>
-
-        <View style={styles.leafCornerBL}>
-          <View style={[styles.leafCornerBLBlade1, { backgroundColor: '#388E3C', opacity: 0.3 }]} />
-          <View style={[styles.leafCornerBLBlade2, { backgroundColor: '#66BB6A', opacity: 0.28 }]} />
-          <View style={[styles.leafCornerBLBlade3, { backgroundColor: '#A5D6A7', opacity: 0.25 }]} />
-        </View>
-
-        <View style={styles.leafCornerBR}>
-          <View style={[styles.leafCornerBRBlade1, { backgroundColor: '#388E3C', opacity: 0.3 }]} />
-          <View style={[styles.leafCornerBRBlade2, { backgroundColor: '#66BB6A', opacity: 0.28 }]} />
-          <View style={[styles.leafCornerBRBlade3, { backgroundColor: '#A5D6A7', opacity: 0.25 }]} />
-        </View>
-      </View>
-
+    <View style={styles.root}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, { minHeight: H }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          {/* ── Card ── */}
-          <Animated.View style={[styles.card, cardStyle]}>
+          <Animated.View style={[{ height: heroH }, heroStyle]}>
+            <View style={styles.heroClip}>
+              <Image source={HERO_PHOTO} style={styles.heroPhoto} resizeMode="cover" />
 
-            {/* Icon badge */}
-            <View style={styles.iconBadge}>
-              <MaterialCommunityIcons name="shield-check-outline" size={28} color={C.primaryGreen} />
-            </View>
-
-            {/* Title */}
-            <Text style={styles.cardTitle}>OTP प्रविष्ट करा</Text>
-
-            {/* Subtitle */}
-            <Text style={styles.cardSubtitle}>
-              आम्ही तुमच्या मोबाईल क्रमांकावर OTP पाठवला आहे{' '}
-              <Text style={styles.cardSubtitleBold}>+91 {mobile}</Text>
-            </Text>
-
-            {/* Dev OTP reveal */}
-            {!!devOtp && (
-              <View style={styles.devPill}>
-                <MaterialCommunityIcons name="flask-outline" size={16} color={C.subtitleGreen} />
-                <Text style={styles.devPillText}>
-                  {'  '}डेव्हलपर OTP: <Text style={styles.devOtpValue}>{devOtp}</Text>
-                </Text>
-              </View>
-            )}
-
-            {/* OTP boxes */}
-            <View style={styles.otpBox}>
-              <OtpInput value={code} onChange={handleChangeCode} error={!!verifyError} disabled={verifying} />
-            </View>
-
-            {/* Errors */}
-            <View style={styles.helperArea}>
-              {!!verifyError && (
-                <HelperText type="error" visible style={styles.helperText}>
-                  {verifyError}
-                </HelperText>
-              )}
-              {!!resendError && (
-                <HelperText type="error" visible style={styles.helperText}>
-                  {resendError}
-                </HelperText>
-              )}
-            </View>
-
-            {/* Verify button */}
-            <Animated.View style={[styles.btnWrapper, { transform: [{ scale: btnScale }] }]}>
-              <Pressable
-                onPress={handleVerify}
-                onPressIn={onPressIn}
-                onPressOut={onPressOut}
-                disabled={!canVerify}
-                style={[styles.btn, canVerify ? styles.btnOn : styles.btnOff]}
+              <View
+                style={[
+                  styles.logoRow,
+                  { paddingTop: insets.top + (L.compact ? 4 : 8), paddingHorizontal: L.padX },
+                ]}
               >
-                {canVerify && !verifying && (
-                  <MaterialCommunityIcons
-                    name="shield-check"
-                    size={18}
-                    color={C.white}
-                    style={{ marginRight: S.sm }}
-                  />
-                )}
-                <Text style={[styles.btnLabel, !canVerify && styles.btnLabelOff]}>
-                  {verifying ? 'पडताळणी करत आहे...' : 'पडताळणी करा'}
-                </Text>
-              </Pressable>
-            </Animated.View>
+                <Image source={LOGO} style={{ width: L.logo, height: L.logo }} resizeMode="contain" />
+                <View style={styles.brandCol}>
+                  <Text style={[styles.brandName, { fontSize: L.brandSize }]} numberOfLines={1}>
+                    Kissan Agrisathi
+                  </Text>
+                  <Text style={[styles.brandTag, { fontSize: L.tagSize }]} numberOfLines={1}>
+                    शेतकऱ्यांचे डिजिटल व्यासपीठ
+                  </Text>
+                </View>
+              </View>
 
-            {/* Footer row — resend / change number */}
-            <View style={styles.footerRow}>
-              {seconds > 0 ? (
-                <Text style={styles.timerText}>
-                  पुन्हा पाठवण्यासाठी {seconds} सेकंद
-                </Text>
-              ) : (
+              <View pointerEvents="none" style={[styles.wave, { height: waveH }]}>
+                <Image source={WAVE} style={styles.fill} resizeMode="stretch" />
+              </View>
+
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.badge,
+                  {
+                    width: L.badge,
+                    height: L.badge,
+                    left: (W - L.badge) / 2,
+                    bottom: badgeBottom,
+                    borderRadius: L.badge / 2,
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons name="shield-check" size={L.compact ? 22 : 26} color={C.white} />
+              </View>
+            </View>
+          </Animated.View>
+
+          <Animated.View
+            style={[
+              styles.form,
+              cardStyle,
+              {
+                paddingHorizontal: L.padX,
+                paddingTop: Math.round(L.badge * 0.38) + (L.compact ? 2 : 4),
+                gap: L.gap,
+              },
+            ]}
+          >
+            <View style={styles.card}>
+              <Text style={[styles.heading, { fontSize: L.headingSize, lineHeight: L.headingSize + 6 }]}>
+                OTP प्रविष्ट करा
+              </Text>
+
+              <Text style={[styles.subtext, { fontSize: L.subSize }]}>
+                आम्ही तुमच्या मोबाईल क्रमांकावर OTP पाठवला आहे
+              </Text>
+
+              <Text style={styles.phoneText}>+91 {mobile}</Text>
+
+              {!!devOtp && (
+                <View style={styles.devPill}>
+                  <MaterialCommunityIcons name="flask-outline" size={15} color={C.welcomeGreen} />
+                  <Text style={styles.devPillText}>
+                    डेव्हलपर OTP: <Text style={styles.devOtpValue}>{devOtp}</Text>
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.otpBox}>
+                <OtpInput
+                  value={code}
+                  onChange={handleChangeCode}
+                  error={!!verifyError}
+                  disabled={verifying}
+                  contentInset={L.padX * 2 + 32}
+                />
+              </View>
+
+              {(!!verifyError || !!resendError) && (
+                <View style={styles.helperArea}>
+                  {!!verifyError && (
+                    <HelperText type="error" visible style={styles.helperText}>
+                      {verifyError}
+                    </HelperText>
+                  )}
+                  {!!resendError && (
+                    <HelperText type="error" visible style={styles.helperText}>
+                      {resendError}
+                    </HelperText>
+                  )}
+                </View>
+              )}
+
+              <Animated.View style={{ transform: [{ scale: btnScale }] }}>
                 <Pressable
-                  onPress={handleResend}
-                  disabled={resending}
+                  onPress={handleVerify}
+                  onPressIn={onPressIn}
+                  onPressOut={onPressOut}
+                  disabled={!canVerify}
+                  style={[
+                    styles.cta,
+                    { height: L.ctaH, borderRadius: L.ctaH / 2 },
+                    digitsReady ? styles.ctaOn : styles.ctaOff,
+                  ]}
+                >
+                  {verifying ? <ActivityIndicator color={C.white} size="small" /> : null}
+                  <Text style={styles.ctaLabel}>
+                    {verifying ? 'पडताळणी करत आहे...' : 'पडताळणी करा'}
+                  </Text>
+                  {!verifying && (
+                    <MaterialCommunityIcons name="arrow-right" size={18} color={C.white} />
+                  )}
+                </Pressable>
+              </Animated.View>
+
+              <View style={styles.footerRow}>
+                {seconds > 0 ? (
+                  <View style={styles.timerRow}>
+                    <MaterialCommunityIcons name="clock-outline" size={14} color={C.bodyGrey} />
+                    <Text style={styles.timerText}>पुन्हा पाठवण्यासाठी {seconds} सेकंद</Text>
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={handleResend}
+                    disabled={resending}
+                    style={styles.linkBtn}
+                    hitSlop={8}
+                  >
+                    <Text style={[styles.resendActive, resending && styles.linkTextDisabled]}>
+                      OTP पुन्हा पाठवा
+                    </Text>
+                  </Pressable>
+                )}
+
+                <Pressable
+                  onPress={() => router.back()}
+                  disabled={verifying || resending}
                   style={styles.linkBtn}
                   hitSlop={8}
                 >
-                  <Text style={[styles.linkText, resending && styles.linkTextDisabled]}>
-                    OTP पुन्हा पाठवा
+                  <Text style={[styles.changeLink, (verifying || resending) && styles.linkTextDisabled]}>
+                    क्रमांक बदला
                   </Text>
                 </Pressable>
-              )}
-
-              <Pressable
-                onPress={() => router.back()}
-                disabled={verifying || resending}
-                style={styles.linkBtn}
-                hitSlop={8}
-              >
-                <Text style={[styles.linkText, (verifying || resending) && styles.linkTextDisabled]}>
-                  क्रमांक बदला
-                </Text>
-              </Pressable>
+              </View>
             </View>
 
+            <View style={[styles.trustRow, { marginTop: L.compact ? 2 : 6 }]}>
+              <TrustColumn
+                icon="shield-check"
+                iconColor={C.primaryGreen}
+                title="सुरक्षित"
+                titleColor={C.primaryGreen}
+                subtitle="तुमची माहिती सुरक्षित"
+                compact={L.compact}
+              />
+              <View style={styles.trustDivider} />
+              <TrustColumn
+                icon="lock-outline"
+                iconColor={C.trustOrange}
+                title="खासगी"
+                titleColor={C.trustOrange}
+                subtitle="तुमची माहिती गोपनीय"
+                compact={L.compact}
+              />
+              <View style={styles.trustDivider} />
+              <TrustColumn
+                icon="account-group-outline"
+                iconColor={C.primaryGreen}
+                title="विश्वसनीय"
+                titleColor={C.primaryGreen}
+                subtitle="लाखो शेतकऱ्यांचा विश्वास"
+                compact={L.compact}
+              />
+            </View>
           </Animated.View>
+
+          <View
+            style={[
+              styles.landscapeWrap,
+              keyboardOpen ? styles.landscapeHidden : { minHeight: L.landscapeMin },
+            ]}
+          >
+            <Image source={LANDSCAPE} style={styles.landscape} resizeMode="cover" />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-const HILL_H = 140;
-
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bgTop },
-  flex:     { flex: 1 },
-  scroll:   { flexGrow: 1, justifyContent: 'center', paddingBottom: S.xl },
+  root: { flex: 1, backgroundColor: C.cream },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1, backgroundColor: C.cream },
 
-  // ── Background ────────────────────────────────────────────────────────────
-  bgTop:    { position: 'absolute', top: 0, left: 0, right: 0, height: '55%', backgroundColor: C.bgTop },
-  bgBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', backgroundColor: '#F7FAF6' },
-
-  hillWrap:  { position: 'absolute', bottom: '36%', left: 0, right: 0, height: HILL_H, overflow: 'visible' },
-  hillBack:  { position: 'absolute', bottom: 0, left: -40,  right: -40, height: HILL_H * 0.75, borderTopLeftRadius: SCREEN_W, borderTopRightRadius: SCREEN_W, opacity: 0.35 },
-  hillMid:   { position: 'absolute', bottom: 0, left: -60,  right: -20, height: HILL_H * 0.55, borderTopLeftRadius: SCREEN_W, borderTopRightRadius: SCREEN_W * 0.7, opacity: 0.45 },
-  hillFront: { position: 'absolute', bottom: 0, left: -20,  right: -60, height: HILL_H * 0.4,  borderTopLeftRadius: SCREEN_W * 0.7, borderTopRightRadius: SCREEN_W, opacity: 0.55 },
-
-  leafTL: { position: 'absolute', top: -10, left: -10 },
-  leafStem: { position: 'absolute', top: 0, left: 30, width: 8, height: 90, borderRadius: 4, transform: [{ rotate: '20deg' }] },
-  leafBlade1: { position: 'absolute', top: 5, left: -5, width: 90, height: 55, borderTopRightRadius: 50, borderBottomLeftRadius: 50, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '35deg' }] },
-  leafBlade2: { position: 'absolute', top: 40, left: 20, width: 75, height: 48, borderTopRightRadius: 42, borderBottomLeftRadius: 42, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '10deg' }] },
-  leafBlade3: { position: 'absolute', top: 70, left: -20, width: 65, height: 42, borderTopRightRadius: 36, borderBottomLeftRadius: 36, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '55deg' }] },
-
-  leafTR: { position: 'absolute', top: -10, right: -10 },
-  leafBladeR1: { position: 'absolute', top: 10, right: 5, width: 70, height: 44, borderTopLeftRadius: 38, borderBottomRightRadius: 38, borderTopRightRadius: 6, borderBottomLeftRadius: 6, transform: [{ rotate: '-35deg' }] },
-  leafBladeR2: { position: 'absolute', top: 40, right: 20, width: 56, height: 36, borderTopLeftRadius: 30, borderBottomRightRadius: 30, borderTopRightRadius: 6, borderBottomLeftRadius: 6, transform: [{ rotate: '-60deg' }] },
-
-  leafBR: { position: 'absolute', bottom: 80, right: -10 },
-  leafBRBlade1: { position: 'absolute', bottom: 0, right: 0, width: 80, height: 50, borderTopLeftRadius: 44, borderBottomRightRadius: 44, borderTopRightRadius: 6, borderBottomLeftRadius: 6, transform: [{ rotate: '-20deg' }] },
-  leafBRBlade2: { position: 'absolute', bottom: 30, right: 15, width: 64, height: 40, borderTopLeftRadius: 34, borderBottomRightRadius: 34, borderTopRightRadius: 6, borderBottomLeftRadius: 6, transform: [{ rotate: '-45deg' }] },
-
-  leafBL: { position: 'absolute', bottom: 60, left: -10 },
-  leafBLBlade1: { position: 'absolute', bottom: 0, left: 0, width: 78, height: 48, borderTopRightRadius: 42, borderBottomLeftRadius: 42, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '25deg' }] },
-  leafBLBlade2: { position: 'absolute', bottom: 26, left: 18, width: 60, height: 38, borderTopRightRadius: 32, borderBottomLeftRadius: 32, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '50deg' }] },
-
-  leafCornerBL: { position: 'absolute', bottom: -30, left: -30 },
-  leafCornerBLBlade1: { position: 'absolute', bottom: 0, left: 0, width: 130, height: 80, borderTopRightRadius: 70, borderBottomLeftRadius: 70, borderTopLeftRadius: 10, borderBottomRightRadius: 10, transform: [{ rotate: '15deg' }] },
-  leafCornerBLBlade2: { position: 'absolute', bottom: 20, left: 40, width: 100, height: 62, borderTopRightRadius: 54, borderBottomLeftRadius: 54, borderTopLeftRadius: 8, borderBottomRightRadius: 8, transform: [{ rotate: '40deg' }] },
-  leafCornerBLBlade3: { position: 'absolute', bottom: 55, left: -10, width: 76, height: 48, borderTopRightRadius: 42, borderBottomLeftRadius: 42, borderTopLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '-10deg' }] },
-
-  leafCornerBR: { position: 'absolute', bottom: -30, right: -30 },
-  leafCornerBRBlade1: { position: 'absolute', bottom: 0, right: 0, width: 130, height: 80, borderTopLeftRadius: 70, borderBottomRightRadius: 70, borderTopRightRadius: 10, borderBottomLeftRadius: 10, transform: [{ rotate: '-15deg' }] },
-  leafCornerBRBlade2: { position: 'absolute', bottom: 20, right: 40, width: 100, height: 62, borderTopLeftRadius: 54, borderBottomRightRadius: 54, borderTopRightRadius: 8, borderBottomLeftRadius: 8, transform: [{ rotate: '-40deg' }] },
-  leafCornerBRBlade3: { position: 'absolute', bottom: 55, right: -10, width: 76, height: 48, borderTopLeftRadius: 42, borderBottomRightRadius: 42, borderTopRightRadius: 6, borderBottomLeftRadius: 6, transform: [{ rotate: '10deg' }] },
-
-  // ── Card ──────────────────────────────────────────────────────────────────
-  card: {
-    marginHorizontal: S.md,
-    backgroundColor: C.white,
-    borderRadius: 24,
-    paddingTop: 28,
-    paddingBottom: 28,
-    paddingHorizontal: S.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.10,
-    shadowRadius: 20,
-    elevation: 8,
+  heroClip: { flex: 1, overflow: 'hidden', backgroundColor: '#E8D5A3' },
+  heroPhoto: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '108%',
+    height: '100%',
   },
-  iconBadge: {
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: C.lightGreen,
+  logoRow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  brandCol: { flex: 1, justifyContent: 'center' },
+  brandName: {
+    color: C.brandGreen,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  brandTag: {
+    color: C.tagline,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  fill: { width: '100%', height: '100%' },
+  wave: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    zIndex: 2,
+  },
+  badge: {
+    position: 'absolute',
+    zIndex: 4,
+    backgroundColor: C.primaryGreen,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: S.md,
   },
-  cardTitle: {
-    fontSize: 22,
+
+  form: {
+    backgroundColor: C.cream,
+    zIndex: 2,
+  },
+  card: {
+    backgroundColor: C.card,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 16,
+    gap: 10,
+  },
+  heading: {
+    color: C.headingBrown,
     fontWeight: '800',
-    color: C.text,
     textAlign: 'center',
     letterSpacing: -0.3,
   },
-  cardSubtitle: {
-    marginTop: S.xs + 2,
-    marginBottom: S.lg,
-    fontSize: 14,
-    color: C.textSecondary,
+  subtext: {
+    color: C.bodyGrey,
     textAlign: 'center',
     lineHeight: 20,
+    marginTop: -4,
   },
-  cardSubtitleBold: {
-    color: C.text,
-    fontWeight: '700',
-    fontSize: 14,
+  phoneText: {
+    color: C.brandGreen,
+    fontWeight: '800',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: -4,
   },
-
-  // Dev OTP pill
   devPill: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    backgroundColor: C.lightGreen,
+    backgroundColor: C.paleGreen,
     borderRadius: 20,
-    paddingHorizontal: S.md,
-    paddingVertical: S.xs + 2,
-    marginBottom: S.lg,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
   },
   devPillText: {
     fontSize: 13,
-    color: C.subtitleGreen,
+    color: C.welcomeGreen,
     fontWeight: '500',
   },
   devOtpValue: {
     fontWeight: '800',
     color: C.primaryGreen,
   },
+  otpBox: { marginTop: 2 },
+  helperArea: { alignItems: 'center', marginTop: -6 },
+  helperText: { textAlign: 'center', paddingHorizontal: 0 },
 
-  otpBox: { marginBottom: S.xs },
-  helperArea: { minHeight: S.lg + S.xs, alignItems: 'center' },
-  helperText: { textAlign: 'center' },
-
-  // ── Button ────────────────────────────────────────────────────────────────
-  btnWrapper: { marginTop: S.sm },
-  btn: {
-    height: 56,
-    borderRadius: 16,
+  cta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
+    gap: 8,
+    marginTop: 4,
   },
-  btnOn: {
-    backgroundColor: C.primaryGreen,
-    shadowColor: C.primaryGreen,
-    shadowOpacity: 0.4,
-    elevation: 5,
-  },
-  btnOff: {
-    backgroundColor: C.disabledBg,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  btnLabel: {
+  ctaOn: { backgroundColor: C.primaryGreen },
+  ctaOff: { backgroundColor: C.primaryGreen, opacity: 0.42 },
+  ctaLabel: {
+    color: C.white,
     fontSize: 17,
     fontWeight: '700',
-    color: C.white,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
-  btnLabelOff: { color: C.disabledText },
 
-  // ── Footer links ──────────────────────────────────────────────────────────
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: S.lg,
+    marginTop: 4,
+  },
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexShrink: 1,
+    paddingRight: 8,
   },
   timerText: {
-    fontSize: 14,
-    color: C.textSecondary,
+    fontSize: 12,
+    color: C.bodyGrey,
+    flexShrink: 1,
   },
   linkBtn: {
-    paddingVertical: S.xs,
-    paddingHorizontal: S.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
-  linkText: {
-    fontSize: 14,
+  resendActive: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: C.primaryGreen,
+  },
+  changeLink: {
+    fontSize: 13,
     fontWeight: '700',
     color: C.primaryGreen,
   },
   linkTextDisabled: {
-    color: C.disabledText,
+    color: '#A8A49C',
+  },
+
+  trustRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 4,
+  },
+  trustCol: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    gap: 4,
+  },
+  trustDivider: {
+    width: StyleSheet.hairlineWidth,
+    alignSelf: 'stretch',
+    backgroundColor: C.divider,
+    marginVertical: 4,
+  },
+  trustTitle: {
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  trustSub: {
+    color: C.bodyGrey,
+    textAlign: 'center',
+    lineHeight: 13,
+  },
+
+  landscapeWrap: {
+    flexGrow: 1,
+    flex: 1,
+    minHeight: 80,
+    overflow: 'hidden',
+    backgroundColor: C.cream,
+    position: 'relative',
+  },
+  landscapeHidden: {
+    flex: 0,
+    flexGrow: 0,
+    minHeight: 0,
+    height: 0,
+  },
+  landscape: {
+    ...StyleSheet.absoluteFill,
+    width: '100%',
+    height: '100%',
   },
 });

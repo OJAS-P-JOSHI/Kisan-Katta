@@ -1,8 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
 import { TextInput as RNTextInput, StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 export type OtpInputProps = {
   length?: number;
@@ -10,14 +10,24 @@ export type OtpInputProps = {
   onChange: (value: string) => void;
   error?: boolean;
   disabled?: boolean;
+  /** Presentation-only: parent horizontal inset so boxes fit without clipping. */
+  contentInset?: number;
 };
 
-// Keep in sync with the horizontal padding used by the parent screen so the
-// boxes are guaranteed to fit without ever causing horizontal scrolling.
 const SCREEN_HORIZONTAL_PADDING = spacing.lg * 2;
 const BOX_GAP = spacing.sm;
-const MAX_BOX_SIZE = 56;
+const MAX_BOX_SIZE = 52;
 const MIN_BOX_SIZE = 40;
+
+const C = {
+  primary: '#006A2C',
+  idle: '#D4CFC4',
+  filled: '#2F6A3A',
+  error: '#C62828',
+  text: '#4A3728',
+  surface: '#FFFFFF',
+  disabled: '#F3F0E8',
+} as const;
 
 /**
  * Six-box OTP entry with auto-focus, backspace-to-previous-box, and paste
@@ -27,14 +37,22 @@ const MIN_BOX_SIZE = 40;
  * always fits on-screen (no horizontal scrolling) while still filling up
  * to a comfortable, premium touch-target size on larger devices.
  */
-export function OtpInput({ length = 6, value, onChange, error, disabled }: OtpInputProps) {
-  const theme = useAppTheme();
+export function OtpInput({
+  length = 6,
+  value,
+  onChange,
+  error,
+  disabled,
+  contentInset,
+}: OtpInputProps) {
   const { width } = useWindowDimensions();
   const inputRefs = useRef<(RNTextInput | null)[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
   const digits = Array.from({ length }, (_, i) => value[i] ?? '');
 
-  const availableWidth = width - SCREEN_HORIZONTAL_PADDING - BOX_GAP * (length - 1);
+  const horizontalPadding = contentInset ?? SCREEN_HORIZONTAL_PADDING;
+  const availableWidth = width - horizontalPadding - BOX_GAP * (length - 1);
   const boxSize = Math.min(MAX_BOX_SIZE, Math.max(MIN_BOX_SIZE, Math.floor(availableWidth / length)));
 
   const setDigitAt = (index: number, rawText: string): void => {
@@ -70,33 +88,41 @@ export function OtpInput({ length = 6, value, onChange, error, disabled }: OtpIn
   return (
     <View style={styles.wrapper}>
       <View style={[styles.row, { gap: BOX_GAP }]}>
-        {digits.map((digit, index) => (
-          <RNTextInput
-            key={index}
-            ref={(ref) => {
-              inputRefs.current[index] = ref;
-            }}
-            style={[
-              styles.box,
-              {
-                width: boxSize,
-                height: boxSize,
-                borderColor: error ? theme.colors.error : digit ? theme.colors.primary : theme.colors.outline,
-                borderWidth: digit && !error ? 2 : 1.5,
-                color: theme.colors.onSurface,
-                backgroundColor: disabled ? theme.colors.surfaceVariant : theme.colors.surface,
-              },
-            ]}
-            value={digit}
-            onChangeText={(text) => setDigitAt(index, text)}
-            onKeyPress={(e) => handleKeyPress(index, e)}
-            keyboardType="number-pad"
-            maxLength={length}
-            autoFocus={index === 0}
-            editable={!disabled}
-            selectTextOnFocus
-          />
-        ))}
+        {digits.map((digit, index) => {
+          const focused = focusedIndex === index;
+          const borderColor = error ? C.error : focused ? C.primary : digit ? C.filled : C.idle;
+          return (
+            <RNTextInput
+              key={index}
+              ref={(ref) => {
+                inputRefs.current[index] = ref;
+              }}
+              style={[
+                styles.box,
+                {
+                  width: boxSize,
+                  height: boxSize,
+                  borderColor,
+                  borderWidth: focused || (digit && !error) ? 2 : 1.5,
+                  color: C.text,
+                  backgroundColor: disabled ? C.disabled : C.surface,
+                },
+              ]}
+              value={digit}
+              onChangeText={(text) => setDigitAt(index, text)}
+              onKeyPress={(e) => handleKeyPress(index, e)}
+              onFocus={() => setFocusedIndex(index)}
+              keyboardType="number-pad"
+              maxLength={length}
+              autoFocus={index === 0}
+              editable={!disabled}
+              selectTextOnFocus
+              selectionColor={C.primary}
+              textAlignVertical="center"
+              underlineColorAndroid="transparent"
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -112,9 +138,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   box: {
-    borderRadius: radius.md,
+    borderRadius: 12,
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
+    padding: 0,
+    margin: 0,
   },
 });
