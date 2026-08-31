@@ -1,52 +1,231 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
-import { useCallback, useState, type ComponentProps } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Searchbar, Text } from 'react-native-paper';
+import { useCallback, useMemo, useState, type ComponentProps } from 'react';
+import {
+  Image,
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BrandLeaves } from '@/components/BrandLeaves';
-import { OrganicBackground } from '@/components/OrganicBackground';
-import {
-  cardSurface,
-  elevation,
-  iconSize,
-  palette,
-  radius,
-  spacing,
-  typography,
-  useAppTheme,
-} from '@/theme';
-
+import { MarketplaceInfoSheet } from './components/MarketplaceInfoSheet';
 import { SEARCH_DEBOUNCE_MS } from './marketplace.constants';
 import { useDebouncedValue } from './hooks/useDebouncedValue';
 import { marketplaceStrings } from './marketplace.strings';
 
-type HeroCardProps = {
+const LANDSCAPE = require('../../../assets/branding/login-landscape.webp');
+
+const BOTTOM_FADE_STEPS = 14;
+const LEFT_FADE_STEPS = 8;
+
+function headerBandHeight(insetTop: number): number {
+  return Math.round(Math.max(170, Math.min(190, insetTop + 138)));
+}
+
+/** Compact landscape strip — cover-crop only, fades into cream. No overlays that darken the art. */
+function HeaderLandscapeStrip({ width, height }: { width: number; height: number }) {
+  const imgW = Math.round(width * 1.36);
+  const imgH = Math.round(height * 1.5);
+  const fadeH = Math.round(height * 0.5);
+
+  return (
+    <View pointerEvents="none" style={styles.headerArtClip}>
+      <Image
+        source={LANDSCAPE}
+        resizeMode="cover"
+        style={{
+          position: 'absolute',
+          width: imgW,
+          height: imgH,
+          left: Math.round(-(width * 0.3)),
+          top: Math.round(-(height * 0.08)),
+        }}
+      />
+      <View style={styles.headerLeftFade}>
+        {Array.from({ length: LEFT_FADE_STEPS }, (_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.headerFadeSlice,
+              { opacity: ((LEFT_FADE_STEPS - i) / LEFT_FADE_STEPS) * 0.32 },
+            ]}
+          />
+        ))}
+      </View>
+      <View style={[styles.headerBottomFade, { height: fadeH }]}>
+        {Array.from({ length: BOTTOM_FADE_STEPS }, (_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.headerFadeSlice,
+              { opacity: ((i + 1) / BOTTOM_FADE_STEPS) ** 1.7 },
+            ]}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const C = {
+  cream: '#FDF9F3',
+  headingGreen: '#1B5E20',
+  primaryGreen: '#006A2C',
+  tagline: '#5C5348',
+  bodyGrey: '#6B6560',
+  muted: '#8A847C',
+  white: '#FFFFFF',
+  searchBorder: '#E4DFD4',
+  searchBorderFocus: '#8FBF98',
+  searchWashFocus: '#F7FBF7',
+  produceBg: '#E8F5EC',
+  produceWash: '#D7EEDD',
+  productBg: '#F6EEDC',
+  productWash: '#EFE3C8',
+  productCta: '#C9A227',
+  productTitle: '#3E3428',
+  labourBg: '#E4EEF5',
+  labourWash: '#D3E2EE',
+  labourTitle: '#2F5F7A',
+  cardLine: 'rgba(27, 94, 32, 0.09)',
+  infoBorder: 'rgba(0, 106, 44, 0.16)',
+} as const;
+
+type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+type Layout = {
+  short: boolean;
+  narrow: boolean;
+  padX: number;
+  titleSize: number;
+  subSize: number;
+  sectionSize: number;
+  searchSize: number;
+  artSize: number;
+  artIcon: number;
+  chevron: number;
+  cardPad: number;
+  quickStacked: boolean;
+};
+
+function layoutFor(width: number, height: number, fontScale: number): Layout {
+  const short = height < 640;
+  const narrow = width < 360;
+  const h = Math.min(Math.max(width / 390, 0.82), 1.06);
+  const hs = (n: number) => Math.round(n * h);
+  const largeType = fontScale > 1.2;
+
+  return {
+    short,
+    narrow,
+    padX: Math.max(14, Math.min(20, hs(18))),
+    titleSize: largeType ? (narrow ? 20 : 22) : narrow ? 22 : 24,
+    subSize: narrow ? 13 : 14,
+    sectionSize: narrow ? 15 : 16,
+    searchSize: narrow || largeType ? 13 : 14,
+    artSize: short ? 48 : narrow ? 52 : 56,
+    artIcon: short ? 26 : narrow ? 28 : 30,
+    chevron: 28,
+    cardPad: short ? 12 : 14,
+    quickStacked: width < 360,
+  };
+}
+
+type CategoryTone = 'produce' | 'product' | 'labour';
+
+const CATEGORY_TONES: Record<
+  CategoryTone,
+  {
+    background: string;
+    wash: string;
+    title: string;
+    body: string;
+    ctaBg: string;
+    ctaText: string;
+    ctaBorder: string;
+    artIcon: string;
+    chevronBg: string;
+    chevron: string;
+    silhouette: string;
+  }
+> = {
+  produce: {
+    background: C.produceBg,
+    wash: C.produceWash,
+    title: C.headingGreen,
+    body: C.bodyGrey,
+    ctaBg: C.white,
+    ctaText: C.primaryGreen,
+    ctaBorder: 'rgba(0, 106, 44, 0.18)',
+    artIcon: C.primaryGreen,
+    chevronBg: C.white,
+    chevron: C.primaryGreen,
+    silhouette: 'rgba(0, 106, 44, 0.07)',
+  },
+  product: {
+    background: C.productBg,
+    wash: C.productWash,
+    title: C.productTitle,
+    body: C.bodyGrey,
+    ctaBg: C.productCta,
+    ctaText: C.white,
+    ctaBorder: 'transparent',
+    artIcon: '#8A6A1A',
+    chevronBg: C.white,
+    chevron: C.productCta,
+    silhouette: 'rgba(201, 162, 39, 0.11)',
+  },
+  labour: {
+    background: C.labourBg,
+    wash: C.labourWash,
+    title: C.labourTitle,
+    body: C.bodyGrey,
+    ctaBg: C.labourTitle,
+    ctaText: C.white,
+    ctaBorder: 'transparent',
+    artIcon: C.labourTitle,
+    chevronBg: C.white,
+    chevron: C.labourTitle,
+    silhouette: 'rgba(47, 95, 122, 0.09)',
+  },
+};
+
+type CategoryCardProps = {
   title: string;
   subtitle: string;
   actionLabel: string;
-  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
-  backgroundColor: string;
-  textColor: string;
-  accentColor: string;
+  tone: CategoryTone;
+  art: IconName;
+  ghost: IconName;
+  artSize: number;
+  artIcon: number;
+  chevron: number;
+  cardPad: number;
   onPress: () => void;
 };
 
-/**
- * Entire card is one Pressable. The CTA is a non-interactive View pill
- * so React Native Web never nests <button> inside <button>.
- */
-function HeroCard({
+function CategoryCard({
   title,
   subtitle,
   actionLabel,
-  icon,
-  backgroundColor,
-  textColor,
-  accentColor,
+  tone,
+  art,
+  ghost,
+  artSize,
+  artIcon,
+  chevron,
+  cardPad,
   onPress,
-}: HeroCardProps) {
+}: CategoryCardProps) {
+  const colors = CATEGORY_TONES[tone];
+
   return (
     <Pressable
       onPress={onPress}
@@ -54,25 +233,76 @@ function HeroCard({
       accessibilityRole="button"
       accessibilityLabel={`${title}. ${actionLabel}`}
     >
-      <View style={[styles.heroCard, cardSurface, { backgroundColor }]}>
-        <BrandLeaves variant="hero" />
-        <View style={styles.heroRow}>
-          <View style={styles.heroTextBlock}>
-            <Text style={[typography.sectionTitle, styles.heroTitle, { color: textColor }]}>
+      <View
+        style={[
+          styles.categoryCard,
+          {
+            backgroundColor: colors.background,
+            padding: cardPad,
+          },
+        ]}
+      >
+        <View pointerEvents="none" style={styles.categoryGhostClip}>
+          <MaterialCommunityIcons
+            name={ghost}
+            size={72}
+            color={colors.silhouette}
+            style={styles.categoryGhost}
+          />
+        </View>
+        <View style={styles.categoryRow}>
+          <View
+            style={[
+              styles.artWrap,
+              {
+                width: artSize,
+                height: artSize,
+                borderRadius: Math.round(artSize * 0.34),
+                backgroundColor: colors.wash,
+              },
+            ]}
+          >
+            <MaterialCommunityIcons name={art} size={artIcon} color={colors.artIcon} />
+          </View>
+          <View style={styles.categoryText}>
+            <Text
+              style={[styles.categoryTitle, { color: colors.title }]}
+              maxFontSizeMultiplier={1.5}
+            >
               {title}
             </Text>
-            <Text style={[typography.body, styles.heroSubtitle, { color: textColor }]}>
+            <Text
+              style={[styles.categorySubtitle, { color: colors.body }]}
+              maxFontSizeMultiplier={1.5}
+            >
               {subtitle}
             </Text>
-            <View style={[styles.heroCta, elevation.soft, { backgroundColor: palette.white }]}>
-              <Text style={[typography.caption, styles.heroCtaLabel, { color: accentColor }]}>
+            <View
+              style={[
+                styles.categoryCta,
+                {
+                  backgroundColor: colors.ctaBg,
+                  borderColor: colors.ctaBorder,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.categoryCtaLabel, { color: colors.ctaText }]}
+                numberOfLines={2}
+                maxFontSizeMultiplier={1.5}
+              >
                 {actionLabel}
               </Text>
-              <MaterialCommunityIcons name="chevron-right" size={iconSize.sm} color={accentColor} />
+              <MaterialCommunityIcons name="chevron-right" size={15} color={colors.ctaText} />
             </View>
           </View>
-          <View style={[styles.heroIconWrap, { backgroundColor: `${palette.white}40` }]}>
-            <MaterialCommunityIcons name={icon} size={52} color={textColor} />
+          <View
+            style={[
+              styles.chevronWrap,
+              { width: chevron, height: chevron, backgroundColor: colors.chevronBg },
+            ]}
+          >
+            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.chevron} />
           </View>
         </View>
       </View>
@@ -80,62 +310,82 @@ function HeroCard({
   );
 }
 
-type QuickActionTone = 'saved' | 'listings' | 'sell';
-
-const QUICK_TONES: Record<
-  QuickActionTone,
-  { iconBg: string; iconColor: string }
-> = {
-  saved: { iconBg: palette.green50, iconColor: palette.green700 },
-  listings: { iconBg: palette.mist, iconColor: palette.green900 },
-  sell: { iconBg: palette.green100, iconColor: palette.green700 },
-};
-
 function QuickActionCard({
   icon,
   label,
-  tone,
+  hint,
+  stacked,
   onPress,
 }: {
-  icon: ComponentProps<typeof MaterialCommunityIcons>['name'];
+  icon: IconName;
   label: string;
-  tone: QuickActionTone;
+  hint: string;
+  stacked: boolean;
   onPress: () => void;
 }) {
-  const theme = useAppTheme();
-  const colors = QUICK_TONES[tone];
-
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
-        styles.quickAction,
-        cardSurface,
-        { backgroundColor: theme.colors.surface },
+        stacked ? styles.quickRow : styles.quickTile,
         pressed && styles.pressed,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={`${label}. ${hint}`}
     >
-      <View style={[styles.quickIconWrap, { backgroundColor: colors.iconBg }]}>
-        <MaterialCommunityIcons name={icon} size={iconSize.xl} color={colors.iconColor} />
+      <View style={styles.quickIconWrap}>
+        <MaterialCommunityIcons name={icon} size={stacked ? 20 : 18} color={C.primaryGreen} />
       </View>
-      <Text
-        style={[typography.caption, styles.quickLabel, { color: theme.colors.onSurface }]}
-        numberOfLines={2}
-      >
-        {label}
-      </Text>
+      <View style={stacked ? styles.quickRowText : styles.quickTileText}>
+        <Text
+          style={[styles.quickLabel, stacked ? styles.quickLabelRow : styles.quickLabelTile]}
+          numberOfLines={2}
+          maxFontSizeMultiplier={1.5}
+        >
+          {label}
+        </Text>
+        <Text
+          style={[styles.quickHint, stacked ? styles.quickHintRow : styles.quickHintTile]}
+          numberOfLines={2}
+          maxFontSizeMultiplier={1.5}
+        >
+          {hint}
+        </Text>
+      </View>
+      {stacked ? (
+        <MaterialCommunityIcons name="chevron-right" size={18} color={C.primaryGreen} />
+      ) : null}
     </Pressable>
   );
 }
 
+function SectionHeading({ icon, label, size }: { icon: IconName; label: string; size: number }) {
+  return (
+    <View style={styles.sectionHead}>
+      <MaterialCommunityIcons name={icon} size={17} color={C.primaryGreen} />
+      <Text
+        style={[styles.sectionTitle, { fontSize: size, lineHeight: Math.round(size * 1.3) }]}
+        maxFontSizeMultiplier={1.5}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 export default function MarketplaceScreen() {
-  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { width: W, height: H, fontScale } = useWindowDimensions();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
+
+  const L = useMemo(() => layoutFor(W, H, fontScale), [W, H, fontScale]);
+  const hPad = L.padX + Math.max(insets.left, 0);
+  const hPadRight = L.padX + Math.max(insets.right, 0);
+  const headerH = headerBandHeight(insets.top);
 
   const navigateToProduce = useCallback(
     (search?: string) => {
@@ -151,223 +401,481 @@ export default function MarketplaceScreen() {
     navigateToProduce(debouncedSearch.trim() || undefined);
   }, [debouncedSearch, navigateToProduce]);
 
+  const handleFilterPress = useCallback(() => {
+    navigateToProduce();
+  }, [navigateToProduce]);
+
+  const openInfo = useCallback(() => {
+    Keyboard.dismiss();
+    setInfoVisible(true);
+  }, []);
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <OrganicBackground intensity="subtle" />
+    <View style={styles.root}>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing.md },
-        ]}
+        style={styles.flex}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={[typography.largeHeading, styles.screenTitle, { color: theme.colors.onBackground }]}>
-            {marketplaceStrings.home.title}
-          </Text>
-          <Text style={[typography.body, styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+        <View
+          style={[
+            styles.header,
+            {
+              minHeight: headerH,
+              paddingTop: insets.top + 8,
+              paddingLeft: hPad,
+              paddingRight: hPadRight,
+              paddingBottom: Math.round(headerH * 0.28),
+            },
+          ]}
+        >
+          <HeaderLandscapeStrip width={W} height={headerH} />
+          <View style={styles.titleRow}>
+            <Text
+              style={[
+                styles.screenTitle,
+                { fontSize: L.titleSize, lineHeight: Math.round(L.titleSize * 1.25) },
+              ]}
+              maxFontSizeMultiplier={1.5}
+            >
+              {marketplaceStrings.home.title}
+            </Text>
+            <Pressable
+              onPress={openInfo}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={marketplaceStrings.home.infoA11y}
+              style={({ pressed }) => [styles.infoBtn, pressed && styles.infoBtnPressed]}
+            >
+              <MaterialCommunityIcons name="information-outline" size={16} color={C.primaryGreen} />
+            </Pressable>
+          </View>
+          <Text
+            style={[
+              styles.screenSubtitle,
+              { fontSize: L.subSize, lineHeight: Math.round(L.subSize * 1.4) },
+            ]}
+            maxFontSizeMultiplier={1.5}
+          >
             {marketplaceStrings.home.subtitle}
           </Text>
         </View>
 
-        <Searchbar
-          placeholder={marketplaceStrings.home.searchPlaceholder}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearchSubmit}
-          onIconPress={handleSearchSubmit}
-          style={[styles.searchbar, elevation.card, { backgroundColor: theme.colors.surface }]}
-          inputStyle={styles.searchInput}
-          elevation={0}
-          icon={() => (
-            <MaterialCommunityIcons name="magnify" size={iconSize.lg} color={theme.colors.primary} />
-          )}
-        />
-
-        <View style={styles.heroStack}>
-          <HeroCard
-            title={marketplaceStrings.home.produceCardTitle}
-            subtitle={marketplaceStrings.home.produceCardSubtitle}
-            actionLabel={marketplaceStrings.home.produceCardAction}
-            icon="sprout"
-            backgroundColor={theme.colors.primaryContainer}
-            textColor={theme.colors.onPrimaryContainer}
-            accentColor={palette.green700}
-            onPress={() => navigateToProduce()}
-          />
-
-          <HeroCard
-            title={marketplaceStrings.home.productCardTitle}
-            subtitle={marketplaceStrings.home.productCardSubtitle}
-            actionLabel={marketplaceStrings.home.productCardAction}
-            icon="tractor"
-            backgroundColor={theme.colors.secondaryContainer}
-            textColor={theme.colors.onSecondaryContainer}
-            accentColor={palette.green900}
-            onPress={() => router.push('/marketplace-products' as Href)}
-          />
-
-          <HeroCard
-            title={marketplaceStrings.home.labourCardTitle}
-            subtitle={marketplaceStrings.home.labourCardSubtitle}
-            actionLabel={marketplaceStrings.home.labourCardAction}
-            icon="account-hard-hat"
-            backgroundColor={palette.blue100}
-            textColor={palette.blue800}
-            accentColor={palette.blue800}
-            onPress={() => router.push('/marketplace-labour' as Href)}
-          />
-        </View>
-
-        <View style={styles.quickSection}>
-          <Text style={[typography.sectionTitle, { color: theme.colors.onBackground }]}>
-            {marketplaceStrings.home.quickActionsTitle}
-          </Text>
-          <View style={styles.quickActions}>
-            <QuickActionCard
-              icon="heart-outline"
-              label={marketplaceStrings.home.savedListings}
-              tone="saved"
-              onPress={() => router.push('/marketplace-saved' as Href)}
+        <View style={[styles.body, { paddingLeft: hPad, paddingRight: hPadRight }]}>
+          <View style={[styles.searchWrap, searchFocused ? styles.searchWrapFocus : null]}>
+            <Pressable
+              onPress={handleSearchSubmit}
+              hitSlop={4}
+              accessibilityRole="button"
+              accessibilityLabel={marketplaceStrings.home.searchA11y}
+              style={({ pressed }) => [styles.searchSide, pressed && styles.searchSidePressed]}
+            >
+              <MaterialCommunityIcons name="magnify" size={22} color={C.primaryGreen} />
+            </Pressable>
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearchSubmit}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              placeholder={marketplaceStrings.home.searchPlaceholder}
+              placeholderTextColor={C.muted}
+              returnKeyType="search"
+              accessibilityLabel={marketplaceStrings.home.searchA11y}
+              maxFontSizeMultiplier={1.5}
+              style={[styles.searchInput, { fontSize: L.searchSize, lineHeight: Math.round(L.searchSize * 1.4) }]}
+              underlineColorAndroid="transparent"
             />
-            <QuickActionCard
-              icon="clipboard-list-outline"
-              label={marketplaceStrings.home.myListings}
-              tone="listings"
-              onPress={() => router.push('/marketplace-my-listings' as Href)}
+            <Pressable
+              onPress={handleFilterPress}
+              hitSlop={4}
+              accessibilityRole="button"
+              accessibilityLabel={marketplaceStrings.home.filterA11y}
+              style={({ pressed }) => [styles.searchSide, pressed && styles.searchSidePressed]}
+            >
+              <MaterialCommunityIcons name="tune-variant" size={20} color={C.primaryGreen} />
+            </Pressable>
+          </View>
+
+          <View style={styles.section}>
+            <SectionHeading
+              icon="leaf"
+              label={marketplaceStrings.home.lookingForTitle}
+              size={L.sectionSize}
             />
-            <QuickActionCard
-              icon="plus-circle-outline"
-              label={marketplaceStrings.home.sellSomething}
-              tone="sell"
-              onPress={() => router.push('/marketplace-create' as Href)}
+            <View style={styles.categoryStack}>
+              <CategoryCard
+                title={marketplaceStrings.home.produceCardTitle}
+                subtitle={marketplaceStrings.home.produceCardSubtitle}
+                actionLabel={marketplaceStrings.home.produceCardAction}
+                tone="produce"
+                art="basket"
+                ghost="barley"
+                artSize={L.artSize}
+                artIcon={L.artIcon}
+                chevron={L.chevron}
+                cardPad={L.cardPad}
+                onPress={() => navigateToProduce()}
+              />
+              <CategoryCard
+                title={marketplaceStrings.home.productCardTitle}
+                subtitle={marketplaceStrings.home.productCardSubtitle}
+                actionLabel={marketplaceStrings.home.productCardAction}
+                tone="product"
+                art="sack"
+                ghost="tractor-variant"
+                artSize={L.artSize}
+                artIcon={L.artIcon}
+                chevron={L.chevron}
+                cardPad={L.cardPad}
+                onPress={() => router.push('/marketplace-products' as Href)}
+              />
+              <CategoryCard
+                title={marketplaceStrings.home.labourCardTitle}
+                subtitle={marketplaceStrings.home.labourCardSubtitle}
+                actionLabel={marketplaceStrings.home.labourCardAction}
+                tone="labour"
+                art="account-hard-hat"
+                ghost="account-group-outline"
+                artSize={L.artSize}
+                artIcon={L.artIcon}
+                chevron={L.chevron}
+                cardPad={L.cardPad}
+                onPress={() => router.push('/marketplace-labour' as Href)}
+              />
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <SectionHeading
+              icon="flash"
+              label={marketplaceStrings.home.quickActionsTitle}
+              size={L.sectionSize}
             />
+            <View style={L.quickStacked ? styles.quickStack : styles.quickRowSet}>
+              <QuickActionCard
+                icon="heart-outline"
+                label={marketplaceStrings.home.savedListings}
+                hint={marketplaceStrings.home.savedListingsHint}
+                stacked={L.quickStacked}
+                onPress={() => router.push('/marketplace-saved' as Href)}
+              />
+              <QuickActionCard
+                icon="clipboard-list-outline"
+                label={marketplaceStrings.home.myListings}
+                hint={marketplaceStrings.home.myListingsHint}
+                stacked={L.quickStacked}
+                onPress={() => router.push('/marketplace-my-listings' as Href)}
+              />
+              <QuickActionCard
+                icon="plus"
+                label={marketplaceStrings.home.sellSomething}
+                hint={marketplaceStrings.home.sellSomethingHint}
+                stacked={L.quickStacked}
+                onPress={() => router.push('/marketplace-create' as Href)}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
+
+      <MarketplaceInfoSheet visible={infoVisible} onDismiss={() => setInfoVisible(false)} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: spacing.xxl,
+  root: {
+    flex: 1,
+    backgroundColor: C.cream,
+  },
+  flex: { flex: 1 },
+  scroll: {
+    flexGrow: 0,
+    paddingBottom: 8,
   },
   header: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
+    backgroundColor: C.cream,
+  },
+  headerArtClip: {
+    ...StyleSheet.absoluteFill,
+    overflow: 'hidden',
+  },
+  headerLeftFade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: '40%',
+    flexDirection: 'row',
+  },
+  headerBottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  headerFadeSlice: {
+    flex: 1,
+    backgroundColor: C.cream,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
   },
   screenTitle: {
-    fontSize: 30,
-    lineHeight: 38,
-    letterSpacing: -0.6,
+    color: C.headingGreen,
+    fontWeight: '800',
+    letterSpacing: -0.35,
+  },
+  infoBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.white,
+    borderWidth: 1,
+    borderColor: C.infoBorder,
+    flexShrink: 0,
+  },
+  infoBtnPressed: {
+    opacity: 0.72,
+    transform: [{ scale: 0.96 }],
   },
   screenSubtitle: {
-    opacity: 0.85,
-    fontSize: 15,
-    lineHeight: 22,
+    marginTop: 3,
+    color: C.tagline,
+    fontWeight: '500',
   },
-  searchbar: {
-    borderRadius: 28,
-    height: 52,
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
+  body: {
+    paddingTop: 2,
+    paddingBottom: 4,
+    gap: 16,
   },
-  searchInput: {
-    minHeight: 48,
-    fontSize: 15,
-    alignSelf: 'center',
-  },
-  heroStack: {
-    gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  heroCard: {
-    minHeight: 148,
-    position: 'relative',
-    overflow: 'hidden',
-    borderRadius: 22,
-  },
-  heroRow: {
+  searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    gap: spacing.md,
-    minHeight: 148,
+    minHeight: 50,
+    borderRadius: 999,
+    backgroundColor: C.white,
+    borderWidth: 1,
+    borderColor: C.searchBorder,
+    paddingHorizontal: 4,
+    shadowColor: '#1A1C19',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  heroTextBlock: {
-    flex: 1,
-    gap: spacing.sm,
+  searchWrapFocus: {
+    borderColor: C.searchBorderFocus,
+    backgroundColor: C.searchWashFocus,
+  },
+  searchSide: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  heroTitle: {
-    fontSize: 20,
-    lineHeight: 26,
+  searchSidePressed: {
+    opacity: 0.65,
+  },
+  searchInput: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 44,
+    paddingVertical: Platform.OS === 'android' ? 0 : 8,
+    color: C.headingGreen,
+    fontWeight: '500',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+  },
+  section: {
+    gap: 10,
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
+  },
+  sectionTitle: {
+    flex: 1,
+    minWidth: 0,
+    color: C.headingGreen,
+    fontWeight: '700',
+    letterSpacing: -0.15,
+  },
+  categoryStack: {
+    gap: 10,
+  },
+  categoryCard: {
+    width: '100%',
+    borderRadius: 18,
+    overflow: 'visible',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.cardLine,
+    shadowColor: '#1A1C19',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  categoryGhostClip: {
+    ...StyleSheet.absoluteFill,
+    overflow: 'hidden',
+    borderRadius: 18,
+  },
+  categoryGhost: {
+    position: 'absolute',
+    right: 28,
+    bottom: -8,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minWidth: 0,
+    zIndex: 1,
+  },
+  artWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  categoryText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 3,
+  },
+  categoryTitle: {
+    fontSize: 16,
+    lineHeight: 21,
     fontWeight: '700',
   },
-  heroSubtitle: {
-    opacity: 0.82,
-    fontSize: 14,
-    lineHeight: 20,
+  categorySubtitle: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
   },
-  heroCta: {
+  categoryCta: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: spacing.xs,
-    minHeight: 44,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: radius.pill,
+    gap: 2,
+    marginTop: 6,
+    maxWidth: '100%',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
   },
-  heroCtaLabel: {
-    fontWeight: '600',
-    fontSize: 13,
-    letterSpacing: 0.15,
+  categoryCtaLabel: {
+    flexShrink: 1,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
   },
-  heroIconWrap: {
-    width: 84,
-    height: 84,
-    borderRadius: 22,
+  chevronWrap: {
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
+    shadowColor: '#1A1C19',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  quickSection: {
-    gap: spacing.md,
+  quickStack: {
+    gap: 8,
   },
-  quickActions: {
+  quickRowSet: {
     flexDirection: 'row',
-    gap: spacing.md,
+    alignItems: 'stretch',
+    gap: 8,
   },
-  quickAction: {
-    flex: 1,
-    borderRadius: 22,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
+  quickRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    minHeight: 100,
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: C.white,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.cardLine,
+  },
+  quickTile: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'visible',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: C.white,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.cardLine,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 6,
   },
   quickIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E8F5EC',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
+  },
+  quickRowText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 1,
+  },
+  quickTileText: {
+    width: '100%',
+    minWidth: 0,
+    alignItems: 'center',
+    gap: 1,
   },
   quickLabel: {
+    color: C.headingGreen,
+    fontWeight: '700',
+  },
+  quickLabelRow: {
+    fontSize: 14,
+    lineHeight: 18,
+    textAlign: 'left',
+  },
+  quickLabelTile: {
+    fontSize: 12,
+    lineHeight: 17,
     textAlign: 'center',
-    fontWeight: '600',
+  },
+  quickHint: {
+    color: C.bodyGrey,
+    fontWeight: '400',
+  },
+  quickHintRow: {
     fontSize: 12,
     lineHeight: 16,
+    textAlign: 'left',
+  },
+  quickHintTile: {
+    fontSize: 11,
+    lineHeight: 15,
+    textAlign: 'center',
   },
   pressed: {
     opacity: 0.94,
-    transform: [{ scale: 0.985 }],
+    transform: [{ scale: 0.987 }],
   },
 });
