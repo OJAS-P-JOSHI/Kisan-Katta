@@ -1,5 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text as RNText, View } from 'react-native';
 import { Button, HelperText, Text, TextInput } from 'react-native-paper';
 
 import { DEFAULT_LANGUAGE, MAX_FAVOURITE_CROPS, strings, type SupportedLanguage } from '@/constants';
@@ -52,6 +53,8 @@ export type ProfileFormProps = {
   onSubmit: (values: ProfileFormValues) => void;
   /** Visual-only section cards (Edit Profile). Does not change validation or payload. */
   sectioned?: boolean;
+  /** Presentation-only Complete Profile chrome. Does not change validation or payload. */
+  variant?: 'default' | 'onboarding';
 };
 
 function FormSection({
@@ -90,6 +93,7 @@ export function ProfileForm({
   onNameChange,
   onSubmit,
   sectioned = false,
+  variant = 'default',
 }: ProfileFormProps) {
   const theme = useAppTheme();
   const [name, setName] = useState(initialValues?.name ?? '');
@@ -300,7 +304,10 @@ export function ProfileForm({
   };
 
   const locationBusy = districtsLoading || talukasLoading || villagesLoading;
-  const outlineStyle = { borderRadius: radius.lg };
+  const onboarding = variant === 'onboarding';
+  const outlineStyle = { borderRadius: onboarding ? radius.md : radius.lg };
+  const fieldBg = onboarding ? styles.onboardingField : undefined;
+  const submitDisabled = submitting || locationBusy || !!districtsError;
 
   return (
     <View style={sectioned ? styles.sectionedRoot : undefined}>
@@ -315,9 +322,12 @@ export function ProfileForm({
             setErrors((e) => ({ ...e, name: undefined }));
           }}
           error={!!errors.name}
-          style={styles.field}
+          style={[styles.field, fieldBg]}
           outlineStyle={outlineStyle}
+          outlineColor={onboarding ? '#E5E0D4' : undefined}
+          activeOutlineColor={onboarding ? '#006A2C' : undefined}
           editable={!submitting}
+          left={onboarding ? <TextInput.Icon icon="account-outline" color="#006A2C" /> : undefined}
         />
         {!!errors.name && <HelperText type="error">{errors.name}</HelperText>}
       </FormSection>
@@ -336,6 +346,8 @@ export function ProfileForm({
             onRetry={refreshDistricts}
             searchable
             placeholder={strings.completeProfile.districtPlaceholder}
+            appearance={onboarding ? 'onboarding' : 'default'}
+            leftIcon={onboarding ? 'map-marker-outline' : undefined}
           />
         </View>
 
@@ -352,6 +364,8 @@ export function ProfileForm({
             onRetry={refreshTalukas}
             searchable
             placeholder={!district ? locationStrings.selectDistrictFirst : strings.completeProfile.talukaPlaceholder}
+            appearance={onboarding ? 'onboarding' : 'default'}
+            leftIcon={onboarding ? 'map-outline' : undefined}
           />
         </View>
 
@@ -368,6 +382,8 @@ export function ProfileForm({
             onRetry={refreshVillages}
             searchable
             placeholder={!taluka ? locationStrings.selectTalukaFirst : strings.completeProfile.villagePlaceholder}
+            appearance={onboarding ? 'onboarding' : 'default'}
+            leftIcon={onboarding ? 'home-outline' : undefined}
           />
         </View>
       </FormSection>
@@ -376,7 +392,7 @@ export function ProfileForm({
         <View style={styles.cropsField}>
           <CropMultiSelect
             label={profileStrings.crops.title}
-            helperText={profileStrings.crops.helper}
+            helperText={onboarding ? undefined : profileStrings.crops.helper}
             selected={crops}
             onChange={(next) => {
               setCrops(next);
@@ -385,6 +401,8 @@ export function ProfileForm({
             max={MAX_FAVOURITE_CROPS}
             error={errors.crops}
             disabled={submitting}
+            appearance={onboarding ? 'onboarding' : 'default'}
+            leftIcon={onboarding ? 'sprout-outline' : undefined}
           />
         </View>
       </FormSection>
@@ -395,18 +413,42 @@ export function ProfileForm({
         </HelperText>
       )}
 
-      <Button
-        mode="contained"
-        style={[styles.button, buttonSurface, elevation.soft]}
-        contentStyle={styles.buttonContent}
-        labelStyle={styles.buttonLabel}
-        onPress={handleSubmit}
-        loading={submitting}
-        disabled={submitting || locationBusy || !!districtsError}
-        buttonColor={theme.colors.primary}
-      >
-        {submitting ? submittingLabel : submitLabel}
-      </Button>
+      {onboarding ? (
+        <Pressable
+          onPress={handleSubmit}
+          disabled={submitDisabled}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: submitDisabled, busy: submitting }}
+          style={({ pressed }) => [
+            styles.onboardingCta,
+            submitDisabled ? styles.onboardingCtaDisabled : null,
+            pressed && !submitDisabled ? styles.onboardingCtaPressed : null,
+          ]}
+        >
+          {submitting ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : null}
+          <RNText style={styles.onboardingCtaLabel}>
+            {submitting ? submittingLabel : submitLabel}
+          </RNText>
+          {submitting ? null : (
+            <MaterialCommunityIcons name="arrow-right" size={20} color="#FFFFFF" />
+          )}
+        </Pressable>
+      ) : (
+        <Button
+          mode="contained"
+          style={[styles.button, buttonSurface, elevation.soft]}
+          contentStyle={styles.buttonContent}
+          labelStyle={styles.buttonLabel}
+          onPress={handleSubmit}
+          loading={submitting}
+          disabled={submitDisabled}
+          buttonColor={theme.colors.primary}
+        >
+          {submitting ? submittingLabel : submitLabel}
+        </Button>
+      )}
     </View>
   );
 }
@@ -419,8 +461,31 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   field: { marginBottom: spacing.sm },
+  onboardingField: {
+    backgroundColor: '#F6F3EC',
+    minHeight: 56,
+  },
   cropsField: { marginBottom: spacing.xs, marginTop: 0 },
   button: { marginTop: spacing.sm, borderRadius: radius.lg },
   buttonContent: { minHeight: 54, paddingVertical: spacing.xs },
   buttonLabel: { fontSize: 16, fontWeight: '600', letterSpacing: 0.2 },
+  onboardingCta: {
+    marginTop: spacing.md,
+    minHeight: 54,
+    borderRadius: 999,
+    backgroundColor: '#006A2C',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: spacing.md,
+  },
+  onboardingCtaPressed: { opacity: 0.9 },
+  onboardingCtaDisabled: { opacity: 0.55 },
+  onboardingCtaLabel: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
 });

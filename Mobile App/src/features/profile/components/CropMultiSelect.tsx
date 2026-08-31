@@ -20,6 +20,10 @@ export type CropMultiSelectProps = {
   max: number;
   error?: string;
   disabled?: boolean;
+  /** Presentation-only left icon (Complete Profile). */
+  leftIcon?: string;
+  /** Presentation-only field chrome. Defaults keep Edit Profile unchanged. */
+  appearance?: 'default' | 'onboarding';
 };
 
 type CropRowProps = {
@@ -72,6 +76,8 @@ export function CropMultiSelect({
   max,
   error,
   disabled,
+  leftIcon,
+  appearance = 'default',
 }: CropMultiSelectProps) {
   const theme = useAppTheme();
   const [visible, setVisible] = useState(false);
@@ -166,35 +172,51 @@ export function CropMultiSelect({
   const listBusy = isSearching ? searchLoading : cropsLoading;
   const listError = isSearching ? searchError : cropsError;
   const onRetry = isSearching ? refreshSearch : refreshCrops;
+  const onboarding = appearance === 'onboarding';
 
   return (
     <View>
-      <View style={styles.fieldHeader}>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500' }]}>
-          {label}
-        </Text>
-        <Text style={[typography.caption, { color: theme.colors.primary, fontWeight: '600' }]}>
-          {profileStrings.crops.selectedCount(selected.length, max)}
-        </Text>
-      </View>
+      {onboarding ? null : (
+        <View style={styles.fieldHeader}>
+          <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant, fontWeight: '500' }]}>
+            {label}
+          </Text>
+          <Text style={[typography.caption, { color: theme.colors.primary, fontWeight: '600' }]}>
+            {profileStrings.crops.selectedCount(selected.length, max)}
+          </Text>
+        </View>
+      )}
 
       <Pressable onPress={() => !disabled && setVisible(true)} disabled={disabled}>
         <View pointerEvents="none">
           <TextInput
             mode="outlined"
-            label={undefined}
+            label={onboarding ? profileStrings.crops.fieldPlaceholder : undefined}
             value={summary}
             placeholder={profileStrings.crops.fieldPlaceholder}
             editable={false}
             error={!!error}
-            outlineStyle={styles.inputOutline}
-            style={styles.input}
+            outlineStyle={onboarding ? styles.onboardingOutline : styles.inputOutline}
+            style={[styles.input, onboarding ? styles.onboardingInput : null]}
+            outlineColor={onboarding ? '#E5E0D4' : undefined}
+            activeOutlineColor={onboarding ? '#006A2C' : undefined}
+            left={leftIcon ? <TextInput.Icon icon={leftIcon} color={onboarding ? '#006A2C' : undefined} /> : undefined}
             right={<TextInput.Icon icon="chevron-down" />}
           />
         </View>
       </Pressable>
 
-      {!!helperText && !error && (
+      {onboarding ? (
+        <View style={styles.favBar}>
+          <MaterialCommunityIcons name="leaf" size={16} color={theme.colors.primary} />
+          <Text style={[styles.favBarLabel, { color: theme.colors.onSurface }]}>{label}</Text>
+          <Text style={[styles.favBarCount, { color: theme.colors.primary }]}>
+            {profileStrings.crops.selectedCount(selected.length, max)}
+          </Text>
+        </View>
+      ) : null}
+
+      {!!helperText && !error && !onboarding && (
         <HelperText type="info" padding="none" style={styles.helper}>
           {helperText}
         </HelperText>
@@ -348,6 +370,31 @@ const styles = StyleSheet.create({
   },
   input: { backgroundColor: 'transparent' },
   inputOutline: { borderRadius: radius.lg },
+  onboardingInput: {
+    backgroundColor: '#F6F3EC',
+    minHeight: 56,
+  },
+  onboardingOutline: { borderRadius: radius.md },
+  favBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 40,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs + 2,
+    backgroundColor: '#F6F3EC',
+    borderRadius: radius.md,
+    gap: spacing.sm,
+  },
+  favBarLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  favBarCount: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   helper: { marginTop: 0, marginBottom: 0 },
   chipRow: {
     flexDirection: 'row',

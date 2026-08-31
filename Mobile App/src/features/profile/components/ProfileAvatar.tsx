@@ -1,9 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { spacing, useAppTheme } from '@/theme';
 
 import { profileStrings } from '../profile.strings';
 
@@ -17,6 +17,8 @@ type ProfileAvatarProps = {
   disabled?: boolean;
   /** Visual diameter in dp. Defaults to 116. */
   size?: number;
+  /** Presentation-only. Soft = light-green fill for onboarding. */
+  tone?: 'solid' | 'soft';
   onPress: () => void;
 };
 
@@ -36,15 +38,19 @@ export function ProfileAvatar({
   uploading = false,
   disabled = false,
   size = DEFAULT_AVATAR_SIZE,
+  tone = 'solid',
   onPress,
 }: ProfileAvatarProps) {
   const theme = useAppTheme();
   const initial = getInitial(name);
   const busy = uploading || disabled;
   const hasImage = Boolean(imageUri);
-  const pulse = useRef(new Animated.Value(1)).current;
+  const pulse = useMemo(() => new Animated.Value(1), []);
   const badgeSize = Math.round(size * 0.28);
   const iconGlyph = Math.round(size * 0.48);
+  const soft = tone === 'soft';
+  const fillColor = soft ? theme.colors.primaryContainer : theme.colors.primary;
+  const glyphColor = soft ? theme.colors.onPrimaryContainer : theme.colors.onPrimary;
 
   useEffect(() => {
     if (hasImage || busy) {
@@ -84,7 +90,7 @@ export function ProfileAvatar({
         busy ? styles.disabled : null,
       ]}
     >
-      <View style={[styles.avatarWrap, { width: size + 8, height: size + 8 }]}>
+      <View style={[styles.avatarWrap, { width: size + 8, height: size + 8 }, soft ? { borderWidth: 1.5, borderColor: theme.colors.primary, borderRadius: (size + 8) / 2 } : null]}>
         <View
           style={[
             styles.avatar,
@@ -92,8 +98,9 @@ export function ProfileAvatar({
               width: size,
               height: size,
               borderRadius: size / 2,
-              backgroundColor: theme.colors.primary,
+              backgroundColor: fillColor,
               borderColor: theme.colors.surface,
+              borderWidth: soft ? 4 : 3,
             },
           ]}
         >
@@ -103,12 +110,12 @@ export function ProfileAvatar({
             ) : initial ? (
               <Text
                 variant="displaySmall"
-                style={[styles.initial, { color: theme.colors.onPrimary, fontSize: Math.round(size * 0.38) }]}
+                style={[styles.initial, { color: glyphColor, fontSize: Math.round(size * 0.38) }]}
               >
                 {initial}
               </Text>
             ) : (
-              <MaterialCommunityIcons name="account" size={iconGlyph} color={theme.colors.onPrimary} />
+              <MaterialCommunityIcons name="account" size={iconGlyph} color={glyphColor} />
             )}
           </Animated.View>
 
@@ -129,8 +136,8 @@ export function ProfileAvatar({
               width: badgeSize,
               height: badgeSize,
               borderRadius: badgeSize / 2,
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.primaryContainer,
+              backgroundColor: soft ? theme.colors.primary : theme.colors.surface,
+              borderColor: soft ? theme.colors.surface : theme.colors.primaryContainer,
               right: 0,
               bottom: 0,
             },
@@ -139,7 +146,7 @@ export function ProfileAvatar({
           <MaterialCommunityIcons
             name="camera-outline"
             size={Math.round(badgeSize * 0.55)}
-            color={theme.colors.primary}
+            color={soft ? theme.colors.onPrimary : theme.colors.primary}
           />
         </View>
       </View>

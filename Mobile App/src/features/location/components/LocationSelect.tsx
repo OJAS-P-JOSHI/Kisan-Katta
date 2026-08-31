@@ -27,6 +27,10 @@ export type LocationSelectProps = {
   /** Enables in-modal search (recommended for villages). */
   searchable?: boolean;
   placeholder?: string;
+  /** Presentation-only left icon (Complete Profile). */
+  leftIcon?: string;
+  /** Presentation-only field chrome. Defaults keep Edit Profile unchanged. */
+  appearance?: 'default' | 'onboarding';
 };
 
 /**
@@ -45,6 +49,8 @@ export function LocationSelect({
   onRetry,
   searchable = false,
   placeholder,
+  leftIcon,
+  appearance = 'default',
 }: LocationSelectProps) {
   const theme = useAppTheme();
   const [visible, setVisible] = useState(false);
@@ -67,6 +73,7 @@ export function LocationSelect({
   };
 
   const displayValue = value?.name ?? '';
+  const onboarding = appearance === 'onboarding';
 
   return (
     <View>
@@ -79,8 +86,11 @@ export function LocationSelect({
             placeholder={placeholder}
             editable={false}
             error={!!error || !!loadError}
-            outlineStyle={styles.inputOutline}
-            style={styles.input}
+            outlineStyle={onboarding ? styles.onboardingOutline : styles.inputOutline}
+            style={[styles.input, onboarding ? styles.onboardingInput : null]}
+            outlineColor={onboarding ? '#E5E0D4' : undefined}
+            activeOutlineColor={onboarding ? '#006A2C' : undefined}
+            left={leftIcon ? <TextInput.Icon icon={leftIcon} color={onboarding ? '#006A2C' : undefined} /> : undefined}
             right={
               loading ? (
                 <TextInput.Icon icon={() => <ActivityIndicator size={18} color={theme.colors.primary} />} />
@@ -190,6 +200,11 @@ export function LocationSelect({
 const styles = StyleSheet.create({
   input: { backgroundColor: 'transparent' },
   inputOutline: { borderRadius: radius.lg },
+  onboardingInput: {
+    backgroundColor: '#F6F3EC',
+    minHeight: 56,
+  },
+  onboardingOutline: { borderRadius: radius.md },
   modal: {
     marginHorizontal: spacing.lg,
     borderRadius: radius.lg,
