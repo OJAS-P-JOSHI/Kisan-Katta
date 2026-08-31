@@ -209,8 +209,10 @@ export function CropMultiSelect({
       {onboarding ? (
         <View style={styles.favBar}>
           <MaterialCommunityIcons name="leaf" size={16} color={theme.colors.primary} />
-          <Text style={[styles.favBarLabel, { color: theme.colors.onSurface }]}>{label}</Text>
-          <Text style={[styles.favBarCount, { color: theme.colors.primary }]}>
+          <Text style={[styles.favBarLabel, { color: theme.colors.onSurface }]} numberOfLines={2}>
+            {label}
+          </Text>
+          <Text style={[styles.favBarCount, { color: theme.colors.primary }]} numberOfLines={1}>
             {profileStrings.crops.selectedCount(selected.length, max)}
           </Text>
         </View>
@@ -378,7 +380,7 @@ const styles = StyleSheet.create({
   favBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 40,
+    minHeight: 44,
     marginTop: spacing.sm,
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs + 2,
@@ -388,12 +390,14 @@ const styles = StyleSheet.create({
   },
   favBarLabel: {
     flex: 1,
+    minWidth: 0,
     fontSize: 13,
     fontWeight: '600',
   },
   favBarCount: {
     fontSize: 12,
     fontWeight: '700',
+    flexShrink: 0,
   },
   helper: { marginTop: 0, marginBottom: 0 },
   chipRow: {

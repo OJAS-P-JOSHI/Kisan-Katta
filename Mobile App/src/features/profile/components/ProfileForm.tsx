@@ -428,7 +428,7 @@ export function ProfileForm({
           {submitting ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : null}
-          <RNText style={styles.onboardingCtaLabel}>
+          <RNText style={styles.onboardingCtaLabel} maxFontSizeMultiplier={1.5}>
             {submitting ? submittingLabel : submitLabel}
           </RNText>
           {submitting ? null : (
@@ -477,8 +477,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    flexWrap: 'wrap',
+    alignSelf: 'stretch',
     gap: 8,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   onboardingCtaPressed: { opacity: 0.9 },
   onboardingCtaDisabled: { opacity: 0.55 },
@@ -487,5 +490,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.2,
+    flexShrink: 1,
+    textAlign: 'center',
   },
 });

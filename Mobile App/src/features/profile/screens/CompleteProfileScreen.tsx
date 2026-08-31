@@ -44,6 +44,7 @@ const C = {
 
 type Layout = {
   compact: boolean;
+  short: boolean;
   headerBand: number;
   waveH: number;
   logo: number;
@@ -55,27 +56,45 @@ type Layout = {
   headingSize: number;
   subSize: number;
   landscapeMin: number;
+  landscapeMax: number;
+  cardPadTop: number;
+  cardOverlap: number;
 };
 
-function layoutFor(width: number, height: number): Layout {
+function clampFont(fontScale: number): number {
+  return Math.min(Math.max(fontScale, 1), 1.5);
+}
+
+function layoutFor(width: number, height: number, fontScale: number): Layout {
   const compact = height < 700;
+  const short = height < 640;
   const narrow = width < 360;
   const h = Math.min(Math.max(width / 390, 0.82), 1.08);
   const hs = (n: number) => Math.round(n * h);
+  const fs = clampFont(fontScale);
+  const fontExtra = Math.round(Math.max(0, fs - 1) * 32);
+  const waveH = short ? 24 : compact ? 28 : 34;
 
   return {
     compact,
-    headerBand: compact ? 78 : 92,
-    waveH: compact ? 28 : 34,
+    short,
+    headerBand: (short ? 72 : compact ? 78 : 92) + fontExtra,
+    waveH,
     logo: hs(narrow ? 38 : compact ? 42 : 46),
     padX: Math.max(16, Math.min(22, hs(20))),
-    avatar: compact ? 86 : 96,
+    avatar: short ? 80 : compact ? 86 : 96,
     brandSize: narrow ? 14 : compact ? 15 : 16,
-    tagSize: narrow ? 9 : 11,
+    tagSize: narrow ? 10 : 11,
     welcomeSize: compact ? 14 : 15,
     headingSize: compact ? 20 : 22,
     subSize: compact ? 12 : 13,
-    landscapeMin: compact ? 72 : 96,
+    landscapeMin: short ? 52 : compact ? 64 : 80,
+    landscapeMax: Math.max(
+      short ? 52 : compact ? 64 : 80,
+      Math.round(Math.min(short ? 72 : compact ? 96 : 128, height * 0.12)),
+    ),
+    cardPadTop: short ? 14 : compact ? 18 : 22,
+    cardOverlap: 18,
   };
 }
 
@@ -97,14 +116,22 @@ export default function CompleteProfileScreen() {
   const [stage, setStage] = useState<OnboardingStage>('idle');
   const [submitting, setSubmitting] = useState(false);
 
-  const { width: W, height: H } = useWindowDimensions();
+  const { width: W, height: H, fontScale } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [keyboardH, setKeyboardH] = useState(0);
   const keyboardOpen = keyboardH > 0;
-  const L = useMemo(() => layoutFor(W, H), [W, H]);
+  // Android adjustResize shrinks window height; keep layout tokens on the pre-keyboard size.
+  const layoutH = keyboardOpen && Platform.OS === 'android' ? H + keyboardH : H;
+  const L = useMemo(() => layoutFor(W, layoutH, fontScale), [W, layoutH, fontScale]);
+  const fs = clampFont(fontScale);
+  const logoPad = L.compact ? 4 : 8;
+  const tagLines = fs > 1.2 ? 2 : 1;
+  const textBlockH =
+    Math.ceil(L.brandSize * fs * 1.3) + 2 + Math.ceil(L.tagSize * fs * 1.4) * tagLines;
+  const logoRowH = Math.max(L.logo, textBlockH) + logoPad + 6;
   const headerH = keyboardOpen
-    ? insets.top + (L.compact ? 52 : 58)
-    : insets.top + L.headerBand;
+    ? insets.top + logoRowH
+    : insets.top + Math.max(L.headerBand, logoRowH + Math.round(L.waveH * 0.4));
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -201,9 +228,14 @@ export default function CompleteProfileScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
       >
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 16) }]}
+          style={styles.flex}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingBottom: keyboardOpen ? 12 : Math.max(insets.bottom, 16) },
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           showsVerticalScrollIndicator={false}
         >
           <View style={{ height: headerH }}>
@@ -223,12 +255,22 @@ export default function CompleteProfileScreen() {
                   },
                 ]}
               >
-                <Image source={LOGO} style={{ width: L.logo, height: L.logo }} resizeMode="contain" />
+                <View style={{ width: L.logo, height: L.logo, flexShrink: 0 }}>
+                  <Image source={LOGO} style={{ width: L.logo, height: L.logo }} resizeMode="contain" />
+                </View>
                 <View style={styles.brandCol}>
-                  <Text style={[styles.brandName, { fontSize: L.brandSize }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.brandName, { fontSize: L.brandSize }]}
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={1.5}
+                  >
                     {strings.app.name}
                   </Text>
-                  <Text style={[styles.brandTag, { fontSize: L.tagSize }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.brandTag, { fontSize: L.tagSize }]}
+                    numberOfLines={2}
+                    maxFontSizeMultiplier={1.5}
+                  >
                     शेतकऱ्यांचे डिजिटल व्यासपीठ
                   </Text>
                 </View>
@@ -236,7 +278,7 @@ export default function CompleteProfileScreen() {
 
               {!keyboardOpen ? (
                 <View pointerEvents="none" style={[styles.wave, { height: L.waveH }]}>
-                  <Image source={WAVE} style={styles.fill} resizeMode="stretch" />
+                  <Image source={WAVE} style={styles.fill} resizeMode="cover" />
                 </View>
               ) : null}
             </View>
@@ -246,28 +288,40 @@ export default function CompleteProfileScreen() {
             style={[
               styles.card,
               {
-                marginTop: keyboardOpen ? 0 : -18,
+                marginTop: keyboardOpen ? 0 : -L.cardOverlap,
                 paddingHorizontal: L.padX,
-                paddingTop: L.compact ? 18 : 22,
+                paddingTop: L.cardPadTop,
               },
             ]}
           >
             <View style={styles.stepPill}>
-              <Text style={styles.stepText}>{strings.completeProfile.progress}</Text>
+              <Text style={styles.stepText} maxFontSizeMultiplier={1.5}>
+                {strings.completeProfile.progress}
+              </Text>
             </View>
 
-            <Text style={[styles.welcome, { fontSize: L.welcomeSize }]}>
+            <Text
+              style={[styles.welcome, { fontSize: L.welcomeSize }]}
+              maxFontSizeMultiplier={1.5}
+            >
               {strings.completeProfile.welcome}
             </Text>
             <Text
               style={[
                 styles.title,
-                { fontSize: L.headingSize, lineHeight: L.headingSize + 6 },
+                { fontSize: L.headingSize, lineHeight: Math.round(L.headingSize * 1.3) },
               ]}
+              maxFontSizeMultiplier={1.5}
             >
               {strings.completeProfile.title}
             </Text>
-            <Text style={[styles.subtitle, { fontSize: L.subSize, lineHeight: L.subSize + 8 }]}>
+            <Text
+              style={[
+                styles.subtitle,
+                { fontSize: L.subSize, lineHeight: Math.round(L.subSize * 1.5) },
+              ]}
+              maxFontSizeMultiplier={1.5}
+            >
               {strings.completeProfile.subtitle}
             </Text>
 
@@ -295,7 +349,9 @@ export default function CompleteProfileScreen() {
           <View
             style={[
               styles.landscapeWrap,
-              keyboardOpen ? styles.landscapeHidden : { minHeight: L.landscapeMin },
+              keyboardOpen
+                ? styles.landscapeHidden
+                : { minHeight: L.landscapeMin, maxHeight: L.landscapeMax },
             ]}
           >
             <Image source={LANDSCAPE} style={styles.landscape} resizeMode="cover" />
@@ -377,7 +433,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  brandCol: { flex: 1, justifyContent: 'center', minWidth: 0 },
+  brandCol: { flex: 1, justifyContent: 'center', minWidth: 0, paddingRight: 4 },
   brandName: {
     color: C.brandGreen,
     fontWeight: '800',
@@ -411,6 +467,7 @@ const styles = StyleSheet.create({
   },
   stepPill: {
     alignSelf: 'center',
+    maxWidth: '100%',
     backgroundColor: C.paleGreen,
     paddingHorizontal: 12,
     paddingVertical: 5,
@@ -422,6 +479,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.2,
+    textAlign: 'center',
   },
   welcome: {
     color: C.welcomeGrey,

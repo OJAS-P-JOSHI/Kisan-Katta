@@ -46,7 +46,7 @@ export function ProfileAvatar({
   const busy = uploading || disabled;
   const hasImage = Boolean(imageUri);
   const pulse = useMemo(() => new Animated.Value(1), []);
-  const badgeSize = Math.round(size * 0.28);
+  const badgeSize = Math.max(22, Math.round(size * 0.28));
   const iconGlyph = Math.round(size * 0.48);
   const soft = tone === 'soft';
   const fillColor = soft ? theme.colors.primaryContainer : theme.colors.primary;
@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    overflow: 'visible',
   },
   avatar: {
     alignItems: 'center',
