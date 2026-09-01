@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { iconSize, palette, radius, spacing, typography, useAppTheme } from '@/theme';
 
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 
 type MarketplaceInfoSheetProps = {
   visible: boolean;
@@ -66,7 +67,7 @@ export function MarketplaceInfoSheet({ visible, onDismiss }: MarketplaceInfoShee
         style={[
           styles.sheet,
           {
-            backgroundColor: theme.colors.surface,
+            backgroundColor: mp.cream,
             paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.sm,
             paddingLeft: spacing.md + Math.max(insets.left, 0),
             paddingRight: spacing.md + Math.max(insets.right, 0),

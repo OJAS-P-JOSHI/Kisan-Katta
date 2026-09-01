@@ -1,33 +1,35 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
 import { EmptyState } from '@/components/EmptyState';
-import { spacing, typography, useAppTheme } from '@/theme';
+import { spacing, typography } from '@/theme';
 
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
+
+type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 type ListingStateViewProps = {
   title: string;
   message?: string;
   onRetry?: () => void;
+  icon?: IconName;
 };
 
 export function ListingLoadingView({ message = marketplaceStrings.listings.loading }: { message?: string }) {
-  const theme = useAppTheme();
   return (
-    <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
-      <ActivityIndicator animating size="large" color={theme.colors.primary} />
-      <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-        {message}
-      </Text>
+    <View style={[styles.centered, { backgroundColor: mp.cream }]}>
+      <ActivityIndicator animating size="large" color={mp.primaryGreen} />
+      <Text style={[typography.body, { color: mp.bodyGrey }]}>{message}</Text>
     </View>
   );
 }
 
 export function ListingErrorView({ title, message, onRetry }: ListingStateViewProps) {
-  const theme = useAppTheme();
   return (
-    <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.centered, { backgroundColor: mp.cream }]}>
       <EmptyState
         icon="alert-circle-outline"
         title={title}
@@ -39,8 +41,8 @@ export function ListingErrorView({ title, message, onRetry }: ListingStateViewPr
   );
 }
 
-export function ListingEmptyView({ title, message }: ListingStateViewProps) {
-  return <EmptyState icon="sprout-outline" title={title} message={message} />;
+export function ListingEmptyView({ title, message, icon }: ListingStateViewProps) {
+  return <EmptyState icon={icon ?? 'sprout-outline'} title={title} message={message} />;
 }
 
 const styles = StyleSheet.create({

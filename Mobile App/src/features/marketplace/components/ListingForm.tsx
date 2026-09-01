@@ -1,18 +1,20 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Button, HelperText, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+import { StyleSheet, Text as RNText, View } from 'react-native';
+import { Button, HelperText, SegmentedButtons, TextInput } from 'react-native-paper';
 
 import { Dropdown } from '@/components/Dropdown';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { radius, spacing, useAppTheme } from '@/theme';
+import { radius, spacing } from '@/theme';
 
 import { CropSelector } from './CropSelector';
+import { FormSection } from './FormSection';
 import { HarvestDateField } from './HarvestDateField';
 import { ListingImagePicker } from './ListingImagePicker';
 import {
   LABOUR_CATEGORIES,
+  LABOUR_GENDER_FORM_OPTIONS,
   LABOUR_GENDERS,
-  LABOUR_RATE_TYPES,
+  LABOUR_RATE_FORM_OPTION,
   MARKETPLACE_UNITS,
   MAX_LABOUR_LISTING_IMAGES,
   MAX_LISTING_IMAGES,
@@ -22,9 +24,9 @@ import type { UseListingImagesReturn } from '../hooks/useListingImages';
 import {
   getCategoryLabel,
   getGenderLabel,
-  getRateTypeLabel,
   marketplaceStrings,
 } from '../marketplace.strings';
+import { listingTypeAccent, mp } from '../marketplace.ui';
 import type {
   CreateListingPayload,
   LabourGender,
@@ -86,7 +88,7 @@ const emptyValues = (listingType: ListingType = 'produce'): ListingFormValues =>
   description: '',
   availableWorkers: '',
   gender: null,
-  rateType: null,
+  rateType: listingType === 'labour' ? LABOUR_RATE_FORM_OPTION : null,
   availableFrom: '',
 });
 
@@ -110,7 +112,9 @@ const valuesFromListing = (listing: MarketplaceListing): ListingFormValues => ({
   description: listing.description ?? '',
   availableWorkers: listing.availableWorkers != null ? String(listing.availableWorkers) : '',
   gender: listing.gender ?? null,
-  rateType: listing.rateType ?? null,
+  rateType:
+    listing.rateType ??
+    (listing.listingType === 'labour' ? LABOUR_RATE_FORM_OPTION : null),
   availableFrom: listing.availableFrom ? listing.availableFrom.slice(0, 10) : '',
 });
 
@@ -126,8 +130,7 @@ const parsePositiveInteger = (value: string): number | null => {
 
 const productCategoryOptions = PRODUCT_CATEGORIES.map((category) => getCategoryLabel(category));
 const labourCategoryOptions = LABOUR_CATEGORIES.map((category) => getCategoryLabel(category));
-const genderOptions = LABOUR_GENDERS.map((gender) => getGenderLabel(gender));
-const rateTypeOptions = LABOUR_RATE_TYPES.map((rateType) => getRateTypeLabel(rateType));
+const genderOptions = LABOUR_GENDER_FORM_OPTIONS.map((gender) => getGenderLabel(gender));
 
 const toProductCategoryValue = (label: string): MarketplaceCategory | null => {
   const match = PRODUCT_CATEGORIES.find((category) => getCategoryLabel(category) === label);
@@ -144,11 +147,6 @@ const toGenderValue = (label: string): LabourGender | null => {
   return match ?? null;
 };
 
-const toRateTypeValue = (label: string): LabourRateType | null => {
-  const match = LABOUR_RATE_TYPES.find((rateType) => getRateTypeLabel(rateType) === label);
-  return match ?? null;
-};
-
 export function ListingForm({
   initialListing,
   images,
@@ -159,7 +157,6 @@ export function ListingForm({
   submitLabel,
   submittingLabel,
 }: ListingFormProps) {
-  const theme = useAppTheme();
   const { data: profile } = useMyProfile();
   const isEdit = !!initialListing;
   const [values, setValues] = useState<ListingFormValues>(() =>
@@ -170,7 +167,8 @@ export function ListingForm({
   );
 
   const imageMax =
-    values.listingType === 'labour' ? MAX_LABOUR_LISTING_IMAGES : undefined;
+    values.listingType === 'labour' ? MAX_LABOUR_LISTING_IMAGES : MAX_LISTING_IMAGES;
+  const typeAccent = listingTypeAccent[values.listingType];
 
   const locationLabel = useMemo(() => {
     if (values.listingType === 'labour') {
@@ -213,7 +211,6 @@ export function ListingForm({
         nextErrors.availableWorkers = marketplaceStrings.errors.invalidWorkers;
       }
       if (!values.gender) nextErrors.gender = marketplaceStrings.errors.requiredField;
-      if (!values.rateType) nextErrors.rateType = marketplaceStrings.errors.requiredField;
       if (!parseNumber(values.price)) nextErrors.price = marketplaceStrings.errors.invalidPrice;
       if (!values.availableFrom.trim()) {
         nextErrors.availableFrom = marketplaceStrings.errors.requiredField;
@@ -268,7 +265,7 @@ export function ListingForm({
         price: parseNumber(values.price)!,
         availableWorkers: workers,
         gender: values.gender!,
-        rateType: values.rateType!,
+        rateType: values.rateType ?? LABOUR_RATE_FORM_OPTION,
         availableFrom: values.availableFrom.trim(),
         description: values.description.trim(),
       };
@@ -312,254 +309,356 @@ export function ListingForm({
 
   const workersCount = parsePositiveInteger(values.availableWorkers);
 
+  const fieldProps = {
+    outlineColor: mp.searchBorder,
+    activeOutlineColor: mp.primaryGreen,
+    style: styles.field,
+  } as const;
+
   return (
     <View style={styles.form}>
-      <ListingImagePicker
-        images={images}
-        disabled={isBusy}
-        onRetry={onUploadRetry}
-        maxImages={imageMax}
-      />
-      {errors.images ? <HelperText type="error">{errors.images}</HelperText> : null}
+      <FormSection
+        icon="camera-outline"
+        title={marketplaceStrings.create.sections.photos}
+        hint={marketplaceStrings.create.photosCount(images.previewUris.length, imageMax)}
+        accent={typeAccent}
+      >
+        <ListingImagePicker
+          images={images}
+          disabled={isBusy}
+          onRetry={onUploadRetry}
+          maxImages={imageMax}
+        />
+        {errors.images ? <HelperText type="error">{errors.images}</HelperText> : null}
+      </FormSection>
 
       {!isEdit ? (
-        <SegmentedButtons
-          value={values.listingType}
-          onValueChange={handleListingTypeChange}
-          buttons={[
-            { value: 'produce', label: marketplaceStrings.create.produce },
-            { value: 'product', label: marketplaceStrings.create.product },
-            { value: 'labour', label: marketplaceStrings.create.labour },
-          ]}
-          style={styles.segmented}
-        />
+        <FormSection
+          icon="shape-outline"
+          title={marketplaceStrings.create.sections.listingType}
+          accent={typeAccent}
+        >
+          <SegmentedButtons
+            value={values.listingType}
+            onValueChange={handleListingTypeChange}
+            buttons={[
+              { value: 'produce', label: marketplaceStrings.create.produce },
+              { value: 'product', label: marketplaceStrings.create.product },
+              { value: 'labour', label: marketplaceStrings.create.labour },
+            ]}
+            style={styles.segmented}
+          />
+          <RNText style={styles.classifiedNote} maxFontSizeMultiplier={1.5}>
+            {marketplaceStrings.create.classifiedNote}
+          </RNText>
+        </FormSection>
       ) : null}
 
-      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-        {locationLabel}
-      </Text>
+      <FormSection icon="map-marker-outline" title={marketplaceStrings.create.sections.location}>
+        <RNText style={styles.locationText} maxFontSizeMultiplier={1.5}>
+          {locationLabel}
+        </RNText>
+      </FormSection>
 
       {values.listingType === 'produce' ? (
         <>
-          <CropSelector
-            value={values.crop}
-            onSelect={(crop) => setValues((v) => ({ ...v, crop }))}
-            error={errors.crop}
-          />
+          <FormSection
+            icon="barley"
+            title={marketplaceStrings.create.sections.produceDetails}
+            accent={typeAccent}
+          >
+            <CropSelector
+              value={values.crop}
+              onSelect={(crop) => setValues((v) => ({ ...v, crop }))}
+              error={errors.crop}
+            />
+          </FormSection>
 
-          <View style={styles.quantityRow}>
-            <View style={styles.quantityInput}>
-              <TextInput
-                mode="outlined"
-                label={marketplaceStrings.create.quantity}
-                value={values.quantity}
-                onChangeText={(quantity) => setValues((v) => ({ ...v, quantity }))}
-                keyboardType="numeric"
-                error={!!errors.quantity}
-              />
+          <FormSection
+            icon="scale-balance"
+            title={marketplaceStrings.create.sections.quantityPrice}
+            accent={typeAccent}
+          >
+            <View style={styles.quantityRow}>
+              <View style={styles.quantityInput}>
+                <TextInput
+                  mode="outlined"
+                  label={marketplaceStrings.create.quantity}
+                  value={values.quantity}
+                  onChangeText={(quantity) => setValues((v) => ({ ...v, quantity }))}
+                  keyboardType="numeric"
+                  error={!!errors.quantity}
+                  {...fieldProps}
+                />
+              </View>
+              <View style={styles.unitInput}>
+                <Dropdown
+                  label={marketplaceStrings.create.unit}
+                  value={values.unit}
+                  options={MARKETPLACE_UNITS}
+                  onSelect={(unit) => setValues((v) => ({ ...v, unit: unit as MarketplaceUnit }))}
+                  error={errors.unit}
+                />
+              </View>
             </View>
-            <View style={styles.unitInput}>
-              <Dropdown
-                label={marketplaceStrings.create.unit}
-                value={values.unit}
-                options={MARKETPLACE_UNITS}
-                onSelect={(unit) => setValues((v) => ({ ...v, unit: unit as MarketplaceUnit }))}
-                error={errors.unit}
-              />
-            </View>
-          </View>
-          {errors.quantity ? <HelperText type="error">{errors.quantity}</HelperText> : null}
+            {errors.quantity ? <HelperText type="error">{errors.quantity}</HelperText> : null}
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.expectedPrice}
-            value={values.expectedPrice}
-            onChangeText={(expectedPrice) => setValues((v) => ({ ...v, expectedPrice }))}
-            keyboardType="numeric"
-            error={!!errors.expectedPrice}
-            left={<TextInput.Affix text="₹" />}
-          />
-          {errors.expectedPrice ? <HelperText type="error">{errors.expectedPrice}</HelperText> : null}
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.expectedPrice}
+              value={values.expectedPrice}
+              onChangeText={(expectedPrice) => setValues((v) => ({ ...v, expectedPrice }))}
+              keyboardType="numeric"
+              error={!!errors.expectedPrice}
+              left={<TextInput.Affix text="₹" />}
+              {...fieldProps}
+            />
+            {errors.expectedPrice ? (
+              <HelperText type="error">{errors.expectedPrice}</HelperText>
+            ) : null}
+          </FormSection>
 
-          <HarvestDateField
-            value={values.harvestDate}
-            onChange={(harvestDate) => setValues((v) => ({ ...v, harvestDate }))}
-            error={errors.harvestDate}
-          />
+          <FormSection
+            icon="calendar-outline"
+            title={marketplaceStrings.create.sections.availability}
+            accent={typeAccent}
+          >
+            <HarvestDateField
+              value={values.harvestDate}
+              onChange={(harvestDate) => setValues((v) => ({ ...v, harvestDate }))}
+              error={errors.harvestDate}
+            />
+          </FormSection>
         </>
       ) : null}
 
       {values.listingType === 'labour' ? (
         <>
-          <Dropdown
-            label={marketplaceStrings.create.labourCategory}
-            value={values.category ? getCategoryLabel(values.category) : null}
-            options={labourCategoryOptions}
-            onSelect={(label) => {
-              setValues((v) => ({ ...v, category: toLabourCategoryValue(label) }));
-            }}
-            error={errors.category}
-          />
+          <FormSection
+            icon="account-hard-hat"
+            title={marketplaceStrings.create.sections.labourDetails}
+            accent={typeAccent}
+          >
+            <Dropdown
+              label={marketplaceStrings.create.labourCategory}
+              value={values.category ? getCategoryLabel(values.category) : null}
+              options={labourCategoryOptions}
+              onSelect={(label) => {
+                setValues((v) => ({ ...v, category: toLabourCategoryValue(label) }));
+              }}
+              error={errors.category}
+            />
 
-          {labourTitlePreview ? (
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              {marketplaceStrings.create.titlePreview}: {labourTitlePreview}
-            </Text>
-          ) : null}
+            {labourTitlePreview ? (
+              <RNText style={styles.previewText} maxFontSizeMultiplier={1.5}>
+                {marketplaceStrings.create.titlePreview}: {labourTitlePreview}
+              </RNText>
+            ) : null}
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.availableWorkers}
-            value={values.availableWorkers}
-            onChangeText={(availableWorkers) => setValues((v) => ({ ...v, availableWorkers }))}
-            keyboardType="number-pad"
-            error={!!errors.availableWorkers}
-          />
-          {errors.availableWorkers ? (
-            <HelperText type="error">{errors.availableWorkers}</HelperText>
-          ) : null}
-          {workersCount != null ? (
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              {getLabourGroupLabel(workersCount) === 'Individual'
-                ? marketplaceStrings.detail.individual
-                : marketplaceStrings.detail.group}
-            </Text>
-          ) : null}
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.availableWorkers}
+              value={values.availableWorkers}
+              onChangeText={(availableWorkers) => setValues((v) => ({ ...v, availableWorkers }))}
+              keyboardType="number-pad"
+              error={!!errors.availableWorkers}
+              {...fieldProps}
+            />
+            {errors.availableWorkers ? (
+              <HelperText type="error">{errors.availableWorkers}</HelperText>
+            ) : null}
+            {workersCount != null ? (
+              <RNText style={styles.previewText} maxFontSizeMultiplier={1.5}>
+                {getLabourGroupLabel(workersCount) === 'Individual'
+                  ? marketplaceStrings.detail.individual
+                  : marketplaceStrings.detail.group}
+              </RNText>
+            ) : null}
 
-          <Dropdown
-            label={marketplaceStrings.create.gender}
-            value={values.gender ? getGenderLabel(values.gender) : null}
-            options={genderOptions}
-            onSelect={(label) => setValues((v) => ({ ...v, gender: toGenderValue(label) }))}
-            error={errors.gender}
-          />
+            <Dropdown
+              label={marketplaceStrings.create.gender}
+              value={values.gender ? getGenderLabel(values.gender) : null}
+              options={genderOptions}
+              onSelect={(label) => setValues((v) => ({ ...v, gender: toGenderValue(label) }))}
+              error={errors.gender}
+            />
+          </FormSection>
 
-          <SegmentedButtons
-            value={values.rateType ?? ''}
-            onValueChange={(rateType) =>
-              setValues((v) => ({ ...v, rateType: rateType as LabourRateType }))
-            }
-            buttons={LABOUR_RATE_TYPES.map((rateType) => ({
-              value: rateType,
-              label: getRateTypeLabel(rateType),
-            }))}
-            style={styles.segmented}
-          />
-          {errors.rateType ? <HelperText type="error">{errors.rateType}</HelperText> : null}
+          <FormSection icon="currency-inr" title={marketplaceStrings.create.sections.rate} accent={typeAccent}>
+            <TextInput
+              mode="outlined"
+              label={
+                values.rateType === 'per_hour'
+                  ? marketplaceStrings.create.rate
+                  : marketplaceStrings.create.dailyRate
+              }
+              value={values.price}
+              onChangeText={(price) => setValues((v) => ({ ...v, price }))}
+              keyboardType="numeric"
+              error={!!errors.price}
+              left={<TextInput.Affix text="₹" />}
+              {...fieldProps}
+            />
+            {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
+          </FormSection>
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.rate}
-            value={values.price}
-            onChangeText={(price) => setValues((v) => ({ ...v, price }))}
-            keyboardType="numeric"
-            error={!!errors.price}
-            left={<TextInput.Affix text="₹" />}
-          />
-          {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
-
-          <HarvestDateField
-            value={values.availableFrom}
-            onChange={(availableFrom) => setValues((v) => ({ ...v, availableFrom }))}
-            error={errors.availableFrom}
-            label={marketplaceStrings.create.availableFrom}
-            placeholder={marketplaceStrings.create.availableFromPlaceholder}
-          />
+          <FormSection
+            icon="calendar-outline"
+            title={marketplaceStrings.create.sections.availability}
+            accent={typeAccent}
+          >
+            <HarvestDateField
+              value={values.availableFrom}
+              onChange={(availableFrom) => setValues((v) => ({ ...v, availableFrom }))}
+              error={errors.availableFrom}
+              label={marketplaceStrings.create.availableFrom}
+              placeholder={marketplaceStrings.create.availableFromPlaceholder}
+            />
+          </FormSection>
         </>
       ) : null}
 
       {values.listingType === 'product' ? (
         <>
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.productName}
-            placeholder={marketplaceStrings.create.productNamePlaceholder}
-            value={values.productName}
-            onChangeText={(productName) => setValues((v) => ({ ...v, productName }))}
-            error={!!errors.productName}
-          />
-          {errors.productName ? <HelperText type="error">{errors.productName}</HelperText> : null}
+          <FormSection
+            icon="sack"
+            title={marketplaceStrings.create.sections.productDetails}
+            accent={typeAccent}
+          >
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.productName}
+              placeholder={marketplaceStrings.create.productNamePlaceholder}
+              value={values.productName}
+              onChangeText={(productName) => setValues((v) => ({ ...v, productName }))}
+              error={!!errors.productName}
+              {...fieldProps}
+            />
+            {errors.productName ? <HelperText type="error">{errors.productName}</HelperText> : null}
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.brand}
-            placeholder={marketplaceStrings.create.brandPlaceholder}
-            value={values.brand}
-            onChangeText={(brand) => setValues((v) => ({ ...v, brand }))}
-          />
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.brand}
+              placeholder={marketplaceStrings.create.brandPlaceholder}
+              value={values.brand}
+              onChangeText={(brand) => setValues((v) => ({ ...v, brand }))}
+              {...fieldProps}
+            />
 
-          <Dropdown
-            label={marketplaceStrings.create.category}
-            value={values.category ? getCategoryLabel(values.category) : null}
-            options={productCategoryOptions}
-            onSelect={(label) => {
-              setValues((v) => ({ ...v, category: toProductCategoryValue(label) }));
-            }}
-            error={errors.category}
-          />
+            <Dropdown
+              label={marketplaceStrings.create.category}
+              value={values.category ? getCategoryLabel(values.category) : null}
+              options={productCategoryOptions}
+              onSelect={(label) => {
+                setValues((v) => ({ ...v, category: toProductCategoryValue(label) }));
+              }}
+              error={errors.category}
+            />
+          </FormSection>
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.stock}
-            value={values.stock}
-            onChangeText={(stock) => setValues((v) => ({ ...v, stock }))}
-            keyboardType="numeric"
-          />
+          <FormSection
+            icon="tag-outline"
+            title={marketplaceStrings.create.sections.quantityPrice}
+            accent={typeAccent}
+          >
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.stock}
+              value={values.stock}
+              onChangeText={(stock) => setValues((v) => ({ ...v, stock }))}
+              keyboardType="numeric"
+              {...fieldProps}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={marketplaceStrings.create.price}
-            value={values.price}
-            onChangeText={(price) => setValues((v) => ({ ...v, price }))}
-            keyboardType="numeric"
-            error={!!errors.price}
-            left={<TextInput.Affix text="₹" />}
-          />
-          {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
+            <TextInput
+              mode="outlined"
+              label={marketplaceStrings.create.price}
+              value={values.price}
+              onChangeText={(price) => setValues((v) => ({ ...v, price }))}
+              keyboardType="numeric"
+              error={!!errors.price}
+              left={<TextInput.Affix text="₹" />}
+              {...fieldProps}
+            />
+            {errors.price ? <HelperText type="error">{errors.price}</HelperText> : null}
+          </FormSection>
         </>
       ) : null}
 
-      <TextInput
-        mode="outlined"
-        label={marketplaceStrings.create.description}
-        placeholder={
-          values.listingType === 'labour'
-            ? marketplaceStrings.create.labourDescriptionPlaceholder
-            : marketplaceStrings.create.descriptionPlaceholder
-        }
-        value={values.description}
-        onChangeText={(description) => setValues((v) => ({ ...v, description }))}
-        multiline
-        numberOfLines={4}
-        error={!!errors.description}
-      />
-      {errors.description ? <HelperText type="error">{errors.description}</HelperText> : null}
+      <FormSection icon="text-box-outline" title={marketplaceStrings.create.sections.description}>
+        <TextInput
+          mode="outlined"
+          label={marketplaceStrings.create.description}
+          placeholder={
+            values.listingType === 'labour'
+              ? marketplaceStrings.create.labourDescriptionPlaceholder
+              : marketplaceStrings.create.descriptionPlaceholder
+          }
+          value={values.description}
+          onChangeText={(description) => setValues((v) => ({ ...v, description }))}
+          multiline
+          numberOfLines={4}
+          error={!!errors.description}
+          {...fieldProps}
+          style={[styles.field, styles.description]}
+        />
+        {errors.description ? <HelperText type="error">{errors.description}</HelperText> : null}
+      </FormSection>
 
       {serverError ? <HelperText type="error">{serverError}</HelperText> : null}
 
-      <Button
-        mode="contained"
-        onPress={handleSubmit}
-        loading={isBusy}
-        disabled={isBusy}
-        style={styles.submitButton}
-        contentStyle={styles.submitButtonContent}
-      >
-        {isBusy ? submittingLabel : submitLabel}
-      </Button>
+      <View style={styles.publishWrap}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          loading={isBusy}
+          disabled={isBusy}
+          buttonColor={mp.primaryGreen}
+          textColor={mp.white}
+          style={styles.submitButton}
+          contentStyle={styles.submitButtonContent}
+          labelStyle={styles.submitLabel}
+        >
+          {isBusy ? submittingLabel : submitLabel}
+        </Button>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  form: { gap: spacing.sm },
-  scrollContent: { padding: spacing.md, gap: spacing.sm, paddingBottom: spacing.xl },
-  segmented: { marginBottom: spacing.sm },
-  quantityRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
-  quantityInput: { flex: 1 },
-  unitInput: { flex: 1 },
-  submitButton: { marginTop: spacing.md, borderRadius: radius.md },
-  submitButtonContent: { paddingVertical: spacing.sm, minHeight: 48 },
+  form: { gap: 16 },
+  scrollContent: { padding: spacing.md, gap: 16, paddingBottom: 40 },
+  segmented: { marginBottom: 0 },
+  quantityRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start', minWidth: 0 },
+  quantityInput: { flex: 1, minWidth: 0 },
+  unitInput: { flex: 1, minWidth: 0 },
+  field: { backgroundColor: mp.white },
+  description: { minHeight: 96 },
+  classifiedNote: {
+    color: mp.bodyGrey,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '400',
+  },
+  locationText: {
+    color: mp.tagline,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  previewText: {
+    color: mp.bodyGrey,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  publishWrap: {
+    marginTop: 4,
+    paddingTop: 4,
+  },
+  submitButton: { borderRadius: radius.lg },
+  submitButtonContent: { paddingVertical: spacing.sm, minHeight: 52 },
+  submitLabel: { fontWeight: '700', letterSpacing: 0.2, fontSize: 16 },
 });
 
 export const listingFormScrollProps = {

@@ -19,6 +19,8 @@ type MediaImageCarouselProps = {
   urls: string[];
   emptyIcon?: ComponentProps<typeof MaterialCommunityIcons>['name'];
   height?: number;
+  /** Use full window width with square corners (listing detail hero). */
+  fullWidth?: boolean;
 };
 
 /**
@@ -29,10 +31,11 @@ export function MediaImageCarousel({
   urls,
   emptyIcon = 'image-off-outline',
   height = 220,
+  fullWidth = false,
 }: MediaImageCarouselProps) {
   const theme = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const carouselWidth = windowWidth - spacing.md * 2;
+  const carouselWidth = fullWidth ? windowWidth : windowWidth - spacing.md * 2;
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
 
@@ -55,6 +58,7 @@ export function MediaImageCarousel({
         style={[
           styles.placeholder,
           { height, backgroundColor: theme.colors.surfaceVariant },
+          fullWidth ? styles.placeholderFlush : null,
         ]}
       >
         <MaterialCommunityIcons
@@ -93,7 +97,11 @@ export function MediaImageCarousel({
                 uri={item}
                 displayWidth={Math.round(carouselWidth * 2)}
                 style={styles.image}
-                containerStyle={[styles.imageWrap, { width: carouselWidth, height }]}
+                containerStyle={[
+                  styles.imageWrap,
+                  { width: carouselWidth, height },
+                  fullWidth ? styles.imageWrapFlush : null,
+                ]}
                 resizeMode="cover"
               />
             </Pressable>
@@ -127,8 +135,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  placeholderFlush: {
+    borderRadius: 0,
+  },
   imageWrap: {
     borderRadius: radius.lg,
+  },
+  imageWrapFlush: {
+    borderRadius: 0,
   },
   image: {
     width: '100%',

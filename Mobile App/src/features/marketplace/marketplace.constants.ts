@@ -38,6 +38,12 @@ export const LABOUR_GENDERS = ['Male', 'Female', 'Mixed Group'] as const;
 
 export const LABOUR_RATE_TYPES = ['per_day', 'per_hour'] as const;
 
+/** Gender choices shown in Majur Katta create/edit. API still accepts Mixed Group. */
+export const LABOUR_GENDER_FORM_OPTIONS = ['Male', 'Female'] as const;
+
+/** Rate type used for new Majur Katta listings. API still accepts per_hour. */
+export const LABOUR_RATE_FORM_OPTION = 'per_day' as const;
+
 export const MARKETPLACE_UNITS = [
   'Kg',
   'Quintal',

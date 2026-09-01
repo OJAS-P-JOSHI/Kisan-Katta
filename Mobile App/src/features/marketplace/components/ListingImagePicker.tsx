@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
-import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { ActivityIndicator, Button, ProgressBar, Text } from 'react-native-paper';
 
-import { radius, spacing, useAppTheme } from '@/theme';
+import { radius, spacing } from '@/theme';
 
 import type { UseListingImagesReturn } from '../hooks/useListingImages';
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 
 type ListingImagePickerProps = {
   images: UseListingImagesReturn;
@@ -22,7 +23,7 @@ function ListingImagePickerComponent({
   onRetry,
   maxImages,
 }: ListingImagePickerProps) {
-  const theme = useAppTheme();
+  const { width } = useWindowDimensions();
   const {
     previewUris,
     canAddMore: hookCanAddMore,
@@ -54,31 +55,37 @@ function ListingImagePickerComponent({
       ? uploadProgress.current / uploadProgress.total
       : 0;
 
+  const thumbSize = Math.max(88, Math.min(108, Math.floor((width - 72) / 3)));
+
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
         {previewUris.map((uri, index) => (
-          <View key={`${uri}-${index}`} style={styles.thumbWrap}>
+          <View key={`${uri}-${index}`} style={[styles.thumbWrap, { width: thumbSize, height: thumbSize }]}>
             <Image source={{ uri }} style={styles.thumb} resizeMode="cover" />
             <Pressable
-              style={[styles.removeButton, { backgroundColor: theme.colors.error }]}
+              style={styles.removeButton}
               onPress={() => void removeImage(index)}
               disabled={disabled || isUploading}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={marketplaceStrings.images.removePhoto}
             >
-              <MaterialCommunityIcons name="close" size={14} color={theme.colors.onError} />
+              <MaterialCommunityIcons name="close" size={14} color={mp.white} />
             </Pressable>
           </View>
         ))}
 
         {canAddMore ? (
           <Pressable
-            style={[styles.addTile, { borderColor: theme.colors.outlineVariant, backgroundColor: theme.colors.surface }]}
+            style={[styles.addTile, { width: thumbSize, height: thumbSize }]}
             onPress={handleAddPress}
             disabled={disabled || isUploading}
+            accessibilityRole="button"
+            accessibilityLabel={marketplaceStrings.images.addPhoto}
           >
-            <MaterialCommunityIcons name="camera-plus-outline" size={28} color={theme.colors.primary} />
-            <Text variant="labelMedium" style={{ color: theme.colors.primary, textAlign: 'center' }}>
+            <MaterialCommunityIcons name="camera-plus-outline" size={28} color={mp.primaryGreen} />
+            <Text variant="labelMedium" style={styles.addLabel}>
               {marketplaceStrings.images.addPhoto}
             </Text>
           </Pressable>
@@ -86,7 +93,7 @@ function ListingImagePickerComponent({
       </View>
 
       {!canAddMore ? (
-        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+        <Text variant="bodySmall" style={styles.hint}>
           {maxReachedMessage}
         </Text>
       ) : null}
@@ -94,13 +101,13 @@ function ListingImagePickerComponent({
       {isUploading && uploadProgress ? (
         <View style={styles.progressBlock}>
           <View style={styles.progressHeader}>
-            <ActivityIndicator animating size="small" color={theme.colors.primary} />
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+            <ActivityIndicator animating size="small" color={mp.primaryGreen} />
+            <Text variant="bodyMedium" style={{ color: mp.headingGreen }}>
               {marketplaceStrings.images.uploading}
             </Text>
           </View>
-          <ProgressBar progress={progressValue} color={theme.colors.primary} style={styles.progressBar} />
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+          <ProgressBar progress={progressValue} color={mp.primaryGreen} style={styles.progressBar} />
+          <Text variant="bodySmall" style={styles.hint}>
             {marketplaceStrings.images.uploadProgress(uploadProgress.current, uploadProgress.total)}
           </Text>
         </View>
@@ -108,10 +115,10 @@ function ListingImagePickerComponent({
 
       {uploadError ? (
         <View style={styles.errorBlock}>
-          <Text variant="bodyMedium" style={{ color: theme.colors.error }}>
+          <Text variant="bodyMedium" style={{ color: '#BA1A1A' }}>
             {uploadError}
           </Text>
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+          <Text variant="bodySmall" style={styles.hint}>
             {marketplaceStrings.images.uploadFailedHint}
           </Text>
           <Button mode="outlined" onPress={onRetry ?? clearUploadError} style={styles.retryButton} compact>
@@ -125,8 +132,6 @@ function ListingImagePickerComponent({
 
 export const ListingImagePicker = memo(ListingImagePickerComponent);
 
-const THUMB_SIZE = 100;
-
 const styles = StyleSheet.create({
   container: { gap: spacing.sm },
   grid: {
@@ -135,8 +140,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   thumbWrap: {
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
     borderRadius: radius.md,
     overflow: 'hidden',
   },
@@ -145,23 +148,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xs,
     right: spacing.xs,
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#BA1A1A',
   },
   addTile: {
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
     borderRadius: radius.md,
     borderWidth: 1,
     borderStyle: 'dashed',
+    borderColor: mp.searchBorder,
+    backgroundColor: mp.produceBg,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
     padding: spacing.xs,
   },
+  addLabel: { color: mp.primaryGreen, textAlign: 'center', fontWeight: '700' },
+  hint: { color: mp.bodyGrey },
   progressBlock: { gap: spacing.xs, marginTop: spacing.xs },
   progressHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   progressBar: { height: 8, borderRadius: radius.sm },

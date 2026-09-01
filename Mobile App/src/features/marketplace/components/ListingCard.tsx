@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useCallback } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Card, IconButton, Text } from 'react-native-paper';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { IconButton, Text } from 'react-native-paper';
 
 import { RemoteImage } from '@/components/media/RemoteImage';
-import { cardSurface, iconSize, radius, spacing, typography, useAppTheme } from '@/theme';
+import { iconSize, radius, spacing, typography } from '@/theme';
 
 import { getCategoryLabel, marketplaceStrings } from '../marketplace.strings';
+import { listingTypeAccent, listingTypeWash, mp, mpCard } from '../marketplace.ui';
 import type { MarketplaceListing } from '../marketplace.types';
 import {
   formatHarvestDateDisplay,
@@ -40,7 +41,8 @@ function ListingCardComponent({
   showBrand = listing.listingType === 'product',
   showStatus = true,
 }: ListingCardProps) {
-  const theme = useAppTheme();
+  const { width } = useWindowDimensions();
+  const imageSize = width < 360 ? 84 : 96;
   const imageUrl = getListingImageUrl(listing.images);
   const imageCount = getListingImageUrls(listing.images).length;
   const extraImageCount = imageCount > 1 ? imageCount - 1 : 0;
@@ -48,6 +50,8 @@ function ListingCardComponent({
   const isOwner = isListingOwner(listing.sellerId, currentUserId);
   const showSaveButton = !!onToggleSave && !isOwner;
   const isLabour = listing.listingType === 'labour';
+  const accent = listingTypeAccent[listing.listingType];
+  const wash = listingTypeWash[listing.listingType];
 
   const handlePress = useCallback(() => onPress(listing), [listing, onPress]);
   const handleToggleSave = useCallback(() => {
@@ -83,14 +87,25 @@ function ListingCardComponent({
         ? 'account-hard-hat'
         : 'package-variant';
 
+  const dateLine = isLabour
+    ? listing.availableFrom
+      ? `${marketplaceStrings.detail.availableFrom}: ${formatHarvestDateDisplay(listing.availableFrom)}`
+      : null
+    : listing.harvestDate
+      ? `${marketplaceStrings.detail.harvestDate}: ${formatHarvestDateDisplay(listing.harvestDate)}`
+      : null;
+
   return (
     <Pressable
       onPress={handlePress}
       style={({ pressed }) => [pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
     >
-      <Card style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]} mode="elevated">
+      <View style={[styles.card, mpCard]}>
+        <View style={[styles.accent, { backgroundColor: accent }]} />
         <View style={styles.cardRow}>
-          <View style={styles.imageWrap}>
+          <View style={[styles.imageWrap, { width: imageSize, height: imageSize }]}>
             {imageUrl ? (
               <RemoteImage
                 uri={imageUrl}
@@ -101,33 +116,20 @@ function ListingCardComponent({
                 accessibilityLabel={title}
               />
             ) : (
-              <View
-                style={[
-                  styles.imageFill,
-                  styles.imageFallback,
-                  { backgroundColor: theme.colors.surfaceVariant },
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name={placeholderIcon}
-                  size={iconSize.xl}
-                  color={theme.colors.onSurfaceVariant}
-                />
+              <View style={[styles.imageFill, styles.imageFallback, { backgroundColor: wash }]}>
+                <MaterialCommunityIcons name={placeholderIcon} size={iconSize.xl} color={accent} />
               </View>
             )}
             {extraImageCount > 0 ? (
-              <View style={[styles.moreBadge, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[typography.caption, { color: theme.colors.onSurface, fontWeight: '700' }]}>
+              <View style={styles.moreBadge}>
+                <Text style={[typography.caption, styles.moreText]}>
                   {marketplaceStrings.images.morePhotosOverlay(extraImageCount)}
                 </Text>
               </View>
             ) : null}
             {isOwner ? (
-              <View style={[styles.ownerBadge, { backgroundColor: theme.colors.primaryContainer }]}>
-                <Text
-                  numberOfLines={1}
-                  style={[typography.caption, { color: theme.colors.onPrimaryContainer, fontSize: 9 }]}
-                >
+              <View style={styles.ownerBadge}>
+                <Text numberOfLines={1} style={styles.ownerText} maxFontSizeMultiplier={1.3}>
                   {marketplaceStrings.myListings.myListingBadge}
                 </Text>
               </View>
@@ -138,7 +140,8 @@ function ListingCardComponent({
             <View style={styles.titleRow}>
               <Text
                 numberOfLines={2}
-                style={[typography.sectionTitle, { color: theme.colors.onSurface, flex: 1 }]}
+                maxFontSizeMultiplier={1.5}
+                style={[typography.sectionTitle, styles.title, { color: mp.headingGreen }]}
               >
                 {title}
               </Text>
@@ -146,10 +149,13 @@ function ListingCardComponent({
                 <IconButton
                   icon={isSaved ? 'heart' : 'heart-outline'}
                   size={22}
-                  iconColor={isSaved ? theme.colors.error : theme.colors.onSurfaceVariant}
+                  iconColor={isSaved ? mp.primaryGreen : mp.muted}
                   onPress={handleToggleSave}
                   style={styles.saveButton}
                   hitSlop={8}
+                  accessibilityLabel={
+                    isSaved ? marketplaceStrings.unsaveA11y : marketplaceStrings.saveA11y
+                  }
                 />
               ) : null}
             </View>
@@ -161,46 +167,64 @@ function ListingCardComponent({
             ) : null}
 
             {showBrand && listing.brand ? (
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.5}
+                style={[typography.caption, { color: mp.bodyGrey }]}
+              >
                 {listing.brand}
               </Text>
             ) : null}
 
-            <Text style={[typography.sectionTitle, styles.price, { color: theme.colors.primary }]}>
+            <Text
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.4}
+              style={[typography.sectionTitle, styles.price]}
+            >
               {priceText}
             </Text>
 
             {quantityText ? (
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.5}
+                style={[typography.caption, { color: mp.bodyGrey }]}
+              >
                 {quantityText}
               </Text>
             ) : null}
 
-            {isLabour && listing.availableFrom ? (
-              <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-                {marketplaceStrings.detail.availableFrom}:{' '}
-                {formatHarvestDateDisplay(listing.availableFrom)}
+            {dateLine ? (
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.5}
+                style={[typography.caption, { color: mp.bodyGrey }]}
+              >
+                {dateLine}
               </Text>
             ) : null}
 
-            <View style={styles.metaRow}>
-              <View style={styles.metaItem}>
-                <MaterialCommunityIcons name="map-marker-outline" size={iconSize.sm} color={theme.colors.primary} />
-                <Text
-                  numberOfLines={1}
-                  style={[typography.caption, { color: theme.colors.onSurfaceVariant, flex: 1 }]}
-                >
-                  {locationText}
-                </Text>
-              </View>
+            <View style={styles.metaItem}>
+              <MaterialCommunityIcons name="map-marker-outline" size={iconSize.sm} color={mp.primaryGreen} />
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.5}
+                style={[typography.caption, { color: mp.bodyGrey, flex: 1 }]}
+              >
+                {locationText}
+              </Text>
             </View>
 
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+            <Text
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.4}
+              style={[typography.caption, { color: mp.muted }]}
+            >
               {getCategoryLabel(listing.category)} · {formatListingDate(listing.createdAt)}
             </Text>
           </View>
         </View>
-      </Card>
+      </View>
     </Pressable>
   );
 }
@@ -208,14 +232,28 @@ function ListingCardComponent({
 export const ListingCard = memo(ListingCardComponent);
 
 const styles = StyleSheet.create({
-  card: {},
+  card: {
+    overflow: 'hidden',
+  },
   pressed: { opacity: 0.94, transform: [{ scale: 0.99 }] },
-  cardRow: { flexDirection: 'row', padding: spacing.md, gap: spacing.md },
+  accent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    padding: spacing.md,
+    paddingLeft: spacing.md + 4,
+    gap: spacing.md,
+    minWidth: 0,
+  },
   imageWrap: {
-    width: 96,
-    height: 96,
     borderRadius: radius.md,
     overflow: 'hidden',
+    flexShrink: 0,
   },
   imageFill: { width: '100%', height: '100%' },
   imageFallback: { alignItems: 'center', justifyContent: 'center' },
@@ -227,21 +265,31 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
+    backgroundColor: 'rgba(253, 249, 243, 0.94)',
   },
+  moreText: { color: mp.headingGreen, fontWeight: '700' },
   ownerBadge: {
     position: 'absolute',
     top: spacing.xs,
+    left: spacing.xs,
     right: spacing.xs,
     borderRadius: radius.sm,
-    paddingHorizontal: spacing.xs,
+    paddingHorizontal: 4,
     paddingVertical: 2,
-    maxWidth: 80,
+    backgroundColor: mp.produceBg,
+    maxWidth: '100%',
   },
-  content: { flex: 1, gap: spacing.xs },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  ownerText: {
+    color: mp.primaryGreen,
+    fontSize: 9,
+    lineHeight: 12,
+    fontWeight: '700',
+  },
+  content: { flex: 1, minWidth: 0, gap: 3 },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', minWidth: 0 },
+  title: { flex: 1, minWidth: 0, paddingRight: 4 },
   badgeRow: { alignSelf: 'flex-start' },
-  saveButton: { margin: 0, width: 40, height: 40 },
-  price: { marginTop: spacing.xs },
-  metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
+  saveButton: { margin: 0, marginTop: -8, marginRight: -8, width: 44, height: 44 },
+  price: { marginTop: 2, color: mp.primaryGreen, fontWeight: '700' },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, minWidth: 0 },
 });

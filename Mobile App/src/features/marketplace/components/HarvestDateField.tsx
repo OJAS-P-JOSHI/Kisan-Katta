@@ -6,6 +6,7 @@ import { HelperText, Modal, Portal, Text, TextInput } from 'react-native-paper';
 import { radius, spacing, useAppTheme } from '@/theme';
 
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 import {
   formatHarvestDateApi,
   formatHarvestDateDisplay,
@@ -47,10 +48,8 @@ export function HarvestDateField({
       DateTimePickerAndroid.open({
         value: initial,
         mode: 'date',
-        onChange: (event, selectedDate) => {
-          if (event.type === 'set' && selectedDate) {
-            applyDate(selectedDate);
-          }
+        onValueChange: (_event, selectedDate) => {
+          applyDate(selectedDate);
         },
       });
       return;
@@ -67,7 +66,7 @@ export function HarvestDateField({
 
   return (
     <View>
-      <Pressable onPress={openPicker}>
+      <Pressable onPress={openPicker} accessibilityRole="button" accessibilityLabel={label}>
         <View pointerEvents="none">
           <TextInput
             mode="outlined"
@@ -76,6 +75,9 @@ export function HarvestDateField({
             value={displayValue}
             editable={false}
             error={!!error}
+            outlineColor={mp.searchBorder}
+            activeOutlineColor={mp.primaryGreen}
+            style={styles.input}
             right={<TextInput.Icon icon="calendar" />}
           />
         </View>
@@ -93,12 +95,12 @@ export function HarvestDateField({
               value={iosDate}
               mode="date"
               display="spinner"
-              onChange={(_event, selectedDate) => {
-                if (selectedDate) setIosDate(selectedDate);
+              onValueChange={(_event, selectedDate) => {
+                setIosDate(selectedDate);
               }}
             />
             <Pressable onPress={confirmIos} style={styles.iosConfirm}>
-              <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
+              <Text variant="labelLarge" style={{ color: mp.primaryGreen }}>
                 {marketplaceStrings.create.selectDate}
               </Text>
             </Pressable>
@@ -110,6 +112,9 @@ export function HarvestDateField({
 }
 
 const styles = StyleSheet.create({
+  input: {
+    backgroundColor: mp.white,
+  },
   iosModal: {
     margin: spacing.lg,
     borderRadius: radius.lg,
@@ -117,6 +122,8 @@ const styles = StyleSheet.create({
   },
   iosConfirm: {
     alignItems: 'center',
+    minHeight: 48,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     marginTop: spacing.sm,
   },

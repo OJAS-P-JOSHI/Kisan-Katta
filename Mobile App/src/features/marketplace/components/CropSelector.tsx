@@ -14,6 +14,7 @@ import { useDebouncedValue } from '@/features/profile/hooks/useDebouncedValue';
 import { radius, spacing, useAppTheme } from '@/theme';
 
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 
 type CropSelectorProps = {
   value: string;
@@ -144,6 +145,9 @@ export function CropSelector({ value, onSelect, error }: CropSelectorProps) {
             value={displayValue}
             editable={false}
             error={!!error}
+            outlineColor={mp.searchBorder}
+            activeOutlineColor={mp.primaryGreen}
+            style={{ backgroundColor: mp.white }}
             right={<TextInput.Icon icon="chevron-down" />}
           />
         </View>

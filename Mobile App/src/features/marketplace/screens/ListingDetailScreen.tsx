@@ -1,10 +1,11 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Divider, Snackbar, Text } from 'react-native-paper';
+import { Button, Snackbar, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { radius, spacing, useAppTheme } from '@/theme';
 
 import { ListingImageCarousel } from '../components/ListingImageCarousel';
 import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
@@ -14,6 +15,7 @@ import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions'
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getListingById, recordContactClick } from '../marketplace.service';
 import { getCategoryLabel, getGenderLabel, marketplaceStrings } from '../marketplace.strings';
+import { listingTypeAccent, listingTypeWash, mp, mpCard } from '../marketplace.ui';
 import type { MarketplaceListingDetail } from '../marketplace.types';
 import {
   formatHarvestDateDisplay,
@@ -28,7 +30,7 @@ import {
 } from '../marketplace.utils';
 
 export default function ListingDetailScreen() {
-  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -149,19 +151,141 @@ export default function ListingDetailScreen() {
   const title = getListingDisplayTitle(listing);
   const isOwner = isListingOwner(listing.sellerId, user?.userId);
   const isLabour = listing.listingType === 'labour';
+  const accent = listingTypeAccent[listing.listingType];
+  const wash = listingTypeWash[listing.listingType];
+  const priceText = isLabour
+    ? formatLabourRate(listing.price, listing.rateType)
+    : formatPrice(listing.price);
+
+  const factsFooter = (
+    <View
+      style={[
+        styles.footer,
+        {
+          paddingBottom: Math.max(insets.bottom, 12) + 8,
+          paddingLeft: 16 + Math.max(insets.left, 0),
+          paddingRight: 16 + Math.max(insets.right, 0),
+        },
+      ]}
+    >
+      {isOwner ? (
+        listing.status === 'ACTIVE' || listing.status === 'SOLD' ? (
+          <View style={styles.footerActions}>
+            {listing.status === 'ACTIVE' ? (
+              <>
+                <Button
+                  mode="contained"
+                  icon="pencil"
+                  onPress={() => router.push(`/marketplace-edit/${listing.id}` as Href)}
+                  buttonColor={mp.primaryGreen}
+                  textColor={mp.white}
+                  style={styles.actionButton}
+                  contentStyle={styles.actionButtonContent}
+                  disabled={lifecycleLoading}
+                >
+                  {marketplaceStrings.detail.editListing}
+                </Button>
+                <Button
+                  mode="outlined"
+                  icon="check-circle-outline"
+                  textColor={mp.headingGreen}
+                  onPress={() => openMarkSoldDialog(listing.id, listing.listingType)}
+                  style={styles.outlinedButton}
+                  contentStyle={styles.actionButtonContent}
+                  disabled={lifecycleLoading}
+                >
+                  {isLabour
+                    ? marketplaceStrings.detail.markHired
+                    : marketplaceStrings.detail.markSold}
+                </Button>
+                <Button
+                  mode="outlined"
+                  icon="archive-outline"
+                  textColor="#BA1A1A"
+                  onPress={() => openArchiveDialog(listing.id, listing.listingType)}
+                  style={styles.outlinedButton}
+                  contentStyle={styles.actionButtonContent}
+                  disabled={lifecycleLoading}
+                  loading={lifecycleLoading}
+                >
+                  {marketplaceStrings.detail.archive}
+                </Button>
+              </>
+            ) : (
+              <Button
+                mode="contained"
+                icon="pencil"
+                onPress={() => router.push(`/marketplace-edit/${listing.id}` as Href)}
+                buttonColor={mp.primaryGreen}
+                textColor={mp.white}
+                style={styles.actionButton}
+                contentStyle={styles.actionButtonContent}
+              >
+                {marketplaceStrings.detail.editListing}
+              </Button>
+            )}
+          </View>
+        ) : null
+      ) : (
+        <View style={styles.contactBlock}>
+          <Text style={styles.contactHint} maxFontSizeMultiplier={1.4}>
+            {marketplaceStrings.detail.contactHint}
+          </Text>
+          <View style={styles.contactRow}>
+            <Button
+              mode="contained"
+              icon="phone"
+              onPress={handleCallSeller}
+              buttonColor={mp.primaryGreen}
+              textColor={mp.white}
+              style={[styles.actionButton, styles.contactBtn]}
+              contentStyle={styles.actionButtonContent}
+              loading={contactLoading}
+              disabled={contactLoading}
+            >
+              {marketplaceStrings.detail.callSeller}
+            </Button>
+            <Button
+              mode="contained"
+              icon="whatsapp"
+              onPress={handleWhatsAppSeller}
+              buttonColor={mp.whatsapp}
+              textColor={mp.white}
+              style={[styles.actionButton, styles.contactBtn]}
+              contentStyle={styles.actionButtonContent}
+              loading={contactLoading}
+              disabled={contactLoading}
+            >
+              {marketplaceStrings.detail.whatsappSeller}
+            </Button>
+          </View>
+        </View>
+      )}
+    </View>
+  );
 
   return (
-    <>
+    <View style={styles.root}>
       <ScrollView
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        style={styles.container}
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
         <ListingImageCarousel images={listing.images} listingType={listing.listingType} />
 
-        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="elevated">
-          <Card.Content style={styles.cardContent}>
+        <View style={styles.body}>
+          <View style={[styles.heroCard, mpCard]}>
+            <View style={[styles.typePill, { backgroundColor: wash }]}>
+              <Text style={[styles.typePillText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+                {isLabour
+                  ? marketplaceStrings.create.labour
+                  : listing.listingType === 'product'
+                    ? marketplaceStrings.create.product
+                    : marketplaceStrings.create.produce}
+              </Text>
+            </View>
             <View style={styles.titleRow}>
-              <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, flex: 1 }}>
+              <Text style={styles.title} maxFontSizeMultiplier={1.5}>
                 {title}
               </Text>
               <ListingStatusBadge
@@ -172,7 +296,7 @@ export default function ListingDetailScreen() {
             </View>
 
             {isOwner && listing.status === 'SOLD' ? (
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text style={styles.statusNote} maxFontSizeMultiplier={1.5}>
                 {isLabour
                   ? marketplaceStrings.detail.hiredMessage
                   : marketplaceStrings.detail.soldMessage}
@@ -180,17 +304,17 @@ export default function ListingDetailScreen() {
             ) : null}
 
             {isOwner && listing.status === 'ARCHIVED' ? (
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text style={styles.statusNote} maxFontSizeMultiplier={1.5}>
                 {marketplaceStrings.detail.archivedMessage}
               </Text>
             ) : null}
 
-            <Text variant="headlineMedium" style={{ color: theme.colors.primary, marginTop: spacing.sm }}>
-              {isLabour
-                ? formatLabourRate(listing.price, listing.rateType)
-                : formatPrice(listing.price)}
+            <Text style={styles.price} maxFontSizeMultiplier={1.4}>
+              {priceText}
             </Text>
+          </View>
 
+          <View style={[styles.sectionCard, mpCard]}>
             {isLabour ? (
               <>
                 <DetailRow
@@ -237,143 +361,72 @@ export default function ListingDetailScreen() {
                   <DetailRow label={marketplaceStrings.detail.stock} value={String(listing.stock)} />
                 ) : null}
 
+                {listing.harvestDate ? (
+                  <DetailRow
+                    label={marketplaceStrings.detail.harvestDate}
+                    value={formatHarvestDateDisplay(listing.harvestDate)}
+                  />
+                ) : null}
+
                 <DetailRow
                   label={marketplaceStrings.detail.category}
                   value={getCategoryLabel(listing.category)}
                 />
               </>
             )}
+          </View>
 
-            {listing.description ? (
-              <>
-                <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-                <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>
-                  {marketplaceStrings.detail.description}
-                </Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                  {listing.description}
-                </Text>
-              </>
+          {listing.description ? (
+            <View style={[styles.sectionCard, mpCard]}>
+              <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.5}>
+                {marketplaceStrings.detail.description}
+              </Text>
+              <Text style={styles.bodyText} maxFontSizeMultiplier={1.5}>
+                {listing.description}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={[styles.sectionCard, mpCard]}>
+            <View style={styles.locationHead}>
+              <MaterialCommunityIcons name="map-marker-outline" size={18} color={mp.primaryGreen} />
+              <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.5}>
+                {marketplaceStrings.create.sections.location}
+              </Text>
+            </View>
+            {isLabour && listing.village ? (
+              <DetailRow label={marketplaceStrings.detail.village} value={listing.village} />
             ) : null}
-
-            {!isOwner ? (
-              <>
-                <Divider style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-                <DetailRow label={marketplaceStrings.detail.seller} value={listing.seller.name} />
-                {isLabour && listing.village ? (
-                  <DetailRow label={marketplaceStrings.detail.village} value={listing.village} />
-                ) : null}
-                {isLabour && listing.taluka ? (
-                  <DetailRow label={marketplaceStrings.detail.taluka} value={listing.taluka} />
-                ) : null}
-                <DetailRow label={marketplaceStrings.detail.district} value={listing.district} />
-                <DetailRow label={marketplaceStrings.detail.phone} value={listing.seller.phone} />
-              </>
-            ) : (
-              <>
-                {isLabour && listing.village ? (
-                  <DetailRow label={marketplaceStrings.detail.village} value={listing.village} />
-                ) : null}
-                {isLabour && listing.taluka ? (
-                  <DetailRow label={marketplaceStrings.detail.taluka} value={listing.taluka} />
-                ) : null}
-                {isLabour ? (
-                  <DetailRow label={marketplaceStrings.detail.district} value={listing.district} />
-                ) : null}
-              </>
-            )}
-
+            {isLabour && listing.taluka ? (
+              <DetailRow label={marketplaceStrings.detail.taluka} value={listing.taluka} />
+            ) : null}
+            <DetailRow label={marketplaceStrings.detail.district} value={listing.district} />
             <DetailRow
               label={marketplaceStrings.detail.posted}
               value={formatListingDate(listing.createdAt)}
             />
-          </Card.Content>
-        </Card>
+          </View>
 
-        {isOwner ? (
-          <View style={styles.actions}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+          {!isOwner ? (
+            <View style={[styles.sectionCard, mpCard]}>
+              <View style={styles.locationHead}>
+                <MaterialCommunityIcons name="account-outline" size={18} color={mp.primaryGreen} />
+                <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.5}>
+                  {marketplaceStrings.detail.seller}
+                </Text>
+              </View>
+              <DetailRow label={marketplaceStrings.detail.seller} value={listing.seller.name} />
+              <DetailRow label={marketplaceStrings.detail.phone} value={listing.seller.phone} />
+            </View>
+          ) : (
+            <Text style={styles.ownerActionsLabel} maxFontSizeMultiplier={1.5}>
               {marketplaceStrings.detail.ownerActions}
             </Text>
-
-            {listing.status === 'ACTIVE' ? (
-              <>
-                <Button
-                  mode="contained"
-                  icon="pencil"
-                  onPress={() => router.push(`/marketplace-edit/${listing.id}` as Href)}
-                  style={styles.actionButton}
-                  contentStyle={styles.actionButtonContent}
-                  disabled={lifecycleLoading}
-                >
-                  {marketplaceStrings.detail.editListing}
-                </Button>
-                <Button
-                  mode="outlined"
-                  icon="check-circle-outline"
-                  onPress={() => openMarkSoldDialog(listing.id, listing.listingType)}
-                  style={styles.actionButton}
-                  contentStyle={styles.actionButtonContent}
-                  disabled={lifecycleLoading}
-                >
-                  {isLabour
-                    ? marketplaceStrings.detail.markHired
-                    : marketplaceStrings.detail.markSold}
-                </Button>
-                <Button
-                  mode="outlined"
-                  icon="archive-outline"
-                  textColor={theme.colors.error}
-                  onPress={() => openArchiveDialog(listing.id, listing.listingType)}
-                  style={styles.actionButton}
-                  contentStyle={styles.actionButtonContent}
-                  disabled={lifecycleLoading}
-                  loading={lifecycleLoading}
-                >
-                  {marketplaceStrings.detail.archive}
-                </Button>
-              </>
-            ) : null}
-
-            {listing.status === 'SOLD' ? (
-              <Button
-                mode="contained"
-                icon="pencil"
-                onPress={() => router.push(`/marketplace-edit/${listing.id}` as Href)}
-                style={styles.actionButton}
-                contentStyle={styles.actionButtonContent}
-              >
-                {marketplaceStrings.detail.editListing}
-              </Button>
-            ) : null}
-          </View>
-        ) : (
-          <View style={styles.actions}>
-            <Button
-              mode="contained"
-              icon="phone"
-              onPress={handleCallSeller}
-              style={styles.actionButton}
-              contentStyle={styles.actionButtonContent}
-              loading={contactLoading}
-              disabled={contactLoading}
-            >
-              {marketplaceStrings.detail.callSeller}
-            </Button>
-            <Button
-              mode="outlined"
-              icon="whatsapp"
-              onPress={handleWhatsAppSeller}
-              style={styles.actionButton}
-              contentStyle={styles.actionButtonContent}
-              loading={contactLoading}
-              disabled={contactLoading}
-            >
-              {marketplaceStrings.detail.whatsappSeller}
-            </Button>
-          </View>
-        )}
+          )}
+        </View>
       </ScrollView>
+
+      {isOwner && listing.status !== 'ACTIVE' && listing.status !== 'SOLD' ? null : factsFooter}
 
       <ListingLifecycleDialogs
         dialog={dialog}
@@ -387,18 +440,17 @@ export default function ListingDetailScreen() {
       <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
         {snackbar}
       </Snackbar>
-    </>
+    </View>
   );
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
-  const theme = useAppTheme();
   return (
     <View style={styles.detailRow}>
-      <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+      <Text style={styles.detailLabel} maxFontSizeMultiplier={1.4}>
         {label}
       </Text>
-      <Text variant="bodyLarge" style={{ color: theme.colors.onSurface }}>
+      <Text style={styles.detailValue} maxFontSizeMultiplier={1.5}>
         {value}
       </Text>
     </View>
@@ -406,14 +458,86 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: mp.cream },
   container: { flex: 1 },
-  content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xl },
-  card: { borderRadius: radius.lg },
-  cardContent: { gap: spacing.sm },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  divider: { marginVertical: spacing.sm },
-  detailRow: { gap: spacing.xs },
-  actions: { gap: spacing.sm },
-  actionButton: { borderRadius: radius.md },
-  actionButtonContent: { paddingVertical: spacing.xs },
+  content: { paddingBottom: 8 },
+  body: { padding: 16, gap: 12 },
+  heroCard: { padding: 16, gap: 8 },
+  typePill: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  typePillText: { fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, minWidth: 0 },
+  title: {
+    flex: 1,
+    minWidth: 0,
+    color: mp.headingGreen,
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  statusNote: { color: mp.bodyGrey, fontSize: 14, lineHeight: 20 },
+  price: {
+    color: mp.primaryGreen,
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  sectionCard: { padding: 16, gap: 10 },
+  sectionTitle: {
+    color: mp.headingGreen,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
+  bodyText: { color: mp.tagline, fontSize: 15, lineHeight: 22 },
+  locationHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    minWidth: 0,
+  },
+  detailLabel: {
+    color: mp.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
+    flexShrink: 0,
+    maxWidth: '42%',
+  },
+  detailValue: {
+    color: mp.headingGreen,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  ownerActionsLabel: {
+    color: mp.headingGreen,
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: 4,
+  },
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: mp.cardLine,
+    backgroundColor: mp.cream,
+    paddingTop: 10,
+  },
+  footerActions: { gap: 8 },
+  contactBlock: { gap: 6 },
+  contactHint: { color: mp.bodyGrey, fontSize: 12, lineHeight: 16, textAlign: 'center' },
+  contactRow: { flexDirection: 'row', gap: 8 },
+  contactBtn: { flex: 1, minWidth: 0 },
+  actionButton: { borderRadius: 14 },
+  outlinedButton: { borderRadius: 14, borderColor: mp.searchBorder },
+  actionButtonContent: { minHeight: 48, paddingVertical: 4 },
 });

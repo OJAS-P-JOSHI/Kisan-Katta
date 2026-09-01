@@ -1,19 +1,19 @@
 import { useRouter, type Href } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-
-import { useAppTheme } from '@/theme';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ListingForm, listingFormScrollProps, type ListingCreateSubmitPayload, type ListingFormSubmitPayload } from '../components/ListingForm';
 import { MarketplaceImageUploadError, useListingImages } from '../hooks/useListingImages';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { createListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 
 type ListingFormPayload = ListingCreateSubmitPayload;
 
 export default function CreateListingScreen() {
-  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const images = useListingImages();
   const [submitting, setSubmitting] = useState(false);
@@ -57,8 +57,19 @@ export default function CreateListingScreen() {
   }, [publishListing]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView {...listingFormScrollProps}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: mp.cream }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        {...listingFormScrollProps}
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+        contentContainerStyle={[
+          listingFormScrollProps.contentContainerStyle,
+          { paddingBottom: Math.max(insets.bottom, 16) + 32 },
+        ]}
+      >
         <ListingForm
           images={images}
           onUploadRetry={handleRetryUpload}
@@ -73,7 +84,7 @@ export default function CreateListingScreen() {
           }
         />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -4,18 +4,18 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Snackbar, Text } from 'react-native-paper';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { spacing, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 import { ListingCard } from '../components/ListingCard';
 import { ListingEmptyView, ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getSavedListings, unsaveListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp, mpPage } from '../marketplace.ui';
 import type { MarketplaceListing } from '../marketplace.types';
 import { isListingOwner } from '../marketplace.utils';
 
 export default function SavedListingsScreen() {
-  const theme = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -110,19 +110,20 @@ export default function SavedListingsScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={mpPage}>
       <FlatList
         data={listings}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[theme.colors.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[mp.primaryGreen]} />
         }
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         ListEmptyComponent={
           <ListingEmptyView
+            icon="heart-outline"
             title={marketplaceStrings.saved.emptyTitle}
             message={marketplaceStrings.saved.emptyMessage}
           />
@@ -130,8 +131,8 @@ export default function SavedListingsScreen() {
         ListFooterComponent={
           loadingMore ? (
             <View style={styles.footer}>
-              <ActivityIndicator animating color={theme.colors.primary} />
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <ActivityIndicator animating color={mp.primaryGreen} />
+              <Text variant="bodySmall" style={{ color: mp.bodyGrey }}>
                 {marketplaceStrings.listings.loadMore}
               </Text>
             </View>
@@ -147,7 +148,6 @@ export default function SavedListingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  listContent: { padding: spacing.md, gap: spacing.md, flexGrow: 1 },
+  listContent: { padding: 16, gap: 12, flexGrow: 1 },
   footer: { alignItems: 'center', paddingVertical: spacing.md, gap: spacing.xs },
 });

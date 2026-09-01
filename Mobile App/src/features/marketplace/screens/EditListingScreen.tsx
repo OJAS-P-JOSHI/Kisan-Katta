@@ -1,8 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-
-import { useAppTheme } from '@/theme';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ListingForm, listingFormScrollProps } from '../components/ListingForm';
 import { ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
@@ -10,6 +9,7 @@ import { MarketplaceImageUploadError, useListingImages } from '../hooks/useListi
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
 import { getListingById, updateListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
+import { mp } from '../marketplace.ui';
 import type { MarketplaceListing, UpdateListingPayload } from '../marketplace.types';
 
 type ListingFormPayload = Omit<UpdateListingPayload, 'images'>;
@@ -80,7 +80,7 @@ function EditListingForm({ listing }: EditListingFormProps) {
 }
 
 export default function EditListingScreen() {
-  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,11 +122,22 @@ export default function EditListingScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView {...listingFormScrollProps}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: mp.cream }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        {...listingFormScrollProps}
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+        contentContainerStyle={[
+          listingFormScrollProps.contentContainerStyle,
+          { paddingBottom: Math.max(insets.bottom, 16) + 32 },
+        ]}
+      >
         <EditListingForm key={listing.id} listing={listing} />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
