@@ -144,6 +144,7 @@ export const findReconcileCandidates = (
 ): Promise<IUserSubscription[]> =>
   UserSubscription.find({
     subscriptionId: { $ne: null },
+    "notes.testerAccess": { $ne: true },
     status: {
       $in: ["CREATED", "AUTHENTICATED", "ACTIVE", "PENDING", "HALTED", "PAUSED"],
     },

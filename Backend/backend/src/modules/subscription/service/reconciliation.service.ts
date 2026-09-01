@@ -44,6 +44,17 @@ export const reconcileSubscriptionById = async (
     actorRole: actor.role,
   });
 
+  if (local.notes?.testerAccess === true) {
+    return {
+      id,
+      subscriptionId: local.subscriptionId,
+      previousStatus: local.status,
+      currentStatus: local.status,
+      repaired: false,
+      detail: "Tester complimentary access — skipped.",
+    };
+  }
+
   if (!local.subscriptionId) {
     return {
       id,

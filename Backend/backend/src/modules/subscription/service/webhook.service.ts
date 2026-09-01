@@ -116,6 +116,15 @@ export const handleSubscriptionWebhook = async (
     };
   }
 
+  if (local.notes?.testerAccess === true) {
+    await completeEvent(eventId, "IGNORED");
+    return {
+      status: "ignored",
+      httpStatus: 200,
+      detail: "Tester complimentary access — skipped.",
+    };
+  }
+
   try {
     // Prefer a live fetch so we never trust webhook ordering for period fields.
     let snapshot;

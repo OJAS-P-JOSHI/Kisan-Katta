@@ -72,6 +72,10 @@ export const applyGatewaySnapshot = async (
     extraSet,
   } = options;
 
+  if (local.notes?.testerAccess === true) {
+    return local;
+  }
+
   const mapped = mapRazorpayStatus(snapshot.status) ?? local.status;
   const now = new Date();
   const periodStart =

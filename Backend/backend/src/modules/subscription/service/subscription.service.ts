@@ -33,6 +33,7 @@ import type {
   VerifySubscriptionBody,
 } from "../types/subscription.types";
 import { hasSubscriptionAccess } from "../utils/access";
+import { isSubscriptionTesterMobile } from "../utils/testers";
 import { logSubscriptionAudit } from "./audit.service";
 import { applyGatewaySnapshot } from "./finalize.service";
 import {
@@ -60,6 +61,11 @@ export const createSubscription = async (
   userId: string,
   actorRole: string
 ): Promise<CreateSubscriptionResponseDTO> => {
+  const owner = await AuthUser.findById(userId).select("mobile").lean();
+  if (owner && isSubscriptionTesterMobile(owner.mobile)) {
+    throw new AppError("You already have an active subscription.", 409);
+  }
+
   const planId = assertPlanConfigured();
 
   const living = await findLivingByUserId(userId);
@@ -147,9 +153,31 @@ export const getCurrentSubscription = async (
   return doc ? toSubscriptionDTO(doc) : null;
 };
 
+const testerStatusDto = (
+  doc: Awaited<ReturnType<typeof findLatestByUserId>>
+): SubscriptionStatusDTO => {
+  const farEnd = new Date();
+  farEnd.setUTCFullYear(farEnd.getUTCFullYear() + 10);
+  const periodEnd =
+    doc?.currentPeriodEnd && doc.currentPeriodEnd.getTime() > Date.now()
+      ? doc.currentPeriodEnd
+      : farEnd;
+  return {
+    isActive: true,
+    status: "ACTIVE",
+    currentPeriodEnd: periodEnd.toISOString(),
+    subscriptionId: doc?.subscriptionId ?? null,
+  };
+};
+
 export const getSubscriptionStatus = async (
   userId: string
 ): Promise<SubscriptionStatusDTO> => {
+  const user = await AuthUser.findById(userId).select("mobile").lean();
+  if (user && isSubscriptionTesterMobile(user.mobile)) {
+    const doc = await findLatestByUserId(userId);
+    return testerStatusDto(doc);
+  }
   const doc = await findLatestByUserId(userId);
   return toSubscriptionStatusDTO(doc);
 };
