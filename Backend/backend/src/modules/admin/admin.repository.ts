@@ -35,7 +35,7 @@ export const touchAdminLogin = async (
   Admin.findByIdAndUpdate(
     adminId,
     { $set: { lastLoginAt: new Date(), userId } },
-    { new: true }
+    { returnDocument: "after" }
   )
     .lean<IAdmin>()
     .exec();

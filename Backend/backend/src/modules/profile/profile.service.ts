@@ -270,7 +270,7 @@ export const updateProfile = async (
   const profile = await FarmerProfile.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     { $set },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
 
   if (!profile) {

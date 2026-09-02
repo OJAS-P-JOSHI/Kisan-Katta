@@ -43,7 +43,7 @@ const run = async (): Promise<void> => {
           lastLoginAt: new Date(),
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     );
 
     createdUsers[seed.mobile] = String(user._id);

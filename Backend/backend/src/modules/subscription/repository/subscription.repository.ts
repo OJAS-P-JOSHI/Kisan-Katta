@@ -75,7 +75,7 @@ export const transitionSubscription = (
   }
 
   return UserSubscription.findOneAndUpdate(filter, update, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   }).lean();
 };
@@ -90,7 +90,7 @@ export const updateSubscriptionById = (
     update.$push = { events: { $each: events } };
   }
   return UserSubscription.findByIdAndUpdate(id, update, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   }).lean();
 };
@@ -126,7 +126,7 @@ export const upsertBillingPayment = async (
         "billingPayments.$.refundReason": payment.refundReason ?? null,
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
 
   if (existing) return existing;
@@ -134,7 +134,7 @@ export const upsertBillingPayment = async (
   return UserSubscription.findByIdAndUpdate(
     subscriptionDocId,
     { $push: { billingPayments: payment } },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   ).lean();
 };
 

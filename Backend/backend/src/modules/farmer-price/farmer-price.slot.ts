@@ -62,7 +62,7 @@ export const claimOpenSlot = async (
         pollId: null,
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (reclaimed) {

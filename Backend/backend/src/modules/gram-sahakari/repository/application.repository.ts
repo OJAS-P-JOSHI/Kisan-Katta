@@ -44,7 +44,7 @@ export const updateApplicationById = (
   update: Partial<IGramSahakariApplication>
 ): Promise<IGramSahakariApplication | null> =>
   GramSahakariApplication.findByIdAndUpdate(applicationId, update, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   }).lean();
 

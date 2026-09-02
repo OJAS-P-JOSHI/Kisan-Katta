@@ -14,10 +14,10 @@ export const getNextSequence = async (counterId: string): Promise<number> => {
   const counter = await Counter.findByIdAndUpdate(
     counterId,
     { $inc: { sequence: 1 } },
-    { new: true, upsert: true, setDefaultsOnInsert: true }
+    { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
   ).lean();
 
-  // With upsert + new:true the result is always present; guard for type-safety.
+  // With upsert + returnDocument:'after' the result is always present; guard for type-safety.
   if (!counter) {
     throw new Error(`Failed to generate sequence for counter "${counterId}".`);
   }

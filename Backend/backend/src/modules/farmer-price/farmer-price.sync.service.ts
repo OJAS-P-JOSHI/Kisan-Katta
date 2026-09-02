@@ -38,10 +38,16 @@ interface DistrictCropPair {
 }
 
 const LOG_PREFIX = "[FarmerPriceScheduler]";
+const IS_DEV = process.env.NODE_ENV !== "production";
 
 const log = (message: string): void => {
   // eslint-disable-next-line no-console
   console.log(`${LOG_PREFIX} ${message}`);
+};
+
+const debugLog = (message: string): void => {
+  if (!IS_DEV) return;
+  log(message);
 };
 
 const pairKey = (district: string, crop: string): string => `${district}::${crop}`;
@@ -182,7 +188,7 @@ const ensurePollForPair = async (
 
     if (!poll.governmentPriceAvailable) {
       stats.governmentPriceMissing += 1;
-      log(`Government Price Missing district=${pair.district} crop=${pair.crop}`);
+      debugLog(`Government Price Missing district=${pair.district} crop=${pair.crop}`);
     }
   } catch (error: unknown) {
     if (isPollAlreadyExistsError(error) || isDuplicateKeyError(error)) {
@@ -224,24 +230,24 @@ const ensurePollForPair = async (
  */
 export const runFarmerPriceSync = async (): Promise<FarmerPriceSyncResult> => {
   const startedAt = Date.now();
-  log("Synchronization Started");
+  debugLog("Synchronization Started");
 
   const now = new Date();
   const { profilesScanned, pairs } = await loadDistrictCropInterest();
 
-  log(`Profiles Scanned: ${profilesScanned}`);
-  log(`Unique District/Crop Pairs: ${pairs.length}`);
+  debugLog(`Profiles Scanned: ${profilesScanned}`);
+  debugLog(`Unique District/Crop Pairs: ${pairs.length}`);
 
   const eligible = pairs.filter((pair) => pair.farmerCount >= MIN_FARMERS_PER_POLL);
   const skippedBelowThreshold = pairs.length - eligible.length;
 
-  log(
+  debugLog(
     `Pairs above threshold (>=${MIN_FARMERS_PER_POLL}): ${eligible.length}; below: ${skippedBelowThreshold}`
   );
 
   const openKeys = await loadOpenPairKeys(now);
   const existingOpenCount = openKeys.size;
-  log(`Existing Polls (open): ${existingOpenCount}`);
+  debugLog(`Existing Polls (open): ${existingOpenCount}`);
 
   const stats = {
     created: 0,
@@ -257,7 +263,7 @@ export const runFarmerPriceSync = async (): Promise<FarmerPriceSyncResult> => {
   // Pairs below threshold that already have an open poll are left untouched.
   const durationMs = Date.now() - startedAt;
 
-  log(
+  debugLog(
     `Sync started | Profiles: ${profilesScanned} | Unique pairs: ${pairs.length} | Created: ${stats.created} | Skipped: ${stats.skippedExisting} | Duration: ${durationMs} ms`
   );
   log(

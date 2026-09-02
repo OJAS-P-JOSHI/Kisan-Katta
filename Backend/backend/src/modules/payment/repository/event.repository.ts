@@ -22,7 +22,7 @@ const isDuplicateKeyError = (error: unknown): boolean =>
 /**
  * Atomically claims a Razorpay event for processing.
  *
- * Implemented as an upsert that returns the PRE-image (`new: false`):
+ * Implemented as an upsert that returns the PRE-image (`returnDocument: 'before'`):
  *  - `null` returned  => we just inserted the row and therefore own processing.
  *  - existing PROCESSED/IGNORED/DUPLICATE => a prior delivery already handled
  *    it; this is a duplicate and must be skipped.
@@ -50,7 +50,7 @@ export const claimEvent = async (
           receivedAt: new Date(),
         },
       },
-      { upsert: true, new: false, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: "before", setDefaultsOnInsert: true }
     ).lean<IRazorpayEvent | null>();
 
     if (!existing) {
@@ -89,7 +89,7 @@ export const completeEvent = (
           : {}),
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   ).lean<IRazorpayEvent | null>();
 
 export const findEventById = (

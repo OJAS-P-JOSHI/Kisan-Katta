@@ -78,7 +78,7 @@ export const attachOrderToApplication = (
       },
       $push: { paymentEvents: event },
     },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   ).lean();
 
 export interface TransitionInput {
@@ -115,6 +115,6 @@ export const transitionPayment = (
   return GramSahakariApplication.findOneAndUpdate(
     { _id: applicationId, paymentStatus: { $in: input.fromStates } },
     update,
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   ).lean();
 };

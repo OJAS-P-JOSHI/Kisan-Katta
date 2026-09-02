@@ -46,6 +46,7 @@ export interface GovFetchTiming {
 
 const marketLog = {
   info: (message: string, meta?: Record<string, unknown>): void => {
+    if (!IS_DEV) return;
     // eslint-disable-next-line no-console
     console.log(`[market] ${message}`, meta ?? "");
   },

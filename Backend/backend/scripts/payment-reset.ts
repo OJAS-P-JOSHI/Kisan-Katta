@@ -302,7 +302,7 @@ const run = async (): Promise<void> => {
     const updated = await GramSahakariApplication.findByIdAndUpdate(
       applicationId,
       update,
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     ).lean();
 
     if (!updated) {

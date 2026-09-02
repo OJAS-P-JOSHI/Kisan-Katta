@@ -66,7 +66,7 @@ const run = async (): Promise<void> => {
       },
       $setOnInsert: { mobile: GS_USER_MOBILE },
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   const farmerUser = await AuthUser.findOneAndUpdate(
@@ -80,7 +80,7 @@ const run = async (): Promise<void> => {
       },
       $setOnInsert: { mobile: FARMER_USER_MOBILE },
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   await FarmerProfile.findOneAndUpdate(
@@ -100,7 +100,7 @@ const run = async (): Promise<void> => {
       },
       $setOnInsert: { userId: farmerUser._id },
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   const existingGsApp = await GramSahakariApplication.findOne({
