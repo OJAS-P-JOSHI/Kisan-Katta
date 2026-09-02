@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text as RNText, View } from 'react-native';
 import { Button, HelperText, SegmentedButtons, TextInput } from 'react-native-paper';
 
@@ -64,6 +64,8 @@ export type ListingFormSubmitPayload = ListingCreateSubmitPayload | ListingUpdat
 
 type ListingFormProps = {
   initialListing?: MarketplaceListing;
+  /** Create-form prefill only. Does not switch the form into edit mode. */
+  prefillFrom?: MarketplaceListing;
   images: UseListingImagesReturn;
   onUploadRetry?: () => void;
   submitting: boolean;
@@ -118,6 +120,16 @@ const valuesFromListing = (listing: MarketplaceListing): ListingFormValues => ({
   availableFrom: listing.availableFrom ? listing.availableFrom.slice(0, 10) : '',
 });
 
+const valuesFromPrefill = (listing: MarketplaceListing): ListingFormValues => {
+  const values = valuesFromListing(listing);
+  if (values.listingType !== 'labour') return values;
+  return {
+    ...values,
+    rateType: LABOUR_RATE_FORM_OPTION,
+    gender: values.gender === 'Male' || values.gender === 'Female' ? values.gender : null,
+  };
+};
+
 const parseNumber = (value: string): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
@@ -149,6 +161,7 @@ const toGenderValue = (label: string): LabourGender | null => {
 
 export function ListingForm({
   initialListing,
+  prefillFrom,
   images,
   onUploadRetry,
   submitting,
@@ -159,12 +172,15 @@ export function ListingForm({
 }: ListingFormProps) {
   const { data: profile } = useMyProfile();
   const isEdit = !!initialListing;
-  const [values, setValues] = useState<ListingFormValues>(() =>
-    initialListing ? valuesFromListing(initialListing) : emptyValues(),
-  );
+  const [values, setValues] = useState<ListingFormValues>(() => {
+    if (initialListing) return valuesFromListing(initialListing);
+    if (prefillFrom) return valuesFromPrefill(prefillFrom);
+    return emptyValues();
+  });
   const [errors, setErrors] = useState<Partial<Record<keyof ListingFormValues | 'images', string>>>(
     {},
   );
+  const submitLockRef = useRef(false);
 
   const imageMax =
     values.listingType === 'labour' ? MAX_LABOUR_LISTING_IMAGES : MAX_LISTING_IMAGES;
@@ -232,68 +248,59 @@ export function ListingForm({
   };
 
   const handleSubmit = () => {
+    if (isBusy || submitLockRef.current) return;
     if (!validate()) return;
 
-    if (values.listingType === 'produce') {
-      const price = parseNumber(values.expectedPrice)!;
-      const producePayload = {
-        title: values.crop.trim(),
-        category: 'Produce' as const,
-        price,
-        expectedPrice: price,
-        crop: values.crop.trim(),
-        quantity: parseNumber(values.quantity)!,
-        unit: values.unit!,
-        harvestDate: values.harvestDate.trim(),
-        description: values.description.trim() || undefined,
-      };
-
-      if (isEdit) {
-        onSubmit(producePayload);
-        return;
+    const submitPayload = (): ListingFormSubmitPayload | null => {
+      if (values.listingType === 'produce') {
+        const price = parseNumber(values.expectedPrice)!;
+        const producePayload = {
+          title: values.crop.trim(),
+          category: 'Produce' as const,
+          price,
+          expectedPrice: price,
+          crop: values.crop.trim(),
+          quantity: parseNumber(values.quantity)!,
+          unit: values.unit!,
+          harvestDate: values.harvestDate.trim(),
+          description: values.description.trim() || undefined,
+        };
+        return isEdit ? producePayload : { listingType: 'produce' as const, ...producePayload };
       }
 
-      onSubmit({ listingType: 'produce' as const, ...producePayload });
-      return;
-    }
+      if (values.listingType === 'labour') {
+        const workers = parsePositiveInteger(values.availableWorkers)!;
+        const labourPayload = {
+          title: buildLabourTitle(values.category!, workers),
+          category: values.category!,
+          price: parseNumber(values.price)!,
+          availableWorkers: workers,
+          gender: values.gender!,
+          rateType: values.rateType ?? LABOUR_RATE_FORM_OPTION,
+          availableFrom: values.availableFrom.trim(),
+          description: values.description.trim(),
+        };
+        return isEdit ? labourPayload : { listingType: 'labour' as const, ...labourPayload };
+      }
 
-    if (values.listingType === 'labour') {
-      const workers = parsePositiveInteger(values.availableWorkers)!;
-      const labourPayload = {
-        title: buildLabourTitle(values.category!, workers),
+      const productPayload = {
+        title: values.productName.trim(),
         category: values.category!,
         price: parseNumber(values.price)!,
-        availableWorkers: workers,
-        gender: values.gender!,
-        rateType: values.rateType ?? LABOUR_RATE_FORM_OPTION,
-        availableFrom: values.availableFrom.trim(),
-        description: values.description.trim(),
+        brand: values.brand.trim() || undefined,
+        stock: parseNumber(values.stock) ?? undefined,
+        description: values.description.trim() || undefined,
       };
-
-      if (isEdit) {
-        onSubmit(labourPayload);
-        return;
-      }
-
-      onSubmit({ listingType: 'labour' as const, ...labourPayload });
-      return;
-    }
-
-    const productPayload = {
-      title: values.productName.trim(),
-      category: values.category!,
-      price: parseNumber(values.price)!,
-      brand: values.brand.trim() || undefined,
-      stock: parseNumber(values.stock) ?? undefined,
-      description: values.description.trim() || undefined,
+      return isEdit ? productPayload : { listingType: 'product' as const, ...productPayload };
     };
 
-    if (isEdit) {
-      onSubmit(productPayload);
-      return;
-    }
+    const payload = submitPayload();
+    if (!payload) return;
 
-    onSubmit({ listingType: 'product' as const, ...productPayload });
+    submitLockRef.current = true;
+    void Promise.resolve(onSubmit(payload)).finally(() => {
+      submitLockRef.current = false;
+    });
   };
 
   const handleListingTypeChange = (nextType: string) => {
@@ -329,6 +336,9 @@ export function ListingForm({
           onRetry={onUploadRetry}
           maxImages={imageMax}
         />
+        {prefillFrom ? (
+          <HelperText type="info">{marketplaceStrings.create.duplicateImagesHint}</HelperText>
+        ) : null}
         {errors.images ? <HelperText type="error">{errors.images}</HelperText> : null}
       </FormSection>
 

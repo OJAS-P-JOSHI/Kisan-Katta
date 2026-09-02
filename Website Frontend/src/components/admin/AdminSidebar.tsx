@@ -10,6 +10,7 @@ import {
   X,
   Repeat,
   FileText,
+  Store,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
@@ -21,6 +22,7 @@ const NAV = [
   { to: '/admin/subscriptions', label: 'Subscriptions', icon: Repeat },
   { to: '/admin/payments', label: 'Payments', icon: CreditCard },
   { to: '/admin/gram-sahakari', label: 'Gram Sahakari', icon: IdCard },
+  { to: '/admin/marketplace', label: 'Marketplace', icon: Store },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports', label: 'Reports', icon: FileText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },

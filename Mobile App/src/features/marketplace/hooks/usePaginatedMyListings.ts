@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { DEFAULT_LIMIT } from '../marketplace.constants';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
-import { getListings } from '../marketplace.service';
-import type { ListingsQueryParams, MarketplaceListing } from '../marketplace.types';
+import { getMyListings } from '../marketplace.service';
+import type { ListingStatus, MarketplaceListing } from '../marketplace.types';
 
-type UsePaginatedListingsOptions = Omit<ListingsQueryParams, 'page' | 'status'>;
-
-type UsePaginatedListingsConfig = {
-  enabled?: boolean;
-};
-
-type UsePaginatedListingsResult = {
+type UsePaginatedMyListingsResult = {
   listings: MarketplaceListing[];
   loading: boolean;
   refreshing: boolean;
@@ -19,6 +14,7 @@ type UsePaginatedListingsResult = {
   hasMore: boolean;
   refresh: () => Promise<void>;
   loadMore: () => void;
+  replaceListing: (listing: MarketplaceListing) => void;
 };
 
 const mergeUniqueListings = (
@@ -32,31 +28,24 @@ const mergeUniqueListings = (
   return appended.length === 0 ? current : [...current, ...appended];
 };
 
-/** Manages paginated marketplace listings with pull-to-refresh and infinite scroll. */
-export function usePaginatedListings(
-  options: UsePaginatedListingsOptions,
-  config: UsePaginatedListingsConfig = {},
-): UsePaginatedListingsResult {
-  const enabled = config.enabled ?? true;
-  const optionsKey = JSON.stringify(options);
-  const fetchKey = `${enabled}:${optionsKey}`;
-
+/** Paginated owner listings. Status is sent to the API, not filtered locally. */
+export function usePaginatedMyListings(status: ListingStatus): UsePaginatedMyListingsResult {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(enabled);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [seenKey, setSeenKey] = useState(fetchKey);
+  const [seenStatus, setSeenStatus] = useState(status);
 
-  if (seenKey !== fetchKey) {
-    setSeenKey(fetchKey);
+  if (seenStatus !== status) {
+    setSeenStatus(status);
     setListings([]);
     setPage(1);
     setHasMore(true);
     setError(null);
-    setLoading(enabled);
+    setLoading(true);
   }
 
   const loadingMoreRef = useRef(false);
@@ -67,7 +56,7 @@ export function usePaginatedListings(
       const requestId = ++requestIdRef.current;
 
       try {
-        const result = await getListings({ ...options, page: pageToLoad });
+        const result = await getMyListings(pageToLoad, DEFAULT_LIMIT, status);
 
         if (requestId !== requestIdRef.current) return;
 
@@ -85,27 +74,24 @@ export function usePaginatedListings(
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [optionsKey],
+    [status],
   );
 
   useEffect(() => {
-    if (!enabled) return;
     // Data fetch: React Compiler treats the async helper as sync setState.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- paginated fetch
     void fetchPage(1, true);
-  }, [enabled, fetchPage]);
+  }, [fetchPage]);
 
   const refresh = useCallback(async () => {
-    if (!enabled) return;
     setRefreshing(true);
     setHasMore(true);
     await fetchPage(1, true);
     setRefreshing(false);
-  }, [enabled, fetchPage]);
+  }, [fetchPage]);
 
   const loadMore = useCallback(() => {
-    if (!enabled || loadingMoreRef.current || loading || refreshing || !hasMore) return;
+    if (loadingMoreRef.current || loading || refreshing || !hasMore) return;
 
     loadingMoreRef.current = true;
     setLoadingMore(true);
@@ -113,7 +99,11 @@ export function usePaginatedListings(
       loadingMoreRef.current = false;
       setLoadingMore(false);
     });
-  }, [enabled, fetchPage, hasMore, loading, page, refreshing]);
+  }, [fetchPage, hasMore, loading, page, refreshing]);
+
+  const replaceListing = useCallback((listing: MarketplaceListing) => {
+    setListings((prev) => prev.map((item) => (item.id === listing.id ? listing : item)));
+  }, []);
 
   return {
     listings,
@@ -124,5 +114,6 @@ export function usePaginatedListings(
     hasMore,
     refresh,
     loadMore,
+    replaceListing,
   };
 }

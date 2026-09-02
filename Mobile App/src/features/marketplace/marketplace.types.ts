@@ -4,6 +4,8 @@ import type { ApiSuccessResponse } from '@/types';
 import type {
   LABOUR_GENDERS,
   LABOUR_RATE_TYPES,
+  LISTING_REPORT_REASONS,
+  LISTING_SORT_OPTIONS,
   LISTING_STATUSES,
   LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
@@ -16,6 +18,8 @@ export type MarketplaceUnit = (typeof MARKETPLACE_UNITS)[number];
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 export type LabourGender = (typeof LABOUR_GENDERS)[number];
 export type LabourRateType = (typeof LABOUR_RATE_TYPES)[number];
+export type ListingReportReason = (typeof LISTING_REPORT_REASONS)[number];
+export type ListingSortOption = (typeof LISTING_SORT_OPTIONS)[number];
 
 export type ListingImage = {
   url: string;
@@ -25,7 +29,6 @@ export type ListingImage = {
 export type SellerInfo = {
   name: string;
   district: string;
-  phone: string;
 };
 
 export type MarketplaceListing = {
@@ -84,7 +87,8 @@ export type ListingsQueryParams = {
   district?: string;
   page?: number;
   limit?: number;
-  sort?: 'newest' | 'price_low_to_high' | 'price_high_to_low';
+  sort?: ListingSortOption;
+  status?: ListingStatus;
 };
 
 export type CreateListingPayload = {
@@ -122,6 +126,20 @@ export type UnsaveListingResult = {
   listingId: string;
 };
 
+export type ContactListingResult = {
+  phone: string;
+};
+
+export type ReportListingPayload = {
+  reason: ListingReportReason;
+  details?: string;
+};
+
+export type ReportListingResult = {
+  listingId: string;
+  reported: true;
+};
+
 /** Home "My Marketplace" summary counts from GET /my-summary. */
 export type MyMarketplaceSummary = {
   active: number;
@@ -145,4 +163,6 @@ export type ListingDetailResponse = ApiSuccessResponse<MarketplaceListingDetail>
 export type ListingResponse = ApiSuccessResponse<MarketplaceListing>;
 export type SaveListingResponse = ApiSuccessResponse<SaveListingResult>;
 export type UnsaveListingResponse = ApiSuccessResponse<UnsaveListingResult>;
+export type ContactListingResponse = ApiSuccessResponse<ContactListingResult>;
+export type ReportListingResponse = ApiSuccessResponse<ReportListingResult>;
 export type MyMarketplaceSummaryResponse = ApiSuccessResponse<MyMarketplaceSummary>;

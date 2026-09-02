@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Snackbar, Text } from 'react-native-paper';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Linking, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Button, IconButton, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
@@ -11,18 +11,21 @@ import { ListingImageCarousel } from '../components/ListingImageCarousel';
 import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
 import { ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
+import { ReportListingDialog } from '../components/ReportListingDialog';
 import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
-import { getMarketplaceErrorMessage } from '../marketplace.errors';
-import { getListingById, recordContactClick } from '../marketplace.service';
+import { getMarketplaceContactErrorMessage, getMarketplaceErrorMessage } from '../marketplace.errors';
+import { contactListing, getListingById, reportListing } from '../marketplace.service';
 import { getCategoryLabel, getGenderLabel, marketplaceStrings } from '../marketplace.strings';
 import { listingTypeAccent, listingTypeWash, mp, mpCard } from '../marketplace.ui';
-import type { MarketplaceListingDetail } from '../marketplace.types';
+import type { MarketplaceListingDetail, ReportListingPayload } from '../marketplace.types';
 import {
+  buildListingShareMessage,
+  buildWhatsAppContactMessage,
+  buildWhatsAppUrl,
   formatHarvestDateDisplay,
   formatLabourRate,
   formatListingDate,
   formatPhoneForDial,
-  formatPhoneForWhatsApp,
   formatPrice,
   getLabourGroupLabel,
   getListingDisplayTitle,
@@ -33,12 +36,18 @@ export default function ListingDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, published } = useLocalSearchParams<{ id: string; published?: string }>();
   const [listing, setListing] = useState<MarketplaceListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<string | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const contactInFlightRef = useRef(false);
+  const reportInFlightRef = useRef(false);
+  const shownPublishedRef = useRef(false);
 
   const fetchListing = useCallback(async () => {
     if (!id || typeof id !== 'string') {
@@ -63,6 +72,12 @@ export default function ListingDetailScreen() {
       void fetchListing();
     }, [fetchListing]),
   );
+
+  useEffect(() => {
+    if (published !== '1' || shownPublishedRef.current) return;
+    shownPublishedRef.current = true;
+    setSnackbar(marketplaceStrings.create.published);
+  }, [published]);
 
   const {
     dialog,
@@ -91,48 +106,86 @@ export default function ListingDetailScreen() {
     }
   }, [confirmArchive, router]);
 
-  const trackContact = useCallback(async (listingId: string) => {
-    try {
-      await recordContactClick(listingId);
-    } catch {
-      // Contact tracking should not block the user from reaching the seller.
+  const requestContactPhone = useCallback(async (listingId: string): Promise<string> => {
+    const result = await contactListing(listingId);
+    const phone = result.phone?.trim();
+    if (!phone) {
+      throw new Error(marketplaceStrings.errors.contactFailed);
     }
+    return phone;
   }, []);
 
   const handleCallSeller = useCallback(async () => {
-    if (!listing || contactLoading) return;
+    if (!listing || contactInFlightRef.current) return;
 
+    contactInFlightRef.current = true;
     setContactLoading(true);
     try {
-      await trackContact(listing.id);
-      const phone = formatPhoneForDial(listing.seller.phone);
-      await Linking.openURL(`tel:${phone}`);
-    } catch {
-      setSnackbar(marketplaceStrings.errors.generic);
+      const phone = await requestContactPhone(listing.id);
+      await Linking.openURL(`tel:${formatPhoneForDial(phone)}`);
+    } catch (err) {
+      setSnackbar(getMarketplaceContactErrorMessage(err));
     } finally {
+      contactInFlightRef.current = false;
       setContactLoading(false);
     }
-  }, [contactLoading, listing, trackContact]);
+  }, [listing, requestContactPhone]);
 
   const handleWhatsAppSeller = useCallback(async () => {
-    if (!listing || contactLoading) return;
+    if (!listing || contactInFlightRef.current) return;
 
+    contactInFlightRef.current = true;
     setContactLoading(true);
     try {
-      await trackContact(listing.id);
-      const waUrl = `https://wa.me/${formatPhoneForWhatsApp(listing.seller.phone)}`;
-      const canOpen = await Linking.canOpenURL(waUrl);
-      if (!canOpen) {
+      const phone = await requestContactPhone(listing.id);
+      const message = buildWhatsAppContactMessage(listing);
+      const waUrl = buildWhatsAppUrl(phone, message);
+      try {
+        await Linking.openURL(waUrl);
+      } catch {
         setSnackbar(marketplaceStrings.lifecycle.whatsappUnavailable);
-        return;
       }
-      await Linking.openURL(waUrl);
-    } catch {
-      setSnackbar(marketplaceStrings.lifecycle.whatsappUnavailable);
+    } catch (err) {
+      setSnackbar(getMarketplaceContactErrorMessage(err));
     } finally {
+      contactInFlightRef.current = false;
       setContactLoading(false);
     }
-  }, [contactLoading, listing, trackContact]);
+  }, [listing, requestContactPhone]);
+
+  const handleShareListing = useCallback(async () => {
+    if (!listing || sharing) return;
+    setSharing(true);
+    try {
+      await Share.share({
+        message: buildListingShareMessage(listing),
+        title: marketplaceStrings.detail.share,
+      });
+    } catch {
+      setSnackbar(marketplaceStrings.detail.shareFailed);
+    } finally {
+      setSharing(false);
+    }
+  }, [listing, sharing]);
+
+  const handleSubmitReport = useCallback(
+    async (payload: ReportListingPayload) => {
+      if (!listing || reportInFlightRef.current) return;
+      reportInFlightRef.current = true;
+      setReportSubmitting(true);
+      try {
+        await reportListing(listing.id, payload);
+        setReportVisible(false);
+        setSnackbar(marketplaceStrings.report.success);
+      } catch (err) {
+        setSnackbar(getMarketplaceErrorMessage(err) || marketplaceStrings.report.failed);
+      } finally {
+        reportInFlightRef.current = false;
+        setReportSubmitting(false);
+      }
+    },
+    [listing],
+  );
 
   if (loading && !listing) {
     return <ListingLoadingView message={marketplaceStrings.detail.loading} />;
@@ -275,14 +328,50 @@ export default function ListingDetailScreen() {
 
         <View style={styles.body}>
           <View style={[styles.heroCard, mpCard]}>
-            <View style={[styles.typePill, { backgroundColor: wash }]}>
-              <Text style={[styles.typePillText, { color: accent }]} maxFontSizeMultiplier={1.3}>
-                {isLabour
-                  ? marketplaceStrings.create.labour
-                  : listing.listingType === 'product'
-                    ? marketplaceStrings.create.product
-                    : marketplaceStrings.create.produce}
-              </Text>
+            <View style={styles.heroTopRow}>
+              <View style={styles.typePillWrap}>
+                <View style={[styles.typePill, { backgroundColor: wash }]}>
+                  <Text style={[styles.typePillText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+                    {isLabour
+                      ? marketplaceStrings.create.labour
+                      : listing.listingType === 'product'
+                        ? marketplaceStrings.create.product
+                        : marketplaceStrings.create.produce}
+                  </Text>
+                </View>
+              </View>
+              {!isOwner ? (
+                <View style={styles.heroActions}>
+                  <IconButton
+                    icon="share-variant-outline"
+                    size={20}
+                    onPress={() => {
+                      void handleShareListing();
+                    }}
+                    disabled={sharing}
+                    accessibilityLabel={marketplaceStrings.detail.shareA11y}
+                    style={styles.heroActionIcon}
+                  />
+                  <IconButton
+                    icon="dots-vertical"
+                    size={20}
+                    onPress={() => setReportVisible(true)}
+                    accessibilityLabel={marketplaceStrings.detail.reportA11y}
+                    style={styles.heroActionIcon}
+                  />
+                </View>
+              ) : (
+                <IconButton
+                  icon="share-variant-outline"
+                  size={20}
+                  onPress={() => {
+                    void handleShareListing();
+                  }}
+                  disabled={sharing}
+                  accessibilityLabel={marketplaceStrings.detail.shareA11y}
+                  style={styles.heroActionIcon}
+                />
+              )}
             </View>
             <View style={styles.titleRow}>
               <Text style={styles.title} maxFontSizeMultiplier={1.5}>
@@ -416,7 +505,6 @@ export default function ListingDetailScreen() {
                 </Text>
               </View>
               <DetailRow label={marketplaceStrings.detail.seller} value={listing.seller.name} />
-              <DetailRow label={marketplaceStrings.detail.phone} value={listing.seller.phone} />
             </View>
           ) : (
             <Text style={styles.ownerActionsLabel} maxFontSizeMultiplier={1.5}>
@@ -427,6 +515,17 @@ export default function ListingDetailScreen() {
       </ScrollView>
 
       {isOwner && listing.status !== 'ACTIVE' && listing.status !== 'SOLD' ? null : factsFooter}
+
+      <ReportListingDialog
+        visible={reportVisible}
+        submitting={reportSubmitting}
+        onDismiss={() => {
+          if (!reportSubmitting) setReportVisible(false);
+        }}
+        onSubmit={(payload) => {
+          void handleSubmitReport(payload);
+        }}
+      />
 
       <ListingLifecycleDialogs
         dialog={dialog}
@@ -463,8 +562,20 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 8 },
   body: { padding: 16, gap: 12 },
   heroCard: { padding: 16, gap: 8 },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minWidth: 0,
+    gap: 8,
+  },
+  heroActions: { flexDirection: 'row', alignItems: 'center', flexShrink: 0 },
+  heroActionIcon: { margin: 0, marginRight: -8 },
+  typePillWrap: { flex: 1, minWidth: 0, marginRight: 4 },
   typePill: {
     alignSelf: 'flex-start',
+    flexShrink: 1,
+    minWidth: 0,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,

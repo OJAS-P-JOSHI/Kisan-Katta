@@ -387,23 +387,27 @@ export default function MarketplaceScreen() {
   const hPadRight = L.padX + Math.max(insets.right, 0);
   const headerH = headerBandHeight(insets.top);
 
-  const navigateToProduce = useCallback(
+  const navigateToSearch = useCallback(
     (search?: string) => {
       const href = search
-        ? (`/marketplace-produce?search=${encodeURIComponent(search)}` as Href)
-        : ('/marketplace-produce' as Href);
+        ? (`/marketplace-search?search=${encodeURIComponent(search)}` as Href)
+        : ('/marketplace-search' as Href);
       router.push(href);
     },
     [router],
   );
 
+  const navigateToProduce = useCallback(() => {
+    router.push('/marketplace-produce' as Href);
+  }, [router]);
+
   const handleSearchSubmit = useCallback(() => {
-    navigateToProduce(debouncedSearch.trim() || undefined);
-  }, [debouncedSearch, navigateToProduce]);
+    navigateToSearch(debouncedSearch.trim() || undefined);
+  }, [debouncedSearch, navigateToSearch]);
 
   const handleFilterPress = useCallback(() => {
-    navigateToProduce();
-  }, [navigateToProduce]);
+    navigateToSearch();
+  }, [navigateToSearch]);
 
   const openInfo = useCallback(() => {
     Keyboard.dismiss();

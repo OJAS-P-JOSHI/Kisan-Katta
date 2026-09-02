@@ -8,9 +8,16 @@ import "dotenv/config";
 import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+
+import { Admin } from "../src/modules/admin/admin.model";
+import { AuthUser } from "../src/modules/auth/auth.model";
+import { MarketplaceListing } from "../src/modules/marketplace/marketplace.model";
 
 const BASE = process.env.QA_BASE_URL ?? "http://127.0.0.1:4000/api/v1/marketplace";
+const ADMIN_BASE = process.env.QA_ADMIN_BASE_URL ?? "http://127.0.0.1:4000/api/v1/admin";
 const JWT_SECRET = process.env.JWT_SECRET!;
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/kisan-katta";
 
 const SELLER_ID = "6a50bf8c4e1fa5ccb45ab565"; // Jay / Pune / Ambegaon
 const BUYER_ID = "6a50c65679c1c8a5ceac78b1"; // wefwef / Pune
@@ -39,6 +46,7 @@ async function api(
     body?: unknown;
     formData?: any;
     expectStatus?: number | number[];
+    base?: string;
   } = {}
 ): Promise<{ status: number; json: any }> {
   const headers: Record<string, string> = {};
@@ -52,7 +60,7 @@ async function api(
     body = JSON.stringify(opts.body);
   }
 
-  const res = await fetch(`${BASE}${urlPath}`, { method, headers, body });
+  const res = await fetch(`${opts.base ?? BASE}${urlPath}`, { method, headers, body });
   let json: any = null;
   try {
     json = await res.json();
@@ -102,9 +110,12 @@ async function main(): Promise<void> {
   let produceId = "";
   let productId = "";
   let labourId = "";
+  let expireId = "";
   let image: { url: string; publicId: string };
 
   try {
+    await mongoose.connect(MONGODB_URI);
+
     // Public browse
     {
       const { json } = await api("GET", "/listings?limit=5");
@@ -333,23 +344,116 @@ async function main(): Promise<void> {
       record("Search product Irrigation (regression)", json.success === true);
     }
 
-    // Detail
+    // Detail — phone must not be on the public DTO
     {
       const { json } = await api("GET", `/listings/${labourId}`);
       record(
-        "GET labour detail",
-        json.data.id === labourId && !!json.data.seller?.phone
+        "GET labour detail has no seller.phone",
+        json.data.id === labourId &&
+          !!json.data.seller?.name &&
+          json.data.seller?.phone === undefined
       );
     }
 
-    // Contact
+    // Contact security
     {
-      const { json } = await api("POST", `/listings/${labourId}/contact`);
-      record("POST contact labour", json.success === true);
+      const { status } = await api("POST", `/listings/${labourId}/contact`, {
+        expectStatus: 401,
+      });
+      record("POST contact without auth → 401", status === 401);
     }
     {
-      const { json } = await api("POST", `/listings/${produceId}/contact`);
-      record("POST contact produce", json.success === true);
+      const { status } = await api("POST", `/listings/${labourId}/contact`, {
+        token: sellerToken,
+        expectStatus: 400,
+      });
+      record("POST contact own listing → 400", status === 400);
+    }
+    {
+      const before = await api("GET", `/listings/${labourId}`, { token: sellerToken });
+      const clicksBefore = Number(before.json.data?.contactClicks ?? 0);
+      const { json } = await api("POST", `/listings/${labourId}/contact`, {
+        token: buyerToken,
+      });
+      record(
+        "POST contact labour returns phone",
+        typeof json.data?.phone === "string" && json.data.phone.length > 0
+      );
+      const after = await api("GET", `/listings/${labourId}`, { token: sellerToken });
+      record(
+        "Contact increments contactClicks",
+        Number(after.json.data?.contactClicks ?? 0) === clicksBefore + 1
+      );
+      record(
+        "GET after contact still has no seller.phone",
+        after.json.data?.seller?.phone === undefined &&
+          !("phone" in (after.json.data?.seller ?? {}))
+      );
+    }
+    {
+      const { json } = await api("POST", `/listings/${produceId}/contact`, {
+        token: buyerToken,
+      });
+      record(
+        "POST contact produce returns phone",
+        typeof json.data?.phone === "string" && json.data.phone.length > 0
+      );
+    }
+    {
+      const { json } = await api("GET", `/listings/${produceId}`);
+      const seller = json.data?.seller ?? {};
+      record(
+        "GET produce after contact still has no seller.phone",
+        seller.phone === undefined && !("phone" in seller)
+      );
+      record(
+        "GET produce seller is name+district only",
+        typeof seller.name === "string" &&
+          typeof seller.district === "string" &&
+          Object.keys(seller).every((key) => key === "name" || key === "district")
+      );
+    }
+
+    // Reports
+    {
+      const { status } = await api("POST", `/listings/${labourId}/report`, {
+        body: { reason: "FAKE_LISTING" },
+        expectStatus: 401,
+      });
+      record("POST report without auth → 401", status === 401);
+    }
+    {
+      const { status } = await api("POST", `/listings/${labourId}/report`, {
+        token: sellerToken,
+        body: { reason: "FAKE_LISTING" },
+        expectStatus: 400,
+      });
+      record("POST report own listing → 400", status === 400);
+    }
+    {
+      const { json } = await api("POST", `/listings/${labourId}/report`, {
+        token: buyerToken,
+        body: { reason: "FAKE_LISTING" },
+      });
+      record("POST report labour", json.data?.reported === true);
+    }
+    {
+      const { status } = await api("POST", `/listings/${labourId}/report`, {
+        token: buyerToken,
+        body: { reason: "FAKE_LISTING" },
+        expectStatus: 409,
+      });
+      record("POST duplicate report → 409", status === 409);
+    }
+
+    // Image delete: attached publicId cannot be deleted by a non-owner
+    {
+      const { status } = await api("DELETE", "/images", {
+        token: buyerToken,
+        body: { publicId: image.publicId },
+        expectStatus: 403,
+      });
+      record("DELETE /images non-owner of attached image → 403", status === 403);
     }
 
     // Save / unsave (buyer)
@@ -422,6 +526,102 @@ async function main(): Promise<void> {
       const { status } = await api("GET", `/listings/${produceId}`, { expectStatus: 404 });
       record("Sold produce hidden from public GET", status === 404);
     }
+    {
+      const { status } = await api("POST", `/listings/${produceId}/contact`, {
+        token: buyerToken,
+        expectStatus: 404,
+      });
+      record("POST contact SOLD listing → 404", status === 404);
+    }
+
+    // Expired listing contact
+    {
+      const expireImg = await uploadImage(sellerToken);
+      const { json } = await api("POST", "/listings", {
+        token: sellerToken,
+        body: {
+          listingType: "produce",
+          title: "QA Expire Wheat",
+          category: "Produce",
+          crop: "Wheat",
+          price: 100,
+          expectedPrice: 100,
+          quantity: 1,
+          unit: "Kg",
+          harvestDate: new Date().toISOString(),
+          description: "QA expiry listing",
+          images: [expireImg],
+        },
+      });
+      const expireIdCreated = json.data.id as string;
+      expireId = expireIdCreated;
+      createdIds.push(expireIdCreated);
+      await MarketplaceListing.updateOne(
+        { _id: new mongoose.Types.ObjectId(expireIdCreated) },
+        { $set: { expiresAt: new Date(Date.now() - 60_000) } }
+      );
+      const { status } = await api("POST", `/listings/${expireIdCreated}/contact`, {
+        token: buyerToken,
+        expectStatus: 404,
+      });
+      record("POST contact expired listing → 404", status === 404);
+    }
+    {
+      const { status } = await api("GET", `/listings/${expireId}`, { expectStatus: 404 });
+      record("Expired listing hidden from public GET", status === 404);
+    }
+    {
+      const { json } = await api("GET", "/listings?limit=50");
+      const ids = (json.data?.listings ?? []).map((l: any) => l.id);
+      record("Expired listing excluded from public browse", !ids.includes(expireId));
+    }
+
+    // Admin moderation visibility
+    {
+      const { status } = await api("GET", "/marketplace", {
+        token: buyerToken,
+        base: ADMIN_BASE,
+        expectStatus: 403,
+      });
+      record("GET admin marketplace as farmer → 403", status === 403);
+    }
+    {
+      const admin = await Admin.findOne({ isActive: true }).lean();
+      let adminToken: string | null = null;
+      if (admin?.userId) {
+        const user = await AuthUser.findById(admin.userId).select("mobile").lean();
+        if (user?.mobile) adminToken = tokenFor(String(user._id), user.mobile);
+      } else if (admin?.phoneNumber) {
+        const user = await AuthUser.findOne({ mobile: admin.phoneNumber })
+          .select("mobile")
+          .lean();
+        if (user?.mobile) adminToken = tokenFor(String(user._id), user.mobile);
+      }
+
+      if (!adminToken) {
+        record(
+          "Admin can see listing reports",
+          false,
+          "no active admin with linked AuthUser"
+        );
+        record("Existing admin GET listing still works", false, "skipped");
+      } else {
+        const { json } = await api("GET", `/marketplace/${labourId}`, {
+          token: adminToken,
+          base: ADMIN_BASE,
+        });
+        const reports = json.data?.reports ?? [];
+        record(
+          "Admin can see listing reports",
+          json.data?.hasReports === true &&
+            reports.some((r: any) => r.reason === "FAKE_LISTING")
+        );
+        record(
+          "Existing admin GET listing still works",
+          json.data?.listing?.id === labourId && !!json.data?.seller?.mobile
+        );
+      }
+    }
 
     // My listings + summary
     {
@@ -445,8 +645,144 @@ async function main(): Promise<void> {
       );
     }
 
+    // Phase 2 — discovery + listing lifecycle
+    {
+      const { json } = await api("GET", "/listings?district=Pune&limit=20");
+      const listings = json.data?.listings ?? [];
+      record(
+        "GET /listings?district=Pune",
+        json.success === true && listings.every((l: any) => l.district === "Pune")
+      );
+    }
+    {
+      const { json } = await api("GET", "/listings?sort=price_low_to_high&limit=20");
+      const prices = (json.data?.listings ?? []).map((l: any) => Number(l.price));
+      const isSorted = prices.every(
+        (price: number, index: number) => index === 0 || prices[index - 1] <= price
+      );
+      record("GET /listings?sort=price_low_to_high", json.success === true && isSorted);
+    }
+    {
+      const { json } = await api("GET", "/listings?sort=price_high_to_low&limit=20");
+      const prices = (json.data?.listings ?? []).map((l: any) => Number(l.price));
+      const isSorted = prices.every(
+        (price: number, index: number) => index === 0 || prices[index - 1] >= price
+      );
+      record("GET /listings?sort=price_high_to_low", json.success === true && isSorted);
+    }
+    {
+      const { json } = await api("GET", "/listings?search=QA%20Hybrid%20Seeds&limit=20");
+      const listings = json.data?.listings ?? [];
+      record(
+        "Cross-type search omits listingType",
+        listings.some((l: any) => l.id === productId && l.listingType === "product")
+      );
+    }
+    {
+      const { json } = await api(
+        "GET",
+        "/listings?search=QA%20Hybrid%20Seeds&district=Pune&sort=newest&limit=20"
+      );
+      const listings = json.data?.listings ?? [];
+      record(
+        "Search + district + sort",
+        listings.some((l: any) => l.id === productId && l.district === "Pune")
+      );
+    }
+    {
+      const page1 = await api("GET", "/my-listings?page=1&limit=1", { token: sellerToken });
+      const page2 = await api("GET", "/my-listings?page=2&limit=1", { token: sellerToken });
+      const id1 = page1.json.data?.listings?.[0]?.id;
+      const id2 = page2.json.data?.listings?.[0]?.id;
+      record(
+        "GET my-listings pagination page 1 vs 2",
+        page1.json.data?.pagination?.page === 1 &&
+          page2.json.data?.pagination?.page === 2 &&
+          !!id1 &&
+          !!id2 &&
+          id1 !== id2
+      );
+    }
+    {
+      const { json } = await api("GET", "/my-listings?status=SOLD&limit=50", {
+        token: sellerToken,
+      });
+      const listings = json.data?.listings ?? [];
+      record(
+        "GET my-listings?status=SOLD",
+        listings.length > 0 &&
+          listings.every((l: any) => l.status === "SOLD") &&
+          listings.some((l: any) => l.id === produceId)
+      );
+    }
+    {
+      const { status } = await api("POST", `/listings/${productId}/renew`, {
+        expectStatus: 401,
+      });
+      record("POST renew without auth → 401", status === 401);
+    }
+    {
+      const { status } = await api("POST", `/listings/${productId}/renew`, {
+        token: buyerToken,
+        expectStatus: 403,
+      });
+      record("POST renew non-owner → 403", status === 403);
+    }
+    {
+      const { status } = await api("POST", `/listings/${productId}/renew`, {
+        token: sellerToken,
+        expectStatus: 400,
+      });
+      record("POST renew active listing with remaining time → 400", status === 400);
+    }
+    {
+      const { status } = await api("POST", `/listings/${produceId}/renew`, {
+        token: sellerToken,
+        expectStatus: 400,
+      });
+      record("POST renew SOLD listing → 400", status === 400);
+    }
+    {
+      const before = new Date();
+      const { json } = await api("POST", `/listings/${expireId}/renew`, {
+        token: sellerToken,
+        body: { expiresAt: "2099-01-01T00:00:00.000Z" },
+      });
+      const expiresAt = new Date(json.data?.expiresAt);
+      const minExpiry = new Date(before.getTime() + 29 * 24 * 60 * 60 * 1000);
+      const maxExpiry = new Date(before.getTime() + 31 * 24 * 60 * 60 * 1000);
+      record(
+        "POST renew expired listing sets server expiry",
+        json.data?.id === expireId &&
+          json.data?.status === "ACTIVE" &&
+          expiresAt >= minExpiry &&
+          expiresAt <= maxExpiry
+      );
+    }
+    {
+      const { json } = await api("GET", `/listings/${expireId}`);
+      record(
+        "Renewed listing is public without seller.phone",
+        json.data?.id === expireId &&
+          json.data?.status === "ACTIVE" &&
+          json.data?.seller?.phone === undefined
+      );
+    }
+    {
+      const { json } = await api("GET", "/listings?limit=50");
+      const ids = (json.data?.listings ?? []).map((l: any) => l.id);
+      record("Renewed listing appears in public browse", ids.includes(expireId));
+    }
+    {
+      const { status } = await api("POST", `/listings/${expireId}/renew`, {
+        token: sellerToken,
+        expectStatus: 400,
+      });
+      record("POST repeated renew is rejected", status === 400);
+    }
+
     // Archive
-    for (const id of [produceId, productId, ...labourIds]) {
+    for (const id of [produceId, productId, expireId, ...labourIds]) {
       try {
         await api("DELETE", `/listings/${id}`, { token: sellerToken });
       } catch {
@@ -464,12 +800,44 @@ async function main(): Promise<void> {
       record("Archived labour hidden from public", status === 404);
     }
     {
+      const { status } = await api("POST", `/listings/${labourId}/contact`, {
+        token: buyerToken,
+        expectStatus: [404, 429],
+      });
+      record("POST contact ARCHIVED listing rejected", status === 404 || status === 429);
+    }
+    {
       const { status } = await api("PUT", `/listings/${labourId}`, {
         token: sellerToken,
         body: { price: 999 },
         expectStatus: 400,
       });
       record("Archived labour cannot update → 400", status === 400);
+    }
+    {
+      const { status } = await api("POST", `/listings/${labourId}/renew`, {
+        token: sellerToken,
+        expectStatus: 400,
+      });
+      record("POST renew ARCHIVED listing → 400", status === 400);
+    }
+
+    // Contact rate limit (buyer already used a few slots this minute)
+    {
+      let saw429 = false;
+      let lastStatus = 0;
+      for (let i = 0; i < 20; i += 1) {
+        const { status } = await api("POST", `/listings/${productId}/contact`, {
+          token: buyerToken,
+          expectStatus: [200, 404, 429],
+        });
+        lastStatus = status;
+        if (status === 429) {
+          saw429 = true;
+          break;
+        }
+      }
+      record("Contact rate limit eventually returns 429", saw429, `lastStatus=${lastStatus}`);
     }
 
     // Image delete
@@ -479,6 +847,44 @@ async function main(): Promise<void> {
         body: { publicId: image.publicId },
       });
       record("DELETE /images", true);
+    }
+
+    // Phase 3: duplicate is client-side prefill; create still server-owns lifecycle.
+    {
+      const img = await uploadImage(sellerToken);
+      const { json } = await api("POST", "/listings", {
+        token: sellerToken,
+        body: {
+          listingType: "produce",
+          title: "QA Create Ignores Client Lifecycle",
+          category: "Produce",
+          crop: "Jowar",
+          price: 1800,
+          expectedPrice: 1800,
+          quantity: 5,
+          unit: "Quintal",
+          harvestDate: new Date().toISOString(),
+          description: "client cannot inherit status",
+          images: [img],
+          status: "SOLD",
+          expiresAt: "2020-01-01T00:00:00.000Z",
+          views: 999,
+          contactClicks: 50,
+          sellerId: BUYER_ID,
+        },
+      });
+      createdIds.push(json.data.id);
+      const expiresAt = new Date(json.data.expiresAt).getTime();
+      record(
+        "POST listing ignores client status/expiry/metrics",
+        json.data.id !== produceId &&
+          json.data.status === "ACTIVE" &&
+          json.data.views === 0 &&
+          json.data.contactClicks === 0 &&
+          json.data.sellerId === SELLER_ID &&
+          Number.isFinite(expiresAt) &&
+          expiresAt > Date.now()
+      );
     }
 
     // After archive, seller can create labour again (limit freed)
@@ -512,6 +918,12 @@ async function main(): Promise<void> {
         // ignore
       }
     }
+  }
+
+  try {
+    await mongoose.disconnect();
+  } catch {
+    // ignore
   }
 
   const failed = results.filter((r) => !r.ok);

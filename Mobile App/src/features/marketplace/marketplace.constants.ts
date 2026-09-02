@@ -56,6 +56,15 @@ export const MARKETPLACE_UNITS = [
 
 export const LISTING_STATUSES = ['ACTIVE', 'SOLD', 'ARCHIVED'] as const;
 
+export const LISTING_SORT_OPTIONS = [
+  'newest',
+  'price_low_to_high',
+  'price_high_to_low',
+] as const;
+
+/** Matches backend: renew only when remaining time is this many days or less. */
+export const LISTING_RENEW_MAX_REMAINING_DAYS = 7;
+
 export const MAX_LISTING_IMAGES = 3;
 export const MAX_LABOUR_LISTING_IMAGES = 2;
 export const MAX_ACTIVE_LABOUR_LISTINGS = 3;
@@ -64,6 +73,17 @@ export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;
 
 export const SEARCH_DEBOUNCE_MS = 300;
+
+export const LISTING_REPORT_REASONS = [
+  'FALSE_INFORMATION',
+  'FAKE_LISTING',
+  'FRAUD',
+  'WRONG_PRODUCE',
+  'INAPPROPRIATE',
+  'OTHER',
+] as const;
+
+export const REPORT_DETAILS_MAX_LENGTH = 300;
 
 export const CATEGORY_FILTER_ALL = 'All' as const;
 

@@ -172,6 +172,10 @@ export const listMarketplaceAdminHandler = async (
       ? String(req.query.listingType)
       : undefined,
     district: req.query.district ? String(req.query.district) : undefined,
+    hasReports:
+      req.query.hasReports === "true" || req.query.hasReports === "1"
+        ? true
+        : undefined,
     page: req.query.page ? Number(req.query.page) : undefined,
     limit: req.query.limit ? Number(req.query.limit) : undefined,
   });

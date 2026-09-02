@@ -2,15 +2,19 @@ import { api } from '@/services/api';
 
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from './marketplace.constants';
 import type {
+  ContactListingResponse,
   CreateListingPayload,
   ListingDetailResponse,
   ListingImage,
   ListingResponse,
   ListingsQueryParams,
+  ListingStatus,
   MyMarketplaceSummary,
   MyMarketplaceSummaryResponse,
   PaginatedListings,
   PaginatedListingsResponse,
+  ReportListingPayload,
+  ReportListingResponse,
   SaveListingResponse,
   UnsaveListingResponse,
   UpdateListingPayload,
@@ -70,10 +74,21 @@ export const archiveListing = async (id: string) => {
 export const getMyListings = async (
   page: number = DEFAULT_PAGE,
   limit: number = DEFAULT_LIMIT,
+  status?: ListingStatus,
 ): Promise<PaginatedListings> => {
   const response = await api.get<PaginatedListingsResponse>(MY_LISTINGS_ENDPOINT, {
-    params: { page, limit },
+    params: {
+      page,
+      limit,
+      ...(status ? { status } : {}),
+    },
   });
+  return response.data.data;
+};
+
+/** Renews / republishes an owned listing. Expiry is set by the server. */
+export const renewListing = async (id: string) => {
+  const response = await api.post<ListingResponse>(`${LISTINGS_ENDPOINT}/${id}/renew`);
   return response.data.data;
 };
 
@@ -106,9 +121,19 @@ export const getSavedListings = async (
   return response.data.data;
 };
 
-/** Records a seller contact click for analytics. */
-export const recordContactClick = async (id: string): Promise<void> => {
-  await api.post(`${LISTINGS_ENDPOINT}/${id}/contact`);
+/** Requests seller contact details for Call / WhatsApp. Authenticated. */
+export const contactListing = async (id: string) => {
+  const response = await api.post<ContactListingResponse>(`${LISTINGS_ENDPOINT}/${id}/contact`);
+  return response.data.data;
+};
+
+/** Reports a listing. One report per user per listing. */
+export const reportListing = async (id: string, payload: ReportListingPayload) => {
+  const response = await api.post<ReportListingResponse>(
+    `${LISTINGS_ENDPOINT}/${id}/report`,
+    payload,
+  );
+  return response.data.data;
 };
 
 const IMAGES_UPLOAD_ENDPOINT = `${MARKETPLACE_BASE}/images/upload`;

@@ -124,6 +124,16 @@ const AdminSubscriptionsPage = lazy(() =>
     default: m.AdminSubscriptionsPage,
   })),
 )
+const AdminMarketplacePage = lazy(() =>
+  import('@/pages/admin/AdminMarketplacePage').then((m) => ({
+    default: m.AdminMarketplacePage,
+  })),
+)
+const AdminMarketplaceDetailPage = lazy(() =>
+  import('@/pages/admin/AdminMarketplacePage').then((m) => ({
+    default: m.AdminMarketplaceDetailPage,
+  })),
+)
 
 function RedirectToGramSahakariDetail() {
   const { id = '' } = useParams()
@@ -232,6 +242,8 @@ export function App() {
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="marketplace" element={<AdminMarketplacePage />} />
+            <Route path="marketplace/:id" element={<AdminMarketplaceDetailPage />} />
           </Route>
 
           {/* 404 */}

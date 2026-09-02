@@ -1,19 +1,22 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
-import { Button, Snackbar, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, Snackbar, Text } from 'react-native-paper';
 
 import { RemoteImage } from '@/components/media/RemoteImage';
 import { radius, spacing } from '@/theme';
 
+import { ExpiryBadge } from '../components/ExpiryBadge';
 import { ListingLifecycleDialogs } from '../components/ListingLifecycleDialogs';
 import { ListingEmptyView, ListingErrorView, ListingLoadingView } from '../components/ListingStateViews';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
+import { MyListingActionsMenu } from '../components/MyListingActionsMenu';
 import { useListingLifecycleActions } from '../hooks/useListingLifecycleActions';
+import { usePaginatedMyListings } from '../hooks/usePaginatedMyListings';
 import { LISTING_STATUSES } from '../marketplace.constants';
 import { getMarketplaceErrorMessage } from '../marketplace.errors';
-import { getMyListings } from '../marketplace.service';
+import { renewListing } from '../marketplace.service';
 import { marketplaceStrings } from '../marketplace.strings';
 import { listingTypeAccent, listingTypeWash, mp, mpCard, mpPage } from '../marketplace.ui';
 import type { ListingStatus, MarketplaceListing } from '../marketplace.types';
@@ -22,7 +25,9 @@ import {
   formatListingDate,
   formatPrice,
   getListingDisplayTitle,
+  getListingExpiryDisplay,
   getListingImageUrl,
+  isListingRenewable,
 } from '../marketplace.utils';
 
 type StatusFilter = ListingStatus;
@@ -38,41 +43,43 @@ const parseStatusParam = (value: string | string[] | undefined): StatusFilter =>
 export default function MyListingsScreen() {
   const router = useRouter();
   const { status: statusParam } = useLocalSearchParams<{ status?: string }>();
-  const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => parseStatusParam(statusParam));
   const [snackbar, setSnackbar] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [renewingId, setRenewingId] = useState<string | null>(null);
+  const [menuListingId, setMenuListingId] = useState<string | null>(null);
+  const renewInFlightRef = useRef(false);
+  const hasFocusedOnce = useRef(false);
+  const statusParamKey = Array.isArray(statusParam) ? statusParam[0] : statusParam;
+  const [seenStatusParam, setSeenStatusParam] = useState(statusParamKey);
+  if (statusParamKey !== seenStatusParam) {
+    setSeenStatusParam(statusParamKey);
     setStatusFilter(parseStatusParam(statusParam));
-  }, [statusParam]);
+  }
 
-  const fetchListings = useCallback(async () => {
-    try {
-      setError(null);
-      const result = await getMyListings();
-      setListings(result.listings);
-    } catch (err) {
-      setError(getMarketplaceErrorMessage(err));
-    }
-  }, []);
+  const {
+    listings,
+    loading,
+    refreshing,
+    loadingMore,
+    error,
+    hasMore,
+    refresh,
+    loadMore,
+    replaceListing,
+  } = usePaginatedMyListings(statusFilter);
 
+  const refreshRef = useRef(refresh);
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
   useFocusEffect(
     useCallback(() => {
-      void fetchListings().finally(() => setLoading(false));
-    }, [fetchListings]),
-  );
-
-  const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchListings().finally(() => setRefreshing(false));
-  }, [fetchListings]);
-
-  const filteredListings = useMemo(
-    () => listings.filter((listing) => listing.status === statusFilter),
-    [listings, statusFilter],
+      if (!hasFocusedOnce.current) {
+        hasFocusedOnce.current = true;
+        return;
+      }
+      void refreshRef.current();
+    }, []),
   );
 
   const {
@@ -85,19 +92,42 @@ export default function MyListingsScreen() {
     confirmMarkSold,
     confirmArchive,
   } = useListingLifecycleActions({
-    onMarkedSold: fetchListings,
-    onArchived: fetchListings,
+    onMarkedSold: refresh,
+    onArchived: refresh,
   });
 
   const handleConfirmMarkSold = useCallback(async () => {
     const message = await confirmMarkSold();
     if (message) setSnackbar(message);
-  }, [confirmMarkSold]);
+  }, [confirmMarkSold, setSnackbar]);
 
   const handleConfirmArchive = useCallback(async () => {
     const message = await confirmArchive();
     if (message) setSnackbar(message);
-  }, [confirmArchive]);
+  }, [confirmArchive, setSnackbar]);
+
+  const handleRenew = useCallback(
+    async (listing: MarketplaceListing) => {
+      if (renewInFlightRef.current || lifecycleLoading) return;
+      renewInFlightRef.current = true;
+      setRenewingId(listing.id);
+      try {
+        const updated = await renewListing(listing.id);
+        replaceListing(updated);
+        setSnackbar(marketplaceStrings.myListings.renewed);
+      } catch (err) {
+        setSnackbar(getMarketplaceErrorMessage(err));
+      } finally {
+        renewInFlightRef.current = false;
+        setRenewingId(null);
+      }
+    },
+    [lifecycleLoading, replaceListing],
+  );
+
+  const handleEndReached = useCallback(() => {
+    if (hasMore) loadMore();
+  }, [hasMore, loadMore]);
 
   const renderItem = useCallback(
     ({ item }: { item: MarketplaceListing }) => {
@@ -111,99 +141,87 @@ export default function MyListingsScreen() {
           : item.listingType === 'labour'
             ? 'account-hard-hat'
             : 'package-variant';
+      const expiry = item.status === 'ACTIVE' ? getListingExpiryDisplay(item.expiresAt) : null;
+      const canRenew = isListingRenewable(item);
+      const busy = lifecycleLoading || renewingId === item.id;
 
       return (
-          <View style={[styles.card, mpCard]}>
-            <View style={[styles.accent, { backgroundColor: accent }]} />
-            <View style={styles.cardInner}>
-              <View style={styles.cardTop}>
-                <View style={styles.thumb}>
-                  {imageUrl ? (
-                    <RemoteImage
-                      uri={imageUrl}
-                      displayWidth={240}
-                      style={styles.thumbImage}
-                      containerStyle={styles.thumbFill}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={[styles.thumbFill, styles.thumbFallback, { backgroundColor: wash }]}>
-                      <MaterialCommunityIcons name={placeholderIcon} size={28} color={accent} />
-                    </View>
-                  )}
-                </View>
-                <View style={styles.cardMeta}>
-                  <View style={styles.headerRow}>
-                    <Text style={styles.cardTitle} numberOfLines={2} maxFontSizeMultiplier={1.5}>
-                      {getListingDisplayTitle(item)}
-                    </Text>
-                    <ListingStatusBadge status={item.status} listingType={item.listingType} />
+        <View style={[styles.card, mpCard]}>
+          <View style={[styles.accent, { backgroundColor: accent }]} />
+          <View style={styles.cardInner}>
+            <View style={styles.cardTop}>
+              <View style={styles.thumb}>
+                {imageUrl ? (
+                  <RemoteImage
+                    uri={imageUrl}
+                    displayWidth={240}
+                    style={styles.thumbImage}
+                    containerStyle={styles.thumbFill}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.thumbFill, styles.thumbFallback, { backgroundColor: wash }]}>
+                    <MaterialCommunityIcons name={placeholderIcon} size={28} color={accent} />
                   </View>
-                  <Text style={styles.cardPrice} numberOfLines={1} maxFontSizeMultiplier={1.4}>
-                    {isLabour
-                      ? formatLabourRate(item.price, item.rateType)
-                      : formatPrice(item.price)}
-                  </Text>
-                  <Text style={styles.cardSub} numberOfLines={1} maxFontSizeMultiplier={1.4}>
-                    {item.district} · {formatListingDate(item.createdAt)}
-                  </Text>
-                </View>
+                )}
               </View>
-
-              {item.status === 'ACTIVE' ? (
-                <View style={styles.actions}>
-                  <Button
-                    mode="outlined"
-                    compact
-                    textColor={mp.headingGreen}
-                    onPress={() => router.push(`/marketplace-edit/${item.id}` as Href)}
-                    style={styles.actionButton}
-                    disabled={lifecycleLoading}
-                  >
-                    {marketplaceStrings.myListings.edit}
-                  </Button>
-                  <Button
-                    mode="outlined"
-                    compact
-                    textColor={mp.headingGreen}
-                    onPress={() => openMarkSoldDialog(item.id, item.listingType)}
-                    style={styles.actionButton}
-                    disabled={lifecycleLoading}
-                  >
-                    {isLabour
-                      ? marketplaceStrings.myListings.markHired
-                      : marketplaceStrings.myListings.markSold}
-                  </Button>
-                  <Button
-                    mode="text"
-                    compact
-                    textColor="#BA1A1A"
-                    onPress={() => openArchiveDialog(item.id, item.listingType)}
-                    disabled={lifecycleLoading}
-                  >
-                    {marketplaceStrings.myListings.archive}
-                  </Button>
+              <View style={styles.cardMeta}>
+                <View style={styles.headerRow}>
+                  <Text style={styles.cardTitle} numberOfLines={2} maxFontSizeMultiplier={1.5}>
+                    {getListingDisplayTitle(item)}
+                  </Text>
+                  <ListingStatusBadge status={item.status} listingType={item.listingType} />
+                  <View style={styles.menuAnchor}>
+                    <MyListingActionsMenu
+                      listing={item}
+                      visible={menuListingId === item.id}
+                      disabled={busy}
+                      onOpen={() => setMenuListingId(item.id)}
+                      onDismiss={() => setMenuListingId(null)}
+                      onEdit={() => router.push(`/marketplace-edit/${item.id}` as Href)}
+                      onDuplicate={() =>
+                        router.push(`/marketplace-create?from=${item.id}` as Href)
+                      }
+                      onMarkSold={() => openMarkSoldDialog(item.id, item.listingType)}
+                      onArchive={() => openArchiveDialog(item.id, item.listingType)}
+                    />
+                  </View>
                 </View>
-              ) : null}
-
-              {item.status === 'SOLD' ? (
-                <View style={styles.actions}>
-                  <Button
-                    mode="outlined"
-                    compact
-                    textColor={mp.headingGreen}
-                    onPress={() => router.push(`/marketplace-edit/${item.id}` as Href)}
-                    style={styles.actionButton}
-                  >
-                    {marketplaceStrings.myListings.edit}
-                  </Button>
-                </View>
-              ) : null}
+                <Text style={styles.cardPrice} numberOfLines={1} maxFontSizeMultiplier={1.4}>
+                  {isLabour
+                    ? formatLabourRate(item.price, item.rateType)
+                    : formatPrice(item.price)}
+                </Text>
+                <Text style={styles.cardSub} numberOfLines={1} maxFontSizeMultiplier={1.4}>
+                  {item.district} · {formatListingDate(item.createdAt)}
+                </Text>
+                {expiry ? <ExpiryBadge label={expiry.label} tone={expiry.tone} /> : null}
+              </View>
             </View>
+
+            {item.status === 'ACTIVE' && canRenew ? (
+              <View style={styles.actions}>
+                <Button
+                  mode="contained"
+                  compact
+                  buttonColor={mp.primaryGreen}
+                  textColor={mp.white}
+                  onPress={() => void handleRenew(item)}
+                  style={styles.renewButton}
+                  disabled={busy}
+                  loading={renewingId === item.id}
+                >
+                  {renewingId === item.id
+                    ? marketplaceStrings.myListings.renewing
+                    : marketplaceStrings.myListings.renew}
+                </Button>
+              </View>
+            ) : null}
           </View>
+        </View>
       );
     },
-    [lifecycleLoading, openArchiveDialog, openMarkSoldDialog, router],
+    [handleRenew, lifecycleLoading, menuListingId, openArchiveDialog, openMarkSoldDialog, renewingId, router],
   );
 
   const statusButtons: { value: StatusFilter; label: string }[] = [
@@ -212,52 +230,70 @@ export default function MyListingsScreen() {
     { value: 'ARCHIVED', label: marketplaceStrings.myListings.archived },
   ];
 
-  if (loading && listings.length === 0) {
-    return <ListingLoadingView />;
+  const filters = (
+    <View style={styles.filterRow}>
+      {statusButtons.map((btn) => {
+        const active = statusFilter === btn.value;
+        return (
+          <Pressable
+            key={btn.value}
+            onPress={() => {
+              setMenuListingId(null);
+              setStatusFilter(btn.value);
+            }}
+            style={[styles.filterChip, active ? styles.filterChipActive : null]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+          >
+            <Text
+              style={[styles.filterLabel, active ? styles.filterLabelActive : null]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
+            >
+              {btn.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+
+  if (loading && listings.length === 0 && !error) {
+    return (
+      <View style={mpPage}>
+        {filters}
+        <ListingLoadingView />
+      </View>
+    );
   }
 
   if (error && listings.length === 0) {
     return (
-      <ListingErrorView
-        title={marketplaceStrings.listings.errorTitle}
-        message={error}
-        onRetry={fetchListings}
-      />
+      <View style={mpPage}>
+        {filters}
+        <ListingErrorView
+          title={marketplaceStrings.listings.errorTitle}
+          message={error}
+          onRetry={refresh}
+        />
+      </View>
     );
   }
 
   return (
     <View style={mpPage}>
-      <View style={styles.filterRow}>
-        {statusButtons.map((btn) => {
-          const active = statusFilter === btn.value;
-          return (
-            <Pressable
-              key={btn.value}
-              onPress={() => setStatusFilter(btn.value)}
-              style={[styles.filterChip, active ? styles.filterChipActive : null]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-            >
-              <Text
-                style={[styles.filterLabel, active ? styles.filterLabelActive : null]}
-                numberOfLines={1}
-                maxFontSizeMultiplier={1.3}
-              >
-                {btn.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {filters}
 
       <FlatList
-        data={filteredListings}
+        data={listings}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.4}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[mp.primaryGreen]} />
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} colors={[mp.primaryGreen]} />
         }
         ListEmptyComponent={
           <ListingEmptyView
@@ -266,13 +302,29 @@ export default function MyListingsScreen() {
           />
         }
         ListHeaderComponent={
-          error ? (
+          error && listings.length > 0 ? (
             <View style={styles.inlineError}>
               <MaterialCommunityIcons name="alert-circle-outline" size={18} color="#BA1A1A" />
               <Text variant="bodySmall" style={{ color: '#BA1A1A', flex: 1 }}>
                 {error}
               </Text>
             </View>
+          ) : null
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footer}>
+              <ActivityIndicator animating color={mp.primaryGreen} />
+              <Text variant="bodySmall" style={{ color: mp.bodyGrey }}>
+                {marketplaceStrings.listings.loadMore}
+              </Text>
+            </View>
+          ) : error && listings.length > 0 && hasMore ? (
+            <Pressable onPress={loadMore} style={styles.footerRetry}>
+              <Text variant="bodySmall" style={{ color: mp.primaryGreen, fontWeight: '700' }}>
+                {marketplaceStrings.listings.loadMoreRetry}
+              </Text>
+            </Pressable>
           ) : null
         }
       />
@@ -303,7 +355,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   filterChip: {
-    minHeight: 36,
+    minHeight: 40,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
@@ -342,6 +394,7 @@ const styles = StyleSheet.create({
   thumbFallback: { alignItems: 'center', justifyContent: 'center' },
   cardMeta: { flex: 1, minWidth: 0, gap: 4 },
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, minWidth: 0 },
+  menuAnchor: { flexShrink: 0, marginTop: -6 },
   cardTitle: {
     flex: 1,
     minWidth: 0,
@@ -352,12 +405,15 @@ const styles = StyleSheet.create({
   },
   cardPrice: { color: mp.primaryGreen, fontSize: 15, lineHeight: 20, fontWeight: '700' },
   cardSub: { color: mp.bodyGrey, fontSize: 12, lineHeight: 16 },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
   actionButton: { borderRadius: 12, borderColor: mp.searchBorder },
+  renewButton: { borderRadius: 12 },
   inlineError: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
     marginBottom: spacing.sm,
   },
+  footer: { alignItems: 'center', paddingVertical: spacing.md, gap: spacing.xs },
+  footerRetry: { alignItems: 'center', paddingVertical: spacing.md },
 });

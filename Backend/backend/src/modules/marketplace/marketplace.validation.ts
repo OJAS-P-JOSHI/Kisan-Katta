@@ -3,22 +3,26 @@ import {
   LABOUR_CATEGORIES,
   LABOUR_GENDERS,
   LABOUR_RATE_TYPES,
+  LISTING_REPORT_REASONS,
   LISTING_STATUSES,
   LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
   MARKETPLACE_UNITS,
   MAX_LABOUR_LISTING_IMAGES,
   PRODUCT_CATEGORIES,
+  REPORT_DETAILS_MAX_LENGTH,
 } from "./marketplace.constants";
 import { validateListingImages } from "./marketplace.image.validation";
 import type {
   CreateListingBody,
   LabourGender,
   LabourRateType,
+  ListingReportReason,
   ListingStatus,
   ListingType,
   MarketplaceCategory,
   MarketplaceUnit,
+  ReportListingBody,
   UpdateListingBody,
 } from "./marketplace.types";
 
@@ -332,6 +336,46 @@ export const validateUpdateListing = (body: Record<string, unknown>): UpdateList
 
   if (Object.keys(result).length === 0) {
     throw new AppError("At least one field must be provided to update.", 400);
+  }
+
+  return result;
+};
+
+const validateReportReason = (value: unknown): ListingReportReason => {
+  if (
+    typeof value !== "string" ||
+    !(LISTING_REPORT_REASONS as readonly string[]).includes(value)
+  ) {
+    throw new AppError(
+      `reason must be one of: ${LISTING_REPORT_REASONS.join(", ")}.`,
+      400
+    );
+  }
+  return value as ListingReportReason;
+};
+
+export const validateReportListing = (body: Record<string, unknown>): ReportListingBody => {
+  const reason = validateReportReason(body["reason"]);
+  const result: ReportListingBody = { reason };
+
+  if (body["details"] !== undefined && body["details"] !== null) {
+    if (typeof body["details"] !== "string") {
+      throw new AppError("details must be a string when provided.", 400);
+    }
+    const details = body["details"].trim();
+    if (details.length > REPORT_DETAILS_MAX_LENGTH) {
+      throw new AppError(
+        `details cannot exceed ${REPORT_DETAILS_MAX_LENGTH} characters.`,
+        400
+      );
+    }
+    if (details.length > 0) {
+      result.details = details;
+    }
+  }
+
+  if (reason === "OTHER" && !result.details) {
+    throw new AppError("details is required when reason is OTHER.", 400);
   }
 
   return result;

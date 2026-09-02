@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import type {
   LABOUR_GENDERS,
   LABOUR_RATE_TYPES,
+  LISTING_REPORT_REASONS,
   LISTING_SORT_OPTIONS,
   LISTING_STATUSES,
   LISTING_TYPES,
@@ -20,6 +21,7 @@ export type ListingStatus = (typeof LISTING_STATUSES)[number];
 export type ListingSortOption = (typeof LISTING_SORT_OPTIONS)[number];
 export type LabourGender = (typeof LABOUR_GENDERS)[number];
 export type LabourRateType = (typeof LABOUR_RATE_TYPES)[number];
+export type ListingReportReason = (typeof LISTING_REPORT_REASONS)[number];
 
 // ---------------------------------------------------------------------------
 // Image shapes
@@ -84,6 +86,14 @@ export interface IMarketplaceSaved {
   savedAt: Date;
 }
 
+export interface IMarketplaceListingReport {
+  listingId: Types.ObjectId;
+  userId: Types.ObjectId;
+  reason: ListingReportReason;
+  details: string | null;
+  createdAt: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Request body shapes
 // ---------------------------------------------------------------------------
@@ -146,10 +156,24 @@ export interface ListingsQuery {
 // Response DTOs
 // ---------------------------------------------------------------------------
 
+/** Public listing detail seller — no phone. Phone is returned only via contact. */
 export interface SellerInfoDTO {
   name: string;
   district: string;
+}
+
+export interface ContactListingDTO {
   phone: string;
+}
+
+export interface ReportListingBody {
+  reason: ListingReportReason;
+  details?: string;
+}
+
+export interface ReportListingDTO {
+  listingId: string;
+  reported: true;
 }
 
 export interface ListingResponseDTO {

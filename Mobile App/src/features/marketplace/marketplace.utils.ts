@@ -1,3 +1,7 @@
+import * as Linking from 'expo-linking';
+
+import { LISTING_RENEW_MAX_REMAINING_DAYS } from './marketplace.constants';
+import { getCategoryLabel, marketplaceStrings } from './marketplace.strings';
 import type { LabourRateType, ListingImage, ListingStatus, ListingType } from './marketplace.types';
 
 /** Formats a price in Indian Rupees. */
@@ -122,6 +126,187 @@ export const formatPhoneForWhatsApp = (phone: string): string => {
   if (digits.length === 10) return `91${digits}`;
   if (digits.startsWith('91') && digits.length === 12) return digits;
   return digits;
+};
+
+const presentText = (value: string | number | null | undefined): string | null => {
+  if (value === undefined || value === null) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
+};
+
+const joinMessageLines = (lines: (string | null)[]): string => {
+  const kept: string[] = [];
+  for (const line of lines) {
+    if (line === null) continue;
+    if (line === '' && (kept.length === 0 || kept[kept.length - 1] === '')) continue;
+    kept.push(line);
+  }
+  while (kept.length > 0 && kept[kept.length - 1] === '') kept.pop();
+  return kept.join('\n');
+};
+
+/** Pre-filled WhatsApp body from public listing fields. Phone is never included. */
+export const buildWhatsAppContactMessage = (listing: {
+  listingType: ListingType;
+  title: string;
+  crop?: string;
+  quantity?: number;
+  unit?: string;
+  village?: string;
+  brand?: string;
+  price: number;
+  category: string;
+  availableWorkers?: number;
+  rateType?: LabourRateType;
+}): string => {
+  const village = presentText(listing.village);
+  const villageLine = village ? `गाव: ${village}` : null;
+
+  if (listing.listingType === 'produce') {
+    const crop = presentText(listing.crop) ?? presentText(listing.title) ?? 'शेतमाल';
+    const quantity =
+      listing.quantity != null
+        ? presentText(listing.unit)
+          ? `${listing.quantity} ${listing.unit}`
+          : String(listing.quantity)
+        : null;
+    return joinMessageLines([
+      `नमस्कार, मला तुमच्या ${crop} च्या जाहिरातीबद्दल माहिती हवी आहे.`,
+      '',
+      quantity ? `प्रमाण: ${quantity}` : null,
+      villageLine,
+      '',
+      'मी खरेदीदार आहे.',
+    ]);
+  }
+
+  if (listing.listingType === 'labour') {
+    const work = getCategoryLabel(listing.category);
+    const workers =
+      listing.availableWorkers != null ? String(listing.availableWorkers) : null;
+    const rateSuffix = listing.rateType === 'per_hour' ? 'प्रति तास' : 'प्रति दिवस';
+    const rate = `दर: ${formatPrice(listing.price)} ${rateSuffix}`;
+    return joinMessageLines([
+      'नमस्कार, मला तुमच्या मजूर कट्टा जाहिरातीबद्दल माहिती हवी आहे.',
+      '',
+      `काम: ${work}`,
+      workers ? `मजूर: ${workers}` : null,
+      rate,
+      villageLine,
+      '',
+      'मला मजूर हवे आहेत.',
+    ]);
+  }
+
+  const name = presentText(listing.title) ?? 'शेती साहित्य';
+  const brand = presentText(listing.brand);
+  return joinMessageLines([
+    `नमस्कार, मला तुमच्या ${name} च्या जाहिरातीबद्दल माहिती हवी आहे.`,
+    '',
+    brand ? `ब्रँड: ${brand}` : null,
+    `किंमत: ${formatPrice(listing.price)}`,
+    villageLine,
+    '',
+    'मला या वस्तूबद्दल अधिक माहिती हवी आहे.',
+  ]);
+};
+
+export const buildWhatsAppUrl = (phone: string, message: string): string => {
+  const encoded = encodeURIComponent(message);
+  return `https://wa.me/${formatPhoneForWhatsApp(phone)}?text=${encoded}`;
+};
+
+/** Marketplace listing deep link using the existing `kisankatta` scheme / router path. */
+export const buildListingLink = (listingId: string): string =>
+  Linking.createURL(`/marketplace-listing/${listingId}`);
+
+/** Native share body. Public listing fields only — never seller phone. */
+export const buildListingShareMessage = (listing: {
+  id: string;
+  listingType: ListingType;
+  title: string;
+  crop?: string;
+  price: number;
+  rateType?: LabourRateType;
+  village?: string;
+  district: string;
+}): string => {
+  const title = getListingDisplayTitle(listing);
+  const typeLabel =
+    listing.listingType === 'labour'
+      ? marketplaceStrings.create.labour
+      : listing.listingType === 'product'
+        ? marketplaceStrings.create.product
+        : marketplaceStrings.create.produce;
+  const price =
+    listing.listingType === 'labour'
+      ? formatLabourRate(listing.price, listing.rateType)
+      : formatPrice(listing.price);
+  const place = [presentText(listing.village), presentText(listing.district)]
+    .filter((part): part is string => part !== null)
+    .join(', ');
+
+  return joinMessageLines([
+    '🌾 Kissan Agrisathi',
+    '',
+    title,
+    '',
+    `प्रकार: ${typeLabel}`,
+    `किंमत: ${price}`,
+    place ? `स्थान: ${place}` : null,
+    '',
+    buildListingLink(listing.id),
+    '',
+    'Kissan Agrisathi वर जाहिरात पहा.',
+  ]);
+};
+
+/** Remaining time until `expiresAt`, in fractional days. Negative if expired. */
+export const remainingDaysUntilExpiry = (expiresAt: string, now: Date = new Date()): number => {
+  const end = new Date(expiresAt);
+  if (Number.isNaN(end.getTime())) return Number.NEGATIVE_INFINITY;
+  return (end.getTime() - now.getTime()) / (24 * 60 * 60 * 1000);
+};
+
+export type ExpiryTone = 'neutral' | 'warning' | 'strong' | 'critical' | 'expired';
+
+export type ExpiryDisplay = {
+  label: string;
+  tone: ExpiryTone;
+  isExpired: boolean;
+};
+
+/** Compact Marathi expiry label from backend `expiresAt` only. */
+export const getListingExpiryDisplay = (
+  expiresAt: string,
+  now: Date = new Date(),
+): ExpiryDisplay => {
+  const remaining = remainingDaysUntilExpiry(expiresAt, now);
+  if (remaining <= 0) {
+    return { label: marketplaceStrings.expiry.expired, tone: 'expired', isExpired: true };
+  }
+
+  const wholeDays = Math.floor(remaining);
+  if (wholeDays === 0) {
+    return { label: marketplaceStrings.expiry.lastDay, tone: 'critical', isExpired: false };
+  }
+  if (wholeDays === 1) {
+    return { label: marketplaceStrings.expiry.tomorrow, tone: 'strong', isExpired: false };
+  }
+  return {
+    label: marketplaceStrings.expiry.daysLeft(wholeDays),
+    tone: wholeDays <= 3 ? 'warning' : 'neutral',
+    isExpired: false,
+  };
+};
+
+/** Conservative client hint — backend remains authoritative. */
+export const isListingRenewable = (
+  listing: { status: ListingStatus; expiresAt: string },
+  now: Date = new Date(),
+): boolean => {
+  if (listing.status !== 'ACTIVE') return false;
+  return remainingDaysUntilExpiry(listing.expiresAt, now) <= LISTING_RENEW_MAX_REMAINING_DAYS;
 };
 
 export type StatusBadgeColors = {

@@ -2,13 +2,18 @@ import { Schema, model } from "mongoose";
 import {
   LABOUR_GENDERS,
   LABOUR_RATE_TYPES,
+  LISTING_REPORT_REASONS,
   LISTING_STATUSES,
   LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
   MARKETPLACE_UNITS,
   MAX_LISTING_IMAGES,
 } from "./marketplace.constants";
-import type { IMarketplaceListing, IMarketplaceSaved } from "./marketplace.types";
+import type {
+  IMarketplaceListing,
+  IMarketplaceListingReport,
+  IMarketplaceSaved,
+} from "./marketplace.types";
 
 const MarketplaceListingSchema = new Schema<IMarketplaceListing>(
   {
@@ -126,4 +131,36 @@ export const MarketplaceListing = model<IMarketplaceListing>(
 export const MarketplaceSaved = model<IMarketplaceSaved>(
   "MarketplaceSaved",
   MarketplaceSavedSchema
+);
+
+const MarketplaceListingReportSchema = new Schema<IMarketplaceListingReport>(
+  {
+    listingId: {
+      type: Schema.Types.ObjectId,
+      ref: "MarketplaceListing",
+      required: true,
+      index: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "AuthUser",
+      required: true,
+      index: true,
+    },
+    reason: { type: String, enum: LISTING_REPORT_REASONS, required: true },
+    details: { type: String, default: null, trim: true },
+    createdAt: { type: Date, required: true, default: Date.now },
+  },
+  {
+    timestamps: false,
+    collection: "marketplace_listing_reports",
+  }
+);
+
+MarketplaceListingReportSchema.index({ listingId: 1, userId: 1 }, { unique: true });
+MarketplaceListingReportSchema.index({ listingId: 1, createdAt: -1 });
+
+export const MarketplaceListingReport = model<IMarketplaceListingReport>(
+  "MarketplaceListingReport",
+  MarketplaceListingReportSchema
 );

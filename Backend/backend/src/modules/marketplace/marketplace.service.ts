@@ -8,20 +8,25 @@ import { getProfile } from "../profile/profile.service";
 import {
   LABOUR_CATEGORIES,
   LISTING_EXPIRY_DAYS,
+  LISTING_RENEW_MAX_REMAINING_DAYS,
   MAX_ACTIVE_LABOUR_LISTINGS,
   MAX_LABOUR_LISTING_IMAGES,
 } from "./marketplace.constants";
 import { normalizeListingImages, toStoredListingImages } from "./marketplace.image.utils";
-import { MarketplaceListing, MarketplaceSaved } from "./marketplace.model";
+import { MarketplaceListing, MarketplaceListingReport, MarketplaceSaved } from "./marketplace.model";
 import { buildLabourTitle } from "./marketplace.validation";
 import type {
+  ContactListingDTO,
   CreateListingBody,
   IMarketplaceListing,
   ListingDetailResponseDTO,
   ListingResponseDTO,
+  ListingStatus,
   ListingsQuery,
   MyMarketplaceSummaryDTO,
   PaginatedListingsDTO,
+  ReportListingBody,
+  ReportListingDTO,
   SavedListingsDTO,
   SellerInfoDTO,
   UpdateListingBody,
@@ -102,7 +107,6 @@ const fetchSellerInfo = async (sellerId: Types.ObjectId): Promise<SellerInfoDTO>
   return {
     name: profile.name,
     district: profile.district,
-    phone: authUser.mobile,
   };
 };
 
@@ -462,9 +466,13 @@ export const archiveListing = async (
 export const getMyListings = async (
   userId: string,
   page: number,
-  limit: number
+  limit: number,
+  status?: ListingStatus
 ): Promise<PaginatedListingsDTO> => {
-  const filter = { sellerId: new Types.ObjectId(userId) };
+  const filter: Record<string, unknown> = { sellerId: new Types.ObjectId(userId) };
+  if (status) {
+    filter.status = status;
+  }
   const skip = (page - 1) * limit;
 
   const [total, listings] = await Promise.all([
@@ -592,17 +600,111 @@ export const getSavedListings = async (
   };
 };
 
-export const recordContactClick = async (listingId: string): Promise<void> => {
+export const recordContactClick = async (
+  userId: string,
+  listingId: string
+): Promise<ContactListingDTO> => {
   assertValidObjectId(listingId, "listing id");
 
-  const listing = await MarketplaceListing.findByIdAndUpdate(
-    listingId,
-    { $inc: { contactClicks: 1 } }
-  );
-
+  const listing = await MarketplaceListing.findById(listingId);
   if (!listing) {
     throw new AppError("Listing not found.", 404);
   }
+
+  if (listing.sellerId.toString() === userId) {
+    throw new AppError("You cannot contact your own listing.", 400);
+  }
+
+  assertPublicListingAccess(listing);
+
+  const seller = await AuthUser.findById(listing.sellerId).select("mobile").lean();
+  if (!seller?.mobile) {
+    throw new AppError("Seller account not found.", 404);
+  }
+
+  await MarketplaceListing.updateOne({ _id: listing._id }, { $inc: { contactClicks: 1 } });
+
+  return { phone: seller.mobile };
+};
+
+const isDuplicateKeyError = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  (error as { code?: number }).code === 11000;
+
+export const reportListing = async (
+  userId: string,
+  listingId: string,
+  data: ReportListingBody
+): Promise<ReportListingDTO> => {
+  assertValidObjectId(listingId, "listing id");
+
+  const listing = await MarketplaceListing.findById(listingId);
+  if (!listing) {
+    throw new AppError("Listing not found.", 404);
+  }
+
+  if (listing.sellerId.toString() === userId) {
+    throw new AppError("You cannot report your own listing.", 400);
+  }
+
+  try {
+    await MarketplaceListingReport.create({
+      listingId: listing._id,
+      userId: new Types.ObjectId(userId),
+      reason: data.reason,
+      details: data.details ?? null,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      throw new AppError("You have already reported this listing.", 409);
+    }
+    throw error;
+  }
+
+  return { listingId, reported: true };
+};
+
+const remainingDaysUntilExpiry = (expiresAt: Date, now: Date): number =>
+  (expiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000);
+
+export const renewListing = async (
+  userId: string,
+  listingId: string
+): Promise<ListingResponseDTO> => {
+  assertValidObjectId(listingId, "listing id");
+
+  const listing = await MarketplaceListing.findById(listingId);
+  if (!listing) {
+    throw new AppError("Listing not found.", 404);
+  }
+
+  if (listing.sellerId.toString() !== userId) {
+    throw new AppError("You can only renew your own listing.", 403);
+  }
+
+  if (listing.status === "SOLD") {
+    throw new AppError("Sold listings cannot be renewed.", 400);
+  }
+
+  if (listing.status === "ARCHIVED") {
+    throw new AppError("Archived listings cannot be renewed.", 400);
+  }
+
+  if (listing.status !== "ACTIVE") {
+    throw new AppError("This listing cannot be renewed.", 400);
+  }
+
+  const now = new Date();
+  if (remainingDaysUntilExpiry(listing.expiresAt, now) > LISTING_RENEW_MAX_REMAINING_DAYS) {
+    throw new AppError("This listing is not eligible for renewal yet.", 400);
+  }
+
+  listing.expiresAt = buildExpiryDate();
+  await listing.save();
+
+  return toListingDTO(listing);
 };
 
 /**

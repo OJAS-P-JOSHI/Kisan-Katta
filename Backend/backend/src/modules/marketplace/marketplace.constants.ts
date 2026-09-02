@@ -53,6 +53,8 @@ export const LISTING_SORT_OPTIONS = [
 ] as const;
 
 export const LISTING_EXPIRY_DAYS = 30;
+/** Renew only when remaining time is this many days or less (includes expired). */
+export const LISTING_RENEW_MAX_REMAINING_DAYS = 7;
 export const MAX_LISTING_IMAGES = 3;
 export const MAX_LABOUR_LISTING_IMAGES = 2;
 export const MAX_ACTIVE_LABOUR_LISTINGS = 3;
@@ -66,6 +68,17 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
 ] as const;
 
 export const CLOUDINARY_MARKETPLACE_FOLDER = "kisan-katta/marketplace";
+
+export const LISTING_REPORT_REASONS = [
+  "FALSE_INFORMATION",
+  "FAKE_LISTING",
+  "FRAUD",
+  "WRONG_PRODUCE",
+  "INAPPROPRIATE",
+  "OTHER",
+] as const;
+
+export const REPORT_DETAILS_MAX_LENGTH = 300;
 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;

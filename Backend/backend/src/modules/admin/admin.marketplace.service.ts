@@ -2,7 +2,7 @@ import { Types, type HydratedDocument } from "mongoose";
 import { AppError } from "../../utils/AppError";
 import { AuthUser } from "../auth/auth.model";
 import { FarmerProfile } from "../profile/profile.model";
-import { MarketplaceListing } from "../marketplace/marketplace.model";
+import { MarketplaceListing, MarketplaceListingReport } from "../marketplace/marketplace.model";
 import { toListingDTO } from "../marketplace/marketplace.service";
 import type { IMarketplaceListing } from "../marketplace/marketplace.types";
 import type { AdminProfileDTO } from "./admin.dto";
@@ -13,6 +13,7 @@ export type AdminMarketplaceListQuery = {
   status?: string;
   listingType?: string;
   district?: string;
+  hasReports?: boolean;
   page?: number;
   limit?: number;
 };
@@ -49,6 +50,11 @@ export const listAdminMarketplace = async (
     ];
   }
 
+  if (query.hasReports === true) {
+    const reportedIds = await MarketplaceListingReport.distinct("listingId");
+    filter._id = { $in: reportedIds };
+  }
+
   const [total, rows] = await Promise.all([
     MarketplaceListing.countDocuments(filter),
     MarketplaceListing.find(filter)
@@ -72,14 +78,28 @@ export const listAdminMarketplace = async (
     profiles.map((p) => [String(p.userId), p])
   );
 
+  const listingIds = rows.map((r) => r._id);
+  const reportCounts = listingIds.length
+    ? await MarketplaceListingReport.aggregate<{ _id: Types.ObjectId; count: number }>([
+        { $match: { listingId: { $in: listingIds } } },
+        { $group: { _id: "$listingId", count: { $sum: 1 } } },
+      ])
+    : [];
+  const reportCountByListing = new Map(
+    reportCounts.map((row) => [String(row._id), row.count])
+  );
+
   const items = rows.map((doc) => {
     const dto = toListingDTO(doc as HydratedDocument<IMarketplaceListing>);
     const profile = profileById.get(String(doc.sellerId));
+    const reportCount = reportCountByListing.get(String(doc._id)) ?? 0;
     return {
       ...dto,
       sellerMobile: mobileById.get(String(doc.sellerId)) ?? null,
       sellerName: profile?.name ?? null,
       sellerDistrict: profile?.district ?? null,
+      reportCount,
+      hasReports: reportCount > 0,
     };
   });
 
@@ -99,7 +119,7 @@ export const getAdminMarketplaceListing = async (id: string) => {
   const doc = await MarketplaceListing.findById(id).lean();
   if (!doc) throw new AppError("Listing not found.", 404);
 
-  const [user, profile, sellerHistory] = await Promise.all([
+  const [user, profile, sellerHistory, reports] = await Promise.all([
     AuthUser.findById(doc.sellerId).select("mobile role").lean(),
     FarmerProfile.findOne({ userId: doc.sellerId })
       .select("name district village")
@@ -108,7 +128,20 @@ export const getAdminMarketplaceListing = async (id: string) => {
       .sort({ createdAt: -1 })
       .limit(20)
       .lean(),
+    MarketplaceListingReport.find({ listingId: doc._id })
+      .sort({ createdAt: -1 })
+      .lean(),
   ]);
+
+  const reporterIds = [...new Set(reports.map((r) => String(r.userId)))];
+  const reporters = reporterIds.length
+    ? await AuthUser.find({ _id: { $in: reporterIds } })
+        .select("mobile")
+        .lean()
+    : [];
+  const reporterMobileById = new Map(
+    reporters.map((u) => [String(u._id), u.mobile ?? null])
+  );
 
   return {
     listing: toListingDTO(doc as HydratedDocument<IMarketplaceListing>),
@@ -119,6 +152,17 @@ export const getAdminMarketplaceListing = async (id: string) => {
       district: profile?.district ?? null,
       village: profile?.village ?? null,
     },
+    reportCount: reports.length,
+    hasReports: reports.length > 0,
+    reports: reports.map((row) => ({
+      id: String(row._id),
+      listingId: String(row.listingId),
+      userId: String(row.userId),
+      reporterMobile: reporterMobileById.get(String(row.userId)) ?? null,
+      reason: row.reason,
+      details: row.details,
+      createdAt: row.createdAt,
+    })),
     sellerHistory: sellerHistory.map((row) =>
       toListingDTO(row as HydratedDocument<IMarketplaceListing>)
     ),

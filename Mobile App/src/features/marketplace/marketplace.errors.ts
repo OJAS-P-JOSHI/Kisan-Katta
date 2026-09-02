@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 
 import type { ApiErrorResponse } from '@/types';
 
@@ -11,9 +11,9 @@ const MARKETPLACE_ERROR_MESSAGES = {
   validation: marketplaceStrings.errors.validation,
 } as const;
 
-/** Maps marketplace API errors to user-facing messages. */
+/** Maps marketplace API errors to user-facing Marathi messages. Never returns raw backend text. */
 export const getMarketplaceErrorMessage = (error: unknown): string => {
-  if (axios.isAxiosError<ApiErrorResponse>(error)) {
+  if (isAxiosError<ApiErrorResponse>(error)) {
     if (error.code === 'ECONNABORTED') {
       return MARKETPLACE_ERROR_MESSAGES.timeout;
     }
@@ -23,13 +23,63 @@ export const getMarketplaceErrorMessage = (error: unknown): string => {
     if (error.response.status >= 500) {
       return MARKETPLACE_ERROR_MESSAGES.backendUnavailable;
     }
-    if (error.response.status === 400) {
-      return error.response.data?.message || MARKETPLACE_ERROR_MESSAGES.validation;
+    if (error.response.status === 429) {
+      return marketplaceStrings.errors.tooManyRequests;
     }
-    return error.response.data?.message || marketplaceStrings.errors.generic;
-  }
-  if (error instanceof Error && error.message) {
-    return error.message;
+    if (error.response.status === 404) {
+      return marketplaceStrings.errors.generic;
+    }
+    if (error.response.status === 409) {
+      const message = error.response.data?.message ?? '';
+      if (message.toLowerCase().includes('already reported')) {
+        return marketplaceStrings.report.alreadyReported;
+      }
+      return marketplaceStrings.errors.generic;
+    }
+    if (error.response.status === 403) {
+      const message = error.response.data?.message ?? '';
+      if (message.toLowerCase().includes('renew')) {
+        return marketplaceStrings.myListings.renewOwnOnly;
+      }
+      return marketplaceStrings.errors.generic;
+    }
+    if (error.response.status === 400) {
+      const message = error.response.data?.message ?? '';
+      const lower = message.toLowerCase();
+      if (lower.includes('cannot report your own')) {
+        return marketplaceStrings.report.ownListing;
+      }
+      if (lower.includes('cannot contact your own')) {
+        return marketplaceStrings.errors.contactFailed;
+      }
+      if (lower.includes('sold listings cannot be renewed')) {
+        return marketplaceStrings.myListings.renewSold;
+      }
+      if (lower.includes('archived listings cannot be renewed')) {
+        return marketplaceStrings.myListings.renewArchived;
+      }
+      if (lower.includes('not eligible for renewal')) {
+        return marketplaceStrings.myListings.renewNotEligible;
+      }
+      if (lower.includes('cannot be renewed')) {
+        return marketplaceStrings.myListings.unableRenew;
+      }
+      return MARKETPLACE_ERROR_MESSAGES.validation;
+    }
+    return marketplaceStrings.errors.generic;
   }
   return marketplaceStrings.errors.generic;
+};
+
+/** Contact Call/WhatsApp feedback. Does not expose backend error details. */
+export const getMarketplaceContactErrorMessage = (error: unknown): string => {
+  const mapped = getMarketplaceErrorMessage(error);
+  if (
+    mapped === marketplaceStrings.errors.tooManyRequests ||
+    mapped === marketplaceStrings.errors.network ||
+    mapped === marketplaceStrings.errors.timeout
+  ) {
+    return mapped;
+  }
+  return marketplaceStrings.errors.contactFailed;
 };

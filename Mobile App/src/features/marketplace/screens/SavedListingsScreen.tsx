@@ -27,6 +27,7 @@ export default function SavedListingsScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [snackbar, setSnackbar] = useState<string | null>(null);
   const loadingMoreRef = useRef(false);
+  const unsaveInFlightRef = useRef(new Set<string>());
 
   const fetchPage = useCallback(async (pageToLoad: number, replace: boolean) => {
     try {
@@ -71,14 +72,19 @@ export default function SavedListingsScreen() {
 
   const handleToggleSave = useCallback(async (listing: MarketplaceListing) => {
     if (isListingOwner(listing.sellerId, user?.userId)) return;
+    if (unsaveInFlightRef.current.has(listing.id)) return;
 
+    unsaveInFlightRef.current.add(listing.id);
     setListings((prev) => prev.filter((item) => item.id !== listing.id));
 
     try {
       await unsaveListing(listing.id);
+      setSnackbar(marketplaceStrings.lifecycle.unsaved);
     } catch {
       setListings((prev) => [listing, ...prev]);
       setSnackbar(marketplaceStrings.lifecycle.unableSave);
+    } finally {
+      unsaveInFlightRef.current.delete(listing.id);
     }
   }, [user?.userId]);
 

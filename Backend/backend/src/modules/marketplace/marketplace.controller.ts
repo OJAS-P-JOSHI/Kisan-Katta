@@ -5,6 +5,8 @@ import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
   LISTING_SORT_OPTIONS,
+  LISTING_STATUSES,
+  LISTING_TYPES,
   MARKETPLACE_CATEGORIES,
   MAX_LIMIT,
 } from "./marketplace.constants";
@@ -17,27 +19,32 @@ import {
   getMyMarketplaceSummary,
   getSavedListings,
   recordContactClick,
+  renewListing,
+  reportListing,
   saveListing,
   unsaveListing,
   updateListing,
 } from "./marketplace.service";
 import {
   validateCreateListing,
+  validateReportListing,
   validateUpdateListing,
 } from "./marketplace.validation";
 import type {
+  ContactListingDTO,
   ListingDetailResponseDTO,
   ListingResponseDTO,
   ListingSortOption,
+  ListingStatus,
   ListingsQuery,
   MarketplaceCategory,
   MyMarketplaceSummaryDTO,
   PaginatedListingsDTO,
+  ReportListingDTO,
   SavedListingsDTO,
 } from "./marketplace.types";
 import type { ApiSuccessResponse } from "../../types/api-response";
 import type { ListingType } from "./marketplace.types";
-import { LISTING_TYPES } from "./marketplace.constants";
 
 // ---------------------------------------------------------------------------
 // Query parsers
@@ -99,6 +106,16 @@ const parseListingType = (value: unknown): ListingType | undefined => {
     throw new AppError(`listingType must be one of: ${LISTING_TYPES.join(", ")}.`, 400);
   }
   return listingType as ListingType;
+};
+
+const parseListingStatus = (value: unknown): ListingStatus | undefined => {
+  if (value === undefined) return undefined;
+  const status = parseStringParam(value);
+  if (status === undefined) return undefined;
+  if (!(LISTING_STATUSES as readonly string[]).includes(status)) {
+    throw new AppError(`status must be one of: ${LISTING_STATUSES.join(", ")}.`, 400);
+  }
+  return status as ListingStatus;
 };
 
 const parseListingsQuery = (req: Request): ListingsQuery => ({
@@ -187,7 +204,21 @@ export const getMyListingsHandler = async (
 ): Promise<void> => {
   const { userId } = getAuthUser(req);
   const { page, limit } = parsePaginationQuery(req);
-  const data = await getMyListings(userId, page, limit);
+  const status = parseListingStatus(req.query.status);
+  const data = await getMyListings(userId, page, limit, status);
+  res.status(200).json({ success: true, data });
+};
+
+export const renewListingHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<ListingResponseDTO>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const listingId = req.params["id"];
+  if (!listingId) {
+    throw new AppError("Listing id is required.", 400);
+  }
+  const data = await renewListing(userId, listingId);
   res.status(200).json({ success: true, data });
 };
 
@@ -238,12 +269,27 @@ export const getSavedListingsHandler = async (
 
 export const contactListingHandler = async (
   req: Request,
-  res: Response<{ success: true }>
+  res: Response<ApiSuccessResponse<ContactListingDTO>>
 ): Promise<void> => {
+  const { userId } = getAuthUser(req);
   const listingId = req.params["id"];
   if (!listingId) {
     throw new AppError("Listing id is required.", 400);
   }
-  await recordContactClick(listingId);
-  res.status(200).json({ success: true });
+  const data = await recordContactClick(userId, listingId);
+  res.status(200).json({ success: true, data });
+};
+
+export const reportListingHandler = async (
+  req: Request,
+  res: Response<ApiSuccessResponse<ReportListingDTO>>
+): Promise<void> => {
+  const { userId } = getAuthUser(req);
+  const listingId = req.params["id"];
+  if (!listingId) {
+    throw new AppError("Listing id is required.", 400);
+  }
+  const body = validateReportListing(req.body as Record<string, unknown>);
+  const data = await reportListing(userId, listingId, body);
+  res.status(201).json({ success: true, data });
 };

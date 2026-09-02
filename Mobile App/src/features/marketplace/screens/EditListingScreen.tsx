@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,9 +27,12 @@ function EditListingForm({ listing }: EditListingFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const pendingPayloadRef = useRef<ListingFormPayload | null>(null);
+  const submittingRef = useRef(false);
 
   const publishUpdate = useCallback(
     async (payload: ListingFormPayload) => {
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setSubmitting(true);
       setServerError(null);
       images.clearUploadError();
@@ -43,6 +46,7 @@ function EditListingForm({ listing }: EditListingFormProps) {
           setServerError(getMarketplaceErrorMessage(err));
         }
       } finally {
+        submittingRef.current = false;
         setSubmitting(false);
       }
     },
@@ -51,6 +55,7 @@ function EditListingForm({ listing }: EditListingFormProps) {
 
   const handleSubmit = useCallback(
     async (payload: ListingFormPayload) => {
+      if (submittingRef.current) return;
       pendingPayloadRef.current = payload;
       await publishUpdate(payload);
     },
@@ -58,6 +63,7 @@ function EditListingForm({ listing }: EditListingFormProps) {
   );
 
   const handleRetryUpload = useCallback(() => {
+    if (submittingRef.current) return;
     if (pendingPayloadRef.current) {
       void publishUpdate(pendingPayloadRef.current);
     }
@@ -103,9 +109,11 @@ export default function EditListingScreen() {
     }
   }, [id]);
 
-  useEffect(() => {
-    fetchListing();
-  }, [fetchListing]);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchListing();
+    }, [fetchListing]),
+  );
 
   if (loading) {
     return <ListingLoadingView />;

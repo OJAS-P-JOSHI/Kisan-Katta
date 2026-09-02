@@ -29,6 +29,7 @@ export function AdminMarketplacePage() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [listingType, setListingType] = useState('')
+  const [hasReports, setHasReports] = useState(false)
 
   const query = useMemo(
     () => ({
@@ -37,8 +38,9 @@ export function AdminMarketplacePage() {
       search: search || undefined,
       status: status || undefined,
       listingType: listingType || undefined,
+      hasReports: hasReports || undefined,
     }),
-    [page, search, status, listingType],
+    [page, search, status, listingType, hasReports],
   )
 
   const { data, isLoading, error, isFetching } = useQuery({
@@ -86,6 +88,18 @@ export function AdminMarketplacePage() {
       key: 'status',
       header: 'Status',
       render: (row) => String(row.status),
+    },
+    {
+      key: 'reports',
+      header: 'Reports',
+      render: (row) => {
+        const count = Number(row.reportCount ?? 0)
+        return count > 0 ? (
+          <span className="font-medium text-red-700">{count}</span>
+        ) : (
+          <span className="text-steel">0</span>
+        )
+      },
     },
     {
       key: 'seller',
@@ -169,7 +183,7 @@ export function AdminMarketplacePage() {
               aria-label="Search marketplace"
             />
           </div>
-          <FilterPanel activeCount={[status, listingType].filter(Boolean).length}>
+          <FilterPanel activeCount={[status, listingType, hasReports ? 'reports' : ''].filter(Boolean).length}>
             <select
               className={filterControlClass}
               value={status}
@@ -196,6 +210,17 @@ export function AdminMarketplacePage() {
               <option value="produce">produce</option>
               <option value="labour">labour</option>
             </select>
+            <label className="flex min-h-10 items-center gap-2 text-sm text-slate">
+              <input
+                type="checkbox"
+                checked={hasReports}
+                onChange={(e) => {
+                  setHasReports(e.target.checked)
+                  setPage(1)
+                }}
+              />
+              Has reports
+            </label>
           </FilterPanel>
         </div>
 
@@ -348,6 +373,34 @@ export function AdminMarketplaceDetailPage() {
           )}
           {!images.length && <p className="text-sm text-steel">No images.</p>}
         </div>
+      </AdminCard>
+
+      <AdminCard title="Reports">
+        <p className="mb-3 text-sm text-steel">
+          {Number(data.reportCount ?? 0)} report
+          {Number(data.reportCount ?? 0) === 1 ? '' : 's'}
+        </p>
+        {((data.reports as Array<Record<string, unknown>>) ?? []).length === 0 ? (
+          <p className="text-sm text-steel">No farmer reports on this listing.</p>
+        ) : (
+          <ul className="space-y-3">
+            {((data.reports as Array<Record<string, unknown>>) ?? []).map((row) => (
+              <li
+                key={String(row.id)}
+                className="rounded-xl border border-mist px-3 py-2 text-sm"
+              >
+                <p className="font-medium text-ink">{String(row.reason)}</p>
+                {row.details ? (
+                  <p className="mt-1 text-slate">{String(row.details)}</p>
+                ) : null}
+                <p className="mt-1 text-xs text-steel">
+                  {String(row.reporterMobile ?? row.userId)} ·{' '}
+                  {formatDateTime(row.createdAt as string)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </AdminCard>
 
       <AdminCard title="Seller history">

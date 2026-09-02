@@ -8,6 +8,7 @@ import {
   MAX_UPLOAD_IMAGES,
 } from "./marketplace.constants";
 import { isMarketplacePublicId } from "./marketplace.image.utils";
+import { MarketplaceListing } from "./marketplace.model";
 import type { ListingImage } from "./marketplace.types";
 
 // ---------------------------------------------------------------------------
@@ -125,6 +126,14 @@ export const deleteMarketplaceImage = async (
 ): Promise<void> => {
   if (!isMarketplacePublicId(publicId)) {
     throw new AppError("Invalid marketplace image publicId.", 400);
+  }
+
+  const attachedListing = await MarketplaceListing.findOne({
+    "images.publicId": publicId,
+  }).select("sellerId");
+
+  if (attachedListing && attachedListing.sellerId.toString() !== userId) {
+    throw new AppError("You are not authorized to delete this image.", 403);
   }
 
   // eslint-disable-next-line no-console

@@ -12,6 +12,8 @@ import {
   getMyListingsHandler,
   getMyMarketplaceSummaryHandler,
   getSavedListingsHandler,
+  renewListingHandler,
+  reportListingHandler,
   saveListingHandler,
   unsaveListingHandler,
   updateListingHandler,
@@ -21,6 +23,11 @@ import {
   uploadMarketplaceImagesHandler,
 } from "./marketplace.image.controller";
 import { marketplaceImageUpload } from "./marketplace.upload.middleware";
+import {
+  marketplaceContactRateLimit,
+  marketplaceRenewRateLimit,
+  marketplaceReportRateLimit,
+} from "./marketplace.rate-limit";
 
 const router = Router();
 
@@ -76,7 +83,24 @@ router.get(
 router.get("/saved", authenticate, asyncHandler(getSavedListingsHandler));
 
 router.get("/listings/:id", optionalAuthenticate, asyncHandler(getListingByIdHandler));
-router.post("/listings/:id/contact", asyncHandler(contactListingHandler));
+router.post(
+  "/listings/:id/contact",
+  authenticate,
+  marketplaceContactRateLimit,
+  asyncHandler(contactListingHandler)
+);
+router.post(
+  "/listings/:id/report",
+  authenticate,
+  marketplaceReportRateLimit,
+  asyncHandler(reportListingHandler)
+);
+router.post(
+  "/listings/:id/renew",
+  authenticate,
+  marketplaceRenewRateLimit,
+  asyncHandler(renewListingHandler)
+);
 router.put("/listings/:id", authenticate, asyncHandler(updateListingHandler));
 router.delete("/listings/:id", authenticate, asyncHandler(archiveListingHandler));
 
