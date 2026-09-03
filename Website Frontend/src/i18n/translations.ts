@@ -525,6 +525,20 @@ export const translations = {
     'about.value.farmer.description':
       'Free for farmers, simple to use, and designed for rural connectivity — because farming is hard enough.',
 
+    'about.founder.eyebrow': 'Meet the Founder',
+    'about.founders.eyebrow': 'Meet the Founders',
+    'about.founder.mahesh.name': 'Mahesh Shridhar Chautmal',
+    'about.founder.mahesh.designation': 'Founder / Director',
+    'about.founder.mahesh.imageAlt':
+      'Mahesh Shridhar Chautmal, Founder and Director of Kissan Agrisathi',
+    'about.founder.mahesh.bio':
+      'Mahesh Shridhar Chautmal is the founder behind Kissan Agrisathi. He is building a Maharashtra-first, Marathi-first platform of practical digital tools for farmers — weather alerts, government mandi prices, community price insights, and a local marketplace.',
+    'about.founder.highlight':
+      "Technology that speaks the farmer's language and serves every village in Maharashtra.",
+    'home.founder.mahesh.teaser':
+      'Mahesh Shridhar Chautmal is the founder behind Kissan Agrisathi. He is building practical, Maharashtra-first and Marathi-first digital tools for farmers.',
+    'home.founder.cta': 'Know Our Story',
+
     'app.loading': 'Loading application…',
     'app.loadErrorTitle': 'Unable to load application',
     'app.loadErrorBody': 'We could not load your application. Please check your connection and try again.',
@@ -1194,6 +1208,20 @@ export const translations = {
     'about.value.farmer.title': 'शेतकरी केंद्रित',
     'about.value.farmer.description':
       'शेतकऱ्यांसाठी मोफत, वापरण्यास सोपे आणि ग्रामीण कनेक्टिव्हिटीसाठी डिझाइन केले — कारण शेती आधीच कठीण आहे.',
+
+    'about.founder.eyebrow': 'संस्थापक भेटा',
+    'about.founders.eyebrow': 'संस्थापक भेटा',
+    'about.founder.mahesh.name': 'Mahesh Shridhar Chautmal',
+    'about.founder.mahesh.designation': 'Founder / Director',
+    'about.founder.mahesh.imageAlt':
+      'Mahesh Shridhar Chautmal, Kissan Agrisathi चे संस्थापक आणि संचालक',
+    'about.founder.mahesh.bio':
+      'Mahesh Shridhar Chautmal हे Kissan Agrisathi चे संस्थापक आहेत. ते महाराष्ट्र-प्रथम आणि मराठी-प्रथम दृष्टिकोनातून शेतकऱ्यांसाठी व्यावहारिक डिजिटल साधने तयार करत आहेत — हवामान सूचना, सरकारी बाजार भाव, समुदाय भाव अंतर्दृष्टी आणि स्थानिक बाजारपेठ.',
+    'about.founder.highlight':
+      'तंत्रज्ञान जे शेतकऱ्यांच्या भाषेत बोलते आणि महाराष्ट्रातील प्रत्येक गावाला उपयुक्त ठरते.',
+    'home.founder.mahesh.teaser':
+      'Mahesh Shridhar Chautmal हे Kissan Agrisathi चे संस्थापक आहेत. ते शेतकऱ्यांसाठी महाराष्ट्र-प्रथम आणि मराठी-प्रथम व्यावहारिक डिजिटल साधने तयार करत आहेत.',
+    'home.founder.cta': 'आमची कहाणी जाणून घ्या',
 
     'app.loading': 'अर्ज लोड होत आहे…',
     'app.loadErrorTitle': 'अर्ज लोड करता आला नाही',

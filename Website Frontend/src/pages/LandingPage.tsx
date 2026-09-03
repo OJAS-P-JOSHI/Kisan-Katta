@@ -1,6 +1,7 @@
 import { Seo } from '@/components/common/Seo'
 import { CTASection } from '@/components/CTASection'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { FounderTeaserSection } from '@/components/sections/FounderTeaserSection'
 import { GramSahakariSection } from '@/components/sections/GramSahakariSection'
 import { HeroSection } from '@/components/sections/HeroSection'
 import { ProductShowcaseSection } from '@/components/sections/ProductShowcaseSection'
@@ -35,6 +36,7 @@ export function LandingPage() {
       <QuickFeaturesSection />
       <ProductShowcaseSection />
       <WhyChooseSection />
+      <FounderTeaserSection />
       <GramSahakariSection />
       <TrustStripSection />
       <CTASection

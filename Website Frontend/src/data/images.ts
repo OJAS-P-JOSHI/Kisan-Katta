@@ -40,6 +40,11 @@ export const brandAssets = {
    */
   signature: '/sign.png',
   signatureCoFounder: '/sign2.png',
+  /**
+   * Founder portrait (About + homepage teaser).
+   * File: `public/images/Founder Image.jpeg` — displayed at 3:4 via CSS crop.
+   */
+  founder: '/images/Founder Image.jpeg',
 } as const
 
 /** Royalty-free Unsplash agriculture imagery (commercial use) — secondary accents only. */

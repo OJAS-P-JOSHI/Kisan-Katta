@@ -4,6 +4,7 @@ import { Heart, MapPin, Sprout, Users } from 'lucide-react'
 import { PageIntro } from '@/components/common/SectionTitle'
 import { Seo } from '@/components/common/Seo'
 import { PageLayout } from '@/components/layout/PageLayout'
+import { FounderSection } from '@/components/sections/FounderSection'
 import { useTranslation } from '@/i18n/LanguageProvider'
 import type { TranslationKeys } from '@/i18n/translations'
 import { fadeUp, staggerContainer, defaultTransition } from '@/lib/motion'
@@ -66,6 +67,8 @@ export function AboutPage() {
               {t('about.body2')}
             </p>
           </div>
+
+          <FounderSection />
 
           <motion.ul
             initial="hidden"
