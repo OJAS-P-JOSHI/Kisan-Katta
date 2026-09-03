@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold tracking-tight transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-55 disabled:hover:translate-y-0 active:translate-y-0 active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+  'group inline-flex items-center justify-center gap-2 whitespace-normal rounded-2xl text-sm font-semibold tracking-tight transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-55 disabled:hover:translate-y-0 active:translate-y-0 active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:whitespace-nowrap',
   {
     variants: {
       variant: {
@@ -23,10 +23,10 @@ const buttonVariants = cva(
           'border border-white/40 bg-white/10 text-white backdrop-blur-md hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/20 hover:text-white',
       },
       size: {
-        default: 'min-h-12 px-6',
+        default: 'min-h-12 px-5 sm:px-6',
         sm: 'min-h-10 rounded-xl px-4 text-xs',
-        lg: 'min-h-14 rounded-2xl px-8 text-base',
-        icon: 'h-12 w-12',
+        lg: 'min-h-12 px-5 text-[15px] sm:min-h-14 sm:px-8 sm:text-base',
+        icon: 'h-12 w-12 shrink-0 whitespace-nowrap',
       },
     },
     defaultVariants: {

@@ -19,7 +19,7 @@ export function FeaturesSection() {
           subtitle={t('section.features.subtitle')}
         />
 
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {features.map((feature, index) => (
             <FeatureCard
               key={feature.id}

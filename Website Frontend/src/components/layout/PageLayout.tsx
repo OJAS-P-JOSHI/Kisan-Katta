@@ -24,7 +24,7 @@ export function PageLayout({ children, hideFooter = false }: PageLayoutProps) {
       <Navbar />
       <main
         className={cn(
-          'flex-1',
+          'flex-1 min-w-0',
           showMobileCTA && 'pb-32 sm:pb-36 lg:pb-0',
           showMobileCTA && isLanding && 'lg:pb-0',
         )}

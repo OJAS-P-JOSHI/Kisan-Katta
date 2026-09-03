@@ -25,7 +25,7 @@ export function WhyChooseSection() {
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
           variants={staggerContainer}
-          className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
+          className="grid min-w-0 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
         >
           {whyChooseItems.map((item, index) => (
             <motion.div

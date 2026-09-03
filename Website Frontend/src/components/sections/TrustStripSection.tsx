@@ -50,7 +50,7 @@ export function TrustStripSection() {
           whileInView="visible"
           viewport={{ once: true, margin: '-40px' }}
           variants={staggerContainer}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           {trustPoints.map((point) => {
             const Icon = point.icon

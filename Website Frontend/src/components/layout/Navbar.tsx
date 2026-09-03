@@ -51,11 +51,11 @@ export function Navbar() {
       >
         <nav
           className={cn(
-            'container-wide flex items-center justify-between gap-3 px-4 transition-[height] duration-500 ease-out sm:px-5',
+            'container-wide flex min-w-0 items-center justify-between gap-2 px-4 transition-[height] duration-500 ease-out sm:gap-3 sm:px-5',
             transparent ? 'h-[4.5rem] sm:h-20' : 'h-16 sm:h-[4.5rem]',
           )}
         >
-          <BrandLogo size="md" priority={isHome} className="h-12 w-12 sm:h-11 sm:w-11" />
+          <BrandLogo size="md" priority={isHome} className="h-10 w-10 sm:h-11 sm:w-11" />
 
           <div className="hidden items-center gap-1 lg:flex">
             {desktopNavLinks.map((link) => {

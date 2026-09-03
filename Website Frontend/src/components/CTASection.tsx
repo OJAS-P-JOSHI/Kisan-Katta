@@ -38,26 +38,28 @@ export function CTASection({
         transition={defaultTransition}
         className="container-wide"
       >
-        <div className="relative overflow-hidden rounded-3xl bg-forest-900 px-8 py-16 text-center sm:px-12 lg:py-20">
+        <div className="relative overflow-hidden rounded-3xl bg-forest-900 px-5 py-12 text-center sm:px-12 sm:py-16 lg:py-20">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(201,162,39,0.12),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(67,160,71,0.1),transparent_50%)]" />
-          <div className="relative">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">{title}</h2>
+          <div className="relative min-w-0">
+            <h2 className="text-pretty text-2xl font-bold leading-snug text-white sm:text-3xl lg:text-4xl">
+              {title}
+            </h2>
             {description && (
-              <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-white/80">
+              <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-white/80 sm:text-lg">
                 {description}
               </p>
             )}
             {children}
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="lg" variant="glow">
+            <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Button asChild size="lg" variant="glow" className="w-full sm:w-auto">
                 <Link to={primaryHref}>
                   {primaryLabel}
                   <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </Link>
               </Button>
               {secondaryLabel && secondaryHref && (
-                <Button asChild size="lg" variant="glass">
+                <Button asChild size="lg" variant="glass" className="w-full sm:w-auto">
                   {secondaryHref.startsWith('/#') || secondaryHref.startsWith('#') ? (
                     <a href={secondaryHref}>{secondaryLabel}</a>
                   ) : (

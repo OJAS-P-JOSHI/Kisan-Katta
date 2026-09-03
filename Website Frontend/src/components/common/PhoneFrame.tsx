@@ -12,11 +12,17 @@ interface PhoneFrameProps {
 /**
  * CSS phone chrome with a reserved 9:19 aspect ratio so screenshots or
  * Coming Soon placeholders never cause layout shift.
+ *
+ * Width is capped per breakpoint so the device stays inside the viewport on
+ * mobile instead of inheriting a desktop-sized column.
  */
 export function PhoneFrame({ children, className, label }: PhoneFrameProps) {
   return (
     <div
-      className={cn('relative mx-auto w-full max-w-[17.5rem] sm:max-w-[18.5rem]', className)}
+      className={cn(
+        'relative mx-auto w-full max-w-[min(72vw,15.5rem)] md:max-w-[16.5rem] lg:max-w-[18.5rem]',
+        className,
+      )}
       role="img"
       aria-label={label}
     >

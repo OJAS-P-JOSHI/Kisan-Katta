@@ -57,14 +57,14 @@ export function LoginCard({
         <label htmlFor="mobile" className="mb-2 block text-sm font-medium text-ink">
           {t('auth.login.mobileLabel')}
         </label>
-        <div className="flex items-stretch gap-2">
+        <div className="flex min-w-0 items-stretch gap-2">
           <span
-            className="flex min-h-12 items-center rounded-xl border border-border bg-cream px-3 text-base font-semibold text-forest-900"
+            className="flex min-h-12 shrink-0 items-center rounded-xl border border-border bg-cream px-3 text-base font-semibold text-forest-900"
             aria-hidden
           >
             {COUNTRY_CODE}
           </span>
-          <div className="relative flex-1">
+          <div className="relative min-w-0 flex-1">
             <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Controller
               control={control}

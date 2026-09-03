@@ -38,14 +38,14 @@ export function QuickFeaturesSection() {
           whileInView="visible"
           viewport={{ once: true, margin: '-40px' }}
           variants={staggerContainer}
-          className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5"
         >
           {quickFeatures.map(({ icon: Icon, key, marathi: mr }) => (
             <motion.li
               key={key}
               variants={fadeUp}
               transition={{ duration: 0.45, ease: premiumEase }}
-              className="w-[8.5rem] shrink-0 snap-start sm:w-auto"
+              className="min-w-0 last:col-span-2 md:last:col-span-1 lg:last:col-span-1"
             >
               <article className="h-full rounded-2xl border border-border/50 bg-white p-4 shadow-soft transition-transform duration-300 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-forest-50 text-forest-700">

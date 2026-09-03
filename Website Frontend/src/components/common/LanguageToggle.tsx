@@ -26,7 +26,10 @@ export function LanguageToggle({ light = false, className }: LanguageToggleProps
       aria-label="Language selection"
     >
       <Globe
-        className={cn('ml-2 h-3.5 w-3.5 shrink-0', light ? 'text-white/80' : 'text-forest-700')}
+        className={cn(
+          'ml-1.5 hidden h-3.5 w-3.5 shrink-0 min-[380px]:inline sm:ml-2',
+          light ? 'text-white/80' : 'text-forest-700',
+        )}
         aria-hidden
       />
       {locales.map(({ code, label }) => {
@@ -38,7 +41,7 @@ export function LanguageToggle({ light = false, className }: LanguageToggleProps
             onClick={() => setLocale(code as Locale)}
             aria-pressed={isActive}
             className={cn(
-              'touch-target relative min-h-9 rounded-full px-2.5 text-xs font-semibold transition-colors duration-300 sm:px-3 sm:text-sm',
+              'touch-target relative min-h-9 rounded-full px-2 text-xs font-semibold transition-colors duration-300 sm:px-3 sm:text-sm',
               code === 'mr' && 'font-marathi',
               isActive
                 ? 'text-forest-900'

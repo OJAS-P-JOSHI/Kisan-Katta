@@ -30,7 +30,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <dt className="shrink-0 text-xs font-medium uppercase tracking-wide text-steel">
         {label}
       </dt>
-      <dd className="text-right text-sm font-medium text-ink">{value}</dd>
+      <dd className="min-w-0 break-words text-right text-sm font-medium text-ink">{value}</dd>
     </div>
   )
 }

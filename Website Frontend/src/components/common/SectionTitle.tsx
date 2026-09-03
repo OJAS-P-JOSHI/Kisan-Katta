@@ -43,7 +43,7 @@ export function SectionTitle({
           {eyebrow}
         </span>
       )}
-      <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl md:text-4xl lg:text-5xl">
+      <h2 className="text-pretty text-2xl font-bold leading-snug tracking-tight text-ink sm:text-3xl md:text-4xl lg:text-5xl">
         {title}
       </h2>
       {marathiTitle && locale === 'en' && (
@@ -138,7 +138,7 @@ export function PageIntro({
               {kicker}
             </span>
           )}
-          <h1 className="text-[1.75rem] font-bold tracking-tight text-ink sm:text-4xl md:text-5xl">
+          <h1 className="text-pretty text-[1.75rem] font-bold leading-snug tracking-tight text-ink sm:text-4xl md:text-5xl">
             {title}
           </h1>
           {marathiTitle && locale === 'en' && (

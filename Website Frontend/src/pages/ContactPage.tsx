@@ -29,7 +29,7 @@ export function ContactPage() {
       />
 
       <section className="section-padding !pt-8 bg-cream">
-        <div className="container-wide grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="container-wide grid min-w-0 gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div
             initial="hidden"
             whileInView="visible"

@@ -67,7 +67,7 @@ export function MobileBottomCTA({
             <Link
               to="/become-gram-sahakari"
               className={cn(
-                'flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-forest-900 px-4 text-sm font-semibold text-white transition-transform active:scale-[0.98] motion-reduce:active:scale-100',
+                'flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl bg-forest-900 px-4 text-center text-sm font-semibold leading-snug text-white transition-transform active:scale-[0.98] motion-reduce:active:scale-100',
                 locale === 'mr' && 'font-marathi',
               )}
             >

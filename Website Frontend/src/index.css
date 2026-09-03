@@ -100,7 +100,7 @@
   }
 
   .container-wide {
-    @apply mx-auto w-full max-w-7xl;
+    @apply mx-auto w-full min-w-0 max-w-7xl;
   }
 
   .glass {

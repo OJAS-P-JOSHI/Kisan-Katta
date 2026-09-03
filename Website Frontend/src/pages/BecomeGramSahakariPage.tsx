@@ -61,13 +61,14 @@ export function BecomeGramSahakariPage() {
       </PageIntro>
 
       <section className="section-padding !pt-10 bg-cream">
-        <div className="container-wide grid gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="container-wide grid min-w-0 gap-10 lg:grid-cols-2 lg:gap-14">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
             transition={defaultTransition}
+            className="min-w-0"
           >
             <h2 className={cn('text-2xl font-bold text-ink sm:text-3xl', marathi && 'font-marathi')}>
               {t('become.whoTitle')}
@@ -80,13 +81,13 @@ export function BecomeGramSahakariPage() {
             >
               {t('become.whoBody')}
             </p>
-            <div className="mt-6 overflow-hidden rounded-3xl shadow-card ring-1 ring-border/40">
+            <div className="mt-6 w-full min-w-0 overflow-hidden rounded-3xl shadow-card ring-1 ring-border/40">
               <OptimizedImage
                 src={brandAssets.gramSahakari}
                 alt={t('gram.imageAlt')}
                 width={800}
                 height={1000}
-                className="aspect-[4/5] w-full object-cover object-top sm:aspect-video sm:object-center"
+                className="aspect-[4/5] h-auto w-full object-cover object-top sm:aspect-video sm:object-center"
               />
             </div>
           </motion.div>
@@ -96,6 +97,7 @@ export function BecomeGramSahakariPage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
+            className="min-w-0"
           >
             <h2
               className={cn(

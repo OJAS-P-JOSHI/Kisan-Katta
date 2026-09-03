@@ -33,21 +33,22 @@ export function GramSahakariSection() {
           subtitle={t('section.gramSahakari.subtitle')}
         />
 
-        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="grid min-w-0 items-start gap-10 lg:grid-cols-2 lg:gap-14">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-40px' }}
             variants={fadeUp}
             transition={defaultTransition}
+            className="min-w-0 w-full"
           >
-            <div className="relative overflow-hidden rounded-3xl shadow-card ring-1 ring-forest-900/5">
+            <div className="relative w-full min-w-0 overflow-hidden rounded-3xl shadow-card ring-1 ring-forest-900/5">
               <OptimizedImage
                 src={brandAssets.gramSahakari}
                 alt={t('gram.imageAlt')}
                 width={800}
                 height={1000}
-                className="aspect-[4/5] w-full object-cover object-top sm:aspect-[5/4] lg:aspect-[4/5]"
+                className="aspect-[4/5] h-auto w-full object-cover object-top sm:aspect-[5/4] lg:aspect-[4/5]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-forest-900/80 via-forest-900/10 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-7">
@@ -62,7 +63,7 @@ export function GramSahakariSection() {
             viewport={{ once: true, margin: '-40px' }}
             variants={fadeUp}
             transition={{ ...defaultTransition, delay: 0.08 }}
-            className="space-y-8"
+            className="min-w-0 space-y-8"
           >
             <div>
               <h3

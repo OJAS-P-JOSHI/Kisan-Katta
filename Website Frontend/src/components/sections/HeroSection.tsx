@@ -167,27 +167,27 @@ export function HeroSection() {
       {/* ---- Mobile overlays: strong bottom-up scrim for lower-half copy ---- */}
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-forest-900/55 to-transparent sm:hidden"
+        className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-forest-900/55 to-transparent lg:hidden"
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,33,19,0.94)_0%,rgba(14,33,19,0.78)_28%,rgba(14,33,19,0.32)_54%,transparent_78%)] sm:hidden"
+        className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,33,19,0.94)_0%,rgba(14,33,19,0.78)_28%,rgba(14,33,19,0.32)_54%,transparent_78%)] lg:hidden"
       />
 
       {/* ---- Desktop overlays: cinematic directional lighting & depth ---- */}
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-forest-900/80 via-forest-900/30 to-transparent sm:block" />
-      <div className="absolute inset-0 hidden bg-gradient-to-t from-forest-900/75 via-transparent to-forest-900/30 sm:block" />
-      <div className="absolute inset-0 hidden bg-[radial-gradient(125%_125%_at_50%_45%,transparent_42%,rgba(10,33,19,0.6)_100%)] sm:block" />
+      <div className="absolute inset-0 hidden bg-gradient-to-r from-forest-900/80 via-forest-900/30 to-transparent lg:block" />
+      <div className="absolute inset-0 hidden bg-gradient-to-t from-forest-900/75 via-transparent to-forest-900/30 lg:block" />
+      <div className="absolute inset-0 hidden bg-[radial-gradient(125%_125%_at_50%_45%,transparent_42%,rgba(10,33,19,0.6)_100%)] lg:block" />
 
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute -left-24 top-1/4 hidden h-96 w-96 rounded-full bg-forest-500/25 blur-3xl sm:block"
+        className="pointer-events-none absolute -left-24 top-1/4 hidden h-96 w-96 rounded-full bg-forest-500/25 blur-3xl lg:block"
         animate={reduced ? undefined : { opacity: [0.35, 0.6, 0.35], scale: [1, 1.08, 1] }}
         transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute right-[8%] top-[12%] hidden h-80 w-80 rounded-full bg-gold-400/25 blur-3xl sm:block"
+        className="pointer-events-none absolute right-[8%] top-[12%] hidden h-80 w-80 rounded-full bg-gold-400/25 blur-3xl lg:block"
         animate={reduced ? undefined : { opacity: [0.3, 0.55, 0.3], scale: [1, 1.12, 1] }}
         transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       />
@@ -195,7 +195,7 @@ export function HeroSection() {
       <LeafField reduced={reduced} />
 
       {/* Smooth transition into the next section (desktop only) */}
-      <div className="absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-b from-transparent to-cream sm:block" />
+      <div className="absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-b from-transparent to-cream lg:block" />
 
       {floatingCards.map((card) => (
         <FloatingCard
@@ -212,11 +212,11 @@ export function HeroSection() {
       {/* ============ MOBILE HERO (dedicated, simplified) ============ */}
       <div
         className={cn(
-          'relative flex min-h-[100dvh] flex-col justify-end px-5 pb-36 pt-24 sm:hidden',
+          'relative flex min-h-[100dvh] flex-col justify-end px-5 pb-36 pt-24 md:px-8 md:pb-28 lg:hidden',
           marathi && 'font-marathi',
         )}
       >
-        <motion.div initial="hidden" animate="visible" variants={heroStagger} className="max-w-[22rem]">
+        <motion.div initial="hidden" animate="visible" variants={heroStagger} className="max-w-[22rem] md:max-w-xl">
           <motion.span
             variants={heroItem}
             className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-md"
@@ -227,7 +227,7 @@ export function HeroSection() {
 
           <motion.h1
             variants={heroItem}
-            className="mt-5 text-[1.75rem] font-bold leading-[1.18] tracking-tight text-white drop-shadow-[0_2px_16px_rgba(10,33,19,0.5)]"
+            className="mt-5 text-[1.75rem] font-bold leading-[1.18] tracking-tight text-pretty text-white drop-shadow-[0_2px_16px_rgba(10,33,19,0.5)] md:text-4xl md:leading-tight"
           >
             {t('hero.headline')}
           </motion.h1>
@@ -240,19 +240,19 @@ export function HeroSection() {
 
           <motion.p
             variants={heroItem}
-            className="mt-4 max-w-[20.5rem] text-[15px] leading-relaxed text-white/88"
+            className="mt-4 max-w-[20.5rem] text-[15px] leading-relaxed text-white/88 md:max-w-lg md:text-base"
           >
             {t('hero.mobileSubheadline')}
           </motion.p>
 
-          <motion.div variants={heroItem} className="mt-8 flex flex-col gap-3">
-            <Button asChild size="lg" variant="glow" className="w-full">
+          <motion.div variants={heroItem} className="mt-8 flex flex-col gap-3 md:max-w-lg md:flex-row">
+            <Button asChild size="lg" variant="glow" className="w-full md:w-auto">
               <Link to="/become-gram-sahakari">
                 {t('hero.cta.gramSahakari')}
                 <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="glass" className="w-full">
+            <Button asChild size="lg" variant="glass" className="w-full md:w-auto">
               <a href="/#download">
                 <Download className="h-5 w-5" />
                 {t('hero.cta.download')}
@@ -284,7 +284,7 @@ export function HeroSection() {
       {/* ============ DESKTOP HERO ============ */}
       <div
         className={cn(
-          'container-wide relative hidden min-h-[100dvh] flex-col justify-center px-5 pt-28 sm:flex',
+          'container-wide relative hidden min-h-[100dvh] flex-col justify-center px-5 pt-28 lg:flex',
           marathi && 'font-marathi',
         )}
       >

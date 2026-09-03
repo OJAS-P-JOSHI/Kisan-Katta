@@ -46,7 +46,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-forest-900 text-white">
       <div className="container-wide section-padding !py-12 sm:!py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+        <div className="grid min-w-0 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <BrandLogo size="lg" />
             <p
