@@ -2,9 +2,10 @@ import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
 import { EmptyState } from '@/components/EmptyState';
-import { spacing, typography, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 import { assistanceStrings } from '../assistance.strings';
+import { saath, saathText } from '../assistance.ui';
 
 type AssistanceStateViewProps = {
   title: string;
@@ -18,11 +19,10 @@ export function AssistanceLoadingView({
 }: {
   message?: string;
 }) {
-  const theme = useAppTheme();
   return (
-    <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
-      <ActivityIndicator animating size="large" color={theme.colors.primary} />
-      <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>{message}</Text>
+    <View style={[styles.centered, { backgroundColor: saath.cream }]}>
+      <ActivityIndicator animating size="large" color={saath.primary} />
+      <Text style={[saathText.heroSubtitle, { color: saath.body }]}>{message}</Text>
     </View>
   );
 }
@@ -32,9 +32,8 @@ export function AssistanceErrorView({
   message,
   onAction,
 }: AssistanceStateViewProps & { onAction?: () => void }) {
-  const theme = useAppTheme();
   return (
-    <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.centered, { backgroundColor: 'transparent' }]}>
       <EmptyState
         icon="alert-circle-outline"
         title={title}

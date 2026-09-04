@@ -11,9 +11,11 @@ import {
  */
 export const assistanceStrings = {
   feed: {
-    title: 'शेतकरी साथ',
-    subtitle: 'अडचणीत असलेल्याला साथ द्या',
+    title: 'साथ',
+    subtitle: 'शेतकरी ते शेतकरी, एकमेकांच्या साथीने अधिक सक्षम!',
     searchPlaceholder: 'गाव, जिल्हा किंवा अडचण शोधा…',
+    searchA11y: 'गाव, जिल्हा किंवा अडचण शोधा',
+    searchClearA11y: 'शोध साफ करा',
     createRequest: 'मदत मागा',
     myRequests: 'माझ्या विनंत्या',
     sortNewest: 'नवीन',

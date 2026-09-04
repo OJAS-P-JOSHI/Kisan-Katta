@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -42,6 +42,16 @@ function RemoteImageComponent({
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [reloadKey, setReloadKey] = useState(0);
 
+  const imageSource = useMemo(() => ({ uri: displayUri }), [displayUri]);
+  const imageStyle = useMemo(
+    () => StyleSheet.flatten([styles.image, style]),
+    [style],
+  );
+  const containerStyles = useMemo(
+    () => [styles.container, { backgroundColor: theme.colors.surfaceVariant }, containerStyle],
+    [theme.colors.surfaceVariant, containerStyle],
+  );
+
   useEffect(() => {
     setStatus('loading');
   }, [displayUri, reloadKey]);
@@ -50,24 +60,25 @@ function RemoteImageComponent({
     setReloadKey((key) => key + 1);
   }, []);
 
+  const handleLoad = useCallback(() => {
+    setStatus('loaded');
+  }, []);
+
+  const handleError = useCallback(() => {
+    setStatus('error');
+  }, []);
+
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.colors.surfaceVariant },
-        containerStyle,
-      ]}
-    >
+    <View style={containerStyles}>
       {status !== 'error' ? (
         <Image
           key={`${displayUri}-${reloadKey}`}
-          source={{ uri: displayUri }}
-          style={[styles.image, style]}
+          source={imageSource}
+          style={imageStyle}
           resizeMode={resizeMode}
           accessibilityLabel={accessibilityLabel}
-          onLoadStart={() => setStatus('loading')}
-          onLoad={() => setStatus('loaded')}
-          onError={() => setStatus('error')}
+          onLoad={handleLoad}
+          onError={handleError}
         />
       ) : null}
 

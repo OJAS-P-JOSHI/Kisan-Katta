@@ -1,7 +1,10 @@
 import { memo, useEffect, useState } from 'react';
-import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Animated, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
-import { cardSurface, palette, radius, spacing } from '@/theme';
+import { radius, spacing } from '@/theme';
+
+import { assistanceStrings } from '../assistance.strings';
+import { saath, saathCard, saathImageSize } from '../assistance.ui';
 
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
   const [opacity] = useState(() => new Animated.Value(0.3));
@@ -19,23 +22,25 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 
   return (
     <Animated.View
-      style={[{ backgroundColor: palette.mist, borderRadius: radius.md, opacity }, style]}
+      style={[{ backgroundColor: saath.disabled, borderRadius: radius.md, opacity }, style]}
     />
   );
 });
 
-/** Placeholder matching Marketplace ListingCard / HelpRequestCard horizontal layout. */
 const HelpRequestCardSkeleton = memo(function HelpRequestCardSkeleton() {
+  const { width } = useWindowDimensions();
+  const imageSize = saathImageSize(width);
+
   return (
-    <View style={[styles.card, cardSurface]}>
+    <View style={saathCard}>
       <View style={styles.cardRow}>
-        <SkeletonBox style={styles.thumb} />
+        <SkeletonBox style={{ width: imageSize, height: imageSize, borderRadius: 16 }} />
         <View style={styles.content}>
-          <SkeletonBox style={styles.title} />
           <SkeletonBox style={styles.badge} />
-          <SkeletonBox style={styles.support} />
+          <SkeletonBox style={styles.title} />
           <SkeletonBox style={styles.place} />
           <SkeletonBox style={styles.meta} />
+          <SkeletonBox style={styles.support} />
         </View>
       </View>
     </View>
@@ -48,7 +53,7 @@ type HelpRequestSkeletonProps = {
 
 export function HelpRequestSkeleton({ count = 3 }: HelpRequestSkeletonProps) {
   return (
-    <View style={styles.root} accessibilityLabel="Loading">
+    <View style={styles.root} accessibilityLabel={assistanceStrings.feed.loading}>
       {Array.from({ length: count }).map((_, index) => (
         <HelpRequestCardSkeleton key={index} />
       ))}
@@ -58,13 +63,11 @@ export function HelpRequestSkeleton({ count = 3 }: HelpRequestSkeletonProps) {
 
 const styles = StyleSheet.create({
   root: { gap: spacing.md },
-  card: { backgroundColor: palette.white },
   cardRow: { flexDirection: 'row', padding: spacing.md, gap: spacing.md },
-  thumb: { width: 96, height: 96, borderRadius: radius.md },
   content: { flex: 1, gap: spacing.xs, justifyContent: 'center' },
-  title: { height: 18, width: '90%' },
   badge: { height: 22, width: 72, borderRadius: radius.pill },
-  support: { height: 18, width: '55%', marginTop: spacing.xs },
+  title: { height: 18, width: '90%' },
   place: { height: 14, width: '70%' },
   meta: { height: 12, width: '40%' },
+  support: { height: 32, width: '100%', borderRadius: radius.pill, marginTop: spacing.xs },
 });

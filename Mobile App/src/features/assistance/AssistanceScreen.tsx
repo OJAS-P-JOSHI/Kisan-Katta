@@ -1,23 +1,33 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, FAB, IconButton, Searchbar, Snackbar, Text } from 'react-native-paper';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { ActivityIndicator, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { spacing, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 import { SEARCH_DEBOUNCE_MS } from './assistance.constants';
 import { assistanceStrings } from './assistance.strings';
 import type { HelpRequest, HelpRequestSortOption } from './assistance.types';
+import { saath, saathPadX, saathShadow, saathText } from './assistance.ui';
 import {
   AssistanceEmptyView,
   AssistanceErrorView,
-  AssistanceLoadingView,
 } from './components/AssistanceStateViews';
+import { AssistanceHero } from './components/AssistanceHero';
 import { AssistanceInfoSheet } from './components/AssistanceInfoSheet';
+import { AssistanceSearchField } from './components/AssistanceSearchField';
 import { AssistanceSortChips } from './components/AssistanceSortChips';
 import { HelpRequestCard } from './components/HelpRequestCard';
+import { HelpRequestSkeleton } from './components/HelpRequestSkeleton';
 import { useDebouncedValue } from './hooks/useDebouncedValue';
 import { useHelpRequestActions } from './hooks/useHelpRequestActions';
 import { useMyAssistanceSummary } from './hooks/useMyAssistanceSummary';
@@ -27,13 +37,14 @@ const CREATE_HREF = '/assistance-create' as Href;
 const MY_REQUESTS_HREF = '/assistance-my-requests' as Href;
 
 /**
- * Assistance public feed — layout, search, chips, list spacing, and loading
- * states mirror Marketplace `ListingsBrowse`.
+ * Assistance public feed. Search, sort, pagination, support, quota, and
+ * navigation are unchanged — this file restyles the main साथ experience.
  */
 export default function AssistanceScreen() {
-  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const router = useRouter();
+  const padX = saathPadX(width);
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState<HelpRequestSortOption>('newest');
   const [snackbar, setSnackbar] = useState<string | null>(null);
@@ -76,7 +87,7 @@ export default function AssistanceScreen() {
       const message = await actions.support(request);
       if (message) setSnackbar(message);
     },
-    [actions],
+    [actions, setSnackbar],
   );
 
   const handleCreatePress = useCallback(() => {
@@ -85,11 +96,15 @@ export default function AssistanceScreen() {
       return;
     }
     router.push(CREATE_HREF);
-  }, [router, summary.data.canCreate]);
+  }, [router, setSnackbar, summary.data.canCreate]);
 
   const handleEndReached = useCallback(() => {
     if (hasMore) loadMore();
   }, [hasMore, loadMore]);
+
+  const handleMyRequests = useCallback(() => {
+    router.push(MY_REQUESTS_HREF);
+  }, [router]);
 
   const renderCountRef = useRef(0);
 
@@ -134,73 +149,49 @@ export default function AssistanceScreen() {
     sort,
   ]);
 
-  if (feed.loading) {
-    return <AssistanceLoadingView />;
-  }
-
-  if (feed.error && feed.requests.length === 0) {
-    return (
-      <AssistanceErrorView
-        title={assistanceStrings.feed.errorTitle}
-        message={feed.error}
-        onAction={refreshFeed}
-      />
-    );
-  }
-
   const emptyMessage = debouncedSearch.trim()
     ? assistanceStrings.feed.searchEmptyMessage
     : assistanceStrings.feed.emptyMessage;
 
   const fabDisabled = summary.loading || !!summary.error || !summary.data.canCreate;
+  const listBottomPad = spacing.xxl * 2 + Math.max(insets.bottom, 0);
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.searchWrap, { paddingTop: insets.top + spacing.sm }]}>
-        <View style={styles.toolbar}>
-          <IconButton
-            icon="clipboard-list-outline"
-            size={22}
-            iconColor={theme.colors.primary}
-            onPress={() => router.push(MY_REQUESTS_HREF)}
-            style={styles.toolbarButton}
-            accessibilityLabel={assistanceStrings.feed.myRequests}
-          />
-          <IconButton
-            icon="information-outline"
-            size={22}
-            iconColor={theme.colors.onSurfaceVariant}
-            onPress={() => setInfoVisible(true)}
-            style={styles.toolbarButton}
-            accessibilityLabel={assistanceStrings.feed.infoA11y}
-          />
+  const listBody = () => {
+    if (feed.loading) {
+      return (
+        <View style={[styles.skeletonWrap, { paddingHorizontal: padX }]}>
+          <HelpRequestSkeleton count={3} />
         </View>
+      );
+    }
 
-        <Searchbar
-          placeholder={assistanceStrings.feed.searchPlaceholder}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={[styles.searchbar, { backgroundColor: theme.colors.surface }]}
-          inputStyle={styles.searchInput}
-          icon={() => (
-            <MaterialCommunityIcons name="magnify" size={22} color={theme.colors.onSurfaceVariant} />
-          )}
+    if (feed.error && feed.requests.length === 0) {
+      return (
+        <AssistanceErrorView
+          title={assistanceStrings.feed.errorTitle}
+          message={feed.error}
+          onAction={refreshFeed}
         />
-      </View>
+      );
+    }
 
-      <AssistanceSortChips selected={sort} onSelect={setSort} />
-
+    return (
       <FlatList
         data={feed.requests}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        style={styles.list}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingHorizontal: padX, paddingBottom: listBottomPad },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={feed.refreshing}
             onRefresh={refreshFeed}
-            colors={[theme.colors.primary]}
+            colors={[saath.primary]}
+            tintColor={saath.primary}
           />
         }
         onEndReached={handleEndReached}
@@ -216,8 +207,8 @@ export default function AssistanceScreen() {
         ListFooterComponent={
           feed.loadingMore ? (
             <View style={styles.footer}>
-              <ActivityIndicator animating color={theme.colors.primary} />
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <ActivityIndicator animating color={saath.primary} />
+              <Text variant="bodySmall" style={{ color: saath.muted }}>
                 {assistanceStrings.feed.loadMore}
               </Text>
             </View>
@@ -227,32 +218,55 @@ export default function AssistanceScreen() {
         }
         ListHeaderComponent={
           feed.error ? (
-            <Text
-              variant="bodySmall"
-              style={{ color: theme.colors.error, marginBottom: spacing.sm }}
-            >
+            <Text variant="bodySmall" style={styles.inlineError}>
               {feed.error}
             </Text>
           ) : null
         }
       />
+    );
+  };
 
-      <FAB
-        icon="plus"
-        label={assistanceStrings.feed.createRequest}
+  return (
+    <View style={styles.container}>
+      <AssistanceHero onMyRequests={handleMyRequests} onInfo={() => setInfoVisible(true)} />
+      <AssistanceSearchField value={searchQuery} onChangeText={setSearchQuery} />
+      <AssistanceSortChips selected={sort} onSelect={setSort} />
+
+      {listBody()}
+
+      <Pressable
         onPress={handleCreatePress}
         disabled={fabDisabled}
-        style={[
+        accessibilityRole="button"
+        accessibilityLabel={assistanceStrings.feed.createRequest}
+        accessibilityState={{ disabled: fabDisabled }}
+        style={({ pressed }) => [
           styles.fab,
           {
-            bottom: insets.bottom + spacing.md,
-            backgroundColor: fabDisabled
-              ? theme.colors.surfaceDisabled
-              : theme.colors.primary,
+            bottom: spacing.md,
+            right: padX,
+            backgroundColor: fabDisabled ? saath.disabled : saath.primary,
           },
+          pressed && !fabDisabled && styles.fabPressed,
         ]}
-        color={theme.colors.onPrimary}
-      />
+      >
+        <MaterialCommunityIcons
+          name="plus"
+          size={22}
+          color={fabDisabled ? saath.muted : saath.white}
+        />
+        <Text
+          style={[
+            saathText.supportAction,
+            styles.fabLabel,
+            { color: fabDisabled ? saath.muted : saath.white },
+          ]}
+          maxFontSizeMultiplier={1.2}
+        >
+          {assistanceStrings.feed.createRequest}
+        </Text>
+      </Pressable>
 
       <AssistanceInfoSheet visible={infoVisible} onDismiss={() => setInfoVisible(false)} />
 
@@ -264,25 +278,27 @@ export default function AssistanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  searchWrap: { paddingHorizontal: spacing.md, gap: spacing.xs },
-  toolbar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginHorizontal: -spacing.xs,
-  },
-  toolbarButton: { margin: 0, width: 40, height: 40 },
-  searchbar: { borderRadius: 12, elevation: 0 },
-  searchInput: { minHeight: 0 },
+  container: { flex: 1, backgroundColor: saath.cream },
+  skeletonWrap: { flex: 1, paddingTop: spacing.xs },
+  list: { flex: 1 },
   listContent: {
-    padding: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xxl * 2,
+    paddingTop: spacing.xs,
     gap: spacing.md,
     flexGrow: 1,
   },
   footer: { alignItems: 'center', paddingVertical: spacing.md, gap: spacing.xs },
   footerSpacer: { height: spacing.xl },
-  fab: { position: 'absolute', right: spacing.md },
+  fab: {
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 52,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 26,
+    ...saathShadow.card,
+  },
+  fabPressed: { opacity: 0.9 },
+  fabLabel: { fontSize: 15, lineHeight: 20 },
+  inlineError: { color: saath.error, marginBottom: spacing.sm },
 });
