@@ -1,84 +1,83 @@
 import { StyleSheet } from 'react-native';
 
-import { palette } from '@/theme';
+import { palette, radius, spacing } from '@/theme';
 
 /** Bottom navigation design tokens — scoped to tab bar only. */
 
 export const tabBarColors = {
-  outer: 'transparent',
-  rim: '#E8E2D4',
-  surface: 'rgba(255, 255, 255, 0.96)',
-  surfaceTint: 'rgba(240, 248, 237, 0.55)',
-  surfaceBorder: 'rgba(46, 125, 50, 0.11)',
+  outer: palette.sand,
+  surface: palette.white,
+  surfaceBorder: 'rgba(46, 125, 50, 0.12)',
   pill: palette.green700,
-  pillHighlight: 'rgba(255, 255, 255, 0.22)',
-  pillBorder: 'rgba(255, 255, 255, 0.18)',
-  pillGlow: 'rgba(46, 125, 50, 0.28)',
-  onPill: '#FFFFFF',
-  onPillMuted: 'rgba(255, 255, 255, 0.88)',
+  onPill: palette.white,
   active: palette.green700,
-  activeIcon: palette.green900,
-  activeLabel: palette.green900,
-  inactive: '#8B9489',
-  inactiveLabel: '#7A8378',
-  inactiveMuted: 'rgba(139, 148, 137, 0.72)',
-  shadow: '#1A2418',
-  highlight: 'rgba(255, 255, 255, 0.92)',
-} as const;
-
-/** Active icon pop — scale peaks then settles; box sized to fit peak without clipping. */
-export const tabBarAnim = {
-  iconStartScale: 0.92,
-  iconPeakScale: 1.08,
-  iconSettleScale: 1.04,
-  iconInactiveScale: 0.96,
-  iconLiftPeak: -1,
-  iconLiftSettle: 0,
-  popDurationMs: 150,
-  settleFriction: 9,
-  settleTension: 140,
-  fadeOutMs: 150,
-  pillArriveScale: 0.94,
+  inactive: palette.steel,
+  inactiveLabel: palette.steel,
+  shadow: palette.ink,
 } as const;
 
 export const tabBarTokens = {
   /** Must match slot content — avoids empty space inside BottomTabBar */
   height: 46,
   slotHeight: 46,
-  floatMarginH: 8,
-  floatMarginBottom: 3,
-  rimRadius: 22,
-  shellRadius: 20,
-  pillRadius: 12,
-  pillWidthRatio: 0.92,
+  floatMarginBottom: 6,
+  shellRadius: 22,
+  chipRadius: radius.md,
   iconSize: 20,
-  iconActiveSize: 18,
-  iconBox: 22,
+  iconBox: 20,
   touchTarget: 44,
-  labelSize: 8,
-  labelLineHeight: 10,
-  labelGap: 0,
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  shadowOffsetY: 4,
-  pillShadowOpacity: 0.28,
-  pillShadowRadius: 6,
+  labelSize: 10,
+  labelLineHeight: 12,
+  labelGap: 1,
+  shadowOpacity: 0.1,
+  shadowRadius: 14,
+  shadowOffsetY: 6,
   elevation: 6,
   horizontalInset: 2,
-  rimWidth: 1,
-  pillInsetV: 1,
-  shellPadV: 1,
+  shellPadV: 4,
+  maxWidth: 560,
 } as const;
+
+/** Density tweaks so six equal tabs stay readable on narrow phones. */
+export function tabBarAdapt(width: number) {
+  const narrow = width < 360;
+  const tablet = width >= 600;
+  const wideTablet = width >= 768;
+
+  return {
+    floatMarginH: wideTablet ? spacing.lg : tablet ? spacing.md : narrow ? 6 : 8,
+    horizontalInset: tablet ? spacing.sm : 2,
+    labelSize: width < 380 ? 9 : tabBarTokens.labelSize,
+    labelLineHeight: width < 380 ? 11 : tabBarTokens.labelLineHeight,
+    chipGap: narrow ? 1 : width < 400 ? 2 : 4,
+  } as const;
+}
 
 export const tabBarLayout = StyleSheet.create({
   item: {
     flex: 1,
+    minWidth: 0,
     height: tabBarTokens.slotHeight,
+    minHeight: tabBarTokens.touchTarget,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 0,
-    paddingHorizontal: 0,
+    alignItems: 'stretch',
+    padding: 0,
     zIndex: 2,
+    overflow: 'visible',
+  },
+  icon: {
+    width: '100%',
+    height: '100%',
+    alignSelf: 'stretch',
+    overflow: 'visible',
+  },
+  button: {
+    flex: 1,
+    width: '100%',
+    padding: 0,
+    margin: 0,
+    justifyContent: 'center',
+    alignItems: 'stretch',
     overflow: 'visible',
   },
 });

@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router/js-tabs';
-import type { ColorValue } from 'react-native';
+import { Tabs, type BottomTabBarButtonProps } from 'expo-router/js-tabs';
+import { Pressable, type ColorValue, type GestureResponderEvent } from 'react-native';
 
 import { PremiumTabBar } from '@/components/navigation/PremiumTabBar';
 import { tabBarLabels } from '@/components/navigation/tabBar.labels';
@@ -7,6 +7,28 @@ import { TabBarIcon, type TabIconPair } from '@/components/navigation/TabBarIcon
 import { tabBarColors, tabBarLayout, tabBarTokens } from '@/components/navigation/tabBar.theme';
 import { strings } from '@/constants';
 import { useAppTheme } from '@/theme';
+
+/** Drops default 5px tab padding so six labels can use the full equal slot. */
+function TabBarButton(props: BottomTabBarButtonProps) {
+  const onPress = (event: GestureResponderEvent) => {
+    props.onPress?.(event);
+  };
+
+  return (
+    <Pressable
+      testID={props.testID}
+      onPress={onPress}
+      onLongPress={props.onLongPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: props['aria-selected'] === true }}
+      accessibilityLabel={typeof props['aria-label'] === 'string' ? props['aria-label'] : undefined}
+      android_ripple={props.android_ripple ?? { borderless: true }}
+      style={[props.style, tabBarLayout.button]}
+    >
+      {props.children}
+    </Pressable>
+  );
+}
 
 type TabIconProps = { color: ColorValue; size: number; focused: boolean };
 
@@ -48,6 +70,8 @@ export default function TabsLayout() {
           shadowOpacity: 0,
         },
         tabBarItemStyle: tabBarLayout.item,
+        tabBarIconStyle: tabBarLayout.icon,
+        tabBarButton: TabBarButton,
         tabBarHideOnKeyboard: true,
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.onSurface,
