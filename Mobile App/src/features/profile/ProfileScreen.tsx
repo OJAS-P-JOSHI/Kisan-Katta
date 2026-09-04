@@ -11,9 +11,10 @@ import { getCropLabel, useCrops } from '@/features/crop';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { iconSize, palette, radius, spacing, typography } from '@/theme';
 
-import { ProfileActionSection } from './components/ProfileActionSection';
+import { ProfileActionSection, ProfileLogoutButton } from './components/ProfileActionSection';
 import { ProfileHero } from './components/ProfileHero';
 import { ProfileInfoCard } from './components/ProfileInfoCard';
+import { ProfileLegalSection } from './components/ProfileLegalSection';
 import { useMyProfile } from './hooks/useMyProfile';
 import { useProfilePhoto } from './hooks/useProfilePhoto';
 import { profileStrings } from './profile.strings';
@@ -163,8 +164,11 @@ export default function ProfileScreen() {
           <ProfileActionSection
             onEdit={() => router.push('/edit-profile')}
             onMembership={() => router.push('/subscription-billing' as Href)}
-            onLogout={() => setLogoutDialogVisible(true)}
           />
+
+          <ProfileLegalSection />
+
+          <ProfileLogoutButton onLogout={() => setLogoutDialogVisible(true)} />
         </View>
 
         <Portal>

@@ -379,7 +379,7 @@ export default function MarketplaceScreen() {
               paddingTop: insets.top + 8,
               paddingLeft: hPad,
               paddingRight: hPadRight,
-              paddingBottom: Math.round(headerH * 0.28),
+              paddingBottom: Math.round(headerH * 0.22),
             },
           ]}
         >
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     alignItems: 'center',
     gap: 8,
   },

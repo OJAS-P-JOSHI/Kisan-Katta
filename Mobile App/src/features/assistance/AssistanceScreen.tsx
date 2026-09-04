@@ -153,7 +153,6 @@ export default function AssistanceScreen() {
     ? assistanceStrings.feed.searchEmptyMessage
     : assistanceStrings.feed.emptyMessage;
 
-  const fabDisabled = summary.loading || !!summary.error || !summary.data.canCreate;
   const listBottomPad = spacing.xxl * 2 + Math.max(insets.bottom, 0);
 
   const listBody = () => {
@@ -229,42 +228,29 @@ export default function AssistanceScreen() {
 
   return (
     <View style={styles.container}>
-      <AssistanceHero onMyRequests={handleMyRequests} onInfo={() => setInfoVisible(true)} />
+      <AssistanceHero onInfo={() => setInfoVisible(true)} />
       <AssistanceSearchField value={searchQuery} onChangeText={setSearchQuery} />
       <AssistanceSortChips selected={sort} onSelect={setSort} />
 
       {listBody()}
 
       <Pressable
-        onPress={handleCreatePress}
-        disabled={fabDisabled}
+        onPress={handleMyRequests}
         accessibilityRole="button"
-        accessibilityLabel={assistanceStrings.feed.createRequest}
-        accessibilityState={{ disabled: fabDisabled }}
+        accessibilityLabel={assistanceStrings.feed.myRequests}
         style={({ pressed }) => [
           styles.fab,
-          {
-            bottom: spacing.md,
-            right: padX,
-            backgroundColor: fabDisabled ? saath.disabled : saath.primary,
-          },
-          pressed && !fabDisabled && styles.fabPressed,
+          { bottom: spacing.md, right: padX },
+          pressed && styles.fabPressed,
         ]}
       >
-        <MaterialCommunityIcons
-          name="plus"
-          size={22}
-          color={fabDisabled ? saath.muted : saath.white}
-        />
+        <MaterialCommunityIcons name="clipboard-list-outline" size={22} color={saath.white} />
         <Text
-          style={[
-            saathText.supportAction,
-            styles.fabLabel,
-            { color: fabDisabled ? saath.muted : saath.white },
-          ]}
+          style={[saathText.supportAction, styles.fabLabel, { color: saath.white }]}
+          numberOfLines={1}
           maxFontSizeMultiplier={1.2}
         >
-          {assistanceStrings.feed.createRequest}
+          {assistanceStrings.feed.myRequests}
         </Text>
       </Pressable>
 
@@ -296,6 +282,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: spacing.lg,
     borderRadius: 26,
+    backgroundColor: saath.primary,
     ...saathShadow.card,
   },
   fabPressed: { opacity: 0.9 },

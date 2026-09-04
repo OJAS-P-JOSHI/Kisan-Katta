@@ -10,14 +10,9 @@ import { profileStrings } from '../profile.strings';
 type ProfileActionSectionProps = {
   onEdit: () => void;
   onMembership: () => void;
-  onLogout: () => void;
 };
 
-export function ProfileActionSection({
-  onEdit,
-  onMembership,
-  onLogout,
-}: ProfileActionSectionProps) {
+export function ProfileActionSection({ onEdit, onMembership }: ProfileActionSectionProps) {
   const theme = useAppTheme();
 
   return (
@@ -48,20 +43,30 @@ export function ProfileActionSection({
       >
         {billingStrings.profileEntry}
       </Button>
-
-      <Button
-        mode="contained"
-        icon="logout"
-        onPress={onLogout}
-        buttonColor={theme.colors.errorContainer}
-        textColor={theme.colors.onErrorContainer}
-        style={[styles.button, buttonSurface]}
-        contentStyle={styles.content}
-        labelStyle={styles.label}
-      >
-        {strings.profile.logout}
-      </Button>
     </View>
+  );
+}
+
+type ProfileLogoutButtonProps = {
+  onLogout: () => void;
+};
+
+export function ProfileLogoutButton({ onLogout }: ProfileLogoutButtonProps) {
+  const theme = useAppTheme();
+
+  return (
+    <Button
+      mode="contained"
+      icon="logout"
+      onPress={onLogout}
+      buttonColor={theme.colors.errorContainer}
+      textColor={theme.colors.onErrorContainer}
+      style={[styles.button, buttonSurface]}
+      contentStyle={styles.content}
+      labelStyle={styles.label}
+    >
+      {strings.profile.logout}
+    </Button>
   );
 }
 

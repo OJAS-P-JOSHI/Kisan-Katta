@@ -24,6 +24,8 @@ type HelpRequestCardProps = {
   onSupport?: (request: HelpRequest) => void;
   /** Hidden on "My requests", where every row belongs to the viewer. */
   showActions?: boolean;
+  /** `mine` drops the loud owner badge and outer card chrome for the management list. */
+  variant?: 'feed' | 'mine';
 };
 
 /**
@@ -36,6 +38,7 @@ function HelpRequestCardComponent({
   onPress,
   onSupport,
   showActions = true,
+  variant = 'feed',
 }: HelpRequestCardProps) {
   const { width } = useWindowDimensions();
   const imageSize = saathImageSize(width);
@@ -60,9 +63,11 @@ function HelpRequestCardComponent({
       ? assistanceStrings.card.supportCount(request.supportCount)
       : assistanceStrings.card.supportCountEmpty;
 
+  const showOwnerBadge = variant === 'feed' && request.isOwner;
+
   return (
     <Pressable onPress={handlePress} style={({ pressed }) => [pressed && styles.pressed]}>
-      <View style={saathCard}>
+      <View style={variant === 'mine' ? styles.mineInner : saathCard}>
         <View style={styles.cardRow}>
           <View style={[styles.imageWrap, { width: imageSize, height: imageSize }]}>
             {imageUrl ? (
@@ -90,7 +95,7 @@ function HelpRequestCardComponent({
                 </Text>
               </View>
             ) : null}
-            {request.isOwner ? (
+            {showOwnerBadge ? (
               <View style={styles.ownerBadge}>
                 <Text numberOfLines={1} style={styles.ownerText}>
                   {assistanceStrings.card.myRequestBadge}
@@ -217,6 +222,9 @@ export const HelpRequestCard = memo(HelpRequestCardComponent);
 
 const styles = StyleSheet.create({
   pressed: { opacity: 0.94, transform: [{ scale: 0.99 }] },
+  mineInner: {
+    backgroundColor: saath.white,
+  },
   cardRow: {
     flexDirection: 'row',
     padding: spacing.md,

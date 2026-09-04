@@ -23,6 +23,10 @@ export const saath = {
   searchWashFocus: '#F7FBF7',
   inkShadow: palette.ink,
   error: palette.red700,
+  errorWash: palette.red100,
+  amber: palette.amber700,
+  amberWash: palette.amber100,
+  mist: palette.mist,
   disabled: palette.mist,
 } as const;
 

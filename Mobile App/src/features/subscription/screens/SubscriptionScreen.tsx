@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { strings } from '@/constants';
 import { useAuth } from '@/features/auth/context/AuthContext';
 
+import { PolicyLinkCard, PolicyLinkDivider, PolicyLinkRow, openPolicyUrl } from '../components/PolicyLinkRow';
 import { useSubscriptionPayment } from '../hooks/useSubscriptionPayment';
 import {
   SUBSCRIPTION_FEE_RUPEES,
@@ -87,49 +87,6 @@ function layoutFor(width: number, height: number, fontScale: number): Layout {
     titleSize: compact ? 18 : 20,
     priceSize: compact ? 36 : 40,
   };
-}
-
-async function openExternal(url: string): Promise<void> {
-  await Linking.openURL(url);
-}
-
-function LinkRow({
-  icon,
-  title,
-  hint,
-  onPress,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  title: string;
-  hint: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="link"
-      accessibilityLabel={title}
-      style={({ pressed }) => [styles.linkRow, pressed ? styles.linkPressed : null]}
-    >
-      <View style={styles.linkIcon}>
-        <MaterialCommunityIcons name={icon} size={20} color={C.primaryGreen} />
-      </View>
-      <View style={styles.linkText}>
-        <Text style={styles.linkTitle} maxFontSizeMultiplier={1.5}>
-          {title}
-        </Text>
-        <Text style={styles.linkHint} numberOfLines={2} maxFontSizeMultiplier={1.5}>
-          {hint}
-        </Text>
-      </View>
-      <MaterialCommunityIcons
-        name="chevron-right"
-        size={22}
-        color={C.brandGreen}
-        style={styles.linkChevron}
-      />
-    </Pressable>
-  );
 }
 
 /**
@@ -368,37 +325,37 @@ export default function SubscriptionScreen() {
             </Text>
           </View>
 
-          <View style={styles.linkCard}>
-            <LinkRow
+          <PolicyLinkCard>
+            <PolicyLinkRow
               icon="shield-outline"
               title={subscriptionStrings.privacyTitle}
               hint={subscriptionStrings.privacyHint}
-              onPress={() => void openExternal(SUBSCRIPTION_POLICY_URLS.privacy)}
+              onPress={() => void openPolicyUrl(SUBSCRIPTION_POLICY_URLS.privacy)}
             />
-            <View style={styles.linkDivider} />
-            <LinkRow
+            <PolicyLinkDivider />
+            <PolicyLinkRow
               icon="file-document-outline"
               title={subscriptionStrings.termsTitle}
               hint={subscriptionStrings.termsHint}
-              onPress={() => void openExternal(SUBSCRIPTION_POLICY_URLS.terms)}
+              onPress={() => void openPolicyUrl(SUBSCRIPTION_POLICY_URLS.terms)}
             />
-            <View style={styles.linkDivider} />
-            <LinkRow
+            <PolicyLinkDivider />
+            <PolicyLinkRow
               icon="cash-refund"
               title={subscriptionStrings.refundTitle}
               hint={subscriptionStrings.refundHint}
-              onPress={() => void openExternal(SUBSCRIPTION_POLICY_URLS.refund)}
+              onPress={() => void openPolicyUrl(SUBSCRIPTION_POLICY_URLS.refund)}
             />
-          </View>
+          </PolicyLinkCard>
 
-          <View style={[styles.linkCard, styles.contactCard]}>
-            <LinkRow
+          <PolicyLinkCard style={styles.contactCard}>
+            <PolicyLinkRow
               icon="headset"
               title={subscriptionStrings.contactTitle}
               hint={subscriptionStrings.contactHint}
-              onPress={() => void openExternal(SUBSCRIPTION_POLICY_URLS.contact)}
+              onPress={() => void openPolicyUrl(SUBSCRIPTION_POLICY_URLS.contact)}
             />
-          </View>
+          </PolicyLinkCard>
 
           <View style={styles.footerBrand}>
             <MaterialCommunityIcons name="leaf" size={14} color={C.primaryGreen} />
@@ -727,48 +684,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
   },
-  linkCard: {
-    borderWidth: 1,
-    borderColor: C.rowBorder,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: C.white,
-    width: '100%',
-    maxWidth: '100%',
-  },
   contactCard: { marginTop: 10 },
-  linkRow: {
-    minHeight: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 10,
-  },
-  linkPressed: { backgroundColor: C.paleGreen },
-  linkIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: C.paleGreen,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  linkText: { flex: 1, minWidth: 0 },
-  linkTitle: {
-    color: '#1A1C19',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  linkHint: {
-    marginTop: 2,
-    color: C.bodyGrey,
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  linkDivider: { height: StyleSheet.hairlineWidth, backgroundColor: C.rowBorder, marginLeft: 58 },
-  linkChevron: { flexShrink: 0 },
 
   footerBrand: {
     marginTop: 22,

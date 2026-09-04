@@ -11,7 +11,7 @@ const BOTTOM_FADE_STEPS = 14;
 const LEFT_FADE_STEPS = 8;
 
 export function headerBandHeight(insetTop: number): number {
-  return Math.round(Math.max(170, Math.min(190, insetTop + 138)));
+  return Math.round(Math.max(140, Math.min(158, insetTop + 108)));
 }
 
 type HeaderLandscapeStripProps = {

@@ -2,24 +2,21 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  HeaderLandscapeStrip,
-  headerBandHeight,
-} from '@/components/branding/HeaderLandscapeStrip';
+import { HeaderLandscapeStrip, headerBandHeight } from '@/components/branding/HeaderLandscapeStrip';
 import { mp } from '@/features/marketplace/marketplace.ui';
 
 import { assistanceStrings } from '../assistance.strings';
 
 type AssistanceHeroProps = {
-  onMyRequests: () => void;
   onInfo: () => void;
 };
 
 /**
  * Marketplace-home header structure with साथ copy. Scenic strip, height,
  * padding, typography, and icon chrome match MarketplaceScreen.
+ * My-requests lives with the create FAB — header only keeps the info action.
  */
-export function AssistanceHero({ onMyRequests, onInfo }: AssistanceHeroProps) {
+export function AssistanceHero({ onInfo }: AssistanceHeroProps) {
   const insets = useSafeAreaInsets();
   const { width, fontScale } = useWindowDimensions();
   const headerH = headerBandHeight(insets.top);
@@ -39,7 +36,7 @@ export function AssistanceHero({ onMyRequests, onInfo }: AssistanceHeroProps) {
           paddingTop: insets.top + 8,
           paddingLeft: padX + Math.max(insets.left, 0),
           paddingRight: padX + Math.max(insets.right, 0),
-          paddingBottom: Math.round(headerH * 0.28),
+          paddingBottom: Math.round(headerH * 0.22),
         },
       ]}
     >
@@ -54,11 +51,6 @@ export function AssistanceHero({ onMyRequests, onInfo }: AssistanceHeroProps) {
         >
           {assistanceStrings.feed.title}
         </Text>
-        <HeaderIconButton
-          icon="clipboard-list-outline"
-          label={assistanceStrings.feed.myRequests}
-          onPress={onMyRequests}
-        />
         <HeaderIconButton
           icon="information-outline"
           label={assistanceStrings.feed.infoA11y}
@@ -83,7 +75,7 @@ function HeaderIconButton({
   label,
   onPress,
 }: {
-  icon: 'clipboard-list-outline' | 'information-outline';
+  icon: 'information-outline';
   label: string;
   onPress: () => void;
 }) {
@@ -106,7 +98,7 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     alignItems: 'center',
     gap: 8,
   },

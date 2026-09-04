@@ -9,4 +9,5 @@ export const SUBSCRIPTION_POLICY_URLS = {
   terms: 'https://kisan-katta.vercel.app/terms-and-conditions',
   refund: 'https://kisan-katta.vercel.app/refund-policy',
   contact: 'https://kisan-katta.vercel.app/contact',
+  about: 'https://kisan-katta.vercel.app/about',
 } as const;

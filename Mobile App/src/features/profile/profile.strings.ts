@@ -32,6 +32,11 @@ export const profileStrings = {
     favoriteCrops: (count: number) => `${count} आवडती पिके`,
     editProfile: 'प्रोफाइल अपडेट करा',
   },
+  legal: {
+    title: 'कायदेशीर माहिती',
+    aboutTitle: 'आमच्याबद्दल',
+    aboutHint: 'Kissan Agrisathi आणि आमच्या संस्थापकांबद्दल',
+  },
   summary: {
     title: 'शेतकरी प्रोफाइल',
     subtitle: 'तुमची माहिती Kissan Agrisathi वर सुरक्षित आहे',

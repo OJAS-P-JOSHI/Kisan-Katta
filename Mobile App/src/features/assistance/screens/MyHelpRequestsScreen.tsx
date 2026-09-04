@@ -1,9 +1,19 @@
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Stack, useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Chip, Snackbar, Text } from 'react-native-paper';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { ActivityIndicator, Snackbar, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { radius, spacing, typography, buttonSurface, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 import {
   EDITABLE_HELP_REQUEST_STATUSES,
@@ -13,6 +23,7 @@ import {
 } from '../assistance.constants';
 import { assistanceStrings, getHelpRequestStatusLabel } from '../assistance.strings';
 import type { HelpRequest } from '../assistance.types';
+import { saath, saathCard, saathPadX, saathText } from '../assistance.ui';
 import {
   AssistanceEmptyView,
   AssistanceErrorView,
@@ -29,9 +40,51 @@ const FILTERS: MyRequestsStatusFilter[] = [STATUS_FILTER_ALL, ...HELP_REQUEST_ST
 
 const CREATE_HREF = '/assistance-create' as Href;
 
+const SCREEN_HEADER = {
+  title: assistanceStrings.myRequests.title,
+  headerShown: true,
+  headerTitleAlign: 'center' as const,
+  headerStyle: {
+    backgroundColor: saath.cream,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: saath.line,
+  },
+  headerShadowVisible: false,
+  headerTintColor: saath.heading,
+  headerTitleStyle: {
+    fontWeight: '700' as const,
+    fontSize: 17,
+    color: saath.heading,
+  },
+  headerBackTitleVisible: false,
+  contentStyle: { backgroundColor: saath.cream },
+};
+
+function filterChipColors(filter: MyRequestsStatusFilter, selected: boolean) {
+  if (!selected) {
+    return { backgroundColor: saath.white, borderColor: saath.line, color: saath.heading };
+  }
+
+  switch (filter) {
+    case 'PENDING_REVIEW':
+      return { backgroundColor: saath.amber, borderColor: saath.amber, color: saath.white };
+    case 'REJECTED':
+      return { backgroundColor: saath.error, borderColor: saath.error, color: saath.white };
+    case 'RESOLVED':
+    case 'ARCHIVED':
+      return { backgroundColor: saath.mist, borderColor: saath.mist, color: saath.heading };
+    case 'OPEN':
+    case 'ALL':
+    default:
+      return { backgroundColor: saath.primary, borderColor: saath.primary, color: saath.white };
+  }
+}
+
 /** The author's own requests across every status, with owner-only actions. */
 export default function MyHelpRequestsScreen() {
-  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const padX = saathPadX(width);
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<MyRequestsStatusFilter>(STATUS_FILTER_ALL);
   const [snackbar, setSnackbar] = useState<string | null>(null);
@@ -110,125 +163,197 @@ export default function MyHelpRequestsScreen() {
       const canEdit = (EDITABLE_HELP_REQUEST_STATUSES as readonly string[]).includes(item.status);
 
       return (
-        <View style={styles.itemBlock}>
-          <HelpRequestCard request={item} onPress={handleCardPress} showActions={false} />
+        <View style={styles.itemShell}>
+          <View style={styles.itemAccent} />
+          <View style={styles.itemBody}>
+            <HelpRequestCard
+              request={item}
+              onPress={handleCardPress}
+              showActions={false}
+              variant="mine"
+            />
 
-          <View style={styles.itemActions}>
-            {canEdit ? (
-              <Button
-                mode="outlined"
-                compact
-                icon="pencil"
-                onPress={() => router.push(`/assistance-edit/${item.id}` as Href)}
-                style={styles.itemActionButton}
+            <View style={styles.itemActions}>
+              {canEdit ? (
+                <Pressable
+                  onPress={() => router.push(`/assistance-edit/${item.id}` as Href)}
+                  disabled={lifecycle.loading}
+                  accessibilityRole="button"
+                  accessibilityLabel={assistanceStrings.detail.edit}
+                  style={({ pressed }) => [
+                    styles.actionBtn,
+                    styles.actionEdit,
+                    lifecycle.loading && styles.actionDisabled,
+                    pressed && !lifecycle.loading && styles.actionPressed,
+                  ]}
+                >
+                  <MaterialCommunityIcons name="pencil-outline" size={16} color={saath.heading} />
+                  <Text
+                    style={[saathText.supportAction, { color: saath.heading }]}
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={1.2}
+                  >
+                    {assistanceStrings.detail.edit}
+                  </Text>
+                </Pressable>
+              ) : null}
+
+              {item.status === 'OPEN' ? (
+                <Pressable
+                  onPress={() => lifecycle.openResolveDialog(item.id)}
+                  disabled={lifecycle.loading}
+                  accessibilityRole="button"
+                  accessibilityLabel={assistanceStrings.detail.markResolved}
+                  style={({ pressed }) => [
+                    styles.actionBtn,
+                    styles.actionResolve,
+                    lifecycle.loading && styles.actionDisabled,
+                    pressed && !lifecycle.loading && styles.actionPressed,
+                  ]}
+                >
+                  <MaterialCommunityIcons name="check-circle-outline" size={16} color={saath.primary} />
+                  <Text
+                    style={[saathText.supportAction, { color: saath.primary }]}
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={1.2}
+                  >
+                    {assistanceStrings.detail.markResolved}
+                  </Text>
+                </Pressable>
+              ) : null}
+
+              <Pressable
+                onPress={() => lifecycle.openDeleteDialog(item.id)}
                 disabled={lifecycle.loading}
+                accessibilityRole="button"
+                accessibilityLabel={assistanceStrings.detail.delete}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  styles.actionDelete,
+                  lifecycle.loading && styles.actionDisabled,
+                  pressed && !lifecycle.loading && styles.actionPressed,
+                ]}
               >
-                {assistanceStrings.detail.edit}
-              </Button>
-            ) : null}
-
-            {item.status === 'OPEN' ? (
-              <Button
-                mode="outlined"
-                compact
-                icon="check-circle-outline"
-                onPress={() => lifecycle.openResolveDialog(item.id)}
-                style={styles.itemActionButton}
-                disabled={lifecycle.loading}
-              >
-                {assistanceStrings.detail.markResolved}
-              </Button>
-            ) : null}
-
-            <Button
-              mode="text"
-              compact
-              icon="delete-outline"
-              textColor={theme.colors.error}
-              onPress={() => lifecycle.openDeleteDialog(item.id)}
-              disabled={lifecycle.loading}
-            >
-              {assistanceStrings.detail.delete}
-            </Button>
+                <MaterialCommunityIcons name="delete-outline" size={16} color={saath.error} />
+                <Text
+                  style={[saathText.supportAction, { color: saath.error }]}
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={1.2}
+                >
+                  {assistanceStrings.detail.delete}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       );
     },
-    [handleCardPress, lifecycle, router, theme.colors.error],
+    [handleCardPress, lifecycle, router],
   );
 
+  const createDisabled = summary.loading || !!summary.error || !summary.data.canCreate;
+
   if (list.loading && list.requests.length === 0) {
-    return <AssistanceLoadingView message={assistanceStrings.myRequests.loading} />;
+    return (
+      <>
+        <Stack.Screen options={SCREEN_HEADER} />
+        <AssistanceLoadingView message={assistanceStrings.myRequests.loading} />
+      </>
+    );
   }
 
   if (list.error && list.requests.length === 0) {
     return (
-      <AssistanceErrorView
-        title={assistanceStrings.feed.errorTitle}
-        message={list.error}
-        onAction={refreshList}
-      />
+      <>
+        <Stack.Screen options={SCREEN_HEADER} />
+        <View style={styles.page}>
+          <AssistanceErrorView
+            title={assistanceStrings.feed.errorTitle}
+            message={list.error}
+            onAction={refreshList}
+          />
+        </View>
+      </>
     );
   }
 
   const header = (
-    <View style={styles.header}>
-      <MyAssistanceSummaryCard summary={summary.data} />
-
-      <Button
-        mode="contained"
-        icon="hand-heart-outline"
-        onPress={handleCreatePress}
-        disabled={summary.loading || !!summary.error || !summary.data.canCreate}
-        style={styles.createButton}
-        contentStyle={styles.createButtonContent}
-      >
-        {assistanceStrings.feed.createRequest}
-      </Button>
+    <View style={styles.listHeader}>
+      <MyAssistanceSummaryCard
+        summary={summary.data}
+        onCreatePress={handleCreatePress}
+        createDisabled={createDisabled}
+      />
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterRow}
       >
-        {FILTERS.map((filter) => (
-          <Chip
-            key={filter}
-            selected={statusFilter === filter}
-            showSelectedCheck={false}
-            onPress={() => setStatusFilter(filter)}
-            style={[
-              styles.filterChip,
-              statusFilter === filter && { backgroundColor: theme.colors.primaryContainer },
-            ]}
-          >
-            {filter === STATUS_FILTER_ALL
+        {FILTERS.map((filter) => {
+          const selected = statusFilter === filter;
+          const tone = filterChipColors(filter, selected);
+          const label =
+            filter === STATUS_FILTER_ALL
               ? assistanceStrings.myRequests.filterAll
-              : getHelpRequestStatusLabel(filter)}
-          </Chip>
-        ))}
+              : getHelpRequestStatusLabel(filter);
+
+          return (
+            <Pressable
+              key={filter}
+              onPress={() => setStatusFilter(filter)}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              accessibilityLabel={label}
+              style={({ pressed }) => [
+                styles.filterChip,
+                {
+                  backgroundColor: tone.backgroundColor,
+                  borderColor: tone.borderColor,
+                },
+                pressed && styles.filterPressed,
+              ]}
+            >
+              <Text
+                style={[saathText.chip, { color: tone.color }]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
       {list.error && list.requests.length > 0 ? (
-        <Text style={[typography.caption, { color: theme.colors.error }]}>{list.error}</Text>
+        <Text style={[saathText.meta, { color: saath.error }]}>{list.error}</Text>
       ) : null}
     </View>
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={styles.page}>
+      <Stack.Screen options={SCREEN_HEADER} />
       <FlatList
         data={list.requests}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingHorizontal: padX,
+            paddingBottom: spacing.xl + Math.max(insets.bottom, 0),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
             refreshing={list.refreshing}
             onRefresh={handlePullRefresh}
-            colors={[theme.colors.primary]}
+            colors={[saath.primary]}
+            tintColor={saath.primary}
           />
         }
         onEndReached={handleEndReached}
@@ -244,8 +369,8 @@ export default function MyHelpRequestsScreen() {
         ListFooterComponent={
           list.loadingMore ? (
             <View style={styles.footer}>
-              <ActivityIndicator animating color={theme.colors.primary} />
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <ActivityIndicator animating color={saath.primary} />
+              <Text variant="bodySmall" style={{ color: saath.muted }}>
                 {assistanceStrings.feed.loadMore}
               </Text>
             </View>
@@ -282,19 +407,72 @@ export default function MyHelpRequestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  page: { flex: 1, backgroundColor: saath.cream },
   listContent: {
-    padding: spacing.md,
+    paddingTop: spacing.md,
     gap: spacing.md,
     flexGrow: 1,
   },
-  header: { gap: spacing.md },
-  createButton: { ...buttonSurface },
-  createButtonContent: { paddingVertical: spacing.xs },
-  filterRow: { gap: spacing.sm, paddingRight: spacing.md },
-  filterChip: { borderRadius: radius.pill },
-  itemBlock: { gap: spacing.xs },
-  itemActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
-  itemActionButton: { borderRadius: radius.sm },
+  listHeader: { gap: spacing.md },
+  filterRow: {
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingRight: spacing.md,
+  },
+  filterChip: {
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    minHeight: 36,
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  filterPressed: { opacity: 0.88 },
+  itemShell: {
+    ...saathCard,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  itemAccent: {
+    width: 4,
+    backgroundColor: saath.primary,
+  },
+  itemBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    paddingTop: 2,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: saath.line,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    minHeight: 40,
+    paddingHorizontal: spacing.sm + 2,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  actionEdit: {
+    backgroundColor: saath.white,
+    borderColor: saath.line,
+  },
+  actionResolve: {
+    backgroundColor: saath.wash,
+    borderColor: saath.washStrong,
+  },
+  actionDelete: {
+    backgroundColor: saath.errorWash,
+    borderColor: saath.errorWash,
+  },
+  actionDisabled: { opacity: 0.55 },
+  actionPressed: { opacity: 0.86 },
   footer: { alignItems: 'center', paddingVertical: spacing.md, gap: spacing.xs },
 });
