@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { PropsWithChildren } from 'react';
 
 import { api } from '@/services/api';
+import { isUnauthorizedError } from '@/utils';
 
 import { getMe } from '../services/auth.service';
 import * as authStorage from '../storage/authStorage';
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(async (): Promise<void> => {
-    await authStorage.deleteToken();
+    await authStorage.clearSession();
     applyAuthHeader(null);
     setToken(null);
     setUser(null);
@@ -50,10 +51,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     try {
       const me = await getMe();
       setUser(me);
+      await authStorage.setCachedUser(me);
       return me;
     } catch (error) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
-      if (status === 401) {
+      if (isUnauthorizedError(error)) {
         await logout();
       }
       return null;
@@ -82,15 +83,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
 
       applyAuthHeader(storedToken);
-      if (!cancelled) setToken(storedToken);
+      const cachedUser = await authStorage.getCachedUser();
+      if (!cancelled) {
+        setToken(storedToken);
+        if (cachedUser) setUser(cachedUser);
+      }
 
       try {
         const me = await getMe();
-        if (!cancelled) setUser(me);
-      } catch {
-        await authStorage.deleteToken();
-        applyAuthHeader(null);
-        if (!cancelled) setToken(null);
+        if (!cancelled) {
+          setUser(me);
+          await authStorage.setCachedUser(me);
+        }
+      } catch (error) {
+        if (isUnauthorizedError(error)) {
+          await authStorage.clearSession();
+          applyAuthHeader(null);
+          if (!cancelled) {
+            setToken(null);
+            setUser(null);
+          }
+        }
+        // Network / 5xx: keep the stored JWT (and cached profile if any).
       } finally {
         if (!cancelled) setIsLoading(false);
       }

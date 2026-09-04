@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
+import SplashScreen from '@/features/auth/screens/SplashScreen';
 import { assistanceStrings } from '@/features/assistance/assistance.strings';
 import { farmerPriceStrings } from '@/features/farmer-price/farmer-price.strings';
 import { marketplaceStrings } from '@/features/marketplace/marketplace.strings';
@@ -18,10 +19,16 @@ import { navigationTheme, paperTheme } from '@/theme';
  * Everyone else stays on the Auth Stack (splash → login → OTP → profile → paywall).
  */
 function RootNavigator() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   const subscriptionActive = user?.subscription?.isActive === true;
   const canEnterApp =
     isAuthenticated && user?.isProfileCompleted === true && subscriptionActive;
+
+  // Wait for SecureStore hydration so Expo Router cannot restore /mobile
+  // (or any auth screen) before we know whether a session exists.
+  if (isLoading) {
+    return <SplashScreen />;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,7 +21,8 @@ import { useAuth } from '../context/AuthContext';
  */
 export default function SplashScreen() {
   const theme = useAppTheme();
-  const { isLoading, isAuthenticated, user } = useAuth();
+  const { isLoading, isAuthenticated, user, refreshUser } = useAuth();
+  const profileRetryStarted = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -31,20 +32,30 @@ export default function SplashScreen() {
       return;
     }
 
-    if (user && !user.isProfileCompleted) {
+    // JWT restored but profile not loaded yet (offline / first hydrate).
+    // Stay on splash — do not treat this as logged out.
+    if (!user) {
+      if (!profileRetryStarted.current) {
+        profileRetryStarted.current = true;
+        void refreshUser();
+      }
+      return;
+    }
+
+    if (!user.isProfileCompleted) {
       router.replace('/complete-profile');
       return;
     }
 
-    if (user?.isProfileCompleted && user.subscription?.isActive !== true) {
+    if (user.subscription?.isActive !== true) {
       router.replace('/(auth)/subscription' as Href);
     }
-  }, [isLoading, isAuthenticated, user]);
+  }, [isLoading, isAuthenticated, user, refreshUser]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Image
-        source={require('@/assets/images/icon.png')}
+        source={require('@/assets/branding/logo-circle.png')}
         style={styles.logo}
         resizeMode="contain"
       />
