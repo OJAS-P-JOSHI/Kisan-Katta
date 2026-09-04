@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
-import { spacing, useAppTheme } from '@/theme';
+import { elevation, spacing, useAppTheme } from '@/theme';
 
 import { profileStrings } from '../profile.strings';
 
@@ -19,6 +19,8 @@ type ProfileAvatarProps = {
   size?: number;
   /** Presentation-only. Soft = light-green fill for onboarding. */
   tone?: 'solid' | 'soft';
+  /** Presentation-only. Larger ring + shadow for the Profile tab hero. */
+  featured?: boolean;
   onPress: () => void;
 };
 
@@ -39,6 +41,7 @@ export function ProfileAvatar({
   disabled = false,
   size = DEFAULT_AVATAR_SIZE,
   tone = 'solid',
+  featured = false,
   onPress,
 }: ProfileAvatarProps) {
   const theme = useAppTheme();
@@ -46,9 +49,11 @@ export function ProfileAvatar({
   const busy = uploading || disabled;
   const hasImage = Boolean(imageUri);
   const pulse = useMemo(() => new Animated.Value(1), []);
-  const badgeSize = Math.max(22, Math.round(size * 0.28));
+  const badgeSize = Math.max(featured ? 32 : 22, Math.round(size * (featured ? 0.26 : 0.28)));
   const iconGlyph = Math.round(size * 0.48);
   const soft = tone === 'soft';
+  const ringPad = featured ? 6 : 4;
+  const wrapSize = size + ringPad * 2;
   const fillColor = soft ? theme.colors.primaryContainer : theme.colors.primary;
   const glyphColor = soft ? theme.colors.onPrimaryContainer : theme.colors.onPrimary;
 
@@ -90,7 +95,24 @@ export function ProfileAvatar({
         busy ? styles.disabled : null,
       ]}
     >
-      <View style={[styles.avatarWrap, { width: size + 8, height: size + 8 }, soft ? { borderWidth: 1.5, borderColor: theme.colors.primary, borderRadius: (size + 8) / 2 } : null]}>
+      <View
+        style={[
+          styles.avatarWrap,
+          { width: wrapSize, height: wrapSize, borderRadius: wrapSize / 2 },
+          featured
+            ? [
+                styles.featuredWrap,
+                {
+                  borderColor: theme.colors.primaryContainer,
+                  backgroundColor: theme.colors.surface,
+                },
+              ]
+            : null,
+          soft
+            ? { borderWidth: 1.5, borderColor: theme.colors.primary }
+            : null,
+        ]}
+      >
         <View
           style={[
             styles.avatar,
@@ -100,7 +122,7 @@ export function ProfileAvatar({
               borderRadius: size / 2,
               backgroundColor: fillColor,
               borderColor: theme.colors.surface,
-              borderWidth: soft ? 4 : 3,
+              borderWidth: featured ? 2 : soft ? 4 : 3,
             },
           ]}
         >
@@ -136,17 +158,17 @@ export function ProfileAvatar({
               width: badgeSize,
               height: badgeSize,
               borderRadius: badgeSize / 2,
-              backgroundColor: soft ? theme.colors.primary : theme.colors.surface,
-              borderColor: soft ? theme.colors.surface : theme.colors.primaryContainer,
-              right: 0,
-              bottom: 0,
+              backgroundColor: featured || soft ? theme.colors.primary : theme.colors.surface,
+              borderColor: featured || soft ? theme.colors.surface : theme.colors.primaryContainer,
+              right: featured ? 2 : 0,
+              bottom: featured ? 2 : 0,
             },
           ]}
         >
           <MaterialCommunityIcons
             name="camera-outline"
             size={Math.round(badgeSize * 0.55)}
-            color={soft ? theme.colors.onPrimary : theme.colors.primary}
+            color={featured || soft ? theme.colors.onPrimary : theme.colors.primary}
           />
         </View>
       </View>
@@ -202,5 +224,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
+    zIndex: 2,
+  },
+  featuredWrap: {
+    borderWidth: 3,
+    ...elevation.card,
   },
 });

@@ -1,32 +1,31 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, router, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Card, Dialog, Portal, Text } from 'react-native-paper';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Button, Dialog, Portal, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BrandLeaves } from '@/components/BrandLeaves';
-import { OrganicBackground } from '@/components/OrganicBackground';
+import { HeaderLandscapeStrip, headerBandHeight } from '@/components/branding/HeaderLandscapeStrip';
 import { strings } from '@/constants';
 import { getCropLabel, useCrops } from '@/features/crop';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import {
-  buttonSurface,
-  cardSurface,
-  iconSize,
-  radius,
-  spacing,
-  typography,
-  useAppTheme,
-} from '@/theme';
+import { iconSize, palette, radius, spacing, typography } from '@/theme';
 
-import { billingStrings } from '@/features/subscription/billing.strings';
-
-import { ProfileAvatar } from './components/ProfileAvatar';
+import { ProfileActionSection } from './components/ProfileActionSection';
+import { ProfileHero } from './components/ProfileHero';
+import { ProfileInfoCard } from './components/ProfileInfoCard';
 import { useMyProfile } from './hooks/useMyProfile';
 import { useProfilePhoto } from './hooks/useProfilePhoto';
 import { profileStrings } from './profile.strings';
 import type { ProfileResponseDTO } from './profile.types';
+import {
+  profileAvatarSize,
+  profileCard,
+  profileNameSize,
+  profilePadX,
+  profileScrollBottomPad,
+  profileUi,
+} from './profile.ui';
 
 function displayDistrict(profile: ProfileResponseDTO): string {
   return profile.location?.district?.name || profile.district || '—';
@@ -40,36 +39,9 @@ function displayVillage(profile: ProfileResponseDTO): string {
   return profile.location?.village?.name || profile.village || '—';
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  value: string;
-}) {
-  const theme = useAppTheme();
-  return (
-    <View style={styles.infoRow}>
-      <View style={[styles.infoIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-        <MaterialCommunityIcons name={icon} size={iconSize.sm} color={theme.colors.primary} />
-      </View>
-      <View style={styles.infoText}>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-          {label}
-        </Text>
-        <Text style={[typography.body, { color: theme.colors.onSurface, fontWeight: '500' }]}>
-          {value}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 export default function ProfileScreen() {
-  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { user, logout } = useAuth();
   const { data: profile, loading, error, refresh } = useMyProfile();
   const { data: crops } = useCrops();
@@ -79,6 +51,13 @@ export default function ProfileScreen() {
   });
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [headerH, setHeaderH] = useState(() => headerBandHeight(0));
+
+  const padX = profilePadX(width);
+  const avatarSize = profileAvatarSize(width);
+  const nameSize = profileNameSize(width);
+  const minHeaderH = headerBandHeight(insets.top);
+  const stripH = Math.max(headerH, minHeaderH);
 
   useFocusEffect(
     useCallback(() => {
@@ -103,108 +82,90 @@ export default function ProfileScreen() {
       ? profileStrings.header.favoriteCrops(profile.favoriteCrops.length)
       : null;
 
+  const cropLabels = profile
+    ? profile.favoriteCrops.map((crop) => getCropLabel(crop, crops))
+    : [];
+
+  const district = profile ? displayDistrict(profile) : null;
+
   return (
-    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}>
-      <OrganicBackground intensity="subtle" />
+    <View style={[styles.screen, { backgroundColor: profileUi.cream }]}>
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.sm }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: profileScrollBottomPad(insets.bottom) },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.avatarStage}>
-            <BrandLeaves variant="profile" />
-            <ProfileAvatar
-              name={profile?.name ?? ''}
-              imageUri={displayUri}
-              uploading={isBusy}
-              onPress={showPhotoActions}
-            />
-          </View>
-          <Text style={[typography.largeHeading, { color: theme.colors.onBackground, textAlign: 'center' }]}>
-            {profile?.name ?? '—'}
-          </Text>
-          {profile && (profile.district || profile.location?.district?.name) ? (
-            <View style={styles.metaRow}>
-              <MaterialCommunityIcons name="map-marker" size={iconSize.sm} color={theme.colors.primary} />
-              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-                {displayDistrict(profile)}
-              </Text>
-            </View>
-          ) : null}
-          {cropSummary ? (
-            <View style={styles.metaRow}>
-              <MaterialCommunityIcons name="sprout" size={iconSize.sm} color={theme.colors.primary} />
-              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant }]}>
-                {cropSummary}
-              </Text>
-            </View>
-          ) : null}
-          {user?.mobile ? (
-            <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-              {user.mobile}
-            </Text>
-          ) : null}
+        <View
+          style={[
+            styles.header,
+            {
+              minHeight: minHeaderH,
+              paddingTop: insets.top + 8,
+              paddingLeft: padX + Math.max(insets.left, 0),
+              paddingRight: padX + Math.max(insets.right, 0),
+              paddingBottom: Math.round(minHeaderH * 0.22),
+            },
+          ]}
+          onLayout={(event) => {
+            const next = Math.round(event.nativeEvent.layout.height);
+            setHeaderH((prev) => (prev === next ? prev : next));
+          }}
+        >
+          <HeaderLandscapeStrip width={width} height={stripH} />
+          <ProfileHero
+            name={profile ? profile.name : loading ? '' : '—'}
+            imageUri={displayUri}
+            uploading={isBusy}
+            onPhotoPress={showPhotoActions}
+            district={district && district !== '—' ? district : null}
+            cropSummary={cropSummary}
+            mobile={user?.mobile ?? null}
+            avatarSize={avatarSize}
+            nameSize={nameSize}
+          />
         </View>
 
-        {loading ? (
-          <ActivityIndicator animating size="small" style={styles.loader} color={theme.colors.primary} />
-        ) : error ? (
-          <Card mode="elevated" style={[styles.card, cardSurface]}>
-            <Card.Content style={styles.errorContent}>
-              <Text style={[typography.body, { color: theme.colors.onSurfaceVariant, flex: 1 }]}>
+        <View style={[styles.body, { paddingHorizontal: padX }]}>
+          {loading ? (
+            <View style={[profileCard, styles.loadingCard]}>
+              <ActivityIndicator animating size="small" color={profileUi.primary} />
+            </View>
+          ) : error ? (
+            <View style={[profileCard, styles.errorCard]}>
+              <View style={styles.errorIcon}>
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={iconSize.md}
+                  color={palette.red700}
+                />
+              </View>
+              <Text
+                style={[typography.body, styles.errorText, { color: profileUi.muted }]}
+                maxFontSizeMultiplier={1.35}
+              >
                 {error}
               </Text>
               <Button compact mode="text" onPress={refresh}>
                 {strings.market.retry}
               </Button>
-            </Card.Content>
-          </Card>
-        ) : profile ? (
-          <Card mode="elevated" style={[styles.card, cardSurface]}>
-            <Card.Content style={styles.cardContent}>
-              <InfoRow icon="map-marker-outline" label={profileStrings.labels.district} value={displayDistrict(profile)} />
-              <InfoRow icon="map-outline" label={profileStrings.labels.taluka} value={displayTaluka(profile)} />
-              <InfoRow icon="home-outline" label={profileStrings.labels.village} value={displayVillage(profile)} />
-              <InfoRow
-                icon="sprout-outline"
-                label={profileStrings.labels.favoriteCrops}
-                value={profile.favoriteCrops.map((crop) => getCropLabel(crop, crops)).join(', ')}
-              />
-            </Card.Content>
-          </Card>
-        ) : null}
+            </View>
+          ) : profile ? (
+            <ProfileInfoCard
+              district={displayDistrict(profile)}
+              taluka={displayTaluka(profile)}
+              village={displayVillage(profile)}
+              cropLabels={cropLabels}
+            />
+          ) : null}
 
-        <Button
-          mode="outlined"
-          icon="account-edit-outline"
-          style={[styles.actionButton, buttonSurface]}
-          contentStyle={styles.buttonContent}
-          onPress={() => router.push('/edit-profile')}
-        >
-          {profileStrings.header.editProfile}
-        </Button>
-
-        <Button
-          mode="outlined"
-          icon="credit-card-outline"
-          style={[styles.actionButton, buttonSurface]}
-          contentStyle={styles.buttonContent}
-          onPress={() => router.push('/subscription-billing' as Href)}
-        >
-          {billingStrings.profileEntry}
-        </Button>
-
-        <Button
-          mode="contained"
-          icon="logout"
-          buttonColor={theme.colors.errorContainer}
-          textColor={theme.colors.onErrorContainer}
-          style={[styles.actionButton, buttonSurface]}
-          contentStyle={styles.buttonContent}
-          onPress={() => setLogoutDialogVisible(true)}
-        >
-          {strings.profile.logout}
-        </Button>
+          <ProfileActionSection
+            onEdit={() => router.push('/edit-profile')}
+            onMembership={() => router.push('/subscription-billing' as Href)}
+            onLogout={() => setLogoutDialogVisible(true)}
+          />
+        </View>
 
         <Portal>
           <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
@@ -229,34 +190,40 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.sm },
-  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.md },
-  avatarStage: {
-    width: 160,
-    height: 160,
+  content: {
+    flexGrow: 1,
+  },
+  header: {
+    backgroundColor: profileUi.cream,
+  },
+  body: {
+    gap: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  loadingCard: {
+    minHeight: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
-    position: 'relative',
+    padding: spacing.lg,
   },
-  metaRow: {
+  errorCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
-  loader: { marginTop: spacing.lg },
-  card: { marginBottom: spacing.md },
-  cardContent: { gap: spacing.md },
-  errorContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  infoIcon: {
-    width: 36,
-    height: 36,
+  errorIcon: {
+    width: 40,
+    height: 40,
     borderRadius: radius.md,
+    backgroundColor: profileUi.logoutWash,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoText: { flex: 1, gap: 2 },
-  actionButton: { marginTop: spacing.sm },
-  buttonContent: { minHeight: 48 },
+  errorText: {
+    flex: 1,
+    minWidth: 0,
+  },
 });
