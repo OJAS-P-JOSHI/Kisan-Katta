@@ -3,7 +3,7 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import { elevation, palette, radius, spacing } from '@/theme';
 
 /**
- * Profile-tab presentation tokens. Colors stay on the existing Agrisathi
+ * Profile screen presentation tokens. Colors stay on the existing Agrisathi
  * palette — this file does not introduce a new brand.
  */
 export const profileUi = {
@@ -48,5 +48,5 @@ export function profileNameSize(width: number): number {
 }
 
 export function profileScrollBottomPad(safeBottom: number): number {
-  return spacing.xxl * 2 + Math.max(safeBottom, spacing.sm);
+  return spacing.xxl + spacing.md + Math.max(safeBottom, spacing.sm);
 }

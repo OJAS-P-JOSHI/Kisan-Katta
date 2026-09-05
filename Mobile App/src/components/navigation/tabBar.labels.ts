@@ -1,12 +1,7 @@
+import { strings } from '@/constants';
+
 /**
  * Compact tab-bar labels — shorter than screen titles; tab bar UI only.
- * Screen headers still use `strings.tabs.*`.
+ * Screen headers still use `strings.tabs.*`. Profile is not a tab.
  */
-export const tabBarLabels = {
-  home: 'Home',
-  market: 'बाजार',
-  farmerPrice: 'भाव',
-  marketplace: 'बाजारपेठ',
-  assistance: 'साथ',
-  profile: 'Profile',
-} as const;
+export const tabBarLabels = strings.tabBar;

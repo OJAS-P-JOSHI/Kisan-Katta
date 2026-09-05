@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
+import { AccountButton } from '@/components/navigation/AccountButton';
 import { strings } from '@/constants';
 import { iconSize, spacing, useAppTheme } from '@/theme';
 
@@ -48,10 +49,11 @@ export const DashboardHeader = memo(function DashboardHeader({
             {strings.app.name}
           </Text>
         </View>
-        <Text style={[homeText.heroGreeting, { color: theme.colors.onSurfaceVariant }]}>
-          {greetingText} {greetingEmoji}
-        </Text>
+        <AccountButton />
       </View>
+      <Text style={[homeText.heroGreeting, { color: theme.colors.onSurfaceVariant }]}>
+        {greetingText} {greetingEmoji}
+      </Text>
 
       <Text
         style={[homeText.heroName, styles.farmerName, { color: theme.colors.onBackground }]}

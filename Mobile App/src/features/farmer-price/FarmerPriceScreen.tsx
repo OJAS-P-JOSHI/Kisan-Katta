@@ -5,6 +5,8 @@ import { Button, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
+import { AccountButton } from '@/components/navigation/AccountButton';
+import { tabBarContentInset, tabBarOverlayInset } from '@/components/navigation/tabBar.theme';
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { getCropLabel, useCrops } from '@/features/crop';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
@@ -169,7 +171,7 @@ export default function FarmerPriceScreen() {
           styles.content,
           {
             paddingTop: insets.top + spacing.md,
-            paddingBottom: insets.bottom + spacing.lg,
+            paddingBottom: tabBarContentInset(insets.bottom),
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -185,12 +187,17 @@ export default function FarmerPriceScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={[styles.screenTitle, { color: theme.colors.onBackground }]}>
-            {farmerPriceStrings.screen.title}
-          </Text>
-          <Text style={[styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
-            {farmerPriceStrings.screen.subtitle}
-          </Text>
+          <View style={styles.headerTop}>
+            <View style={styles.headerCopy}>
+              <Text style={[styles.screenTitle, { color: theme.colors.onBackground }]}>
+                {farmerPriceStrings.screen.title}
+              </Text>
+              <Text style={[styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+                {farmerPriceStrings.screen.subtitle}
+              </Text>
+            </View>
+            <AccountButton />
+          </View>
         </View>
 
         {renderBody()}
@@ -200,6 +207,7 @@ export default function FarmerPriceScreen() {
         visible={!!snackbarError}
         onDismiss={() => setDismissedError(error)}
         duration={4000}
+        style={{ marginBottom: tabBarOverlayInset(insets.bottom) }}
         action={{
           label: farmerPriceStrings.snackbar.dismiss,
           onPress: () => setDismissedError(error),
@@ -220,8 +228,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    gap: 2,
     paddingBottom: spacing.sm,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  headerCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
   screenTitle: {
     fontSize: 24,

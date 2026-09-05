@@ -15,6 +15,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HeaderLandscapeStrip, headerBandHeight } from '@/components/branding/HeaderLandscapeStrip';
+import { HeaderActionCluster } from '@/components/navigation/AccountButton';
+import { tabBarContentInset } from '@/components/navigation/tabBar.theme';
 
 import { MarketplaceInfoSheet } from './components/MarketplaceInfoSheet';
 import { SEARCH_DEBOUNCE_MS } from './marketplace.constants';
@@ -365,7 +367,10 @@ export default function MarketplaceScreen() {
     <View style={styles.root}>
       <ScrollView
         style={styles.flex}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingBottom: tabBarContentInset(insets.bottom) },
+        ]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
@@ -390,19 +395,22 @@ export default function MarketplaceScreen() {
                 styles.screenTitle,
                 { fontSize: L.titleSize, lineHeight: Math.round(L.titleSize * 1.25) },
               ]}
+              numberOfLines={1}
               maxFontSizeMultiplier={1.5}
             >
               {marketplaceStrings.home.title}
             </Text>
-            <Pressable
-              onPress={openInfo}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel={marketplaceStrings.home.infoA11y}
-              style={({ pressed }) => [styles.infoBtn, pressed && styles.infoBtnPressed]}
-            >
-              <MaterialCommunityIcons name="information-outline" size={16} color={C.primaryGreen} />
-            </Pressable>
+            <HeaderActionCluster>
+              <Pressable
+                onPress={openInfo}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={marketplaceStrings.home.infoA11y}
+                style={({ pressed }) => [styles.infoBtn, pressed && styles.infoBtnPressed]}
+              >
+                <MaterialCommunityIcons name="information-outline" size={16} color={C.primaryGreen} />
+              </Pressable>
+            </HeaderActionCluster>
           </View>
           <Text
             style={[
@@ -561,6 +569,8 @@ const styles = StyleSheet.create({
     color: C.headingGreen,
     fontWeight: '800',
     letterSpacing: -0.35,
+    flex: 1,
+    minWidth: 0,
   },
   infoBtn: {
     width: 28,

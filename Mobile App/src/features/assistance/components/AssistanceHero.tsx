@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HeaderLandscapeStrip, headerBandHeight } from '@/components/branding/HeaderLandscapeStrip';
+import { HeaderActionCluster } from '@/components/navigation/AccountButton';
 import { mp } from '@/features/marketplace/marketplace.ui';
 
 import { assistanceStrings } from '../assistance.strings';
@@ -47,15 +48,18 @@ export function AssistanceHero({ onInfo }: AssistanceHeroProps) {
             styles.screenTitle,
             { fontSize: titleSize, lineHeight: Math.round(titleSize * 1.25) },
           ]}
+          numberOfLines={1}
           maxFontSizeMultiplier={1.5}
         >
           {assistanceStrings.feed.title}
         </Text>
-        <HeaderIconButton
-          icon="information-outline"
-          label={assistanceStrings.feed.infoA11y}
-          onPress={onInfo}
-        />
+        <HeaderActionCluster>
+          <HeaderIconButton
+            icon="information-outline"
+            label={assistanceStrings.feed.infoA11y}
+            onPress={onInfo}
+          />
+        </HeaderActionCluster>
       </View>
       <Text
         style={[

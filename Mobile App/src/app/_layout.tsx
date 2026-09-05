@@ -35,6 +35,10 @@ function RootNavigator() {
       <Stack.Protected guard={canEnterApp}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="profile"
+          options={{ headerShown: false, presentation: 'card' }}
+        />
+        <Stack.Screen
           name="edit-profile"
           options={{ headerShown: true, title: 'Edit Profile', presentation: 'card' }}
         />

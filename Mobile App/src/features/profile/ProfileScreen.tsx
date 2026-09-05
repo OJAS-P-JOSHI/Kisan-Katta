@@ -6,6 +6,7 @@ import { ActivityIndicator, Button, Dialog, Portal, Text } from 'react-native-pa
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HeaderLandscapeStrip, headerBandHeight } from '@/components/branding/HeaderLandscapeStrip';
+import { AccountButton, HeaderBackButton } from '@/components/navigation/AccountButton';
 import { strings } from '@/constants';
 import { getCropLabel, useCrops } from '@/features/crop';
 import { useAuth } from '@/features/auth/context/AuthContext';
@@ -115,6 +116,11 @@ export default function ProfileScreen() {
           }}
         >
           <HeaderLandscapeStrip width={width} height={stripH} />
+          <View style={styles.chromeRow}>
+            <HeaderBackButton />
+            <View style={styles.chromeSpacer} />
+            <AccountButton />
+          </View>
           <ProfileHero
             name={profile ? profile.name : loading ? '' : '—'}
             imageUri={displayUri}
@@ -199,6 +205,16 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: profileUi.cream,
+  },
+  chromeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    zIndex: 1,
+  },
+  chromeSpacer: {
+    flex: 1,
+    minWidth: 8,
   },
   body: {
     gap: spacing.md,

@@ -4,6 +4,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { tabBarContentInset } from '@/components/navigation/tabBar.theme';
 import { strings } from '@/constants';
 import { GramSahakariCard } from '@/features/gram-sahakari/components/GramSahakariCard';
 import { useGramSahakariRepresentative } from '@/features/gram-sahakari/hooks/useGramSahakariRepresentative';
@@ -146,7 +147,13 @@ export default function HomeScreen() {
       <HomeBackground />
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xs }]}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: insets.top + spacing.xs,
+            paddingBottom: tabBarContentInset(insets.bottom),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

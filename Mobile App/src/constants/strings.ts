@@ -16,6 +16,19 @@ export const strings = {
     assistance: 'साथ',
     profile: 'Profile',
   },
+  /** Compact bottom-nav labels only. Screen titles stay on `tabs`. */
+  tabBar: {
+    home: 'मुख्य',
+    market: 'बाजार',
+    farmerPrice: 'भाव',
+    marketplace: 'बाजारपेठ',
+    assistance: 'साथ',
+  },
+  /** Top-right account control — icon only; copy is for accessibility. */
+  account: {
+    a11y: 'प्रोफाइल',
+    backA11y: 'मागे',
+  },
   home: {
     title: 'मुख्यपृष्ठ',
     subtitle: 'तुमचा दैनिक शेती आढावा',

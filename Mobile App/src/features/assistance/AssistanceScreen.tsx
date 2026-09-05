@@ -12,6 +12,7 @@ import {
 import { ActivityIndicator, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { tabBarOverlayInset } from '@/components/navigation/tabBar.theme';
 import { spacing } from '@/theme';
 
 import { SEARCH_DEBOUNCE_MS } from './assistance.constants';
@@ -153,7 +154,9 @@ export default function AssistanceScreen() {
     ? assistanceStrings.feed.searchEmptyMessage
     : assistanceStrings.feed.emptyMessage;
 
-  const listBottomPad = spacing.xxl * 2 + Math.max(insets.bottom, 0);
+  /** Dock overlays the feed, and the FAB sits just above it — clear both. */
+  const fabBottom = tabBarOverlayInset(insets.bottom) + spacing.xs;
+  const listBottomPad = fabBottom + spacing.xxl;
 
   const listBody = () => {
     if (feed.loading) {
@@ -240,7 +243,7 @@ export default function AssistanceScreen() {
         accessibilityLabel={assistanceStrings.feed.myRequests}
         style={({ pressed }) => [
           styles.fab,
-          { bottom: spacing.md, right: padX },
+          { bottom: fabBottom, right: padX },
           pressed && styles.fabPressed,
         ]}
       >
@@ -256,7 +259,12 @@ export default function AssistanceScreen() {
 
       <AssistanceInfoSheet visible={infoVisible} onDismiss={() => setInfoVisible(false)} />
 
-      <Snackbar visible={!!snackbar} onDismiss={() => setSnackbar(null)} duration={3000}>
+      <Snackbar
+        visible={!!snackbar}
+        onDismiss={() => setSnackbar(null)}
+        duration={3000}
+        style={{ marginBottom: fabBottom }}
+      >
         {snackbar}
       </Snackbar>
     </View>

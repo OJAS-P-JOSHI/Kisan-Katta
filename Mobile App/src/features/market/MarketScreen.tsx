@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/EmptyState';
+import { tabBarContentInset } from '@/components/navigation/tabBar.theme';
 import { OrganicBackground } from '@/components/OrganicBackground';
 import { strings } from '@/constants';
 import { excludeFromGovernmentMarket } from '@/features/crop';
@@ -17,6 +19,7 @@ const getItemKey = (item: MarketCropCardModel): string => normalizeCrop(item.cro
 
 export default function MarketScreen() {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [expandedCrop, setExpandedCrop] = useState<string | null>(null);
 
   const {
@@ -92,7 +95,10 @@ export default function MarketScreen() {
         data={cards}
         keyExtractor={getItemKey}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: tabBarContentInset(insets.bottom) },
+        ]}
         showsVerticalScrollIndicator={false}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
