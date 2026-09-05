@@ -1,7 +1,8 @@
 import { memo, useEffect, useState } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { cardSurface, palette, radius, spacing } from '@/theme';
+import { mp, mpCard, mpRadius } from '@/features/marketplace/marketplace.ui';
+import { spacing } from '@/theme';
 
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
   const [opacity] = useState(() => new Animated.Value(0.3));
@@ -19,7 +20,7 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 
   return (
     <Animated.View
-      style={[{ backgroundColor: palette.mist, borderRadius: radius.md, opacity }, style]}
+      style={[{ backgroundColor: mp.produceWash, borderRadius: mpRadius.control, opacity }, style]}
     />
   );
 });
@@ -27,7 +28,7 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 /** Mirrors the lighter summary card so the first paint does not jump. */
 const SummaryCardSkeleton = memo(function SummaryCardSkeleton() {
   return (
-    <View style={[styles.card, cardSurface]}>
+    <View style={[styles.card, mpCard]}>
       <View style={styles.header}>
         <SkeletonBox style={styles.emoji} />
         <View style={styles.headerText}>
@@ -57,18 +58,18 @@ export function FarmerPriceSkeleton() {
 const styles = StyleSheet.create({
   root: { gap: spacing.md },
   card: {
-    backgroundColor: palette.white,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 12,
+    overflow: 'hidden',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  emoji: { height: 28, width: 28, borderRadius: radius.md },
+  emoji: { height: 40, width: 40, borderRadius: 12 },
   headerText: { flex: 1, gap: 4 },
   title: { height: 22, width: '50%' },
   subtitle: { height: 12, width: '40%' },
   metrics: { flexDirection: 'row', gap: 8 },
-  metric: { flex: 1, height: 56, borderRadius: radius.lg },
-  status: { height: 34, width: '100%', borderRadius: radius.lg },
-  button: { height: 44, width: '100%', borderRadius: radius.xl },
+  metric: { flex: 1, height: 56, borderRadius: mpRadius.tile },
+  status: { height: 34, width: '100%', borderRadius: mpRadius.tile },
+  button: { height: 44, width: '100%', borderRadius: mpRadius.chip },
 });

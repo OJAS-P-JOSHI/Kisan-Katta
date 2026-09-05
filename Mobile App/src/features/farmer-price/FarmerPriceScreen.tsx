@@ -1,16 +1,16 @@
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text as RNText, View, useWindowDimensions } from 'react-native';
 import { Button, Snackbar, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScenicScreenHeader, ScenicSectionHeading, scenicPadX } from '@/components/branding/ScenicScreenHeader';
 import { EmptyState } from '@/components/EmptyState';
-import { AccountButton } from '@/components/navigation/AccountButton';
 import { tabBarContentInset, tabBarOverlayInset } from '@/components/navigation/tabBar.theme';
-import { OrganicBackground } from '@/components/OrganicBackground';
 import { getCropLabel, useCrops } from '@/features/crop';
+import { mp, mpRadius } from '@/features/marketplace/marketplace.ui';
 import { useMyProfile } from '@/features/profile/hooks/useMyProfile';
-import { palette, radius, spacing, useAppTheme } from '@/theme';
+import { spacing } from '@/theme';
 
 import { FarmerPriceSkeleton } from './components/FarmerPriceSkeleton';
 import { PollCard, type PollCardFocus } from './components/PollCard';
@@ -18,8 +18,10 @@ import { farmerPriceStrings } from './farmer-price.strings';
 import { useMyFarmerPricePoll } from './hooks/useMyFarmerPricePoll';
 
 export default function FarmerPriceScreen() {
-  const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const padX = scenicPadX(width) + Math.max(insets.left, 0);
+  const padXRight = scenicPadX(width) + Math.max(insets.right, 0);
   const router = useRouter();
   const { data: profile, loading: profileLoading } = useMyProfile();
   const { data: crops } = useCrops();
@@ -95,15 +97,13 @@ export default function FarmerPriceScreen() {
       return (
         <View style={styles.emptyWrap}>
           <RNText style={styles.emoji}>{farmerPriceStrings.empty.noFavoritesEmoji}</RNText>
-          <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
-            {farmerPriceStrings.empty.noFavoritesTitle}
-          </Text>
+          <Text style={styles.emptyTitle}>{farmerPriceStrings.empty.noFavoritesTitle}</Text>
           <Button
             mode="contained"
             onPress={openProfile}
             style={styles.emptyAction}
             contentStyle={styles.emptyActionContent}
-            buttonColor={palette.green700}
+            buttonColor={mp.primaryGreen}
             accessibilityLabel={farmerPriceStrings.empty.openProfile}
           >
             {farmerPriceStrings.empty.openProfile}
@@ -116,9 +116,7 @@ export default function FarmerPriceScreen() {
       return (
         <View style={styles.emptyWrap}>
           <RNText style={styles.emoji}>{farmerPriceStrings.empty.noPollEmoji}</RNText>
-          <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
-            {farmerPriceStrings.empty.noPollTitle}
-          </Text>
+          <Text style={styles.emptyTitle}>{farmerPriceStrings.empty.noPollTitle}</Text>
           <Button
             mode="contained"
             onPress={() => {
@@ -126,7 +124,7 @@ export default function FarmerPriceScreen() {
             }}
             style={styles.emptyAction}
             contentStyle={styles.emptyActionContent}
-            buttonColor={palette.green700}
+            buttonColor={mp.primaryGreen}
             accessibilityLabel={farmerPriceStrings.empty.refresh}
           >
             {farmerPriceStrings.empty.refresh}
@@ -137,9 +135,7 @@ export default function FarmerPriceScreen() {
 
     return (
       <View style={styles.pollStack}>
-        <Text style={[styles.listHeading, { color: theme.colors.onSurfaceVariant }]}>
-          {farmerPriceStrings.screen.listHeading}
-        </Text>
+        <ScenicSectionHeading icon="sprout-outline" label={farmerPriceStrings.screen.listHeading} />
 
         {polls.map((poll) => (
           <PollCard
@@ -152,27 +148,19 @@ export default function FarmerPriceScreen() {
         ))}
 
         <View style={styles.disclaimer}>
-          <Text style={[styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
-            {farmerPriceStrings.disclaimer.line1}
-          </Text>
-          <Text style={[styles.disclaimerText, { color: theme.colors.onSurfaceVariant }]}>
-            {farmerPriceStrings.disclaimer.line2}
-          </Text>
+          <Text style={styles.disclaimerText}>{farmerPriceStrings.disclaimer.line1}</Text>
+          <Text style={styles.disclaimerText}>{farmerPriceStrings.disclaimer.line2}</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <OrganicBackground intensity="subtle" />
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          {
-            paddingTop: insets.top + spacing.md,
-            paddingBottom: tabBarContentInset(insets.bottom),
-          },
+          { paddingBottom: tabBarContentInset(insets.bottom) },
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -181,26 +169,18 @@ export default function FarmerPriceScreen() {
             onRefresh={() => {
               void handleRefresh();
             }}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
+            colors={[mp.primaryGreen]}
+            tintColor={mp.primaryGreen}
           />
         }
       >
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.headerCopy}>
-              <Text style={[styles.screenTitle, { color: theme.colors.onBackground }]}>
-                {farmerPriceStrings.screen.title}
-              </Text>
-              <Text style={[styles.screenSubtitle, { color: theme.colors.onSurfaceVariant }]}>
-                {farmerPriceStrings.screen.subtitle}
-              </Text>
-            </View>
-            <AccountButton />
-          </View>
+        <ScenicScreenHeader
+          title={farmerPriceStrings.screen.title}
+          subtitle={farmerPriceStrings.screen.subtitle}
+        />
+        <View style={[styles.body, { paddingLeft: padX, paddingRight: padXRight }]}>
+          {renderBody()}
         </View>
-
-        {renderBody()}
       </ScrollView>
 
       <Snackbar
@@ -222,43 +202,17 @@ export default function FarmerPriceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: mp.cream,
   },
   content: {
-    paddingHorizontal: spacing.md,
     flexGrow: 1,
   },
-  header: {
-    paddingBottom: spacing.sm,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  headerCopy: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
-  screenTitle: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  screenSubtitle: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  listHeading: {
-    fontSize: 11,
-    lineHeight: 14,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+  body: {
+    paddingTop: 4,
+    flexGrow: 1,
   },
   pollStack: {
-    gap: 12,
+    gap: 14,
   },
   disclaimer: {
     gap: 2,
@@ -270,6 +224,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 15,
     textAlign: 'center',
+    color: mp.muted,
   },
   emptyWrap: {
     flexGrow: 1,
@@ -288,10 +243,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     maxWidth: 280,
+    color: mp.headingGreen,
   },
   emptyAction: {
     marginTop: spacing.md,
-    borderRadius: radius.lg,
+    borderRadius: mpRadius.control,
   },
   emptyActionContent: {
     height: 48,

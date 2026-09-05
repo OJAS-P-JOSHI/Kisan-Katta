@@ -5,7 +5,8 @@ import { Text } from 'react-native-paper';
 import { strings } from '@/constants';
 import { getArrivalFreshness } from '@/features/market/market.freshness';
 import type { MarketPrice } from '@/features/market/market.types';
-import { palette, radius, spacing, typography, useAppTheme } from '@/theme';
+import { mp, mpRadius } from '@/features/marketplace/marketplace.ui';
+import { spacing } from '@/theme';
 
 type MarketMandiRowProps = {
   market: MarketPrice;
@@ -21,7 +22,6 @@ export const MarketMandiRow = memo(function MarketMandiRow({
   isBest,
   isLowest,
 }: MarketMandiRowProps) {
-  const theme = useAppTheme();
   const freshness = useMemo(() => getArrivalFreshness(market.arrivalDate), [market.arrivalDate]);
 
   const freshnessLabel =
@@ -32,36 +32,24 @@ export const MarketMandiRow = memo(function MarketMandiRow({
         : strings.market.badgeOlderData;
 
   const freshnessBg =
-    freshness === 'today'
-      ? palette.green100
-      : freshness === 'yesterday'
-        ? palette.blue100
-        : palette.amber100;
+    freshness === 'today' ? mp.produceBg : freshness === 'yesterday' ? mp.labourBg : mp.productBg;
   const freshnessColor =
     freshness === 'today'
-      ? palette.green900
+      ? mp.headingGreen
       : freshness === 'yesterday'
-        ? palette.blue800
-        : palette.orange800;
+        ? mp.labourTitle
+        : mp.productTitle;
 
-  const priceColor = isBest
-    ? palette.green700
-    : isLowest
-      ? palette.orange800
-      : palette.green900;
+  const priceColor = isBest ? mp.primaryGreen : isLowest ? mp.productCta : mp.headingGreen;
 
   return (
     <Pressable
       accessibilityRole="text"
       accessibilityLabel={`${market.market}, ${formatPrice(market.modalPrice)}, ${freshnessLabel}`}
-      style={({ pressed }) => [
-        styles.row,
-        isBest && styles.bestRow,
-        pressed && styles.pressed,
-      ]}
+      style={({ pressed }) => [styles.row, isBest && styles.bestRow, pressed && styles.pressed]}
     >
       <View style={styles.left}>
-        <Text numberOfLines={2} style={[styles.marketName, { color: theme.colors.onSurface }]}>
+        <Text numberOfLines={2} style={styles.marketName}>
           {market.market}
         </Text>
         <View style={styles.badgeRow}>
@@ -69,21 +57,21 @@ export const MarketMandiRow = memo(function MarketMandiRow({
             <Text style={[styles.badgeText, { color: freshnessColor }]}>{freshnessLabel}</Text>
           </View>
           {isBest ? (
-            <View style={[styles.badge, { backgroundColor: palette.green100 }]}>
-              <Text style={[styles.badgeText, { color: palette.green900 }]}>
+            <View style={[styles.badge, { backgroundColor: mp.produceBg }]}>
+              <Text style={[styles.badgeText, { color: mp.headingGreen }]}>
                 {strings.market.badgeBestPrice}
               </Text>
             </View>
           ) : null}
           {isLowest && !isBest ? (
-            <View style={[styles.badge, { backgroundColor: palette.amber100 }]}>
-              <Text style={[styles.badgeText, { color: palette.orange800 }]}>
+            <View style={[styles.badge, { backgroundColor: mp.productBg }]}>
+              <Text style={[styles.badgeText, { color: mp.productTitle }]}>
                 {strings.market.badgeLow}
               </Text>
             </View>
           ) : null}
         </View>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+        <Text style={styles.caption}>
           {strings.market.minMaxInline(formatPrice(market.minPrice), formatPrice(market.maxPrice))}
         </Text>
       </View>
@@ -100,18 +88,18 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: palette.sand,
+    borderRadius: mpRadius.tile,
+    backgroundColor: mp.cream,
     marginBottom: spacing.xs,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: palette.mist,
+    borderColor: mp.cardLine,
     minHeight: 64,
   },
   bestRow: {
-    backgroundColor: palette.green50,
+    backgroundColor: mp.produceBg,
     borderLeftWidth: 3,
-    borderLeftColor: palette.green700,
-    borderColor: palette.green100,
+    borderLeftColor: mp.primaryGreen,
+    borderColor: mp.produceWash,
   },
   pressed: {
     opacity: 0.85,
@@ -125,7 +113,8 @@ const styles = StyleSheet.create({
   marketName: {
     fontSize: 15,
     lineHeight: 20,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: mp.headingGreen,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -133,7 +122,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badge: {
-    borderRadius: radius.pill,
+    borderRadius: mpRadius.chip,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
@@ -141,6 +130,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 12,
     fontWeight: '600',
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    color: mp.muted,
   },
   price: {
     fontSize: 18,

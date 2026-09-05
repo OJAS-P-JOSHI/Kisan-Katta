@@ -1,10 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
-import { StyleSheet, Text as RNText, View } from 'react-native';
+import { StyleSheet, Text as RNText, View, useWindowDimensions } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 import { getCropEmoji } from '@/features/market/market.translate';
-import { cardSurface, iconSize, palette, radius, spacing, useAppTheme } from '@/theme';
+import { mp, mpCard, mpRadius } from '@/features/marketplace/marketplace.ui';
+import { iconSize } from '@/theme';
 
 import { HOME_SIGNALS_LIMIT, MINIMUM_VOTES_REQUIRED } from '../farmer-price.constants';
 import {
@@ -39,7 +40,8 @@ function resolveCardState(hasVoted: boolean, minimumVotesReached: boolean): Card
  * Behaviour and navigation are unchanged.
  */
 function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps) {
-  const theme = useAppTheme();
+  const { width } = useWindowDimensions();
+  const stackPrices = width < 390;
   const state = resolveCardState(hasVoted, poll.minimumVotesReached);
   const cropEmoji = useMemo(() => getCropEmoji(poll.crop), [poll.crop]);
 
@@ -70,23 +72,25 @@ function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps)
 
   const status = resolveStatusCopy(state, poll.voteCount, poll.district);
   const topSignals = poll.marketSignals.slice(0, HOME_SIGNALS_LIMIT);
+  const govValue =
+    poll.governmentPriceAvailable && poll.governmentPriceSnapshot !== null
+      ? formatRupee(poll.governmentPriceSnapshot)
+      : '—';
 
   return (
     <View
-      style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]}
+      style={[styles.card, mpCard]}
       accessibilityLabel={farmerPriceStrings.card.a11yCard(cropLabel, poll.district)}
     >
-      {/* Header */}
       <View style={styles.headerRow}>
-        <RNText style={styles.cropEmoji}>{cropEmoji}</RNText>
+        <View style={styles.cropIconWrap}>
+          <RNText style={styles.cropEmoji}>{cropEmoji}</RNText>
+        </View>
         <View style={styles.headerText}>
-          <Text style={[styles.crop, { color: theme.colors.onSurface }]} numberOfLines={1}>
+          <Text style={styles.crop} numberOfLines={2}>
             {cropLabel}
           </Text>
-          <Text
-            style={[styles.meta, { color: theme.colors.onSurfaceVariant }]}
-            numberOfLines={1}
-          >
+          <Text style={styles.meta} numberOfLines={2}>
             {`${poll.district}  ·  ${farmerPriceStrings.card.closingIn(
               formatCompactRemaining(poll.remainingHours),
             )}`}
@@ -94,42 +98,37 @@ function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps)
         </View>
       </View>
 
-      {/* Price tiles */}
-      <View style={styles.priceRow}>
-        <View
-          style={[
-            styles.priceTile,
-            {
-              backgroundColor: theme.colors.surfaceVariant,
-              borderColor: theme.colors.outlineVariant,
-            },
-          ]}
-        >
-          <Text style={[styles.priceLabel, { color: theme.colors.onSurfaceVariant }]}>
-            {`🏛️  ${farmerPriceStrings.card.governmentPriceLabel}`}
-          </Text>
-          <Text style={[styles.priceValue, { color: theme.colors.onSurface }]}>
-            {poll.governmentPriceAvailable && poll.governmentPriceSnapshot !== null
-              ? formatRupee(poll.governmentPriceSnapshot)
-              : '—'}
-          </Text>
+      <View style={[styles.priceRow, stackPrices && styles.priceRowStacked]}>
+        <View style={[styles.priceTile, styles.govTile, stackPrices && styles.priceTileFull]}>
+          <View style={styles.priceLabelRow}>
+            <View style={[styles.priceIconWrap, styles.govIconWrap]}>
+              <MaterialCommunityIcons name="office-building-outline" size={14} color={mp.labourTitle} />
+            </View>
+            <Text style={styles.priceLabel} numberOfLines={1}>
+              {farmerPriceStrings.card.governmentPriceLabel}
+            </Text>
+          </View>
+          <Text style={styles.priceValue}>{govValue}</Text>
         </View>
 
         <View
           style={[
             styles.priceTile,
-            {
-              backgroundColor: hasCommunity ? palette.green50 : theme.colors.surfaceVariant,
-              borderColor: hasCommunity ? palette.green100 : theme.colors.outlineVariant,
-            },
+            hasCommunity ? styles.communityTileActive : styles.communityTile,
+            stackPrices && styles.priceTileFull,
           ]}
         >
-          <Text style={[styles.priceLabel, { color: theme.colors.onSurfaceVariant }]}>
-            {`👨‍🌾  ${farmerPriceStrings.card.communityPriceLabel}`}
-          </Text>
+          <View style={styles.priceLabelRow}>
+            <View style={[styles.priceIconWrap, styles.communityIconWrap]}>
+              <MaterialCommunityIcons name="account-group-outline" size={14} color={mp.primaryGreen} />
+            </View>
+            <Text style={styles.priceLabel} numberOfLines={1}>
+              {farmerPriceStrings.card.communityPriceLabel}
+            </Text>
+          </View>
           {hasCommunity ? (
             <View style={styles.communityValueRow}>
-              <Text style={[styles.priceValue, { color: palette.green900 }]}>
+              <Text style={[styles.priceValue, styles.communityValue]}>
                 {formatRupee(poll.communityExpectedPrice!)}
               </Text>
               {showDelta ? (
@@ -137,7 +136,7 @@ function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps)
               ) : null}
             </View>
           ) : (
-            <Text style={[styles.priceValueMuted, { color: theme.colors.onSurfaceVariant }]}>
+            <Text style={styles.priceValueMuted}>
               {poll.voteCount > 0
                 ? farmerPriceStrings.card.communityProgressShort(
                     poll.voteCount,
@@ -149,51 +148,28 @@ function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps)
         </View>
       </View>
 
-      {/* Single status line */}
-      <View
-        style={[
-          styles.statusPill,
-          {
-            backgroundColor: state === 'voted' ? palette.blue100 : palette.green50,
-          },
-        ]}
-      >
+      <View style={[styles.statusPill, state === 'voted' ? styles.statusVoted : styles.statusDefault]}>
         <Text
-          style={[
-            styles.statusText,
-            { color: state === 'voted' ? palette.blue800 : palette.green900 },
-          ]}
+          style={[styles.statusText, state === 'voted' ? styles.statusVotedText : styles.statusDefaultText]}
           numberOfLines={2}
         >
           {status}
         </Text>
       </View>
 
-      {/* Secondary: confidence + top signals only when useful */}
       {hasCommunity || topSignals.length > 0 ? (
         <View style={styles.secondaryRow}>
           {hasCommunity ? (
             <View style={styles.confidenceWrap}>
-              <Text style={[styles.secondaryLabel, { color: theme.colors.onSurfaceVariant }]}>
-                {`🎯  ${farmerPriceStrings.card.confidenceLabel}`}
-              </Text>
+              <Text style={styles.secondaryLabel}>{farmerPriceStrings.card.confidenceLabel}</Text>
               <ConfidenceBadge confidence={poll.confidence} size="sm" />
             </View>
           ) : null}
           {topSignals.length > 0 ? (
             <View style={styles.signalChips}>
               {topSignals.map((signal) => (
-                <View
-                  key={signal.reasonType}
-                  style={[
-                    styles.signalChip,
-                    { backgroundColor: theme.colors.surfaceVariant },
-                  ]}
-                >
-                  <Text
-                    style={[styles.signalChipText, { color: theme.colors.onSurfaceVariant }]}
-                    numberOfLines={1}
-                  >
+                <View key={signal.reasonType} style={styles.signalChip}>
+                  <Text style={styles.signalChipText} numberOfLines={1}>
                     {`${getReasonEmoji(signal.reasonType)} ${getReasonTypeLabel(signal.reasonType)}`}
                   </Text>
                 </View>
@@ -209,7 +185,7 @@ function PollCardComponent({ poll, cropLabel, hasVoted, onOpen }: PollCardProps)
         style={styles.action}
         contentStyle={styles.actionContent}
         labelStyle={styles.actionLabel}
-        buttonColor={state === 'invite' ? palette.green700 : undefined}
+        buttonColor={state === 'invite' ? mp.primaryGreen : undefined}
         icon={({ size, color }) => (
           <MaterialCommunityIcons name={ctaIcon} size={size ?? iconSize.sm} color={color} />
         )}
@@ -237,63 +213,122 @@ export const PollCard = memo(PollCardComponent);
 
 const styles = StyleSheet.create({
   card: {
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 12,
+    overflow: 'hidden',
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
+  cropIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: mp.produceWash,
+    flexShrink: 0,
+  },
   cropEmoji: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 22,
+    lineHeight: 28,
   },
   headerText: {
     flex: 1,
+    minWidth: 0,
     gap: 1,
   },
   crop: {
-    fontSize: 20,
-    lineHeight: 26,
+    fontSize: 17,
+    lineHeight: 22,
     fontWeight: '700',
     letterSpacing: -0.3,
+    color: mp.headingGreen,
   },
   meta: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '500',
+    color: mp.muted,
   },
   priceRow: {
     flexDirection: 'row',
     gap: 8,
   },
+  priceRowStacked: {
+    flexDirection: 'column',
+  },
   priceTile: {
     flex: 1,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    minWidth: 0,
+    borderRadius: mpRadius.tile,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    gap: 4,
+    gap: 6,
+  },
+  priceTileFull: {
+    flex: 0,
+    width: '100%',
+  },
+  govTile: {
+    backgroundColor: mp.labourBg,
+  },
+  communityTile: {
+    backgroundColor: mp.cream,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: mp.cardLine,
+  },
+  communityTileActive: {
+    backgroundColor: mp.produceBg,
+  },
+  priceLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
+  },
+  priceIconWrap: {
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  govIconWrap: {
+    backgroundColor: mp.labourWash,
+  },
+  communityIconWrap: {
+    backgroundColor: mp.produceWash,
   },
   priceLabel: {
+    flex: 1,
+    minWidth: 0,
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '600',
     letterSpacing: 0.15,
+    color: mp.muted,
   },
   priceValue: {
     fontSize: 22,
     lineHeight: 28,
     fontWeight: '700',
     letterSpacing: -0.4,
+    color: mp.headingGreen,
+  },
+  communityValue: {
+    color: mp.headingGreen,
   },
   priceValueMuted: {
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '700',
     letterSpacing: -0.2,
+    color: mp.bodyGrey,
   },
   communityValueRow: {
     flexDirection: 'row',
@@ -302,14 +337,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statusPill: {
-    borderRadius: radius.lg,
+    borderRadius: mpRadius.tile,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  statusDefault: {
+    backgroundColor: mp.produceBg,
+  },
+  statusVoted: {
+    backgroundColor: mp.labourBg,
   },
   statusText: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  statusDefaultText: {
+    color: mp.headingGreen,
+  },
+  statusVotedText: {
+    color: mp.labourTitle,
   },
   secondaryRow: {
     gap: 8,
@@ -317,12 +364,14 @@ const styles = StyleSheet.create({
   confidenceWrap: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 8,
   },
   secondaryLabel: {
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '600',
+    color: mp.muted,
   },
   signalChips: {
     flexDirection: 'row',
@@ -332,15 +381,19 @@ const styles = StyleSheet.create({
   signalChip: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: radius.pill,
+    borderRadius: mpRadius.chip,
+    backgroundColor: mp.cream,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: mp.cardLine,
   },
   signalChipText: {
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '600',
+    color: mp.bodyGrey,
   },
   action: {
-    borderRadius: radius.xl,
+    borderRadius: mpRadius.chip,
   },
   actionContent: {
     height: 44,

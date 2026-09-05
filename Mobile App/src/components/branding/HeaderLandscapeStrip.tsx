@@ -1,8 +1,8 @@
 import { Image, StyleSheet, View } from 'react-native';
 
 /**
- * Shared compact scenic header used by Marketplace home (source of truth)
- * and साथ. Cream must stay `#FDF9F3` so the fade matches Marketplace.
+ * Shared compact scenic header used by Marketplace home (source of truth),
+ * साथ, बाजार, and भाव. Cream must stay `#FDF9F3` so the fade matches Marketplace.
  */
 const LANDSCAPE = require('../../../assets/branding/login-landscape.webp');
 

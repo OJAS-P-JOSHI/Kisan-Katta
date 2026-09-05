@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Animated,
   LayoutAnimation,
@@ -8,21 +8,14 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import { ActivityIndicator, Button, Card, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, Text } from 'react-native-paper';
 
 import { strings } from '@/constants';
 import { getArrivalFreshness } from '@/features/market/market.freshness';
 import { translateCropName } from '@/features/market/market.translate';
 import type { MarketCropCardModel } from '@/features/market/market.types';
-import {
-  cardSurface,
-  iconSize,
-  palette,
-  radius,
-  spacing,
-  typography,
-  useAppTheme,
-} from '@/theme';
+import { mp, mpCard, mpRadius } from '@/features/marketplace/marketplace.ui';
+import { iconSize, spacing } from '@/theme';
 
 import { MarketMandiRow } from './MarketMandiRow';
 
@@ -58,7 +51,7 @@ const getCropIcon = (crop: string): keyof typeof MaterialCommunityIcons.glyphMap
 };
 
 const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) {
-  const opacity = useRef(new Animated.Value(0.35)).current;
+  const [opacity] = useState(() => new Animated.Value(0.35));
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -73,10 +66,17 @@ const SkeletonBox = memo(function SkeletonBox({ style }: { style?: ViewStyle }) 
 
   return (
     <Animated.View
-      style={[{ backgroundColor: palette.mist, borderRadius: radius.md, opacity }, style]}
+      style={[{ backgroundColor: mp.produceWash, borderRadius: mpRadius.control, opacity }, style]}
     />
   );
 });
+
+const METRIC_ICONS = {
+  high: 'trending-up',
+  low: 'trending-down',
+  avg: 'chart-bar',
+  count: 'storefront-outline',
+} as const;
 
 const SummaryMetric = memo(function SummaryMetric({
   label,
@@ -89,15 +89,16 @@ const SummaryMetric = memo(function SummaryMetric({
 }) {
   const valueColor =
     tone === 'high'
-      ? palette.green700
+      ? mp.primaryGreen
       : tone === 'low'
-        ? palette.orange800
+        ? mp.productCta
         : tone === 'avg'
-          ? palette.green700
-          : palette.blue800;
+          ? mp.headingGreen
+          : mp.labourTitle;
 
   return (
     <View style={styles.metricCard}>
+      <MaterialCommunityIcons name={METRIC_ICONS[tone]} size={16} color={valueColor} />
       <Text numberOfLines={2} style={styles.metricLabel}>
         {label}
       </Text>
@@ -117,20 +118,20 @@ const SoftBadge = memo(function SoftBadge({
 }) {
   const bg =
     tone === 'gov'
-      ? palette.blue100
+      ? mp.labourBg
       : tone === 'today'
-        ? palette.green100
+        ? mp.produceBg
         : tone === 'yesterday'
-          ? palette.blue100
-          : palette.amber100;
+          ? mp.labourBg
+          : mp.productBg;
   const color =
     tone === 'gov'
-      ? palette.blue800
+      ? mp.labourTitle
       : tone === 'today'
-        ? palette.green900
+        ? mp.headingGreen
         : tone === 'yesterday'
-          ? palette.blue800
-          : palette.orange800;
+          ? mp.labourTitle
+          : mp.productTitle;
 
   return (
     <View style={[styles.softBadge, { backgroundColor: bg }]}>
@@ -142,9 +143,8 @@ const SoftBadge = memo(function SoftBadge({
 });
 
 function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketCropCardProps) {
-  const theme = useAppTheme();
-  const fade = useRef(new Animated.Value(item.state === 'loading' ? 0.95 : 0)).current;
-  const chevron = useRef(new Animated.Value(expanded ? 1 : 0)).current;
+  const [fade] = useState(() => new Animated.Value(item.state === 'loading' ? 0.95 : 0));
+  const [chevron] = useState(() => new Animated.Value(expanded ? 1 : 0));
 
   useEffect(() => {
     Animated.timing(fade, {
@@ -196,10 +196,10 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
         <SkeletonBox style={styles.skeletonSmall} />
       </View>
       <View style={styles.loadingRow}>
-        <ActivityIndicator size="small" color={theme.colors.primary} />
+        <ActivityIndicator size="small" color={mp.primaryGreen} />
         <Text
           numberOfLines={2}
-          style={[typography.caption, styles.flexText, { color: theme.colors.onSurfaceVariant }]}
+          style={[styles.caption, styles.flexText]}
         >
           {strings.market.loadingLatestPrices}
         </Text>
@@ -213,18 +213,23 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
       <Text accessibilityRole="header" style={styles.heroPrice}>
         {formatPrice(item.data.highestPrice)}
       </Text>
-      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+      <Text style={[styles.caption, { color: mp.muted }]}>
         {strings.market.perQuintal}
       </Text>
 
       <View style={styles.bestMandiBlock}>
-        <Text style={styles.bestMandiLabel}>{strings.market.bestMarketToday}</Text>
-        <Text numberOfLines={2} style={styles.bestMandiName}>
-          {bestMarket.market}
-        </Text>
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
-          {strings.market.highestInDistrict(item.data.district || bestMarket.district)}
-        </Text>
+        <View style={styles.bestMandiIcon}>
+          <MaterialCommunityIcons name="trophy-outline" size={16} color={mp.labourTitle} />
+        </View>
+        <View style={styles.bestMandiCopy}>
+          <Text style={styles.bestMandiLabel}>{strings.market.bestMarketToday}</Text>
+          <Text numberOfLines={2} style={styles.bestMandiName}>
+            {bestMarket.market}
+          </Text>
+          <Text style={styles.caption}>
+            {strings.market.highestInDistrict(item.data.district || bestMarket.district)}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.metaBadges}>
@@ -239,7 +244,7 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
           }
           tone={freshness === 'today' ? 'today' : freshness === 'yesterday' ? 'yesterday' : 'older'}
         />
-        <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+        <Text style={styles.caption}>
           {strings.market.marketsAvailable(item.data.marketCount)}
         </Text>
       </View>
@@ -279,11 +284,11 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
         style={({ pressed }) => [styles.expandButton, pressed && styles.expandPressed]}
         hitSlop={8}
       >
-        <Text style={[styles.expandLabel, { color: theme.colors.primary }]}>
+        <Text style={[styles.expandLabel, { color: mp.primaryGreen }]}>
           {expanded ? strings.market.hideMarkets : strings.market.viewAllMarkets}
         </Text>
         <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
-          <MaterialCommunityIcons name="chevron-down" size={iconSize.md} color={theme.colors.primary} />
+          <MaterialCommunityIcons name="chevron-down" size={iconSize.md} color={mp.primaryGreen} />
         </Animated.View>
       </Pressable>
 
@@ -305,13 +310,13 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
 
   const emptyContent = (
     <View style={styles.stateWrap} accessibilityLabel={strings.market.a11yNoData(cropDisplayName)}>
-      <Text style={[typography.body, { color: theme.colors.onSurface }]}>
+      <Text style={styles.bodyText}>
         {strings.market.cardNoDataTitle}
       </Text>
-      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+      <Text style={styles.caption}>
         {strings.market.cardNoDataDescription}
       </Text>
-      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+      <Text style={styles.caption}>
         {strings.market.cardNoDataSecondary}
       </Text>
     </View>
@@ -319,10 +324,10 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
 
   const errorContent = (
     <View style={styles.stateWrap} accessibilityLabel={strings.market.a11yError(cropDisplayName)}>
-      <Text style={[typography.body, { color: theme.colors.onSurface }]}>
+      <Text style={styles.bodyText}>
         {strings.market.cardErrorTitle}
       </Text>
-      <Text style={[typography.caption, { color: theme.colors.onSurfaceVariant }]}>
+      <Text style={styles.caption}>
         {item.error || strings.market.cardErrorDescription}
       </Text>
       <Button
@@ -339,16 +344,16 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
 
   return (
     <Animated.View style={{ opacity: fade }} accessible accessibilityLiveRegion="polite">
-      <Card style={[styles.card, cardSurface, { backgroundColor: theme.colors.surface }]} mode="elevated">
-        <Card.Content style={styles.cardContent}>
+      <View style={[styles.card, mpCard]}>
+        <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <View style={styles.cropHeader}>
-              <View style={[styles.cropIconWrap, { backgroundColor: theme.colors.primaryContainer }]}>
-                <MaterialCommunityIcons name={iconName} size={iconSize.md} color={theme.colors.primary} />
+              <View style={styles.cropIconWrap}>
+                <MaterialCommunityIcons name={iconName} size={iconSize.md} color={mp.primaryGreen} />
               </View>
               <Text
                 numberOfLines={2}
-                style={[typography.sectionTitle, styles.cropTitle, { color: theme.colors.onSurface }]}
+                style={styles.cropTitle}
                 accessibilityRole="header"
               >
                 {cropDisplayName}
@@ -356,7 +361,7 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
             </View>
             {item.isRefreshing ? (
               <View style={styles.refreshingTag} accessibilityLabel={strings.market.cardRefreshing}>
-                <ActivityIndicator size={12} color={theme.colors.primary} />
+                <ActivityIndicator size={12} color={mp.primaryGreen} />
               </View>
             ) : null}
           </View>
@@ -366,14 +371,11 @@ function MarketCropCardBase({ item, expanded, onToggleExpand, onRetry }: MarketC
           {item.state === 'empty' ? emptyContent : null}
           {item.state === 'error' ? errorContent : null}
 
-          <Text
-            numberOfLines={1}
-            style={[typography.caption, styles.updatedRow, { color: theme.colors.onSurfaceVariant }]}
-          >
+          <Text numberOfLines={1} style={styles.updatedRow}>
             {strings.market.cardLastUpdated}: {formatLastUpdated(item.lastUpdatedAt)}
           </Text>
-        </Card.Content>
-      </Card>
+        </View>
+      </View>
     </Animated.View>
   );
 }
@@ -401,6 +403,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cardContent: {
+    padding: 14,
     gap: spacing.sm,
   },
   headerRow: {
@@ -417,20 +420,38 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   cropIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: mp.produceWash,
+    flexShrink: 0,
   },
   cropTitle: {
     flex: 1,
     minWidth: 0,
     flexShrink: 1,
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '700',
+    color: mp.headingGreen,
   },
   flexText: {
     flex: 1,
     minWidth: 0,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    color: mp.muted,
+  },
+  bodyText: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: '600',
+    color: mp.headingGreen,
   },
   refreshingTag: {
     paddingTop: 4,
@@ -456,7 +477,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '500',
-    color: palette.steel,
+    color: mp.muted,
     letterSpacing: 0.2,
   },
   heroPrice: {
@@ -464,26 +485,42 @@ const styles = StyleSheet.create({
     lineHeight: 40,
     fontWeight: '700',
     letterSpacing: -0.8,
-    color: palette.green700,
+    color: mp.primaryGreen,
   },
   bestMandiBlock: {
-    gap: 4,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: palette.blue100,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: mpRadius.tile,
+    backgroundColor: mp.labourBg,
+  },
+  bestMandiIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: mp.labourWash,
+    flexShrink: 0,
+  },
+  bestMandiCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
   bestMandiLabel: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '600',
-    color: palette.blue800,
+    color: mp.labourTitle,
   },
   bestMandiName: {
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: '600',
-    color: palette.blue800,
+    fontWeight: '700',
+    color: mp.labourTitle,
   },
   metaBadges: {
     flexDirection: 'row',
@@ -492,7 +529,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   softBadge: {
-    borderRadius: radius.pill,
+    borderRadius: mpRadius.chip,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
@@ -508,21 +545,18 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     width: '47%',
-    minWidth: 132,
     flexGrow: 1,
-    borderRadius: radius.md,
-    backgroundColor: palette.green50,
+    borderRadius: mpRadius.tile,
+    backgroundColor: mp.produceBg,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     gap: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: palette.mist,
   },
   metricLabel: {
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '500',
-    color: palette.steel,
+    color: mp.muted,
   },
   metricValue: {
     fontSize: 16,
@@ -535,10 +569,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.md,
-    backgroundColor: palette.green50,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: mpRadius.chip,
+    backgroundColor: mp.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 106, 44, 0.18)',
   },
   expandPressed: {
     opacity: 0.75,
@@ -546,17 +582,22 @@ const styles = StyleSheet.create({
   expandLabel: {
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   expandedList: {
     gap: 0,
   },
   updatedRow: {
     marginTop: spacing.xs,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    color: mp.muted,
   },
   retryButton: {
     alignSelf: 'flex-start',
     marginTop: spacing.xs,
+    borderRadius: mpRadius.control,
   },
   retryButtonContent: {
     minHeight: 44,

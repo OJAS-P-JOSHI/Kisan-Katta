@@ -1,7 +1,6 @@
 import { Tabs, type BottomTabBarProps } from 'expo-router/js-tabs';
 import { View } from 'react-native';
 
-import { MarketHeaderAccountButton } from '@/components/navigation/AccountButton';
 import { PremiumTabBar } from '@/components/navigation/PremiumTabBar';
 import { TabBarButton } from '@/components/navigation/TabBarButton';
 import { tabIcons } from '@/components/navigation/tabBar.icons';
@@ -78,8 +77,8 @@ export default function TabsLayout() {
         name="market"
         options={{
           title: strings.tabs.market,
+          headerShown: false,
           tabBarIcon: tabIcons.market,
-          headerRight: MarketHeaderAccountButton,
         }}
       />
       <Tabs.Screen
